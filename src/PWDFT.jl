@@ -26,7 +26,7 @@ include("wrappers_fft.jl")
 #
 
 module Utilities
-    export PrintMatrix
+    export print_matrix
     include("Utilities.jl")
 end
 

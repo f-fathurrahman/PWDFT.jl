@@ -1,5 +1,5 @@
 using PWDFT
-using PWDFT.Utilities: PrintMatrix
+using PWDFT.Utilities: print_matrix
 
 using SpecialFunctions: erf
 
@@ -150,7 +150,8 @@ function PsPot_HGH( itype::Int, atsymb::String, filename::String; verbose=false 
 end
 
 # Display information about HGH pseudopotential
-function info_PsPot_HGH( psp::PsPot_HGH )
+import Base.println
+function println( psp::PsPot_HGH )
 
     const ANGMOM = ["s", "p", "d", "f"]
 
@@ -161,7 +162,7 @@ function info_PsPot_HGH( psp::PsPot_HGH )
     for i=1:4
         @printf("Angular momentum: %s, rc = %f\n", ANGMOM[i], psp.rc[i])
         @printf("h = \n")
-        PrintMatrix( reshape(psp.h[i,:,:],(3,3) ) )
+        print_matrix( reshape(psp.h[i,:,:],(3,3) ) )
         @printf("\n")
     end
 
