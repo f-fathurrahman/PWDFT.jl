@@ -19,9 +19,10 @@ function c_G_to_R( Ns::Array{Int,1}, fG::Array{Complex128,2} )
     Ncol = size(fG)[2]
     out = zeros(Complex128,Npoints,Ncol)
     for ic = 1:Ncol
-       ccall( (:fftw_inv_fft3d, FFT_SO_PATH), Void,
-              (Ptr{Complex128}, Ptr{Complex128}, Int64, Int64, Int64),
-               fG[:,ic], out[:,ic], Ns[3],Ns[2],Ns[1] )
+        out[:,ic] = c_G_to_R( Ns, fG[:,ic] )
+        #ccall( (:fftw_inv_fft3d, FFT_SO_PATH), Void,
+        #      (Ptr{Complex128}, Ptr{Complex128}, Int64, Int64, Int64),
+        #       fG[:,ic], out[:,ic], Ns[3],Ns[2],Ns[1] )
     end
     return out
 end
@@ -52,9 +53,10 @@ function c_R_to_G( Ns::Array{Int,1}, fR::Array{Complex128,2} )
     Ncol = size(fR)[2]
     out = zeros(Complex128,Npoints,Ncol)
     for ic = 1:Ncol
-        ccall( (:fftw_fw_fft3d, FFT_SO_PATH), Void,
-               (Ptr{Complex128}, Ptr{Complex128}, Int64, Int64, Int64),
-                fR[:,ic], out[:,ic], Ns[3],Ns[2],Ns[1] )
+        out[:,ic] = c_R_to_G( Ns, fR[:,ic] )
+        #ccall( (:fftw_fw_fft3d, FFT_SO_PATH), Void,
+        #       (Ptr{Complex128}, Ptr{Complex128}, Int64, Int64, Int64),
+        #        fR[:,ic], out[:,ic], Ns[3],Ns[2],Ns[1] )
     end
     return out
 end
