@@ -10,6 +10,9 @@ a.out
 sandbox_*
 *.o
 
+*.so
+*.so.*
+
 *.jl.cov
 *.jl.*.cov
 *.jl.mem
