@@ -9,7 +9,7 @@ const ANG2BOHR = 1.889725989  # angstrom to bohr
 
 export Atoms
 export init_atoms_xyz
-include("Atoms/Atoms.jl")
+include("Atoms.jl")
 
 #
 # Essentials: FFTW
@@ -18,7 +18,7 @@ export c_G_to_R
 export c_R_to_G
 export R_to_G
 export G_to_R
-include("FFT/wrappers_fft.jl")
+include("wrappers_fft.jl")
 
 
 #
@@ -27,7 +27,7 @@ include("FFT/wrappers_fft.jl")
 
 module Utilities
     export PrintMatrix
-    include("Utilities/PrintMatrix.jl")
+    include("Utilities.jl")
 end
 
 module PW
@@ -42,7 +42,7 @@ module PsPot
     export HGH_eval_Vloc_G
     export HGH_eval_proj_G
     export info_PsPot_HGH
-    include("PsPot/PsPot_HGH.jl")
+    include("PsPot_HGH.jl")
 end
 
 #
