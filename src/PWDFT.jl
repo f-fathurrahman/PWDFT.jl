@@ -2,6 +2,14 @@ __precompile__()
 
 module PWDFT
 
+export Ry2eV, ANG2BOHR
+# constants
+const Ry2eV = 13.6058         # Ry to eV
+const ANG2BOHR = 1.889725989  # angstrom to bohr
+
+export Atoms
+include("Atoms/Atoms.jl")
+
 #
 # Essentials: FFTW
 #
