@@ -23,7 +23,8 @@ struct PWGrid
     gvecw::GVectorsW
 end
 
-function PWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2}; verbose=false )
+
+function PWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2} )
 
     ecutrho = 4.0*ecutwfc
     #
@@ -50,14 +51,6 @@ function PWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2}; verbose=false )
 
     gvec = init_grid_G( Ns, RecVecs )
     gvecw = init_gvecw( ecutwfc, gvec.G2 )
-
-    if verbose
-        @printf("\nInitializing PWGrid\n")
-        @printf("ecutwfc = %10.3f Ha\n", ecutwfc)
-        @printf("ecutrho = %10.3f Ha\n", ecutrho)
-        @printf("Sampling points: [%5d,%5d,%5d]\n", Ns[1], Ns[2], Ns[3])
-        @printf("Ngwx = %10d\n", gvecw.Ngwx)
-    end
 
     return PWGrid( ecutwfc, ecutrho, Ns, LatVecs, RecVecs, Ω, r, gvec, gvecw )
 end
@@ -103,27 +96,6 @@ function init_gvecw( ecutwfc, G2 )
     return GVectorsW( Ngwx, idx_gw2r )
 end
 
-function find_edges( Ns )
-    eS = Ns/2 + 0.5
-    edges = []
-    ip = 1
-    for k in 0:Ns[3]-1
-    for j in 0:Ns[2]-1
-    for i in 0:Ns[1]-1
-        ei = abs(i - eS[1])
-        ej = abs(j - eS[2])
-        ek = abs(k - eS[3])
-        # if any of i, j, or k is equal to Ns/2 or Ns/2+1
-        if ei < 1.0 || ej < 1.0 || ek < 1.0
-            push!(edges,ip)
-        end
-        ip = ip + 1
-    end
-    end
-    end
-    return edges
-end
-
 
 function init_grid_R( Ns, LatVecs )
     #
@@ -143,4 +115,24 @@ function init_grid_R( Ns, LatVecs )
     end
     #
     return R
+end
+
+import Base.println
+function println( pw::PWGrid )
+    @printf("\nPlane wave grid\n\n")
+    LatVecs = pw.LatVecs
+    RecVecs = pw.RecVecs
+    @printf("Direct lattice vectors:\n")
+    for i = 1:3
+        @printf("%18.10f %18.10f %18.10f\n", LatVecs[i,1], LatVecs[i,2], LatVecs[i,3])
+    end
+    @printf("\nReciprocal lattice vectors:\n")
+    for i = 1:3
+        @printf("%18.10f %18.10f %18.10f\n", RecVecs[i,1], RecVecs[i,2], RecVecs[i,3])
+    end
+    @printf("\n")
+    @printf("ecutwfc = %10.3f Ha\n", pw.ecutwfc)
+    @printf("ecutrho = %10.3f Ha\n", pw.ecutrho)
+    @printf("Sampling points: [%5d,%5d,%5d]\n", pw.Ns[1], pw.Ns[2], pw.Ns[3])
+    @printf("Ngwx = %10d\n", pw.gvecw.Ngwx)
 end
