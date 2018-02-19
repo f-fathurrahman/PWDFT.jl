@@ -1,0 +1,16 @@
+.ipynb_checkpoints
+
+a.out
+*.x
+
+*.swp
+*~
+*.swo
+
+sandbox_*
+*.o
+
+*.jl.cov
+*.jl.*.cov
+*.jl.mem
+deps/deps.jl
