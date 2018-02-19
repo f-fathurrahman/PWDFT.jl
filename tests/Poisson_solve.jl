@@ -8,7 +8,7 @@ function Poisson_solve( PW::PWGrid, rhoR )
     Ns = PW.Ns
     Npoints = prod(Ns)
     #
-    ctmp = 4.0*pi*R_to_G( Ns, rhoR )
+    ctmp = 4.0*pi*c_R_to_G( Ns, rhoR )
     #
     ctmp[1] = 0.0
     for ip = 2:Npoints
