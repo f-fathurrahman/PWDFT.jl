@@ -1,5 +1,5 @@
 using PWDFT
-using PWDFT.Utilities
+using PWDFT.Utilities: PrintMatrix
 
 using SpecialFunctions: erf
 
