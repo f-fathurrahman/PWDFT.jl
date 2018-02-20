@@ -33,24 +33,40 @@ mutable struct PWHamiltonian
     pw::PWGrid
     potentials::PotentialsT
     energies::EnergiesT
-    Rhoe::Array{Float64,1}
-    Focc   # not yet determined
+    rhoe::Array{Float64,1}
+    focc   # not yet determined
 end
+
+include("calc_strfact.jl")
+include("init_V_coulomb_G.jl")
 
 function PWHamiltonian( pw::PWGrid, atoms::Atoms )
     Npoints = prod(pw.Ns)
     #
-    V_Ps_loc = Array{Float64}(Npoints)
-    V_Hartree = Array{Float64}(Npoints)
-    V_XC = Array{Float64}(Npoints)
+    strf = calc_strfact( atoms, pw )
+    V_Ps_loc = init_V_coulomb_G( pw, strf, [1.0] )
+    #
+    V_Hartree = zeros(Float64,Npoints)
+    V_XC = zeros(Float64,Npoints)
     potentials = PotentialsT( V_Ps_loc, V_Hartree, V_XC )
     #
     energies = EnergiesT()
     #
-    Rhoe = Array{Float64}(Npoints)
-    Focc = nothing
-    return PWHamiltonian( pw, potentials, energies, Rhoe, nothing )
+    rhoe = zeros(Float64,Npoints)
+    return PWHamiltonian( pw, potentials, energies, rhoe, nothing )
 end
 
 include("op_K.jl")
 include("op_V_loc.jl")
+
+include("Poisson_solve.jl")
+include("LDA_VWN.jl")
+
+function update!(Ham::PWHamiltonian, rhoe::Array{Float64,1})
+    println("Updating rhoe")
+    Ham.rhoe = rhoe
+    println("Updating Hartree potential")
+    Ham.potentials.Hartree = real( G_to_R( Ham.pw.Ns, Poisson_solve(Ham.pw, rhoe) ) )
+    println("Updating XC potential")
+    Ham.potentials.XC = excVWN( rhoe ) + rhoe .* excpVWN( rhoe )
+end
