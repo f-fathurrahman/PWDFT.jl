@@ -1,5 +1,4 @@
 using PWDFT
-using PWDFT.PW
 
 function test_main()
     LatVecs = 16.0*diagm(ones(3))

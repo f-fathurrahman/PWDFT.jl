@@ -1,5 +1,4 @@
 using PWDFT
-using PWDFT.PW
 
 include("Poisson_solve.jl")
 

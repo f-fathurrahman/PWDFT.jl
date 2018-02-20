@@ -14,7 +14,7 @@ function print_matrix( A::Array{Complex128,2} )
     Ncols = size(A)[2]
     for ir = 1:Nrows
         for ic = 1:Ncols
-            @printf("(%6.3f + %6.3f*i) ", real(A[ir,ic]), imag(A[ir,ic]))
+            @printf("(%6.3f + %6.3fim) ", real(A[ir,ic]), imag(A[ir,ic]))
         end
         @printf("\n")
     end

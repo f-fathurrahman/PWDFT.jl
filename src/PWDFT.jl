@@ -22,31 +22,27 @@ include("wrappers_fft.jl")
 
 
 #
-# Submodules begin here
+# General utilities
 #
-
-module Utilities
-    export print_matrix
-    include("Utilities.jl")
-end
-
-module PW
-    export PWGrid
-    export GVectors
-    export GVectorsW
-    include("PW/PWGrid_v03.jl")
-end
-
-module PsPot
-    export PsPot_HGH
-    export HGH_eval_Vloc_G
-    export HGH_eval_proj_G
-    export info_PsPot_HGH
-    include("PsPot_HGH.jl")
-end
+export print_matrix
+include("Utilities.jl")
 
 #
-# End of submodules
+# Plane wave basis
 #
+export PWGrid
+export GVectors
+export GVectorsW
+include("PW/PWGrid_v03.jl")
+
+#
+# Pseudopotential
+#
+export PsPot_HGH
+export HGH_eval_Vloc_G
+export HGH_eval_proj_G
+export info_PsPot_HGH
+include("PsPot_HGH.jl")
+
 
 end

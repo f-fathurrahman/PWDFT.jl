@@ -1,5 +1,4 @@
-using PWDFT
-using PWDFT.Utilities: print_matrix
+using PWDFT: print_matrix
 
 using SpecialFunctions: erf
 

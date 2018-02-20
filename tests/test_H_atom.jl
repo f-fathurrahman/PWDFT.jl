@@ -1,6 +1,4 @@
 using PWDFT
-using PWDFT.PW
-
 
 include("init_V_coulomb_G.jl")
 include("calc_strfact.jl")

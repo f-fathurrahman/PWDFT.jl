@@ -48,9 +48,9 @@ function test_singlecolumn(Ns)
 
 end
 
-function R_to_G( planfw, Ns, fR::Array{Complex128,1} )
-    return
-end
+#function R_to_G( planfw, Ns, fR::Array{Complex128,1} )
+#    return
+#end
 
 function init_plan_forward( Ns::Array{Int64} )
     return plan_fft( zeros(Ns[1],Ns[2],Ns[3]) )
