@@ -58,6 +58,7 @@ end
 
 include("op_K.jl")
 include("op_V_loc.jl")
+include("op_H.jl")
 
 include("Poisson_solve.jl")
 include("LDA_VWN.jl")

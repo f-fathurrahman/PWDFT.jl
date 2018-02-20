@@ -30,25 +30,39 @@ function test_main()
 
     println("\nBefore updating Hamiltonian")
     @time Kpsi = op_K(Ham, psi)
-    println(sum(Kpsi))
+    s = sum(Kpsi)
+    @printf("sum Kpsi = (%18.10f,%18.10fim)\n", s.re, s.im)
     #
-    @time Vpsi = op_V_loc(Ham, psi)
-    println(sum(Vpsi))
+    @time Vpsi1 = op_V_loc(Ham, psi)
+    s = sum(Vpsi1)
+    @printf("sum Vpsi1 = (%18.10f,%18.10fim)\n", s.re, s.im)
     #
-    @time Vpsi = op_V_Ps_loc(Ham, psi)
-    println(sum(Vpsi))
+    @time Vpsi2 = op_V_Ps_loc(Ham, psi)
+    s = sum(Vpsi2)
+    @printf("sum Vpsi2 = (%18.10f,%18.10fim)\n", s.re, s.im)
+    #
+    @time Hpsi = op_H( Ham, psi )
+    s = sum(Hpsi - Kpsi - Vpsi1)
+    @printf("diff op_H = (%18.10f,%18.10fim)\n", s.re, s.im)
 
     update!(Ham, rhoe)
 
     println("\nAfter updating Hamiltonian")
     @time Kpsi = op_K(Ham, psi)
-    println(sum(Kpsi))
+    s = sum(Kpsi)
+    @printf("sum Kpsi = (%18.10f,%18.10fim)\n", s.re, s.im)
     #
-    @time Vpsi = op_V_loc(Ham, psi)
-    println(sum(Vpsi))
+    @time Vpsi1 = op_V_loc(Ham, psi)
+    s = sum(Vpsi1)
+    @printf("sum Vpsi1 = (%18.10f,%18.10fim)\n", s.re, s.im)
     #
-    @time Vpsi = op_V_Ps_loc(Ham, psi)
-    println(sum(Vpsi))
+    @time Vpsi2 = op_V_Ps_loc(Ham, psi)
+    s = sum(Vpsi2)
+    @printf("sum Vpsi2 = (%18.10f,%18.10fim)\n", s.re, s.im)
+    #
+    @time Hpsi = op_H( Ham, psi )
+    s = sum(Hpsi - Kpsi - Vpsi1)
+    @printf("diff op_H = (%18.10f,%18.10fim)\n", s.re, s.im)
 
     Energies = calc_energies(Ham, psi)
     println("\nCalculated energies")
