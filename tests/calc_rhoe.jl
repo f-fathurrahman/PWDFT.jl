@@ -13,16 +13,16 @@ function calc_rhoe( pw::PWGrid, Focc, psi::Array{Complex128,2} )
     ortho_gram_schmidt!( Nstates, psiR )
     scale!( sqrt(Npoints/Ω), psiR )
 
-    rho = Array{Float64}(Npoints)
-    for is = 1:Nstates
+    rho = zeros(Float64,Npoints)
+    for ist = 1:Nstates
         for ip = 1:Npoints
-            rho[ip] = rho[ip] + Focc[is]*real( conj(psiR[ip,is])*psiR[ip,is] )
+            rho[ip] = rho[ip] + Focc[ist]*real( conj(psiR[ip,ist])*psiR[ip,ist] )
         end
     end
 
     # Ensure that there is no negative rhoe
     for ip = 1:Nstates
-        if rho[ip] < 0.0
+        if rho[ip] < eps()
             rho[ip] = eps()
         end
     end

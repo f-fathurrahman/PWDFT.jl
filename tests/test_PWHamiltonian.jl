@@ -3,6 +3,7 @@ using PWDFT
 include("PWHamiltonian.jl")
 include("ortho_gram_schmidt.jl")
 include("calc_rhoe.jl")
+include("calc_energies.jl")
 
 function test_main()
     #
@@ -18,6 +19,7 @@ function test_main()
     Ngwx = Ham.pw.gvecw.Ngwx
     Nstates = 1
     Focc = [1.0]
+    Ham.focc = Focc
     #
     srand(1234)
     psi = rand(Ngwx,Nstates) + im*rand(Ngwx,Nstates)
@@ -48,6 +50,16 @@ function test_main()
     @time Vpsi = op_V_Ps_loc(Ham, psi)
     println(sum(Vpsi))
 
+    Energies = calc_energies(Ham, psi)
+    println("\nCalculated energies")
+    println(Energies)
+
+    println("\nOld energies of Hamiltonian:")
+    println(Ham.energies)
+
+    Ham.energies = Energies
+    println("\nUpdated energies of Hamiltonian:")
+    println(Ham.energies)
 end
 
 test_main()

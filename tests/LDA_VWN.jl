@@ -16,6 +16,7 @@ function excVWN( n::Array{Float64} )
     out = zeros(Npoints)
     for ip = 1:Npoints
         rs = (4.0*pi/3.0*n[ip])^(-1.0/3.0)
+        #@printf("%8d %18.10f %18.10f\n", ip, n[ip], rs)
         x = sqrt(rs)
         X = x*x + b*x + c
         out[ip] = -X1/rs + A*( log(x*x/X) + 2*b/Q*atan(Q/(2*x+b))
