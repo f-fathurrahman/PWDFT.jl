@@ -14,15 +14,18 @@ function test_main()
     #
     Ham = PWHamiltonian( pw, atoms )
     #
-    Npoints = prod(pw.Ns)
+    Ngwx = Ham.pw.gvecw.Ngwx
     Nstates = 4
     #
     srand(1234)
-    psi = rand(Npoints,Nstates) + im*rand(Npoints,Nstates)
+    psi = rand(Ngwx,Nstates) + im*rand(Ngwx,Nstates)
     psi = ortho_gram_schmidt(psi)
     #
     @time Kpsi = op_K(Ham, psi)
     println(sum(Kpsi))
+    #
+    @time Vpsi = op_V_Ps_loc(Ham, psi)
+    println(sum(Vpsi))
 end
 
 test_main()

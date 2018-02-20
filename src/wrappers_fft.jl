@@ -1,3 +1,6 @@
+
+const USING_FFT_NAIVE = false
+
 # --- Call FFTW3 directly --- #
 
 # XXX Need automatic way to do this
@@ -64,6 +67,7 @@ end
 #
 # Naive version of calling FFT
 #
+if USING_FFT_NAIVE
 
 function G_to_R( Ns::Array{Int,1}, fG::Array{Complex128,1} )
     out = reshape( ifft( reshape(fG,Ns[1],Ns[2],Ns[3]) ),size(fG) )
@@ -97,3 +101,11 @@ function R_to_G( Ns::Array{Int,1}, fR::Array{Complex128,2} )
     end
     return out
 end
+
+else   # not USING_FFT_NAIVE
+
+const R_to_G = c_R_to_G
+const G_to_R = c_G_to_R
+
+
+end   # USING_FFT_NAIVE

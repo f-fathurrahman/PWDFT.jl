@@ -1,7 +1,7 @@
 mutable struct EnergiesT
     Total::Float64
     Kinetic::Float64
-    Ionic::Float64
+    Ps_loc::Float64
     Hartree::Float64
     XC::Float64
     NN::Float64
@@ -15,7 +15,7 @@ end
 import Base.println
 function println( Energies::EnergiesT )
     @printf("Kinetic energy: %18.10f\n", Energies.Kinetic )
-    @printf("Ionic   energy: %18.10f\n", Energies.Ionic )
+    @printf("Ps_loc  energy: %18.10f\n", Energies.Ps_loc )
     @printf("Hartree energy: %18.10f\n", Energies.Hartree )
     @printf("XC      energy: %18.10f\n", Energies.XC )
     @printf("NN      energy: %18.10f\n", Energies.NN )
@@ -24,7 +24,7 @@ function println( Energies::EnergiesT )
 end
 
 mutable struct PotentialsT
-    Ionic::Array{Float64,1}
+    Ps_loc::Array{Float64,1}
     Hartree::Array{Float64,1}
     XC::Array{Float64,1}
 end
@@ -40,10 +40,10 @@ end
 function PWHamiltonian( pw::PWGrid, atoms::Atoms )
     Npoints = prod(pw.Ns)
     #
-    V_Ionic = Array{Float64}(Npoints)
+    V_Ps_loc = Array{Float64}(Npoints)
     V_Hartree = Array{Float64}(Npoints)
     V_XC = Array{Float64}(Npoints)
-    potentials = PotentialsT( V_Ionic, V_Hartree, V_XC )
+    potentials = PotentialsT( V_Ps_loc, V_Hartree, V_XC )
     #
     energies = EnergiesT()
     #
@@ -53,3 +53,4 @@ function PWHamiltonian( pw::PWGrid, atoms::Atoms )
 end
 
 include("op_K.jl")
+include("op_V_loc.jl")
