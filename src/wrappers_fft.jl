@@ -1,5 +1,5 @@
 
-const USING_FFT_NAIVE = false
+const USING_FFT_NAIVE = true
 
 # --- Call FFTW3 directly --- #
 
@@ -106,6 +106,5 @@ else   # not USING_FFT_NAIVE
 
 const R_to_G = c_R_to_G
 const G_to_R = c_G_to_R
-
 
 end   # USING_FFT_NAIVE

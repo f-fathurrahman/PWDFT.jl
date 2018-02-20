@@ -24,8 +24,12 @@ function test_main()
     @time Kpsi = op_K(Ham, psi)
     println(sum(Kpsi))
     #
+    @time Vpsi = op_V_loc(Ham, psi)
+    println(sum(Vpsi))
+    #
     @time Vpsi = op_V_Ps_loc(Ham, psi)
     println(sum(Vpsi))
 end
 
+test_main()
 test_main()
