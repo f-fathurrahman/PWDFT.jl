@@ -11,7 +11,7 @@ function test_main()
     println(atoms)
     #
     LatVecs = 16.0*diagm(ones(3))
-    pw = PWGrid(30.0*0.5, LatVecs)
+    pw = PWGrid(30.0, LatVecs)
     println(pw)
     #
     Ham = PWHamiltonian( pw, atoms )

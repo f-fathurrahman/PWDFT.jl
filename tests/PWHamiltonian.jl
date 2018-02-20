@@ -63,10 +63,7 @@ include("Poisson_solve.jl")
 include("LDA_VWN.jl")
 
 function update!(Ham::PWHamiltonian, rhoe::Array{Float64,1})
-    println("Updating rhoe")
     Ham.rhoe = rhoe
-    println("Updating Hartree potential")
     Ham.potentials.Hartree = real( G_to_R( Ham.pw.Ns, Poisson_solve(Ham.pw, rhoe) ) )
-    println("Updating XC potential")
     Ham.potentials.XC = excVWN( rhoe ) + rhoe .* excpVWN( rhoe )
 end
