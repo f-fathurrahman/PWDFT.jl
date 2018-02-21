@@ -2,7 +2,7 @@
 # Implementation of a simple method to calculate Ewald energy based on Arias' notes
 #
 function calc_E_NN( pw::PWGrid, Sf, Xpos, Nspecies::Int, atm2species,
-                     Zv::Array{Float64}; sigma=nothing )
+                     Zv::Array{Float64}; sigma=nothing, verbose=false )
     #
     Ω  = pw.Ω
     r  = pw.r
@@ -24,6 +24,11 @@ function calc_E_NN( pw::PWGrid, Sf, Xpos, Nspecies::Int, atm2species,
     rho_is = zeros( Float64, Npoints, Nspecies )
     Rho = zeros(Float64, Npoints)
     #
+
+    if verbose
+        println("\nCalculating E_NN")
+    end
+
     for isp = 1:Nspecies
         c1 = 2*sigma[isp]^2
         cc1 = sqrt(2*pi*sigma[isp]^2)^3
@@ -39,12 +44,16 @@ function calc_E_NN( pw::PWGrid, Sf, Xpos, Nspecies::Int, atm2species,
         end
         rho_is[:,isp] = real( G_to_R(Ns, ctmp) )
         intrho = sum(rho_is[:,isp])*Ω/Npoints
-        @printf("Species %d, intrho: %18.10f\n", isp, intrho)
+        if verbose
+            @printf("Species %d, intrho: %18.10f\n", isp, intrho)
+        end
         Rho[:] = Rho[:] + rho_is[:,isp]
     end
     #
-    intrho = sum(Rho)*Ω/Npoints
-    @printf("Integrated total Gaussian rho: %18.10f\n", intrho)
+    if verbose
+        intrho = sum(Rho)*Ω/Npoints
+        @printf("Integrated total Gaussian rho: %18.10f\n", intrho)
+    end
     #
     # Solve Poisson equation and calculate Hartree energy
     ctmp = 4.0*pi*R_to_G( Ns, Rho )
@@ -62,7 +71,11 @@ function calc_E_NN( pw::PWGrid, Sf, Xpos, Nspecies::Int, atm2species,
         Eself = Eself + Zv[isp]^2/(2*sqrt(pi))*(1.0/sigma[isp])
     end
     E_nn = Ehartree - Eself
-    @printf("Ehartree, Eself, E_nn = %18.10f %18.10f %18.10f\n", Ehartree, Eself, E_nn)
+
+    if verbose
+        @printf("Ehartree, Eself, E_nn = %18.10f %18.10f %18.10f\n", Ehartree, Eself, E_nn)
+    end
+
     return E_nn
 end
 

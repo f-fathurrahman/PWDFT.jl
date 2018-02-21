@@ -40,6 +40,24 @@ end
 include("calc_strfact.jl")
 include("init_V_coulomb_G.jl")
 
+# Only allocate memory.
+# Potentials need to be set and updated
+function PWHamiltonian( pw::PWGrid )
+    Npoints = prod(pw.Ns)
+    V_Ps_loc = zeros(Float64,Npoints)
+    V_Hartree = zeros(Float64,Npoints)
+    V_XC = zeros(Float64,Npoints)
+    potentials = PotentialsT( V_Ps_loc, V_Hartree, V_XC )
+    #
+    energies = EnergiesT()
+    #
+    rhoe = zeros(Float64,Npoints)
+    #
+    return PWHamiltonian( pw, potentials, energies, rhoe, nothing )
+end
+
+
+# Specific using atoms
 function PWHamiltonian( pw::PWGrid, atoms::Atoms )
     Npoints = prod(pw.Ns)
     #
@@ -53,6 +71,7 @@ function PWHamiltonian( pw::PWGrid, atoms::Atoms )
     energies = EnergiesT()
     #
     rhoe = zeros(Float64,Npoints)
+    #
     return PWHamiltonian( pw, potentials, energies, rhoe, nothing )
 end
 

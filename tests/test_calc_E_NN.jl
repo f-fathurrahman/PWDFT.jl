@@ -14,7 +14,7 @@ function test_main()
     #
     strf = calc_strfact( atoms, pw )
 
-    E_NN =  calc_E_NN( pw, strf, atoms.positions, atoms.Nspecies, atoms.atm2species, [1.0])
+    E_NN = calc_E_NN( pw, strf, atoms.positions, atoms.Nspecies, atoms.atm2species, [1.0])
 end
 
 test_main()
