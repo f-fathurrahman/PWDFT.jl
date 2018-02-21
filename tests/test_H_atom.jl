@@ -53,4 +53,4 @@ function test_main()
 
 end
 
-test_main()
+@time test_main()
