@@ -1,6 +1,6 @@
 using PWDFT
 
-include("init_V_coulomb_G.jl")
+include("calc_E_NN.jl")
 include("calc_strfact.jl")
 
 function test_main()
@@ -13,9 +13,8 @@ function test_main()
     println(atoms)
     #
     strf = calc_strfact( atoms, pw )
-    #
-    V = init_V_coulomb_G( pw, strf, [1.0] )
-    println("sum V = ", sum(V))
+
+    E_NN =  calc_E_NN( pw, strf, atoms.positions, atoms.Nspecies, atoms.atm2species, [1.0])
 end
 
 test_main()
