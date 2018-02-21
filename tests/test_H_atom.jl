@@ -7,11 +7,12 @@ include("ortho_gram_schmidt.jl")
 include("calc_rhoe.jl")
 include("calc_energies.jl")
 include("calc_E_NN.jl")
+include("calc_grad.jl")
 include("KS_solve_Emin_PCG.jl")
 
 function test_main()
     const LatVecs = 16.0*diagm( ones(3) )
-    ecutwfc_Ry = 30.0*0.5
+    ecutwfc_Ry = 40.0*0.5
     pw = PWGrid( ecutwfc_Ry, LatVecs )
     println(pw)
 

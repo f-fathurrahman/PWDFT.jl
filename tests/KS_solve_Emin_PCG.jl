@@ -1,4 +1,6 @@
 
+include("Kprec.jl")
+
 #
 # Ham.potentials.V_Ps_loc should be initialized
 # Ham.energies.NN should be calculated if needed
@@ -50,6 +52,9 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian, Nstates::Int;
         g = calc_grad( Ham, psi)
         Kg = Kprec(pw,g)
 
+        #println("sum g  = ", sum(g))
+        #println("sum Kg = ", sum(Kg))
+
         if iter != 1
             #β = real(sum(conj(g).*Kg))/real(sum(conj(g_old).*Kg_old))
             β = real(sum(conj(g-g_old).*Kg))/real(sum(conj(g_old).*Kg_old))
@@ -64,10 +69,11 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian, Nstates::Int;
         d = -Kprec(pw, g) + β * d_old
 
         psic = ortho_gram_schmidt(psi + α_t*d)
-        rho = calc_rho( pw, Focc, psic )
-        Potentials.Hartree = real( G_to_R( Ns, Poisson_solve(pw, rho) ) )
-        Potentials.XC = excVWN( rho ) + rho .* excpVWN( rho )
-        gt = calc_grad( pw, Potentials, Focc, psic )
+        rhoe = calc_rhoe( pw, Focc, psic )
+        #
+        update!(Ham, rhoe)
+
+        gt = calc_grad(Ham, psic)
 
         denum = real(sum(conj(g-gt).*d))
         if denum != 0.0
@@ -81,12 +87,12 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian, Nstates::Int;
 
         # Update potentials
         psi = ortho_gram_schmidt(psi)
-        rho = calc_rho( pw, Focc, psi )
+        rhoe = calc_rhoe( pw, Focc, psi )
 
-        Potentials.Hartree = real( G_to_R( Ns, Poisson_solve(pw, rho) ) )
-        Potentials.XC = excVWN( rho ) + rho .* excpVWN( rho )
+        update!(Ham, rhoe)
 
-        Energies = calc_Energies( pw, Potentials, Focc, psi, Energies.NN )
+        Energies = calc_energies( Ham, psi )
+        Ham.energies = Energies
         Etot = Energies.Total
 
         diff = abs(Etot-Etot_old)
@@ -101,6 +107,6 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian, Nstates::Int;
         Kg_old = copy(Kg)
         Etot_old = Etot
     end
-    return psi, Energies, Potentials
+    return
     #
 end
