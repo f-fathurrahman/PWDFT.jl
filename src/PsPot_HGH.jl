@@ -2,7 +2,7 @@ using PWDFT: print_matrix
 
 using SpecialFunctions: erf
 
-mutable struct PsPot_HGH
+struct PsPot_HGH
     atsymb::String
     zval::Float64
     lloc::Int
