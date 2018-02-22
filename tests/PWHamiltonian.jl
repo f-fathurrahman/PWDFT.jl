@@ -82,8 +82,45 @@ include("op_H.jl")
 include("Poisson_solve.jl")
 include("LDA_VWN.jl")
 
+
 function update!(Ham::PWHamiltonian, rhoe::Array{Float64,1})
     Ham.rhoe = rhoe
     Ham.potentials.Hartree = real( G_to_R( Ham.pw.Ns, Poisson_solve(Ham.pw, rhoe) ) )
     Ham.potentials.XC = excVWN( rhoe ) + rhoe .* excpVWN( rhoe )
+end
+
+
+
+function update!( Ham::PWHamiltonian, atoms::Atoms, strf::Array{Complex128,2}, pspfiles::Array{String,1} )
+
+    Nspecies = atoms.Nspecies
+    if Nspecies != size(pspfiles)[1]
+        @printf("ERROR length of pspfiles is not equal to %d\n", Nspecies)
+        exit()
+    end
+
+    pw = Ham.pw
+
+    Npoints = prod(pw.Ns)
+    Ω = pw.Ω
+    G2 = pw.gvec.G2
+
+    Vg = zeros(Complex128, Npoints)
+    V_Ps_loc = zeros(Float64, Npoints)
+
+    pw = Ham.pw
+    for isp = 1:Nspecies
+        psp = PsPot_HGH( atoms.SpeciesSymbols[isp], pspfiles[isp] )
+        println(psp)
+        for ig = 1:Npoints
+            Vg[ig] = strf[ig,isp] * HGH_eval_Vloc_G( psp, G2[ig], Ω )
+        end
+        #
+        V_Ps_loc[:] = V_Ps_loc[:] + real( G_to_R(pw.Ns, Vg) ) * Npoints
+    end
+
+    # Update
+    Ham.potentials.Ps_loc = V_Ps_loc
+    return
+
 end

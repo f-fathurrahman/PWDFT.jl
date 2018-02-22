@@ -80,7 +80,9 @@ function PsPot_HGH( atsymb::String, filename::String; verbose=false )
         #
     end
 
-    # additional info
+    #
+    # XXX additional info, need to be added manually to the psp file
+    #
     lines = split(readline(file))
     nprj = zeros(Int,4)
     nprj[1] = parse( Int, lines[1] )
@@ -187,12 +189,43 @@ function HGH_eval_Vloc_R( psp, r::Array{Float64,2} )
 end
 
 
+"""
+Evaluate HGH local pseudopotential in G-space
+"""
+function HGH_eval_Vloc_G( psp, G2::Float64, Ω::Float64 )
+
+    rloc = psp.rloc
+    zval = psp.zval
+    c1 = psp.c[1]
+    c2 = psp.c[2]
+    c3 = psp.c[3]
+    c4 = psp.c[4]
+
+    pre1 = -4*pi*zval/Ω
+    pre2 = sqrt(8*pi^3)*rloc^3/Ω
+    Gr = sqrt(G2)*rloc
+    expGr2 = exp(-0.5*Gr^2)
+
+    const SMALL = eps()
+
+    if sqrt(G2) > SMALL
+        Vg = pre1/G2*expGr2 + pre2*expGr2 * (c1 + c2*(3-Gr^2) +
+             c3*(15 - 10*Gr^2 + Gr^4) + c4*(105 - 105*Gr^2 + 21*Gr^4 - Gr^6) )
+    else
+        println("Small G2 = ", G2)
+        # limiting value, with minus sign ?
+        Vg = 2*pi*zval*rloc^2 + (2*pi)^1.5 * rloc^3 * (c1 + 3.0*c2 + 15*c3 + 105*c4)
+    end
+
+    return Vg
+end
+
 
 
 """
 Evaluate HGH local pseudopotential in G-space
 """
-function HGH_eval_Vloc_G( psp, G2, Ω )
+function HGH_eval_Vloc_G( psp, G2::Array{Float64,1}, Ω::Float64 )
 
     Ng = size(G2)[1]
     Vg = zeros(Ng)
