@@ -31,7 +31,7 @@ function test_main()
     # Initialize Hamiltonian
     #
     Ham = PWHamiltonian(pw)
-    Ham.potentials.Ps_loc = init_V_coulomb_G( pw, strf, [1.0] )
+    update!(Ham, atoms, strf, ["../LDA_HGH/H.1.hgh"])
     println("sum V Ps loc = ", sum(Ham.potentials.Ps_loc))
 
     #
