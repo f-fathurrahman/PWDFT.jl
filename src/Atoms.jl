@@ -1,10 +1,11 @@
 mutable struct Atoms
     Natoms::Int64
     Nspecies::Int64
-    positions::Array{Float64,2}    
-    atm2species::Array{Int64,1}    
+    positions::Array{Float64,2}
+    atm2species::Array{Int64,1}
     symbols::Array{String,1}
     SpeciesSymbols::Array{String,1}  # unique symbols
+    Zvals::Array{Float64,1}
 end
 
 # Overload println for Atoms
@@ -36,7 +37,7 @@ function init_atoms_xyz(filexyz; in_bohr=false, verbose=false)
         positions[3,ia] = parse( Float64, ll[4] )
     end
     close(f)
-    
+
     # convert from angstrom to bohr
     if !in_bohr
         if verbose
@@ -49,7 +50,7 @@ function init_atoms_xyz(filexyz; in_bohr=false, verbose=false)
             println("Coordinate in xyz file is assumed to be given in bohr")
         end
     end
-  
+
     # Determine number of species
     Nspecies = 0
     for ia = 1:Natoms
@@ -64,9 +65,9 @@ function init_atoms_xyz(filexyz; in_bohr=false, verbose=false)
             Nspecies = Nspecies + 1
         end
     end
-  
+
     SpeciesSymbols = Array{String}(Nspecies)
-  
+
     idx1 = 0
     for ia = 1:Natoms
         k2 = 0
@@ -81,7 +82,7 @@ function init_atoms_xyz(filexyz; in_bohr=false, verbose=false)
             SpeciesSymbols[idx1] = symbols[ia]
         end
     end
-    
+
     # Mapping of atoms to species index
     atm2species = Array{Int64}(Natoms)
     for ia = 1:Natoms
@@ -91,13 +92,13 @@ function init_atoms_xyz(filexyz; in_bohr=false, verbose=false)
             end
         end
     end
-  
-    return Atoms(Natoms, Nspecies, positions, atm2species, symbols, SpeciesSymbols )
 
-    #! 
-    #ALLOCATE( AtomicValences(Nspecies) )
-    #AtomicValences(:) = 0.d0  ! NOTE: They should be set by pseudopotentials or manually
-  
+    # Set to zeros
+    # It will be set later if using
+    Zvals = zeros(Float64,Nspecies)
+
+    return Atoms(Natoms, Nspecies, positions, atm2species, symbols, SpeciesSymbols, Zvals )
+
     #ALLOCATE( AtomicMasses(Nspecies) )
     #AtomicMasses(:) = 0.d0 ! FIXME: Use internal database to set this
 

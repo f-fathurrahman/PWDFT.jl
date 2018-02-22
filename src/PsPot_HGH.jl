@@ -3,7 +3,6 @@ using PWDFT: print_matrix
 using SpecialFunctions: erf
 
 mutable struct PsPot_HGH
-    itype::Int
     atsymb::String
     zval::Float64
     lloc::Int
@@ -21,7 +20,7 @@ end
 
 
 # Constructor
-function PsPot_HGH( itype::Int, atsymb::String, filename::String; verbose=false )
+function PsPot_HGH( atsymb::String, filename::String; verbose=false )
 
     if verbose
         @printf("\nFile = %s\n", filename)
@@ -142,7 +141,7 @@ function PsPot_HGH( itype::Int, atsymb::String, filename::String; verbose=false 
         end
     end
 
-    psp = PsPot_HGH( itype, atsymb, zval, lloc, lmax, rloc,
+    psp = PsPot_HGH( atsymb, zval, lloc, lmax, rloc,
                      rc, c, h, k, nprj, snprj, lll, ipr )
 
     return psp

@@ -1,8 +1,8 @@
 using PWDFT
 
 function test_main()
-  psp = PsPot_HGH(1, "Ge", "../LDA_HGH/32ge.4.hgh")
-  println(psp)
+    psp = PsPot_HGH("Ge", "../LDA_HGH/Ge.4.hgh")
+    println(psp)
 end
 
 test_main()
