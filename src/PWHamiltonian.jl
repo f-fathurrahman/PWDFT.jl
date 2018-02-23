@@ -37,8 +37,6 @@ mutable struct PWHamiltonian
     focc   # not yet determined
 end
 
-include("calc_strfact.jl")
-include("init_V_coulomb_G.jl")
 
 # Only allocate memory.
 # Potentials need to be set and updated

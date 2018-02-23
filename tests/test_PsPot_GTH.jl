@@ -1,4 +1,4 @@
-include("PsPot_GTH.jl")
+using PWDFT
 
 function test_main()
     psp = PsPot_GTH("../pseudopotentials/pade_gth/Pt-q10.gth")

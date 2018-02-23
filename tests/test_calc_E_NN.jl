@@ -1,8 +1,5 @@
 using PWDFT
 
-include("calc_E_NN.jl")
-include("calc_strfact.jl")
-
 function test_main()
     const LatVecs = 16.0*diagm( ones(3) )
     ecutwfc_Ry = 30.0*0.5

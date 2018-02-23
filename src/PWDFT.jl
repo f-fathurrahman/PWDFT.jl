@@ -27,13 +27,20 @@ include("wrappers_fft.jl")
 export print_matrix
 include("Utilities.jl")
 
+export ortho_gram_schmidt
+include("ortho_gram_schmidt.jl")
+
+export ortho_check
+include("ortho_check.jl")
+
+
 #
 # Plane wave basis
 #
 export PWGrid
 export GVectors
 export GVectorsW
-include("PW/PWGrid_v03.jl")
+include("PWGrid_v03.jl")
 
 #
 # Pseudopotential
@@ -43,6 +50,43 @@ export HGH_eval_Vloc_G
 export HGH_eval_proj_G
 export info_PsPot_HGH
 include("PsPot_HGH.jl")
+
+
+export PsPot_GTH
+include("PsPot_GTH.jl")
+
+
+export calc_strfact
+include("calc_strfact.jl")
+
+export init_V_coulomb_G
+include("init_V_coulomb_G.jl")
+
+export calc_E_NN
+include("calc_E_NN.jl")
+
+export calc_rhoe
+include("calc_rhoe.jl")
+
+export PotentialsT
+export EnergiesT
+export PWHamiltonian
+export op_H, op_K, op_V_loc, op_V_Ps_loc
+export Poisson_solve
+export update!
+include("PWHamiltonian.jl")
+
+export Kprec
+include("Kprec.jl")
+
+export calc_energies
+include("calc_energies.jl")
+
+export calc_grad
+include("calc_grad.jl")
+
+export KS_solve_Emin_PCG!
+include("KS_solve_Emin_PCG.jl")
 
 
 end

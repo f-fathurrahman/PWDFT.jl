@@ -1,7 +1,5 @@
 using PWDFT
 
-include("Poisson_solve.jl")
-
 function gen_dr( r, center )
     Npoints = size(r)[2]
     dr = Array{Float64}(Npoints)

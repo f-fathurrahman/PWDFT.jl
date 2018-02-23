@@ -1,6 +1,3 @@
-
-include("Kprec.jl")
-
 #
 # Ham.potentials.V_Ps_loc should be initialized
 # Ham.energies.NN should be calculated if needed

@@ -1,5 +1,4 @@
-include("ortho_check.jl")
-include("ortho_gram_schmidt.jl")
+using PWDFT
 
 function test_main()
     srand(2345)

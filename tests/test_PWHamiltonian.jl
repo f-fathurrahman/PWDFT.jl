@@ -1,10 +1,5 @@
 using PWDFT
 
-include("PWHamiltonian.jl")
-include("ortho_gram_schmidt.jl")
-include("calc_rhoe.jl")
-include("calc_energies.jl")
-
 function test_main()
     #
     atoms = init_atoms_xyz("H.xyz")
