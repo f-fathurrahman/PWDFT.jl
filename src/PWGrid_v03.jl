@@ -120,6 +120,8 @@ end
 import Base.println
 function println( pw::PWGrid )
     @printf("\nPlane wave grid\n\n")
+    @printf("ecutwfc = %10.3f Ha\n", pw.ecutwfc)
+    @printf("ecutrho = %10.3f Ha\n", pw.ecutrho)
     LatVecs = pw.LatVecs
     RecVecs = pw.RecVecs
     @printf("Direct lattice vectors:\n")
@@ -131,8 +133,7 @@ function println( pw::PWGrid )
         @printf("%18.10f %18.10f %18.10f\n", RecVecs[i,1], RecVecs[i,2], RecVecs[i,3])
     end
     @printf("\n")
-    @printf("ecutwfc = %10.3f Ha\n", pw.ecutwfc)
-    @printf("ecutrho = %10.3f Ha\n", pw.ecutrho)
+    @printf("Direct lattive volume = %18.10f\n", pw.Ω )
     @printf("Sampling points: [%5d,%5d,%5d]\n", pw.Ns[1], pw.Ns[2], pw.Ns[3])
     @printf("Ngwx = %10d\n", pw.gvecw.Ngwx)
 end

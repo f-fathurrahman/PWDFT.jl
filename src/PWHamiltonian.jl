@@ -108,7 +108,7 @@ function update!( Ham::PWHamiltonian, atoms::Atoms, strf::Array{Complex128,2}, p
 
     pw = Ham.pw
     for isp = 1:Nspecies
-        psp = PsPot_HGH( atoms.SpeciesSymbols[isp], pspfiles[isp] )
+        psp = PsPot_GTH( pspfiles[isp] )
         println(psp)
         for ig = 1:Npoints
             Vg[ig] = strf[ig,isp] * eval_Vloc_G( psp, G2[ig], Ω )

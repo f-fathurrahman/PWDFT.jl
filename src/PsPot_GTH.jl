@@ -144,7 +144,7 @@ Evaluate GTH local pseudopotential in G-space
 """
 function eval_Vloc_G( psp::PsPot_GTH, G2::Float64, Ω::Float64 )
 
-    rloc = psp.rloc
+    rloc = psp.rlocal
     zval = psp.zval
     c1 = psp.c[1]
     c2 = psp.c[2]
