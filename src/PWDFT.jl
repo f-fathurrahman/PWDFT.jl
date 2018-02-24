@@ -46,13 +46,11 @@ include("PWGrid_v03.jl")
 # Pseudopotential
 #
 export PsPot_HGH
-export HGH_eval_Vloc_G
-export HGH_eval_proj_G
-export info_PsPot_HGH
-include("PsPot_HGH.jl")
-
-
 export PsPot_GTH
+export eval_Vloc_G
+export eval_proj_G
+
+include("PsPot_HGH.jl")
 include("PsPot_GTH.jl")
 
 

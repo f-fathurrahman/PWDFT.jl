@@ -172,7 +172,7 @@ end
 """
 Evaluate HGH local pseudopotential in R-space
 """
-function HGH_eval_Vloc_R( psp, r::Array{Float64,2} )
+function eval_Vloc_R( psp::PsPot_HGH, r::Array{Float64,2} )
 
     Npoints = size(r)[1]
     Vloc = zeros(Npoints)
@@ -192,7 +192,7 @@ end
 """
 Evaluate HGH local pseudopotential in G-space
 """
-function HGH_eval_Vloc_G( psp, G2::Float64, Ω::Float64 )
+function eval_Vloc_G( psp::PsPot_HGH, G2::Float64, Ω::Float64 )
 
     rloc = psp.rloc
     zval = psp.zval
@@ -225,7 +225,7 @@ end
 """
 Evaluate HGH local pseudopotential in G-space
 """
-function HGH_eval_Vloc_G( psp, G2::Array{Float64,1}, Ω::Float64 )
+function eval_Vloc_G( psp::PsPot_HGH, G2::Array{Float64,1}, Ω::Float64 )
 
     Ng = size(G2)[1]
     Vg = zeros(Ng)
@@ -256,7 +256,7 @@ end
 """
 Evaluate HGH projector function in R-space.
 """
-function HGH_eval_proj_R( psp, l, i, r::Float64 )
+function eval_proj_R( psp::PsPot_HGH, l, i, r::Float64 )
     x = sqrt( gamma( l + (4*i-1)/2.0 ) )
     if l==0 & i==1
         rr = 1.0
@@ -273,7 +273,7 @@ end
 """
 Evaluate HGH projector function in G-space.
 """
-function HGH_eval_proj_G( psp, l, iproj, Gm, Ω )
+function eval_proj_G( psp::PsPot_HGH, l, iproj, Gm, Ω )
 
     # NOTICE that Gm is the magnitudes of G-vectors
     Ng = size(Gm)[1]

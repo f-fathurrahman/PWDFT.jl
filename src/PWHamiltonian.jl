@@ -111,7 +111,7 @@ function update!( Ham::PWHamiltonian, atoms::Atoms, strf::Array{Complex128,2}, p
         psp = PsPot_HGH( atoms.SpeciesSymbols[isp], pspfiles[isp] )
         println(psp)
         for ig = 1:Npoints
-            Vg[ig] = strf[ig,isp] * HGH_eval_Vloc_G( psp, G2[ig], Ω )
+            Vg[ig] = strf[ig,isp] * eval_Vloc_G( psp, G2[ig], Ω )
         end
         #
         V_Ps_loc[:] = V_Ps_loc[:] + real( G_to_R(pw.Ns, Vg) ) * Npoints
