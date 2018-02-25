@@ -2,8 +2,9 @@
 # Ham.potentials.V_Ps_loc should be initialized
 # Ham.energies.NN should be calculated if needed
 #
-function KS_solve_Emin_PCG!( Ham::PWHamiltonian, Nstates::Int;
-                             α_t = 3e-5, NiterMax=1000, verbose=false )
+function KS_solve_Emin_PCG!( Ham::PWHamiltonian, Nstates::Int64;
+                             α_t = 3e-5, NiterMax=1000, verbose=false,
+                             I_CG_BETA = 2 )
 
     pw = Ham.pw
     Focc = Ham.focc
@@ -53,10 +54,15 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian, Nstates::Int;
         #println("sum Kg = ", sum(Kg))
 
         if iter != 1
-            #β = real(sum(conj(g).*Kg))/real(sum(conj(g_old).*Kg_old))
-            β = real(sum(conj(g-g_old).*Kg))/real(sum(conj(g_old).*Kg_old))
-            #β = real(sum(conj(g-g_old).*Kg))/real(sum(conj(g-g_old).*d))
-            #β = real(sum(conj(g).*Kg))/real(sum((g-g_old).*conj(d_old)))
+            if I_CG_BETA == 1
+                β = real(sum(conj(g).*Kg))/real(sum(conj(g_old).*Kg_old))
+            elseif I_CG_BETA == 2
+                β = real(sum(conj(g-g_old).*Kg))/real(sum(conj(g_old).*Kg_old))
+            elseif I_CG_BETA == 3
+                β = real(sum(conj(g-g_old).*Kg))/real(sum(conj(g-g_old).*d))
+            else
+                β = real(sum(conj(g).*Kg))/real(sum((g-g_old).*conj(d_old)))
+            end
         end
         if β < 0.0
             @printf("β is smaller than 0, setting it to zero\n")
@@ -91,8 +97,8 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian, Nstates::Int;
         Energies = calc_energies( Ham, psi )
         Ham.energies = Energies
         Etot = Energies.Total
-
         diff = abs(Etot-Etot_old)
+
         @printf("CG step %8d = %18.10f %10.7e\n", iter, Etot, diff)
         if diff < 1e-6
             @printf("CONVERGENCE ACHIEVED\n")
@@ -104,6 +110,11 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian, Nstates::Int;
         Kg_old = copy(Kg)
         Etot_old = Etot
     end
-    return
-    #
+
+    psi = ortho_gram_schmidt(psi)
+    Hr = psi' * op_H( Ham, psi )
+    evals, evecs = eig(Hr)
+    psi = psi*evecs
+
+    return real(evals), psi
 end

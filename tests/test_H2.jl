@@ -1,6 +1,6 @@
 using PWDFT
 
-function test_main()
+function test_main( ; method="SCF" )
     const LatVecs = 16.0*diagm( ones(3) )
     ecutwfc_Ry = 40.0*0.5
     pw = PWGrid( ecutwfc_Ry, LatVecs )
@@ -36,11 +36,24 @@ function test_main()
     Nstates = 1
     Ham.focc = [2.0]
 
-    #
-    KS_solve_Emin_PCG!( Ham, Nstates )
-    println("\nAfter calling KS_solve_Emin_PCG:")
+    if method == "SCF"
+        λ, v = KS_solve_SCF!( Ham, Nstates )
+        println("\nAfter calling KS_solve_SCF:")
+    elseif method == "Emin"
+        λ, v = KS_solve_Emin_PCG!( Ham, Nstates, I_CG_BETA=4 )
+        println("\nAfter calling KS_solve_Emin_PCG:")
+    else
+        println("ERROR: unknow method = ", method)
+    end
+
+    println("\nEigenvalues")
+    for ist = 1:Nstates
+        @printf("%8d  %18.10f\n", ist, λ[ist])
+    end
+    println("\nTotal energy components")
     println(Ham.energies)
 
 end
 
-@time test_main()
+@time test_main(method="Emin")
+@time test_main(method="SCF")

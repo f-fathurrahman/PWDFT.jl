@@ -83,8 +83,13 @@ include("calc_energies.jl")
 export calc_grad
 include("calc_grad.jl")
 
+export diag_lobpcg
+include("diag_lobpcg.jl")
+
 export KS_solve_Emin_PCG!
 include("KS_solve_Emin_PCG.jl")
 
+export KS_solve_SCF!
+include("KS_solve_SCF.jl")
 
 end
