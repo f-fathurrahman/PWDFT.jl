@@ -2,13 +2,13 @@
 # Given electron density in real space, return Hartree potential in reciprocal
 # space
 #
-function Poisson_solve( PW::PWGrid, rhoR )
+function Poisson_solve( pw::PWGrid, rhoR )
     #
-    G2 = PW.gvec.G2
-    Ns = PW.Ns
+    G2 = pw.gvec.G2
+    Ns = pw.Ns
     Npoints = prod(Ns)
     #
-    ctmp = 4.0*pi*c_R_to_G( Ns, rhoR )
+    ctmp = 4.0*pi*R_to_G( pw, rhoR )
     #
     ctmp[1] = 0.0
     for ip = 2:Npoints

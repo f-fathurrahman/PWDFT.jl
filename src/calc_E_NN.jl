@@ -38,11 +38,11 @@ function calc_E_NN( pw::PWGrid, Sf, Xpos, Nspecies::Int, atm2species,
         #
         g1 = Zv[isp] * g1[:]
         #
-        ctmp = R_to_G( Ns, g1 )
+        ctmp = R_to_G( pw, g1 )
         for ip = 1:Npoints
             ctmp[ip] = ctmp[ip]*Sf[ip,isp]
         end
-        rho_is[:,isp] = real( G_to_R(Ns, ctmp) )
+        rho_is[:,isp] = real( G_to_R(pw, ctmp) )
         intrho = sum(rho_is[:,isp])*Ω/Npoints
         if verbose
             @printf("Species %d, intrho: %18.10f\n", isp, intrho)
@@ -56,12 +56,12 @@ function calc_E_NN( pw::PWGrid, Sf, Xpos, Nspecies::Int, atm2species,
     end
     #
     # Solve Poisson equation and calculate Hartree energy
-    ctmp = 4.0*pi*R_to_G( Ns, Rho )
+    ctmp = 4.0*pi*R_to_G( pw, Rho )
     ctmp[1] = 0.0
     for ip = 2:Npoints
         ctmp[ip] = ctmp[ip] / G2[ip]
     end
-    phi = real( G_to_R( Ns, ctmp ) )
+    phi = real( G_to_R( pw, ctmp ) )
     Ehartree = 0.5*dot( phi, Rho ) * Ω/Npoints
     #
     Eself = 0.0

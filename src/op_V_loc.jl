@@ -11,7 +11,7 @@ function op_V_loc( pw::PWGrid, V_loc::Array{Float64,1}, psi::Array{Complex128,2}
     end
 
     # get values of psi in real space grid via forward transform
-    ctmp = G_to_R( Ns, ctmp )
+    ctmp = G_to_R( pw, ctmp )
 
     for ist = 1:Nstates
         for ip = 1:Npoints
@@ -19,7 +19,7 @@ function op_V_loc( pw::PWGrid, V_loc::Array{Float64,1}, psi::Array{Complex128,2}
         end
     end
 
-    cVpsi = R_to_G( Ns, ctmp )
+    cVpsi = R_to_G( pw, ctmp )
     return cVpsi[idx,:]
 end
 
@@ -50,8 +50,8 @@ function op_V_Ps_loc( Ham::PWHamiltonian, psi::Array{Complex128,1} )
     ctmp[idx] = psi[:]
     #
     # get values of psi in real space grid via forward transform
-    ctmp = G_to_R( Ns, ctmp )
+    ctmp = G_to_R( pw, ctmp )
 
-    cVpsi = R_to_G( Ns, V_Ps_loc .* ctmp )
+    cVpsi = R_to_G( pw, V_Ps_loc .* ctmp )
     return cVpsi[idx]
 end

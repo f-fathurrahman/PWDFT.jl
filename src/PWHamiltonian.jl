@@ -83,7 +83,7 @@ include("LDA_VWN.jl")
 
 function update!(Ham::PWHamiltonian, rhoe::Array{Float64,1})
     Ham.rhoe = rhoe
-    Ham.potentials.Hartree = real( G_to_R( Ham.pw.Ns, Poisson_solve(Ham.pw, rhoe) ) )
+    Ham.potentials.Hartree = real( G_to_R( Ham.pw, Poisson_solve(Ham.pw, rhoe) ) )
     Ham.potentials.XC = excVWN( rhoe ) + rhoe .* excpVWN( rhoe )
 end
 
@@ -114,7 +114,7 @@ function update!( Ham::PWHamiltonian, atoms::Atoms, strf::Array{Complex128,2}, p
             Vg[ig] = strf[ig,isp] * eval_Vloc_G( psp, G2[ig], Ω )
         end
         #
-        V_Ps_loc[:] = V_Ps_loc[:] + real( G_to_R(pw.Ns, Vg) ) * Npoints
+        V_Ps_loc[:] = V_Ps_loc[:] + real( G_to_R(pw, Vg) ) * Npoints
     end
 
     # Update

@@ -55,7 +55,7 @@ function test_main( ecutwfc_Ry::Float64 )
     # Solve Poisson equation and calculate Hartree energy
     #
     phiG = Poisson_solve( pw, rho )
-    phi = real( c_G_to_R(Ns, phiG) )
+    phi = real( G_to_R(pw, phiG) )
     Ehartree = 0.5*dot( phi, rho ) * Ω/Npoints
     #
     Uanal = ( (1/σ1 + 1/σ2)/2 - sqrt(2) / sqrt( σ1^2 + σ2^2 ) ) / sqrt(pi)

@@ -7,7 +7,7 @@ function calc_rhoe( pw::PWGrid, Focc, psi::Array{Complex128,2} )
     # Transform to real space
     cpsi = zeros( Complex128, Npoints, Nstates )
     cpsi[pw.gvecw.idx_gw2r,:] = psi[:,:]
-    psiR = G_to_R(Ns, cpsi)
+    psiR = G_to_R(pw, cpsi)
 
     # orthonormalization in real space
     ortho_gram_schmidt!( Nstates, psiR )

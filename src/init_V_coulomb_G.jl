@@ -26,7 +26,7 @@ function init_V_coulomb_G( pw::PWGrid, strf::Array{Complex128,2}, Znucls::Array{
         for ig = 2:Npoints
             Vg[ig] = prefactor/G2[ig]*strf[ig,isp]
         end
-        V[:] = V[:] + real( G_to_R(pw.Ns, Vg) ) * Npoints
+        V[:] = V[:] + real( G_to_R(pw, Vg) ) * Npoints
     end
     return V
 end
