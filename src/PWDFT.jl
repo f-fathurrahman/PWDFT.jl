@@ -11,15 +11,6 @@ export Atoms
 export init_atoms_xyz
 include("Atoms.jl")
 
-#
-# Essentials: FFTW
-#
-export c_G_to_R
-export c_R_to_G
-export R_to_G
-export G_to_R
-include("wrappers_fft.jl")
-
 
 #
 # General utilities
@@ -41,6 +32,15 @@ export PWGrid
 export GVectors
 export GVectorsW
 include("PWGrid_v03.jl")
+
+#
+# FFTW
+#
+export c_G_to_R
+export c_R_to_G
+export R_to_G
+export G_to_R
+include("wrappers_fft.jl")
 
 #
 # Pseudopotential

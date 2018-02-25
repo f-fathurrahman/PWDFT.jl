@@ -23,9 +23,6 @@ function c_G_to_R( Ns::Array{Int,1}, fG::Array{Complex128,2} )
     out = zeros(Complex128,Npoints,Ncol)
     for ic = 1:Ncol
         out[:,ic] = c_G_to_R( Ns, fG[:,ic] )
-        #ccall( (:fftw_inv_fft3d, FFT_SO_PATH), Void,
-        #      (Ptr{Complex128}, Ptr{Complex128}, Int64, Int64, Int64),
-        #       fG[:,ic], out[:,ic], Ns[3],Ns[2],Ns[1] )
     end
     return out
 end
@@ -57,12 +54,64 @@ function c_R_to_G( Ns::Array{Int,1}, fR::Array{Complex128,2} )
     out = zeros(Complex128,Npoints,Ncol)
     for ic = 1:Ncol
         out[:,ic] = c_R_to_G( Ns, fR[:,ic] )
-        #ccall( (:fftw_fw_fft3d, FFT_SO_PATH), Void,
-        #       (Ptr{Complex128}, Ptr{Complex128}, Int64, Int64, Int64),
-        #        fR[:,ic], out[:,ic], Ns[3],Ns[2],Ns[1] )
     end
     return out
 end
+
+
+
+"""Using plan_fft and plan_ifft"""
+
+
+function G_to_R( pw::PWGrid, fG::Array{Complex128,1} )
+    Ns = pw.Ns
+    Npoints = prod(Ns)
+    plan = pw.planbw
+    out = reshape( plan*reshape(fG,Ns[1],Ns[2],Ns[3]), Npoints )
+    return out
+end
+
+function G_to_R( pw::PWGrid, fG::Array{Complex128,2} )
+    Ns = pw.Ns
+    Npoints = prod(Ns)    
+    plan = pw.planbw
+    out = zeros( Complex128, size(fG) )
+    for ic = 1:size(fG,2)
+        out[:,ic] = reshape( plan*reshape(fG[:,ic],Ns[1],Ns[2],Ns[3]), Npoints )
+    end
+    return out
+end
+
+function R_to_G( pw::PWGrid, fR::Array{Complex128,1} )
+    Ns = pw.Ns
+    Npoints = prod(Ns)
+    plan = pw.planfw
+    out = reshape( plan*reshape(fR,Ns[1],Ns[2],Ns[3]), Npoints )
+    return out
+end
+
+function R_to_G( pw::PWGrid, fR_::Array{Float64,1} )
+    Ns = pw.Ns
+    Npoints = prod(Ns)
+    plan = pw.planfw
+    fR = convert(Array{Complex128,1},fR_)
+    out = reshape( plan*reshape(fR,Ns[1],Ns[2],Ns[3]), Npoints )
+    return out
+end
+
+function R_to_G( pw::PWGrid, fR::Array{Complex128,2} )
+    Ns = pw.Ns
+    plan = pw.planfw
+    Npoints = prod(Ns)
+    Ncol = size(fR,2)
+    out = zeros( Complex128, size(fR) )
+    for ic = 1:Ncol
+        out[:,ic] = reshape( plan*reshape(fR[:,ic],Ns[1],Ns[2],Ns[3]), Npoints )
+    end
+    return out
+end
+
+
 
 #
 # Naive version of calling FFT

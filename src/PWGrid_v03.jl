@@ -1,5 +1,3 @@
-const PWGRID_VERSION = 3
-
 struct GVectorsW
     Ngwx::Int
     idx_gw2r::Array{Int}
@@ -21,6 +19,8 @@ struct PWGrid
     r::Array{Float64,2}
     gvec::GVectors
     gvecw::GVectorsW
+    planfw::Base.DFT.FFTW.cFFTWPlan{Complex{Float64},-1,false,3}
+    planbw::Base.DFT.ScaledPlan{Complex{Float64},Base.DFT.FFTW.cFFTWPlan{Complex{Float64},1,false,3},Float64}
 end
 
 
@@ -52,7 +52,11 @@ function PWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2} )
     gvec = init_grid_G( Ns, RecVecs )
     gvecw = init_gvecw( ecutwfc, gvec.G2 )
 
-    return PWGrid( ecutwfc, ecutrho, Ns, LatVecs, RecVecs, Ω, r, gvec, gvecw )
+    planfw = plan_fft( zeros(Ns[1],Ns[2],Ns[3]) )
+    planbw = plan_ifft( zeros(Ns[1],Ns[2],Ns[3]) )
+
+    return PWGrid( ecutwfc, ecutrho, Ns, LatVecs, RecVecs, Ω, r, gvec, gvecw,
+                   planfw, planbw )
 end
 
 function mm_to_nn(mm::Int,S::Int)
