@@ -11,7 +11,10 @@ struct PsPot_GTH
     rcut_NL::Array{Int64,1}  # originally 0:3, needed for real space evaluation
 end
 
-
+"""
+Initialize PsPot_GTH with parameters given in file given by path
+`filename`.
+"""
 function PsPot_GTH( filename::String )
     c = zeros(Float64,4)
     rlocal = 0.0

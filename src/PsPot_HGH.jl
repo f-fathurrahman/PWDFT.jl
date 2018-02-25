@@ -8,18 +8,17 @@ struct PsPot_HGH
     lloc::Int
     lmax::Int
     rloc::Float64
-    rc::Array{Float64}   # indexed (l+1), l=0,1,2,3
-    c::Array{Float64}    # indexed 1,2,3,4
+    rc::Array{Float64,1}   # indexed (l+1), l=0,1,2,3
+    c::Array{Float64,1}    # indexed 1,2,3,4
     h::Array{Float64,3}  # originally indexed [0:3,1:3,1:3]
     k::Array{Float64,3}  # indexed [0:3,1:3,1:3]
-    nprj::Array{Int}
-    snprj::Int           # snprj = sum(nprj)
-    lll::Array{Int}
-    ipr::Array{Int}
+    nprj::Array{Int64,1}
+    snprj::Int64           # snprj = sum(nprj)
+    lll::Array{Int64,1}
+    ipr::Array{Int64,1}
 end
 
 
-# Constructor
 function PsPot_HGH( atsymb::String, filename::String; verbose=false )
 
     if verbose
@@ -149,7 +148,7 @@ function PsPot_HGH( atsymb::String, filename::String; verbose=false )
     return psp
 end
 
-# Display information about HGH pseudopotential
+
 import Base.println
 function println( psp::PsPot_HGH )
 
@@ -169,9 +168,6 @@ function println( psp::PsPot_HGH )
 end
 
 
-"""
-Evaluate HGH local pseudopotential in R-space
-"""
 function eval_Vloc_R( psp::PsPot_HGH, r::Array{Float64,2} )
 
     Npoints = size(r)[1]
@@ -189,9 +185,6 @@ function eval_Vloc_R( psp::PsPot_HGH, r::Array{Float64,2} )
 end
 
 
-"""
-Evaluate HGH local pseudopotential in G-space
-"""
 function eval_Vloc_G( psp::PsPot_HGH, G2::Float64, Ω::Float64 )
 
     rloc = psp.rloc
@@ -221,10 +214,6 @@ function eval_Vloc_G( psp::PsPot_HGH, G2::Float64, Ω::Float64 )
 end
 
 
-
-"""
-Evaluate HGH local pseudopotential in G-space
-"""
 function eval_Vloc_G( psp::PsPot_HGH, G2::Array{Float64,1}, Ω::Float64 )
 
     Ng = size(G2)[1]
@@ -253,9 +242,6 @@ function eval_Vloc_G( psp::PsPot_HGH, G2::Array{Float64,1}, Ω::Float64 )
 end
 
 
-"""
-Evaluate HGH projector function in R-space.
-"""
 function eval_proj_R( psp::PsPot_HGH, l, i, r::Float64 )
     x = sqrt( gamma( l + (4*i-1)/2.0 ) )
     if l==0 & i==1
@@ -270,9 +256,6 @@ end
 
 
 
-"""
-Evaluate HGH projector function in G-space.
-"""
 function eval_proj_G( psp::PsPot_HGH, l, iproj, Gm, Ω )
 
     # NOTICE that Gm is the magnitudes of G-vectors
