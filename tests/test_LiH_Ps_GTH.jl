@@ -9,7 +9,7 @@ function test_main()
     #
     # Atoms
     #
-    atoms = init_atoms_xyz("H.xyz")
+    atoms = init_atoms_xyz("LiH.xyz")
     println(atoms)
 
     #
@@ -21,20 +21,23 @@ function test_main()
     # Initialize Hamiltonian
     #
     Ham = PWHamiltonian(pw)
-    update!(Ham, atoms, strf, ["../pseudopotentials/pade_gth/H-q1.gth"])
+    pspfiles = ["../pseudopotentials/pade_gth/H-q1.gth",
+                "../pseudopotentials/pade_gth/Li-q3.gth"]
+    update!(Ham, atoms, strf, pspfiles)
     println("sum V Ps loc = ", sum(Ham.potentials.Ps_loc))
 
     #
     # calculate E_NN
     #
-    Ham.energies.NN = calc_E_NN( pw, strf, atoms.positions, atoms.Nspecies, atoms.atm2species, [1.0])
+    Zv = [1.0,3.0]
+    Ham.energies.NN = calc_E_NN( pw, strf, atoms.positions, atoms.Nspecies, atoms.atm2species, Zv)
 
     println("\nAfter calculating E_NN")
     println(Ham.energies)
 
-    # states
-    Nstates = 1
-    Ham.focc = [1.0]
+    # states, need to be be set manually
+    Nstates = 2
+    Ham.focc = [2.0, 2.0]
 
     #
     KS_solve_Emin_PCG!( Ham, Nstates )
