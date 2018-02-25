@@ -4,7 +4,7 @@ struct GVectorsW
 end
 
 struct GVectors
-    Ng::Int
+    Ng::Int64
     G::Array{Float64,2}
     G2::Array{Float64}
 end
@@ -12,7 +12,7 @@ end
 struct PWGrid
     ecutwfc::Float64
     ecutrho::Float64
-    Ns::Array{Int64}
+    Ns::Tuple{Int64,Int64,Int64}
     LatVecs::Array{Float64,2}
     RecVecs::Array{Float64,2}
     Ω::Float64
@@ -36,15 +36,16 @@ function PWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2} )
     LatVecsLen[2] = norm(LatVecs[2,:])
     LatVecsLen[3] = norm(LatVecs[3,:])
 
-    Ns = Array{Int64}(3)
-    Ns[1] = 2*round( Int, sqrt(ecutrho/2)*LatVecsLen[1]/pi ) + 1
-    Ns[2] = 2*round( Int, sqrt(ecutrho/2)*LatVecsLen[2]/pi ) + 1
-    Ns[3] = 2*round( Int, sqrt(ecutrho/2)*LatVecsLen[3]/pi ) + 1
+    Ns1 = 2*round( Int, sqrt(ecutrho/2)*LatVecsLen[1]/pi ) + 1
+    Ns2 = 2*round( Int, sqrt(ecutrho/2)*LatVecsLen[2]/pi ) + 1
+    Ns3 = 2*round( Int, sqrt(ecutrho/2)*LatVecsLen[3]/pi ) + 1
 
     # Use even sampling numbers
-    Ns[1] = Ns[1] % 2 == 1 ? Ns[1] + 1 : Ns[1]
-    Ns[2] = Ns[2] % 2 == 1 ? Ns[2] + 1 : Ns[2]
-    Ns[3] = Ns[3] % 2 == 1 ? Ns[3] + 1 : Ns[3]
+    Ns1 = Ns1 % 2 == 1 ? Ns1 + 1 : Ns1
+    Ns2 = Ns2 % 2 == 1 ? Ns2 + 1 : Ns2
+    Ns3 = Ns3 % 2 == 1 ? Ns3 + 1 : Ns3
+
+    Ns = (Ns1,Ns2,Ns3)
 
     Npoints = prod(Ns)
     r = init_grid_R( Ns, LatVecs )
@@ -52,14 +53,14 @@ function PWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2} )
     gvec = init_grid_G( Ns, RecVecs )
     gvecw = init_gvecw( ecutwfc, gvec.G2 )
 
-    planfw = plan_fft( zeros(Ns[1],Ns[2],Ns[3]) )
-    planbw = plan_ifft( zeros(Ns[1],Ns[2],Ns[3]) )
+    planfw = plan_fft( zeros(Ns) )
+    planbw = plan_ifft( zeros(Ns) )
 
     return PWGrid( ecutwfc, ecutrho, Ns, LatVecs, RecVecs, Ω, r, gvec, gvecw,
                    planfw, planbw )
 end
 
-function mm_to_nn(mm::Int,S::Int)
+function mm_to_nn(mm::Int64,S::Int64)
     if mm > S/2
         return mm - S
     else
