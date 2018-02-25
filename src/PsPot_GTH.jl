@@ -1,4 +1,5 @@
 struct PsPot_GTH
+    pspfile::String
     atsymb::String
     zval::Int64
     rlocal::Float64
@@ -11,7 +12,7 @@ struct PsPot_GTH
 end
 
 
-function PsPot_GTH( filename )
+function PsPot_GTH( filename::String )
     c = zeros(Float64,4)
     rlocal = 0.0
     rc = zeros(Float64,4)
@@ -83,7 +84,7 @@ function PsPot_GTH( filename )
         end
     end
 
-    return PsPot_GTH(atsymb, zval, rlocal, rc, c, h, lmax, Nproj_l, rcut_NL)
+    return PsPot_GTH(filename, atsymb, zval, rlocal, rc, c, h, lmax, Nproj_l, rcut_NL)
 
 end
 
@@ -100,13 +101,21 @@ function println( psp::PsPot_GTH )
     rc = psp.rc
     h = psp.h
 
-    @printf("\nLocal pseudopotential info:\n\n")
+    @printf("\nPSEUDOPOTENTIAL INFORMATION for species %s\n\n", psp.atsymb)
+    @printf("File: %s\n", psp.pspfile)
+    @printf("\nLocal pseudopotential parameters\n\n")
     @printf("rloc: %f, c: %f, %f, %f, %f\n", rlocal, c[1], c[2], c[3], c[4])
     @printf("\n")
-    @printf("Nonlocal pseudopotential info:\n\n")
+    if psp.lmax > -1
+        @printf("Nonlocal pseudopotential parameters:\n\n")
+    else
+        @printf("No non-local pseudopotential.\n\n")
+    end
     for i=1:psp.lmax+1
         @printf("Angular momentum: %s, rc = %f\n", ANGMOM[i], rc[i])
-        @printf("h = \n")
+        if Nproj_l[i] >= 1
+            @printf("h = \n")
+        end
         for pi = 1:Nproj_l[i]
             for pj = 1:Nproj_l[i]
                 @printf("%18.10f ", h[i,pi,pj])

@@ -5,6 +5,10 @@ function test_read()
     println(psp)
     psp = PsPot_GTH("../pseudopotentials/pade_gth/Pt-q18.gth")
     println(psp)
+    psp = PsPot_GTH("../pseudopotentials/pade_gth/Li-q3.gth")
+    println(psp)
+    psp = PsPot_GTH("../pseudopotentials/pade_gth/C-q4.gth")
+    println(psp)
 end
 
 
@@ -29,5 +33,5 @@ function test_main()
     plt.savefig("Ni_V_ps_loc_G.png", dpi=200)
 end
 
-#test_read()
-test_main()
+test_read()
+#test_main()
