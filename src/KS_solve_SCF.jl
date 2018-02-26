@@ -27,9 +27,25 @@ function KS_solve_SCF!( Ham::PWHamiltonian, Nstates::Int64;
 
     λ = zeros(Float64,Nstates)
 
+    const ETHR_EVALS_LAST = 1e-6
+
+    ethr = 0.1
+
     for iter = 1:NiterMax
 
         λ, psi = diag_lobpcg( Ham, psi, verbose_last=false )
+
+        #if iter == 1
+        #    ethr = 0.1
+        #elseif iter == 2
+        #    ethr = 0.01
+        #else
+        #    ethr = ethr/5.0
+        #    ethr = max( ethr, ETHR_EVALS_LAST )
+        #end
+
+        #@printf("ethr = %10.5e\n", ethr)
+        #λ, psi = diag_Emin_PCG( Ham, psi, TOL_EBANDS=ethr )
 
         #
         rhoe_new = calc_rhoe( pw, Focc, psi )

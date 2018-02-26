@@ -89,6 +89,9 @@ include("calc_grad.jl")
 export diag_lobpcg
 include("diag_lobpcg.jl")
 
+export diag_Emin_PCG
+include("diag_Emin_PCG.jl")
+
 export KS_solve_Emin_PCG!
 include("KS_solve_Emin_PCG.jl")
 
