@@ -33,6 +33,14 @@ function KS_solve_SCF!( Ham::PWHamiltonian, Nstates::Int64;
 
     ethr = 0.1
 
+    #
+    # For mixing
+    #
+    MIXDIM = 4
+    df = zeros(Float64,Npoints,MIXDIM)
+    dv = zeros(Float64,Npoints,MIXDIM)
+
+
     for iter = 1:NiterMax
 
         if update_psi == "LOBPCG"
@@ -63,8 +71,17 @@ function KS_solve_SCF!( Ham::PWHamiltonian, Nstates::Int64;
         #
         rhoe_new = calc_rhoe( pw, Focc, psi )
         diffRho = norm(rhoe_new - rhoe)/Npoints
-        #
-        rhoe = β*rhoe_new[:] + (1-β)*rhoe[:]
+
+
+        #rhoe = β*rhoe_new[:] + (1-β)*rhoe[:]
+
+        rhoe = andersonmix!( rhoe, rhoe_new, β, df, dv, iter, MIXDIM )
+
+        for ip = 1:Npoints
+            if rhoe[ip] < 1e-12
+                rhoe[ip] = 1e-12
+            end
+        end
 
         if check_rhoe_after_mix
             integRhoe = sum(rhoe)*ΔV
