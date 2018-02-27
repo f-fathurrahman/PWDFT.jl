@@ -72,7 +72,6 @@ function KS_solve_SCF!( Ham::PWHamiltonian, Nstates::Int64;
         rhoe_new = calc_rhoe( pw, Focc, psi )
         diffRho = norm(rhoe_new - rhoe)/Npoints
 
-
         #rhoe = β*rhoe_new[:] + (1-β)*rhoe[:]
 
         rhoe = andersonmix!( rhoe, rhoe_new, β, df, dv, iter, MIXDIM )

@@ -37,11 +37,13 @@ function test_main( ; method="SCF" )
     Ham.focc = [1.0]
 
     if method == "SCF"
-        λ, v = KS_solve_SCF!( Ham, Nstates )
+        λ, v = KS_solve_SCF!( Ham, Nstates, update_psi="LOBPCG" )
         println("\nAfter calling KS_solve_SCF:")
+
     elseif method == "Emin"
         λ, v = KS_solve_Emin_PCG!( Ham, Nstates, I_CG_BETA=4 )
         println("\nAfter calling KS_solve_Emin_PCG:")
+
     else
         println("ERROR: unknow method = ", method)
     end
@@ -55,5 +57,5 @@ function test_main( ; method="SCF" )
 
 end
 
-@time test_main(method="Emin")
+#@time test_main(method="Emin")
 @time test_main(method="SCF")
