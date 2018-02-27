@@ -1,6 +1,8 @@
 function KS_solve_SCF!( Ham::PWHamiltonian, Nstates::Int64;
                        β = 0.5, NiterMax=100, verbose=false,
-                       check_rhoe_after_mix=false )
+                       check_rhoe_after_mix=false,
+                       update_psi="LOBPCG",
+                       cheby_degree=8 )
 
     pw = Ham.pw
     Ngwx = pw.gvecw.Ngwx
@@ -33,19 +35,30 @@ function KS_solve_SCF!( Ham::PWHamiltonian, Nstates::Int64;
 
     for iter = 1:NiterMax
 
-        λ, psi = diag_lobpcg( Ham, psi, verbose_last=false )
+        if update_psi == "LOBPCG"
+            λ, psi = diag_lobpcg( Ham, psi, verbose_last=false )
 
-        #if iter == 1
-        #    ethr = 0.1
-        #elseif iter == 2
-        #    ethr = 0.01
-        #else
-        #    ethr = ethr/5.0
-        #    ethr = max( ethr, ETHR_EVALS_LAST )
-        #end
+        elseif update_psi == "PCG"
 
-        #@printf("ethr = %10.5e\n", ethr)
-        #λ, psi = diag_Emin_PCG( Ham, psi, TOL_EBANDS=ethr )
+            if iter == 1
+                ethr = 0.1
+            elseif iter == 2
+                ethr = 0.01
+            else
+                ethr = ethr/5.0
+                ethr = max( ethr, ETHR_EVALS_LAST )
+            end
+
+            λ, psi = diag_Emin_PCG( Ham, psi, TOL_EBANDS=ethr )
+
+        elseif update_psi == "CheFSI"
+
+            ub, lb = get_ub_lb_lanczos( Ham, Nstates*2 )
+
+            psi = chebyfilt( Ham, psi, cheby_degree, lb, ub)
+            psi = ortho_gram_schmidt(psi)
+
+        end
 
         #
         rhoe_new = calc_rhoe( pw, Focc, psi )
@@ -75,6 +88,11 @@ function KS_solve_SCF!( Ham::PWHamiltonian, Nstates::Int64;
         end
         #
         Etot_old = Etot
+    end
+
+    if update_psi == "CheFSI"
+        Hr = psi'*op_H( Ham, psi )
+        λ = real(eigvals(Hr))
     end
 
     return λ, psi

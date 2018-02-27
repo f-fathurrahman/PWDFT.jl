@@ -98,4 +98,9 @@ include("KS_solve_Emin_PCG.jl")
 export KS_solve_SCF!
 include("KS_solve_SCF.jl")
 
+export chebyfilt
+export get_ub_lb_lanczos
+include("CheFSI.jl")
+
+
 end
