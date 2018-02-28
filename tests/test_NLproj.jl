@@ -1,18 +1,18 @@
 using PWDFT
 
 function test_main()
-    pw = PWGrid(30.0, 20.0*diagm(ones(3)))
+    pw = PWGrid(40.0, 20.0*diagm(ones(3)))
     println(pw)
 
     # Atoms
-    atoms = init_atoms_xyz("Ge.xyz")
+    atoms = init_atoms_xyz("Pt.xyz")
     println(atoms)
 
     # Structure factor
     strf = calc_strfact( atoms, pw )
 
     zvals = [4.0]
-    psp = PsPot_GTH("../pseudopotentials/pade_gth/Ge-q4.gth")
+    psp = PsPot_GTH("../pseudopotentials/pade_gth/Pt-q18.gth")
     println(psp)
 
     Ngwx = pw.gvecw.Ngwx
@@ -72,14 +72,7 @@ function test_main()
                         Gm = norm(g)
                         GX = atpos[1,ia]*g[1] + atpos[2,ia]*g[2] + atpos[3,ia]*g[3]
                         Sf = cos(GX) - im*sin(GX)
-                        betaNL[ig,ibeta] = Ylm_complex(l,m,g) * eval_proj_G( psp, l, iprj, Gm, pw.Ω ) * Sf
-"""                        ylm = Ylm_real(l,m,g)
-                        prj = eval_proj_G( psp, l, iprj, Gm, pw.Ω )
-                        betaNL[ig,ibeta] = ylm*prj*Sf
-                        if ibeta == 4
-                            @printf("\n%18.10f %18.10f %18.10f %18.10f\n", g[1], g[2], g[3], Gm)
-                            @printf("%18.10f %18.10f %18.10f %18.10f\n", ylm, prj, betaNL[ig,ibeta].re, betaNL[ig,ibeta].im) 
-                        end"""
+                        betaNL[ig,ibeta] = (1.0*im)^l * Ylm_real(l,m,g) * eval_proj_G( psp, l, iprj, Gm, pw.Ω ) * Sf
                         #betaNL[ig,ibeta] = Ylm_complex(l,m,g) * exp( -0.5*Gm^2 ) * Sf
                     end
                 end
