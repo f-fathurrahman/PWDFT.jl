@@ -1,7 +1,7 @@
 using PWDFT
 
 function test_main()
-    pw = PWGrid(30.0, 20.0*diagm(ones(3)))
+    pw = PWGrid(2.0, 20.0*diagm(ones(3)))
     println(pw)
 
     # Atoms
@@ -49,7 +49,7 @@ function test_main()
                 for m = -l:l
                     NbetaNL = NbetaNL + 1
                     prj2beta[iprj,ia,l+1,m+4] = NbetaNL
-                    @printf("NbetaNL, l, m: %3d %3d %3d\n", NbetaNL, l, m)
+                    #@printf("NbetaNL, l, m: %3d %3d %3d\n", NbetaNL, l, m)
                 end
             end
         end
@@ -70,6 +70,13 @@ function test_main()
                         GX = atpos[1,ia]*g[1] + atpos[2,ia]*g[2] + atpos[3,ia]*g[3]
                         Sf = cos(GX) - im*sin(GX)
                         #betaNL[ig,ibeta] = Ylm_real(l,m,g) * eval_proj_G( psp, l, iprj, Gm, pw.Ω ) * Sf
+"""                        ylm = Ylm_real(l,m,g)
+                        prj = eval_proj_G( psp, l, iprj, Gm, pw.Ω )
+                        betaNL[ig,ibeta] = ylm*prj*Sf
+                        if ibeta == 4
+                            @printf("\n%18.10f %18.10f %18.10f %18.10f\n", g[1], g[2], g[3], Gm)
+                            @printf("%18.10f %18.10f %18.10f %18.10f\n", ylm, prj, betaNL[ig,ibeta].re, betaNL[ig,ibeta].im) 
+                        end"""
                         betaNL[ig,ibeta] = Ylm_real(l,m,g) * exp( -0.5*Gm^2 ) * Sf
                     end
                 end
@@ -78,14 +85,22 @@ function test_main()
     end
 
     Npoints = prod(pw.Ns)
-    ctmp = zeros( Complex128, Npoints )
-    ibeta = 13
-    ctmp[idx] = betaNL[:,ibeta]  
-    data3d = real(G_to_R( pw, ctmp ))*Npoints
 
-    LatVecs = pw.LatVecs
-    write_xsf( "ATOMS.xsf", LatVecs/ANG2BOHR, atpos/ANG2BOHR, molecule=false, atsymbs=atoms.atsymbs )
-    write_xsf_data3d_crystal( "ATOMS.xsf", pw.Ns, LatVecs/ANG2BOHR, data3d )
+    for ibeta = 1:NbetaNL
+        ctmp = zeros( Complex128, Npoints )
+        ctmp[idx] = betaNL[:,ibeta]
+        data3d = real(G_to_R( pw, ctmp ))*Npoints
+        
+        if ibeta == 6
+            LatVecs = pw.LatVecs
+            write_xsf( "ATOMS.xsf", LatVecs/ANG2BOHR, atpos/ANG2BOHR, molecule=false, atsymbs=atoms.atsymbs )
+            write_xsf_data3d_crystal( "ATOMS.xsf", pw.Ns, LatVecs/ANG2BOHR, data3d )
+        end
+
+        integ_prj = sum( data3d.^2 ) * pw.Ω / Npoints
+        @printf("ibeta, integ_prj = %3d %18.10f\n", ibeta, integ_prj)
+    end
+
 
 """
     l = 2

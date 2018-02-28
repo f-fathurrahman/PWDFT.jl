@@ -8,7 +8,7 @@ function test_main()
     println(pw)
 
     l = 1
-    m = 0
+    m = -1
 
     Ng = size(G)[2]
     println("Ng = ", Ng)
@@ -21,4 +21,26 @@ function test_main()
 
 end
 
-test_main()
+function test_second()
+    l = 1
+    m = 1
+ 
+    g = [1.0, 0.0, 0.0]
+    ylm = Ylm_real(l,m,g)
+    @printf("Ylm = %18.10f\n", ylm)
+
+    g = [0.0, 1.0, 0.0]
+    ylm = Ylm_real(l,m,g)
+    @printf("Ylm = %18.10f\n", ylm)
+
+    g = [0.0, 0.0, 1.0]
+    ylm = Ylm_real(l,m,g)
+    @printf("Ylm = %18.10f\n", ylm)
+
+end
+
+
+#test_main()
+test_second()
+
+
