@@ -235,7 +235,7 @@ end
 """
 Evaluate GTH projector function in G-space.
 """
-function eval_proj_G( psp::PsPot_GTH, l, iproj, Gm, Ω )
+function eval_proj_G( psp::PsPot_GTH, l, iproj, Gm::Array{Float64,1}, Ω::Float64 )
 
     # NOTICE that Gm is the magnitudes of G-vectors
     Ng = size(Gm)[1]
@@ -310,3 +310,62 @@ function eval_proj_G( psp::PsPot_GTH, l, iproj, Gm, Ω )
     Vprj[:] = pre * Vprj[:]
     return Vprj
 end
+
+
+
+function eval_proj_G( psp::PsPot_GTH, l, iproj, Gm::Float64, Ω::Float64 )
+
+    Vprj = 0.0
+
+    rrl = psp.rc[l+1]
+
+    # s-channel
+    if l == 0
+        if iproj==1
+            Gr2 = ( Gm*rrl )^2
+            Vprj = exp( -0.5*Gr2 )
+        elseif iproj==2
+            Gr2 = ( Gm*rrl )^2
+            Vprj = 2.0/sqrt(15.0) * exp( -0.5*Gr2 ) * ( 3.0 - Gr2 )
+        elseif iproj==3
+            Gr2 = ( Gm*rrl )^2
+            Vprj = (4.0/3.0)/sqrt(105.0) * exp( -0.5*Gr2 ) * (15.0 - 10.0*Gr2 + Gr2^2)
+        end  # if iproj
+
+    # p-channel
+    elseif l == 1
+        if iproj == 1
+            Gr2 = ( Gm*rrl )^2
+            Vprj = (1.0/sqrt(3.0)) * exp(-0.5*Gr2) * Gm
+        elseif iproj == 2
+            Gr2 = ( Gm*rrl )^2
+            Vprj = (2.0/sqrt(105.0)) * exp(-0.5*Gr2) * Gm * (5.0 - Gr2)
+        elseif iproj == 3
+            Gr2 = (  Gm*rrl )^2
+            Vprj = (4.0/3.0)/sqrt(1155.0) * exp(-0.5*Gr2) * Gm * (35.0 - 14.0*Gr2 + Gr2^2)
+        end # if iproj
+
+    # d-channel
+    elseif l == 2
+        if iproj == 1
+            Gr2 = ( Gm*rrl )^2
+            Vprj = (1.0/sqrt(15.0)) * exp(-0.5*Gr2) * Gm^2
+        elseif iproj == 2
+            Gr2 = ( Gm*rrl )^2
+            Vprj = (2.0/3.0)/sqrt(105.0) * exp(-0.5*Gr2) * Gm^2 * (7.0 - Gr2)
+        end # if iproj
+
+    # f-channel
+    elseif l == 3
+        # XXX only one projector
+        Gr2 = ( Gm*rrl )^2
+        Vprj = Gm^3 * exp(-0.5*Gr2)
+
+    end  # if l
+
+    pre =  4.0 * pi^(5.0/4.0) * sqrt( 2.0^(l+1) * rrl^(2*l+3) / Ω )
+    Vprj = pre * Vprj
+    #println( pre, " ", Vprj, " ", rrl )
+    return Vprj
+end
+
