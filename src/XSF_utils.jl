@@ -1,5 +1,5 @@
-function write_xsf( filnam::String, LL::Array{Float,2}, atpos::Array{Float64,2};
-                    atsymb=nothing, molecule=false )
+function write_xsf( filnam::String, LL::Array{Float64,2}, atpos::Array{Float64,2};
+                    atsymbs=nothing, molecule=false )
     #
     f = open(filnam, "w")
     Natoms = size(atpos)[2]
@@ -16,13 +16,13 @@ function write_xsf( filnam::String, LL::Array{Float,2}, atpos::Array{Float64,2};
     @printf(f, "PRIMCOORD\n")
     @printf(f, "%8d %8d\n", Natoms, 1)
     #
-    if atsymb == nothing
+    if atsymbs == nothing
         for ia = 1:Natoms
             @printf(f, "X  %18.10f %18.10f %18.10f\n", atpos[1,ia], atpos[2,ia], atpos[3,ia])
         end
     else
         for ia = 1:Natoms
-            @printf(f, "%s  %18.10f %18.10f %18.10f\n", atsymb[ia], atpos[1,ia], atpos[2,ia], atpos[3,ia])
+            @printf(f, "%s  %18.10f %18.10f %18.10f\n", atsymbs[ia], atpos[1,ia], atpos[2,ia], atpos[3,ia])
         end
     end
 
@@ -32,7 +32,7 @@ end
 
 function write_xsf_data3d_crystal(
         filnam::String, Ns::Tuple{Int64,Int64,Int64}, LL::Array{Float64,2},
-        data3d::Array{Float64,2};
+        data3d::Array{Float64,1};
         center=zeros(3) )
     #
     f = open(filnam, "a")  # FIXME: What if filnam is not exist?

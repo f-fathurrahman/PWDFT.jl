@@ -1,6 +1,7 @@
 .ipynb_checkpoints
 
 LOG_*
+*.xsf
 
 a.out
 *.x

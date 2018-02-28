@@ -11,6 +11,10 @@ export Atoms
 export init_atoms_xyz
 include("Atoms.jl")
 
+export write_xsf
+export write_xsf_data3d_crystal
+include("XSF_utils.jl")
+
 
 #
 # General utilities
