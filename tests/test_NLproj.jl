@@ -25,21 +25,73 @@ function test_main()
     psi = rand(Ngwx,Nstates) + im*rand(Ngwx,Nstates)
     psi = ortho_gram_schmidt(psi)
 
-    betaNL = zeros( Complex128, Ngwx )
+    Natoms = atoms.Natoms
 
+    # 4: indexed from 0:3
+    # 0, 1, 2, 3  -> l indexed
+    # 1, 2, 3, 4  -> l + 1
+
+    # -3:3
+    # -3, -2, -1, 0, 1, 2, 3  -> m
+    #  1,  2,  3, 4, 5, 6, 7  -> 4 + m
+
+    prj2beta = Array{Int64}( 3, Natoms, 4, 7 )
+    prj2beta[:,:,:,:] = -1   # set to invalid index
+
+    atm2species = atoms.atm2species
+    atpos = atoms.positions
+
+    NbetaNL = 0
+    for ia = 1:Natoms
+        isp = atm2species[ia]
+        for l = 0:psp.lmax
+            #println("l = ", l, ", iprj = ", psp.Nproj_l[l+1])
+            for iprj = 1:psp.Nproj_l[l+1]
+                for m = -l:l
+                    NbetaNL = NbetaNL + 1
+                    prj2beta[iprj,ia,l+1,m+4] = NbetaNL
+                end
+            end
+        end
+    end
+
+    betaNL = zeros( Complex128, Ngwx, NbetaNL )
+
+    ibeta = 0
+    for ia = 1:Natoms
+        isp = atm2species[ia]
+        for l = 0:psp.lmax
+            for iprj = 1:psp.Nproj_l[l+1]
+                for m = -l:l
+                    ibeta = ibeta + 1
+                    for ig = 1:Ngwx
+                        g = gwave[:,ig]
+                        Gm = norm(g)
+                        GX = atpos[1,ia]*g[1] + atpos[2,ia]*g[2] + atpos[3,ia]*g[3]
+                        Sf = cos(GX) - im*sin(GX)
+                        betaNL[ig,ibeta] = Ylm_real(l,m,g) * eval_proj_G( psp, l, iprj, Gm, pw.Ω ) * Sf
+                    end
+                end
+            end
+        end
+    end
+
+"""
     l = 2
     m = 0
     iprj = 1
-    Ω = pw.Ω
     for ig = 1:Ngwx
         g = gwave[:,ig]
         Gm = norm(g)
         betaNL[ig] = Ylm_real( l, m, g ) * eval_proj_G( psp, l, iprj, Gm, Ω )
-        @printf("%18.10f %18.10f + %18.10fim\n", Gm, betaNL[ig].re, betaNL[ig].im)
+        #@printf("%18.10f %18.10f + %18.10fim\n", Gm, betaNL[ig].re, betaNL[ig].im)
     end
-    
+"""
+
+
     println("rrl = ", psp.rc)
     println("sum betaNL = ", sum(betaNL))
+
 
 end
 

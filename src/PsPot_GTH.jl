@@ -235,7 +235,7 @@ end
 """
 Evaluate GTH projector function in G-space.
 """
-function eval_proj_G( psp::PsPot_GTH, l, iproj, Gm::Array{Float64,1}, Ω::Float64 )
+function eval_proj_G( psp::PsPot_GTH, l::Int64, iproj::Int64, Gm::Array{Float64,1}, Ω::Float64 )
 
     # NOTICE that Gm is the magnitudes of G-vectors
     Ng = size(Gm)[1]
@@ -259,7 +259,7 @@ function eval_proj_G( psp::PsPot_GTH, l, iproj, Gm::Array{Float64,1}, Ω::Float6
         elseif iproj==3
             for ig = 1:Ng
                 Gr2 = ( Gm[ig]*rrl )^2
-                Vprj[ig] = (4.0/3.0)/sqrt(105.0) * exp( -0.5*Gr2 ) * (15.0 - 10.*Gr2 + Gr2^2)
+                Vprj[ig] = (4.0/3.0)/sqrt(105.0) * exp( -0.5*Gr2 ) * (15.0 - 10.0*Gr2 + Gr2^2)
             end
         end  # if iproj
 
@@ -273,12 +273,12 @@ function eval_proj_G( psp::PsPot_GTH, l, iproj, Gm::Array{Float64,1}, Ω::Float6
         elseif iproj == 2
             for ig = 1:Ng
                 Gr2 = (Gm[ig]*rrl)^2
-                Vprj[ig] = (2./sqrt(105.)) * exp(-0.5*Gr2) * Gm[ig]*(5. - Gr2)
+                Vprj[ig] = (2.0/sqrt(105.0)) * exp(-0.5*Gr2) * Gm[ig]*(5.0 - Gr2)
             end
         elseif iproj == 3
             for ig = 1:Ng
                 Gr2 = ( Gm[ig]*rrl)^2
-                Vprj[ig] = (4./3.)/sqrt(1155.) * exp(-0.5*Gr2) * Gm[ig] * (35. - 14.*Gr2 + Gr2^2)
+                Vprj[ig] = (4.0/3.0)/sqrt(1155.0) * exp(-0.5*Gr2) * Gm[ig] * (35.0 - 14.0*Gr2 + Gr2^2)
             end
         end # if iproj
 
@@ -292,7 +292,7 @@ function eval_proj_G( psp::PsPot_GTH, l, iproj, Gm::Array{Float64,1}, Ω::Float6
         elseif iproj == 2
             for ig = 1:Ng
                 Gr2 = (Gm[ig]*rrl)^2
-                Vprj[ig] = (2./3.)/sqrt(105.) * exp(-0.5*Gr2) * Gm[ig]^2 * (7.-Gr2)
+                Vprj[ig] = (2.0/3.0)/sqrt(105.0) * exp(-0.5*Gr2) * Gm[ig]^2 * (7.-Gr2)
             end
         end # if iproj
 
@@ -306,14 +306,14 @@ function eval_proj_G( psp::PsPot_GTH, l, iproj, Gm::Array{Float64,1}, Ω::Float6
 
     end  # if l
 
-    pre =  4 * pi^(5./4.) * sqrt( 2.^(l+1) * rrl^(2*l+3) / Ω )
+    pre =  4 * pi^(5.0/4.0) * sqrt( 2.^(l+1) * rrl^(2*l+3) / Ω )
     Vprj[:] = pre * Vprj[:]
     return Vprj
 end
 
 
 
-function eval_proj_G( psp::PsPot_GTH, l, iproj, Gm::Float64, Ω::Float64 )
+function eval_proj_G( psp::PsPot_GTH, l::Int64, iproj::Int64, Gm::Float64, Ω::Float64 )
 
     Vprj = 0.0
 
@@ -365,7 +365,6 @@ function eval_proj_G( psp::PsPot_GTH, l, iproj, Gm::Float64, Ω::Float64 )
 
     pre =  4.0 * pi^(5.0/4.0) * sqrt( 2.0^(l+1) * rrl^(2*l+3) / Ω )
     Vprj = pre * Vprj
-    #println( pre, " ", Vprj, " ", rrl )
     return Vprj
 end
 
