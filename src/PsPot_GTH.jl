@@ -306,7 +306,7 @@ function eval_proj_G( psp::PsPot_GTH, l::Int64, iproj::Int64, Gm::Array{Float64,
 
     end  # if l
 
-    pre =  4 * pi^(5.0/4.0) * sqrt( 2.^(l+1) * rrl^(2*l+3) / Ω )
+    pre =  4 * pi^(5.0/4.0) * sqrt( 2.0^(l+1) * rrl^(2*l+3) / Ω )
     Vprj[:] = pre * Vprj[:]
     return Vprj
 end
