@@ -66,7 +66,7 @@ function Ylm_real( l::Int64, m::Int64, R::Array{Float64,1} )
             return ylm
         # dx2-y2
         elseif m == 2
-            ylm = 0.5*sqrt(15./4.0/pi) * sint^2 * cos(2.0*phi)
+            ylm = 0.5*sqrt(15.0/4.0/pi) * sint^2 * cos(2.0*phi)
             return ylm
         end
 
@@ -85,7 +85,7 @@ function Ylm_real( l::Int64, m::Int64, R::Array{Float64,1} )
             return ylm
 
         elseif m == 0
-            ylm = 0.25d0*sqrt(7.0/pi)*( 5.0*cost^3 - 3.0*cost )
+            ylm = 0.25*sqrt(7.0/pi)*( 5.0*cost^3 - 3.0*cost )
             return ylm
 
         elseif m == 1

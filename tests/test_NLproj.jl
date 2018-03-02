@@ -21,10 +21,6 @@ function test_main()
 
     println(size(gwave))
 
-    Nstates = 4
-    psi = rand(Ngwx,Nstates) + im*rand(Ngwx,Nstates)
-    psi = ortho_gram_schmidt(psi)
-
     Natoms = atoms.Natoms
 
     # 4: indexed from 0:3
@@ -104,6 +100,10 @@ function test_main()
                 ibeta, integ_prj, integ_prj_im, integ_prj_abs)
     end
 
+
+    Nstates = 4
+    psi = rand(Ngwx,Nstates) + im*rand(Ngwx,Nstates)
+    psi = ortho_gram_schmidt(psi)
 
 """
     l = 2
