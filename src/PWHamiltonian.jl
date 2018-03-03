@@ -29,6 +29,14 @@ mutable struct PotentialsT
     XC::Array{Float64,1}
 end
 
+mutable struct PsNL
+    NbetaNL::Int64
+    prj2beta::Array{Int64,4}
+    betaNL::Array{Complex128,2}
+    betaNL_psi::Array{Complex128,3}
+end
+
+
 mutable struct PWHamiltonian
     pw::PWGrid
     potentials::PotentialsT
@@ -60,7 +68,7 @@ function PWHamiltonian( pw::PWGrid, atoms::Atoms )
     Npoints = prod(pw.Ns)
     #
     strf = calc_strfact( atoms, pw )
-    V_Ps_loc = init_V_coulomb_G( pw, strf, [1.0] )
+    V_Ps_loc = init_V_coulomb_G( pw, strf, [1.0] )  # FIXME: need to use real zvals for each species
     #
     V_Hartree = zeros(Float64,Npoints)
     V_XC = zeros(Float64,Npoints)
