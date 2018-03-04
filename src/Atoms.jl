@@ -21,7 +21,22 @@ function println( a::Atoms )
     end
 end
 
+# dummy atoms, contains only one atom
+function Atoms()
+    Natoms = 1
+    Nspecies = 1
+    positions = zeros(3,Natoms)
+    atm2species = [1]
+    atsymbs = ["X"]
+    SpeciesSymbols = ["X"]  # unique symbols
+    Zvals = [0.0]
+    return Atoms( Natoms, Nspecies, positions, atm2species, atsymbs, SpeciesSymbols, Zvals )
+end
 
+
+"""
+Initialize from xyz file
+"""
 function init_atoms_xyz(filexyz; in_bohr=false, verbose=false)
     f = open(filexyz, "r")
     l = readline(f)
