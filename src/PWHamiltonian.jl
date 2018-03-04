@@ -63,12 +63,12 @@ function PWHamiltonian( pw::PWGrid )
 end
 
 
-# Specific using atoms
+# Use full Coulomb potential
 function PWHamiltonian( pw::PWGrid, atoms::Atoms )
     Npoints = prod(pw.Ns)
     #
     strf = calc_strfact( atoms, pw )
-    V_Ps_loc = init_V_coulomb_G( pw, strf, [1.0] )  # FIXME: need to use real zvals for each species
+    V_Ps_loc = init_V_coulomb_G( pw, strf, [1.0] )  # FIXME: need to use the actual zvals for each species
     #
     V_Hartree = zeros(Float64,Npoints)
     V_XC = zeros(Float64,Npoints)
@@ -88,13 +88,14 @@ include("op_H.jl")
 include("Poisson_solve.jl")
 include("LDA_VWN.jl")
 
-
+"""
+Given rhoe in real space, update Ham.rhoe, Hartree and XC potentials.
+"""
 function update!(Ham::PWHamiltonian, rhoe::Array{Float64,1})
     Ham.rhoe = rhoe
     Ham.potentials.Hartree = real( G_to_R( Ham.pw, Poisson_solve(Ham.pw, rhoe) ) )
     Ham.potentials.XC = excVWN( rhoe ) + rhoe .* excpVWN( rhoe )
 end
-
 
 
 function update!( Ham::PWHamiltonian, atoms::Atoms, strf::Array{Complex128,2}, pspfiles::Array{String,1} )

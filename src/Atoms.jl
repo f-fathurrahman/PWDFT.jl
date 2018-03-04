@@ -94,7 +94,7 @@ function init_atoms_xyz(filexyz; in_bohr=false, verbose=false)
     end
 
     # Set to zeros
-    # It will be set later if using
+    # It will be set later if using pseudopotentials
     Zvals = zeros(Float64,Nspecies)
 
     return Atoms(Natoms, Nspecies, positions, atm2species, atsymbs, SpeciesSymbols, Zvals )
