@@ -1,9 +1,9 @@
 using PWDFT
 
 function test_main()
-    const LatVecs = 16.0*diagm( ones(3) )
-    ecutwfc_Ry = 30.0*0.5
-    pw = PWGrid( ecutwfc_Ry, LatVecs )
+    LatVecs = 16.0*diagm( ones(3) )
+    ecutwfc_Ry = 30.0
+    pw = PWGrid( ecutwfc_Ry*0.5, LatVecs )
     println(pw)
     #
     atoms = init_atoms_xyz("H.xyz")

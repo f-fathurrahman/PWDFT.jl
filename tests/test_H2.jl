@@ -2,8 +2,8 @@ using PWDFT
 
 function test_main( ; method="SCF" )
     const LatVecs = 16.0*diagm( ones(3) )
-    ecutwfc_Ry = 40.0*0.5
-    pw = PWGrid( ecutwfc_Ry, LatVecs )
+    ecutwfc_Ry = 40.0
+    pw = PWGrid( ecutwfc_Ry*0.5, LatVecs )
     println(pw)
 
     #
