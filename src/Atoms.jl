@@ -5,7 +5,6 @@ mutable struct Atoms
     atm2species::Array{Int64,1}
     atsymbs::Array{String,1}
     SpeciesSymbols::Array{String,1}  # unique symbols
-    Zvals::Array{Float64,1}
 end
 
 # Overload println for Atoms
@@ -29,8 +28,7 @@ function Atoms()
     atm2species = [1]
     atsymbs = ["X"]
     SpeciesSymbols = ["X"]  # unique symbols
-    Zvals = [0.0]
-    return Atoms( Natoms, Nspecies, positions, atm2species, atsymbs, SpeciesSymbols, Zvals )
+    return Atoms( Natoms, Nspecies, positions, atm2species, atsymbs, SpeciesSymbols )
 end
 
 
@@ -108,13 +106,11 @@ function init_atoms_xyz(filexyz; in_bohr=false, verbose=false)
         end
     end
 
-    # Set to zeros
-    # It will be set later if using pseudopotentials
-    Zvals = zeros(Float64,Nspecies)
-
-    return Atoms(Natoms, Nspecies, positions, atm2species, atsymbs, SpeciesSymbols, Zvals )
+    return Atoms(Natoms, Nspecies, positions, atm2species, atsymbs, SpeciesSymbols )
 
     #ALLOCATE( AtomicMasses(Nspecies) )
     #AtomicMasses(:) = 0.d0 ! FIXME: Use internal database to set this
 
 end
+
+
