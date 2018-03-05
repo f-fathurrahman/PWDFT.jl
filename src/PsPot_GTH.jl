@@ -8,8 +8,23 @@ struct PsPot_GTH
     h::Array{Float64,3}   # l,1:3,1:3
     lmax::Int64           # l = 0, 1, 2, 3 (s, p, d, f)
     Nproj_l::Array{Int64,1}  # originally 0:3
-    rcut_NL::Array{Int64,1}  # originally 0:3, needed for real space evaluation
+    rcut_NL::Array{Float64,1}  # originally 0:3, needed for real space evaluation
 end
+
+# Dummy PsPot_GTH
+function PsPot_GTH()
+    pspfile = "nothing"
+    atsymb = "X"
+    zval = 0.0
+    rlocal = 0.0
+    rc = zeros(Float64,4)
+    c = zeros(Float64,4) 
+    h = zeros(Float64,4,3,3)
+    lmax = -1
+    Nproj_l = zeros(Int64,4)
+    rcut_NL = zeros(Float64,4)
+end
+
 
 """
 Initialize PsPot_GTH with parameters given in file given by path
