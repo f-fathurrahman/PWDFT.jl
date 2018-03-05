@@ -15,7 +15,7 @@ end
 function PsPot_GTH()
     pspfile = "nothing"
     atsymb = "X"
-    zval = 0.0
+    zval = 1.0  # to avoid error when generating electron info
     rlocal = 0.0
     rc = zeros(Float64,4)
     c = zeros(Float64,4) 
@@ -23,6 +23,7 @@ function PsPot_GTH()
     lmax = -1
     Nproj_l = zeros(Int64,4)
     rcut_NL = zeros(Float64,4)
+    return PsPot_GTH(pspfile, atsymb, zval, rlocal, rc, c, h, lmax, Nproj_l, rcut_NL)
 end
 
 

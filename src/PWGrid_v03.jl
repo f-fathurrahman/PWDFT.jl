@@ -1,6 +1,6 @@
 struct GVectorsW
     Ngwx::Int
-    idx_gw2r::Array{Int64}
+    idx_gw2r::Array{Int64,1}
 end
 
 struct GVectors

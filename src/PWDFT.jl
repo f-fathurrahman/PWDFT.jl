@@ -34,6 +34,7 @@ include("Ylm_real.jl")
 export Ylm_complex
 include("Ylm_complex.jl")
 
+
 #
 # Plane wave basis
 #
@@ -54,14 +55,15 @@ include("wrappers_fft.jl")
 #
 # Pseudopotential
 #
-export PsPot_HGH
 export PsPot_GTH
 export eval_Vloc_G
 export eval_proj_G
-
-include("PsPot_HGH.jl")
 include("PsPot_GTH.jl")
 
+
+# Electronic variables
+export ElectronsInfo
+include("ElectronsInfo.jl")
 
 export calc_strfact
 include("calc_strfact.jl")

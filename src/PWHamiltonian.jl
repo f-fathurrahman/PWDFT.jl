@@ -29,20 +29,74 @@ mutable struct PotentialsT
     XC::Array{Float64,1}
 end
 
-mutable struct PsNL
+mutable struct PsPotNL
     NbetaNL::Int64
     prj2beta::Array{Int64,4}
     betaNL::Array{Complex128,2}
     betaNL_psi::Array{Complex128,3}
 end
 
-
 mutable struct PWHamiltonian
     pw::PWGrid
     potentials::PotentialsT
     energies::EnergiesT
     rhoe::Array{Float64,1}
-    focc   # not yet determined
+    electrons::ElectronsInfo
+    atoms::Atoms
+    pspots::Array{PsPot_GTH,1}
+    psNL
+end
+
+
+function PWHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
+                        ecutwfc_Ry::Float64, LatVecs::Array{Float64,2} )
+    # Initialize plane wave grids
+    pw = PWGrid( ecutwfc_Ry*0.5, LatVecs )
+    println(pw)
+
+    Nspecies = atoms.Nspecies
+    if Nspecies != size(pspfiles)[1]
+        @printf("ERROR length of pspfiles is not equal to %d\n", Nspecies)
+        exit()
+    end
+
+    Npoints = prod(pw.Ns)
+    Ω = pw.Ω
+    G2 = pw.gvec.G2
+
+    strf = calc_strfact( atoms, pw )
+
+    #
+    # Initialize pseudopotentials and local potentials
+    #
+    Vg = zeros(Complex128, Npoints)
+    V_Ps_loc = zeros(Float64, Npoints)
+
+    Pspots = Array{PsPot_GTH}(Nspecies)
+
+    for isp = 1:Nspecies
+        Pspots[isp] = PsPot_GTH( pspfiles[isp] )
+        psp = Pspots[isp]
+        for ig = 1:Npoints
+            Vg[ig] = strf[ig,isp] * eval_Vloc_G( psp, G2[ig], Ω )
+        end
+        #
+        V_Ps_loc[:] = V_Ps_loc[:] + real( G_to_R(pw, Vg) ) * Npoints
+    end
+
+    # other potential terms are set to zero
+    V_Hartree = zeros( Float64, Npoints )
+    V_XC = zeros( Float64, Npoints )
+    potentials = PotentialsT( V_Ps_loc, V_Hartree, V_XC )
+    #
+    energies = EnergiesT()
+    #
+    rhoe = zeros( Float64, Npoints )
+
+    electrons = ElectronsInfo( atoms, Pspots )
+    println(electrons)
+
+    return PWHamiltonian( pw, potentials, energies, rhoe, electrons, atoms, Pspots, nothing )
 end
 
 
@@ -58,12 +112,20 @@ function PWHamiltonian( pw::PWGrid )
     energies = EnergiesT()
     #
     rhoe = zeros(Float64,Npoints)
-    #
-    return PWHamiltonian( pw, potentials, energies, rhoe, nothing )
+    
+    Pspots = Array{PsPot_GTH}(1)
+    Pspots[1] = PsPot_GTH()
+
+    atoms = Atoms()
+
+    electrons = ElectronsInfo( atoms, Pspots )
+
+    return PWHamiltonian( pw, potentials, energies, rhoe, electrons, atoms, Pspots, nothing )
 end
 
 
 # Use full Coulomb potential
+# FIXME: Remove this 
 function PWHamiltonian( pw::PWGrid, atoms::Atoms )
     Npoints = prod(pw.Ns)
     #
@@ -78,8 +140,9 @@ function PWHamiltonian( pw::PWGrid, atoms::Atoms )
     #
     rhoe = zeros(Float64,Npoints)
     #
-    return PWHamiltonian( pw, potentials, energies, rhoe, nothing )
+    return PWHamiltonian( pw, potentials, energies, rhoe, nothing, atoms, nothing )
 end
+
 
 include("op_K.jl")
 include("op_V_loc.jl")

@@ -2,13 +2,13 @@
 # Ham.potentials.V_Ps_loc should be initialized
 # Ham.energies.NN should be calculated if needed
 #
-function KS_solve_Emin_PCG!( Ham::PWHamiltonian, Nstates::Int64;
+function KS_solve_Emin_PCG!( Ham::PWHamiltonian;
                              α_t = 3e-5, NiterMax=1000, verbose=false,
                              I_CG_BETA = 2 )
 
     pw = Ham.pw
-    Focc = Ham.focc
-
+    Focc = Ham.electrons.Focc
+    Nstates = Ham.electrons.Nstates
     Ns = pw.Ns
     Npoints = prod(Ns)
     Ngwx = pw.gvecw.Ngwx

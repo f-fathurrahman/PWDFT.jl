@@ -1,4 +1,4 @@
-function KS_solve_SCF!( Ham::PWHamiltonian, Nstates::Int64;
+function KS_solve_SCF!( Ham::PWHamiltonian ;
                        β = 0.5, NiterMax=100, verbose=false,
                        check_rhoe_after_mix=false,
                        update_psi="LOBPCG",
@@ -9,7 +9,8 @@ function KS_solve_SCF!( Ham::PWHamiltonian, Nstates::Int64;
     Ns = pw.Ns
     Npoints = prod(Ns)
     ΔV = pw.Ω/Npoints
-    Focc = Ham.focc
+    Focc = Ham.electrons.Focc
+    Nstates = Ham.electrons.Nstates
 
     #
     # Random guess of wave function

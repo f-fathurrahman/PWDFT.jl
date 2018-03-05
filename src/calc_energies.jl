@@ -7,7 +7,7 @@ function calc_energies( Ham::PWHamiltonian, psi::Array{Complex128,2} )
 
     PW = Ham.pw
     Potentials = Ham.potentials
-    Focc = Ham.focc
+    Focc = Ham.electrons.Focc
 
     Ω = PW.Ω
     Ns = PW.Ns
