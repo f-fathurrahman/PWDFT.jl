@@ -32,20 +32,17 @@ function test_main( ; method="SCF" )
     println("\nAfter calculating E_NN")
     println(Ham.energies)
 
-    # states
-    Nstates = 1
-    Ham.focc = [2.0]
-
     if method == "SCF"
-        λ, v = KS_solve_SCF!( Ham, Nstates )
+        λ, v = KS_solve_SCF!( Ham )
         println("\nAfter calling KS_solve_SCF:")
     elseif method == "Emin"
-        λ, v = KS_solve_Emin_PCG!( Ham, Nstates, I_CG_BETA=4 )
+        λ, v = KS_solve_Emin_PCG!( Ham, I_CG_BETA=2 )
         println("\nAfter calling KS_solve_Emin_PCG:")
     else
         println("ERROR: unknow method = ", method)
     end
 
+    Nstates = Ham.electrons.Nstates
     println("\nEigenvalues")
     for ist = 1:Nstates
         @printf("%8d  %18.10f\n", ist, λ[ist])

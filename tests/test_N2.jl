@@ -31,10 +31,6 @@ function test_main( ; method="SCF" )
     strf = calc_strfact( atoms, Ham.pw )
     Ham.energies.NN = calc_E_NN( Ham.pw, strf, atoms.positions, atoms.Nspecies, atoms.atm2species, zvals )
 
-    # states
-    Nstates = 5
-    Ham.focc = 2.0*ones(Nstates)
-
     if method == "SCF"
         λ, v = KS_solve_SCF!( Ham, Nstates )
         println("\nAfter calling KS_solve_SCF:")

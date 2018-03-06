@@ -5,7 +5,7 @@ function test_main()
     println(pw)
 
     # Atoms
-    atoms = init_atoms_xyz("Pt.xyz")
+    atoms = init_atoms_xyz("N2.xyz")
     println(atoms)
 
     # Structure factor
@@ -13,7 +13,7 @@ function test_main()
 
     Nspecies = 1
     Pspots = Array{PsPot_GTH}(Nspecies)
-    Pspots[1] = PsPot_GTH("../pseudopotentials/pade_gth/Pt-q18.gth")
+    Pspots[1] = PsPot_GTH("../pseudopotentials/pade_gth/N-q5.gth")
 
     psp = Pspots[1]
     println(psp)
@@ -32,10 +32,10 @@ function test_main()
 
     # -3:3
     # -3, -2, -1, 0, 1, 2, 3  -> m
-    #  1,  2,  3, 4, 5, 6, 7  -> 4 + m
+    #  1,  2,  3, 4, 5, 6, 7  -> 4 + m, lmax = 3 + 1
 
     # -2, -1, 0, 1, 2  -> m
-    #  1,  2, 3, 4, 5  -> 3 + m  lmax = 2 + 1
+    #  1,  2, 3, 4, 5  -> 3 + m, lmax = 2 + 1
 
     prj2beta = Array{Int64}( 3, Natoms, 4, 7 )
     prj2beta[:,:,:,:] = -1   # set to invalid index
@@ -138,6 +138,24 @@ function test_main()
     end
     println("sum Vpsi = ", sum(Vpsi))
 
+
+    # Build array hij
+    hij = zeros(Natoms,NbetaNL,NbetaNL)
+    for ia = 1:Natoms
+        isp = atm2species[ia]
+        for l = 0:psp.lmax
+        for m = -l:l
+            for iprj = 1:psp.Nproj_l[l+1]
+            for jprj = 1:psp.Nproj_l[l+1]
+                ibeta = prj2beta[iprj,ia,l+1,m+psp.lmax+1]
+                jbeta = prj2beta[jprj,ia,l+1,m+psp.lmax+1]
+                hij[ia,ibeta,jbeta] = psp.h[l+1,iprj,jprj]
+            end
+            end
+        end # m
+        end # l
+    end
+
     # calculate E_NL
     E_ps_NL = 0.0
     for ist = 1:Nstates
@@ -150,8 +168,8 @@ function test_main()
                 for jprj = 1:psp.Nproj_l[l+1]
                     ibeta = prj2beta[iprj,ia,l+1,m+psp.lmax+1]
                     jbeta = prj2beta[jprj,ia,l+1,m+psp.lmax+1]
-                    hij = psp.h[l+1,iprj,jprj]
-                    enl1 = enl1 + hij*real(conj(betaNL_psi[ia,ist,ibeta])*betaNL_psi[ia,ist,jbeta])
+                    #hij = psp.h[l+1,iprj,jprj]
+                    enl1 = enl1 + hij[ia,ibeta,jbeta]*real(conj(betaNL_psi[ia,ist,ibeta])*betaNL_psi[ia,ist,jbeta])
                 end
                 end
             end # m
