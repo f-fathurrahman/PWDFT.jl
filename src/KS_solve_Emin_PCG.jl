@@ -50,9 +50,6 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian;
         g = calc_grad( Ham, psi)
         Kg = Kprec(pw,g)
 
-        #println("sum g  = ", sum(g))
-        #println("sum Kg = ", sum(Kg))
-
         if iter != 1
             if I_CG_BETA == 1
                 β = real(sum(conj(g).*Kg))/real(sum(conj(g_old).*Kg_old))

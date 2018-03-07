@@ -96,52 +96,54 @@ function PWHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
     electrons = ElectronsInfo( atoms, Pspots )
     println(electrons)
 
+
     return PWHamiltonian( pw, potentials, energies, rhoe, electrons, atoms, Pspots, nothing )
 end
 
 
-# Only allocate memory.
-# Potentials need to be set and updated
-function PWHamiltonian( pw::PWGrid )
+#
+# No pspfiles given. Use Coulomb potential (all electrons)
+#
+function PWHamiltonian( atoms::Atoms, ecutwfc_Ry::Float64, LatVecs::Array{Float64,2} )
+
+    #
+    # Initialize plane wave grids
+    #
+    pw = PWGrid( ecutwfc_Ry*0.5, LatVecs )
+    println(pw)
+
+    Nspecies = atoms.Nspecies
+
     Npoints = prod(pw.Ns)
-    V_Ps_loc = zeros(Float64,Npoints)
-    V_Hartree = zeros(Float64,Npoints)
-    V_XC = zeros(Float64,Npoints)
-    potentials = PotentialsT( V_Ps_loc, V_Hartree, V_XC )
-    #
-    energies = EnergiesT()
-    #
-    rhoe = zeros(Float64,Npoints)
-    
+
+    # dummy pspots
     Pspots = Array{PsPot_GTH}(1)
     Pspots[1] = PsPot_GTH()
 
-    atoms = Atoms()
-
-    electrons = ElectronsInfo( atoms, Pspots )
-
-    return PWHamiltonian( pw, potentials, energies, rhoe, electrons, atoms, Pspots, nothing )
-end
-
-
-# Use full Coulomb potential
-# FIXME: Remove this 
-function PWHamiltonian( pw::PWGrid, atoms::Atoms )
-    Npoints = prod(pw.Ns)
     #
+    # Coulomb potential as local potential
+    #
+    Zvals = get_Zatoms(atoms)
     strf = calc_strfact( atoms, pw )
-    V_Ps_loc = init_V_coulomb_G( pw, strf, [1.0] )  # FIXME: need to use the actual zvals for each species
-    #
-    V_Hartree = zeros(Float64,Npoints)
-    V_XC = zeros(Float64,Npoints)
+    V_Ps_loc = init_V_coulomb_G( pw, strf, Zvals )
+
+    # other potentials are set to zero
+    V_Hartree = zeros( Float64, Npoints )
+    V_XC = zeros( Float64, Npoints )
     potentials = PotentialsT( V_Ps_loc, V_Hartree, V_XC )
     #
     energies = EnergiesT()
     #
+    rhoe = zeros( Float64, Npoints )
+
+    electrons = ElectronsInfo( atoms, Zvals )
+    println(electrons)
+
     rhoe = zeros(Float64,Npoints)
-    #
-    return PWHamiltonian( pw, potentials, energies, rhoe, nothing, atoms, nothing )
+
+    return PWHamiltonian( pw, potentials, energies, rhoe, electrons, atoms, Pspots, nothing )
 end
+
 
 
 include("op_K.jl")
@@ -150,6 +152,7 @@ include("op_H.jl")
 
 include("Poisson_solve.jl")
 include("LDA_VWN.jl")
+
 
 """
 Given rhoe in real space, update Ham.rhoe, Hartree and XC potentials.

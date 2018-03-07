@@ -1,4 +1,4 @@
-function init_V_coulomb_G( pw::PWGrid, strf::Array{Complex128,2}, Znucls::Array{Float64} )
+function init_V_coulomb_G( pw::PWGrid, strf::Array{Complex128,2}, Znucls::Array{Float64,1} )
 
     Nsp1 = size(strf)[2]
     Nsp2 = size(Znucls)[1]

@@ -5,7 +5,7 @@ function init_betaNL( pw::PWGrid, Pspots::Array{PsPot_GTH,1}, atoms::Atoms, Nbet
     gwave = pw.gvec.G[:,idx]
 
     atm2species = atoms.atm2species
-    atpos
+    atpos = atoms.atpos
 
     betaNL = zeros( Complex128, Ngwx, NbetaNL )
 
