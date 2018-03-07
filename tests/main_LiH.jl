@@ -1,10 +1,6 @@
 using PWDFT
 
 function test_main( ; method="SCF" )
-    const LatVecs = 16.0*diagm( ones(3) )
-    ecutwfc_Ry = 40.0
-    pw = PWGrid( ecutwfc_Ry*0.5, LatVecs )
-    println(pw)
 
     #
     # Atoms
@@ -13,44 +9,40 @@ function test_main( ; method="SCF" )
     println(atoms)
 
     #
-    # Structure factor
-    #
-    strf = calc_strfact( atoms, pw )
-
-    #
     # Initialize Hamiltonian
     #
-    Ham = PWHamiltonian(pw)
+    LatVecs = 16.0*diagm( ones(3) )
+    ecutwfc_Ry = 40.0
     pspfiles = ["../pseudopotentials/pade_gth/H-q1.gth",
                 "../pseudopotentials/pade_gth/Li-q3.gth"]
-    update!(Ham, atoms, strf, pspfiles)
+    Ham = PWHamiltonian( atoms, pspfiles, ecutwfc_Ry, LatVecs )
+
     println("sum V Ps loc = ", sum(Ham.potentials.Ps_loc))
 
     #
     # calculate E_NN
     #
-    Zv = [1.0,3.0]
-    Ham.energies.NN = calc_E_NN( pw, strf, atoms.positions, atoms.Nspecies, atoms.atm2species, Zv)
+    strf = calc_strfact( atoms, Ham.pw )
+    Zvals = get_Zvals( Ham.pspots )
+    Ham.energies.NN = calc_E_NN( Ham.pw, strf, atoms.positions, atoms.Nspecies, atoms.atm2species, Zvals )
 
     println("\nAfter calculating E_NN")
     println(Ham.energies)
 
-    # states, need to be be set manually
-    Nstates = 2
-    Ham.focc = [2.0, 2.0]
 
     if method == "SCF"
-        λ, v = KS_solve_SCF!( Ham, Nstates, update_psi="CheFSI" )
+        λ, v = KS_solve_SCF!( Ham )
         println("\nAfter calling KS_solve_SCF:")
 
     elseif method == "Emin"
-        λ, v = KS_solve_Emin_PCG!( Ham, Nstates, I_CG_BETA=4 )
+        λ, v = KS_solve_Emin_PCG!( Ham )
         println("\nAfter calling KS_solve_Emin_PCG:")
 
     else
         println("ERROR: unknow method = ", method)
     end
 
+    Nstates = Ham.electrons.Nstates
     println("\nEigenvalues")
     for ist = 1:Nstates
         @printf("%8d  %18.10f\n", ist, λ[ist])
@@ -61,4 +53,4 @@ function test_main( ; method="SCF" )
 end
 
 @time test_main(method="Emin")
-#@time test_main(method="SCF")
+@time test_main(method="SCF")
