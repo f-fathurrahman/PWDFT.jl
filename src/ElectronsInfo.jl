@@ -108,6 +108,18 @@ function get_Nelectrons( atoms::Atoms, Pspots::Array{PsPot_GTH,1} )
     return Nelectrons
 end
 
+
+function get_Zvals( PsPots::Array{PsPot_GTH,1} )
+    Nspecies = size(PsPots)[1]
+    Zvals = zeros(Float64, Nspecies)
+    for isp = 1:Nspecies
+        Zvals[isp] = PsPots[isp].zval
+    end
+    return Zvals
+end
+
+
+
 import Base.println
 function println( electrons::ElectronsInfo )
     @printf("Electrons info:\n")

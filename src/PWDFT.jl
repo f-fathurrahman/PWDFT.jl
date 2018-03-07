@@ -35,6 +35,8 @@ include("Ylm_real.jl")
 export Ylm_complex
 include("Ylm_complex.jl")
 
+export good_fft_order
+include("fft_support.jl")
 
 #
 # Plane wave basis
@@ -45,7 +47,7 @@ export GVectorsW
 include("PWGrid_v03.jl")
 
 #
-# FFTW
+# FFT
 #
 export c_G_to_R
 export c_R_to_G
@@ -64,6 +66,7 @@ include("PsPot_GTH.jl")
 
 # Electronic variables
 export ElectronsInfo
+export get_Zvals
 include("ElectronsInfo.jl")
 
 export calc_strfact

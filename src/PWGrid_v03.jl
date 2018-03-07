@@ -41,9 +41,13 @@ function PWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2} )
     Ns3 = 2*round( Int, sqrt(ecutrho/2)*LatVecsLen[3]/pi ) + 1
 
     # Use even sampling numbers
-    Ns1 = Ns1 % 2 == 1 ? Ns1 + 1 : Ns1
-    Ns2 = Ns2 % 2 == 1 ? Ns2 + 1 : Ns2
-    Ns3 = Ns3 % 2 == 1 ? Ns3 + 1 : Ns3
+    # Ns1 = Ns1 % 2 == 1 ? Ns1 + 1 : Ns1
+    # Ns2 = Ns2 % 2 == 1 ? Ns2 + 1 : Ns2
+    # Ns3 = Ns3 % 2 == 1 ? Ns3 + 1 : Ns3
+
+    Ns1 = good_fft_order(Ns1)
+    Ns2 = good_fft_order(Ns2)
+    Ns3 = good_fft_order(Ns3)
 
     Ns = (Ns1,Ns2,Ns3)
 
