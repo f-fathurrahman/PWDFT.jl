@@ -27,10 +27,10 @@ function test_main( ; method="SCF" )
     Ham.energies.NN = calc_E_NN( Ham.pw, strf, atoms.positions, atoms.Nspecies, atoms.atm2species, Zvals )
 
     if method == "SCF"
-        λ, v = KS_solve_SCF!( Ham )
+        λ, v = KS_solve_SCF!( Ham, β=0.2 )
         println("\nAfter calling KS_solve_SCF:")
     elseif method == "Emin"
-        λ, v = KS_solve_Emin_PCG!( Ham, I_CG_BETA=4 )
+        λ, v = KS_solve_Emin_PCG!( Ham )
         println("\nAfter calling KS_solve_Emin_PCG:")
     else
         println("ERROR: unknow method = ", method)
@@ -39,7 +39,7 @@ function test_main( ; method="SCF" )
     Nstates = Ham.electrons.Nstates
     println("\nEigenvalues")
     for ist = 1:Nstates
-        @printf("%8d  %18.10f\n", ist, λ[ist])
+        @printf("%8d  %18.10f = %18.10f eV\n", ist, λ[ist], λ[ist]*Ry2eV*2)
     end
     println("\nTotal energy components")
     println(Ham.energies)

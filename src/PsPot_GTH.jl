@@ -184,7 +184,7 @@ function eval_Vloc_G( psp::PsPot_GTH, G2::Float64, Ω::Float64 )
     Gr = sqrt(G2)*rloc
     expGr2 = exp(-0.5*Gr^2)
 
-    const SMALL = eps()
+    const SMALL = 1.0e-8
 
     if sqrt(G2) > SMALL
         Vg = pre1/G2*expGr2 + pre2*expGr2 * (c1 + c2*(3-Gr^2) +
