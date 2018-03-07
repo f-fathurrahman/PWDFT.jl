@@ -1,4 +1,4 @@
-struct ElectronsInfo
+mutable struct ElectronsInfo
     Nelectrons::Float64
     Nstates::Int64
     Nstates_occ::Int64
