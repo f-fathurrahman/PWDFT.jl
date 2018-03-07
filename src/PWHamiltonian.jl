@@ -14,13 +14,16 @@ end
 
 import Base.println
 function println( Energies::EnergiesT )
-    @printf("Kinetic energy: %18.10f\n", Energies.Kinetic )
-    @printf("Ps_loc  energy: %18.10f\n", Energies.Ps_loc )
-    @printf("Hartree energy: %18.10f\n", Energies.Hartree )
-    @printf("XC      energy: %18.10f\n", Energies.XC )
-    @printf("NN      energy: %18.10f\n", Energies.NN )
-    @printf("----------------------------------\n")
-    @printf("Total   energy: %18.10f\n", Energies.Total )
+    @printf("Kinetic    energy: %18.10f\n", Energies.Kinetic )
+    @printf("Ps_loc     energy: %18.10f\n", Energies.Ps_loc )
+    @printf("Hartree    energy: %18.10f\n", Energies.Hartree )
+    @printf("XC         energy: %18.10f\n", Energies.XC )
+    @printf("-------------------------------------\n")
+    E_elec = Energies.Kinetic + Energies.Ps_loc + Energies.Hartree + Energies.XC
+    @printf("Electronic energy: %18.10f\n", E_elec)
+    @printf("NN         energy: %18.10f\n", Energies.NN )
+    @printf("-------------------------------------\n")
+    @printf("Total      energy: %18.10f\n", Energies.Total )
 end
 
 mutable struct PotentialsT
