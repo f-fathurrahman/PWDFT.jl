@@ -52,9 +52,9 @@ end
 
 
 function PWHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
-                        ecutwfc_Ry::Float64, LatVecs::Array{Float64,2} )
+                        ecutwfc::Float64, LatVecs::Array{Float64,2} )
     # Initialize plane wave grids
-    pw = PWGrid( ecutwfc_Ry*0.5, LatVecs )
+    pw = PWGrid( ecutwfc, LatVecs )
     println(pw)
 
     Nspecies = atoms.Nspecies
@@ -66,6 +66,8 @@ function PWHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
     Npoints = prod(pw.Ns)
     Ω = pw.Ω
     G2 = pw.gvec.G2
+    Ng = pw.gvec.Ng
+    idx_g2r = pw.gvec.idx_g2r
 
     strf = calc_strfact( atoms, pw )
 
@@ -80,8 +82,9 @@ function PWHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
     for isp = 1:Nspecies
         Pspots[isp] = PsPot_GTH( pspfiles[isp] )
         psp = Pspots[isp]
-        for ig = 1:Npoints
-            Vg[ig] = strf[ig,isp] * eval_Vloc_G( psp, G2[ig], Ω )
+        for ig = 1:Ng
+            ip = idx_g2r[ig]
+            Vg[ip] = strf[ig,isp] * eval_Vloc_G( psp, G2[ig], Ω )
         end
         #
         V_Ps_loc[:] = V_Ps_loc[:] + real( G_to_R(pw, Vg) ) * Npoints

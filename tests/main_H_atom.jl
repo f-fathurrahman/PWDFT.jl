@@ -43,7 +43,7 @@ function test_main( ; method="SCF" )
     Nstates = Ham.electrons.Nstates
     println("\nEigenvalues")
     for ist = 1:Nstates
-        @printf("%8d  %18.10f\n", ist, λ[ist])
+        @printf("%8d  %18.10f = %18.10f eV\n", ist, λ[ist], λ[ist]*Ry2eV*2)
     end
     println("\nTotal energy components")
     println(Ham.energies)

@@ -2,9 +2,9 @@ function init_V_coulomb_G( pw::PWGrid, strf::Array{Complex128,2}, Znucls::Array{
 
     Nsp1 = size(strf)[2]
     Nsp2 = size(Znucls)[1]
-    #
-    # This is the restriction for this function
-    #
+
+    # Check for consistency between given no. pseudopots and no. of species
+    # present in atoms.
     if Nsp1 != Nsp2
         @printf("ERROR: Nsp1 /= Nsp2: %d %d\n", Nsp1, Nsp2)
         exit()
@@ -13,18 +13,21 @@ function init_V_coulomb_G( pw::PWGrid, strf::Array{Complex128,2}, Znucls::Array{
 
     Npoints = prod(pw.Ns)
     Ω = pw.Ω
+    G2 = pw.gvec.G2
+    Ng = pw.gvec.Ng
+    idx_g2r = pw.gvec.idx_g2r
 
     Vg = zeros(Complex128, Npoints)
-    G2 = pw.gvec.G2
     V  = zeros(Float64, Npoints)
     #
     for isp = 1:Nspecies
         prefactor = -4*pi*Znucls[isp]/Ω
-        #
-        # V[ig=0] = 0.0
-        #
-        for ig = 2:Npoints
-            Vg[ig] = prefactor/G2[ig]*strf[ig,isp]
+        # Note that Vg[1] (for GVector zero) is always zero 0.0
+        # To be sure let's put is here anyway.
+        Vg[1] = 0.0 + im*0.0
+        for ig = 2:Ng
+            ip = idx_g2r[ig]
+            Vg[ip] = prefactor/G2[ig]*strf[ig,isp]
         end
         V[:] = V[:] + real( G_to_R(pw, Vg) ) * Npoints
     end

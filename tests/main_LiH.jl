@@ -15,7 +15,7 @@ function test_main( ; method="SCF" )
     ecutwfc_Ry = 40.0
     pspfiles = ["../pseudopotentials/pade_gth/H-q1.gth",
                 "../pseudopotentials/pade_gth/Li-q3.gth"]
-    Ham = PWHamiltonian( atoms, pspfiles, ecutwfc_Ry, LatVecs )
+    Ham = PWHamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, LatVecs )
 
     println("sum V Ps loc = ", sum(Ham.potentials.Ps_loc))
 
