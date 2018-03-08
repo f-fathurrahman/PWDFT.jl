@@ -11,8 +11,9 @@ function test_main()
     atpos[:,1] = [ 8.0, 2.0, 7.0 ]
 
     Npoints = prod( pw.Ns )
-    idx = pw.gvecw.idx_gw2r
-    gwave = pw.gvec.G[:,idx]
+    idx_gw2g = pw.gvecw.idx_gw2g
+    idx_gw2r = pw.gvecw.idx_gw2r
+    gwave = pw.gvec.G[:,idx_gw2g]
     Ngwx = pw.gvecw.Ngwx
 
     l = 1
@@ -27,7 +28,7 @@ function test_main()
             Sf = cos(GX) - im*sin(GX)
             psi[ig] = (1.0*im)^l * Ylm_real(l,m,g) * exp( -0.5*Gm^2 ) * Sf
         end
-        ctmp[idx] = psi
+        ctmp[idx_gw2r] = psi
         psiR_real = real( G_to_R( pw, ctmp ) ) * Npoints
         filxsf = "psi_l_" * string(l) * "_m_" * string(m) * ".xsf"
         write_xsf( filxsf, LatVecs/ANG2BOHR, atpos/ANG2BOHR, molecule=false )

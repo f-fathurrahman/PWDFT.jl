@@ -1,7 +1,7 @@
 using PWDFT
 
 function test_main()
-    pw = PWGrid(30.0, 20.0*diagm(ones(3)))
+    pw = PWGrid(60.0, 20.0*diagm(ones(3)))
     println(pw)
 
     # Atoms
@@ -19,8 +19,9 @@ function test_main()
     println(psp)
 
     Ngwx = pw.gvecw.Ngwx
-    idx = pw.gvecw.idx_gw2r
-    gwave = pw.gvec.G[:,idx]
+    idx_gw2g = pw.gvecw.idx_gw2g
+    idx_gw2r = pw.gvecw.idx_gw2r
+    gwave = pw.gvec.G[:,idx_gw2g]
 
     println(size(gwave))
 
@@ -86,7 +87,7 @@ function test_main()
     for ibeta = 1:NbetaNL
         norm_G = dot( betaNL[:,ibeta], betaNL[:,ibeta] )
         ctmp = zeros( Complex128, Npoints )
-        ctmp[idx] = betaNL[:,ibeta]
+        ctmp[idx_gw2r] = betaNL[:,ibeta]
         ctmp = G_to_R(pw, ctmp)*Npoints
         data3d = real(ctmp)
         data3d_im = imag(ctmp)
