@@ -3,16 +3,18 @@
 # space
 #
 function Poisson_solve( pw::PWGrid, rhoR )
-    #
-    G2 = pw.gvec.G2
-    Ns = pw.Ns
-    Npoints = prod(Ns)
-    #
+    gvec = pw.gvec
+    G2 = gvec.G2
+    Ng = gvec.Ng
+    idx_g2r = gvec.idx_g2r
+
     ctmp = 4.0*pi*R_to_G( pw, rhoR )
-    #
-    ctmp[1] = 0.0
-    for ip = 2:Npoints
-        ctmp[ip] = ctmp[ip]/G2[ip]
+    
+    ctmp[1] = 0.0  # the first GVectors is zero vector
+
+    for ig = 2:Ng
+        ip = idx_g2r[ig]
+        ctmp[ip] = ctmp[ip]/G2[ig]
     end
     return ctmp
 end
