@@ -6,7 +6,7 @@ end
 struct GVectors
     Ng::Int64
     G::Array{Float64,2}
-    G2::Array{Float64}
+    G2::Array{Float64,1}
 end
 
 struct PWGrid
