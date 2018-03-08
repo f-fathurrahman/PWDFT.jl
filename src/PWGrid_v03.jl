@@ -1,12 +1,14 @@
-struct GVectorsW
-    Ngwx::Int
-    idx_gw2r::Array{Int64,1}
-end
-
 struct GVectors
     Ng::Int64
     G::Array{Float64,2}
     G2::Array{Float64,1}
+    idx_g2r::Array{Int64,1}
+end
+
+struct GVectorsW
+    Ngwx::Int64
+    idx_gw2g::Array{Int64,1}
+    idx_gw2r::Array{Int64,1}
 end
 
 struct PWGrid
@@ -40,11 +42,6 @@ function PWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2} )
     Ns2 = 2*round( Int, sqrt(ecutrho/2)*LatVecsLen[2]/pi ) + 1
     Ns3 = 2*round( Int, sqrt(ecutrho/2)*LatVecsLen[3]/pi ) + 1
 
-    # Use even sampling numbers
-    # Ns1 = Ns1 % 2 == 1 ? Ns1 + 1 : Ns1
-    # Ns2 = Ns2 % 2 == 1 ? Ns2 + 1 : Ns2
-    # Ns3 = Ns3 % 2 == 1 ? Ns3 + 1 : Ns3
-
     Ns1 = good_fft_order(Ns1)
     Ns2 = good_fft_order(Ns2)
     Ns3 = good_fft_order(Ns3)
@@ -54,8 +51,8 @@ function PWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2} )
     Npoints = prod(Ns)
     r = init_grid_R( Ns, LatVecs )
 
-    gvec = init_grid_G( Ns, RecVecs )
-    gvecw = init_gvecw( ecutwfc, gvec.G2 )
+    gvec = init_gvec( Ns, RecVecs, ecutrho )
+    gvecw = init_gvecw( ecutwfc, gvec )
 
     planfw = plan_fft( zeros(Ns) )
     planbw = plan_ifft( zeros(Ns) )
@@ -73,14 +70,12 @@ function mm_to_nn(mm::Int64,S::Int64)
 end
 
 
-function init_grid_G( Ns, RecVecs )
-
-    Ng = prod(Ns)
-
-    G  = Array{Float64}(3,Ng)
-    G2 = Array{Float64}(Ng)
-
+function calc_Ng( Ns, RecVecs, ecutrho )
     ig = 0
+    Ng = 0
+    #
+    G = zeros(Float64,3)
+    #
     for k in 0:Ns[3]-1
     for j in 0:Ns[2]-1
     for i in 0:Ns[1]-1
@@ -88,21 +83,64 @@ function init_grid_G( Ns, RecVecs )
         gi = mm_to_nn( i, Ns[1] )
         gj = mm_to_nn( j, Ns[2] )
         gk = mm_to_nn( k, Ns[3] )
-        G[1,ig] = RecVecs[1,1]*gi + RecVecs[2,1]*gj + RecVecs[3,1]*gk
-        G[2,ig] = RecVecs[1,2]*gi + RecVecs[2,2]*gj + RecVecs[3,2]*gk
-        G[3,ig] = RecVecs[1,3]*gi + RecVecs[2,3]*gj + RecVecs[3,3]*gk
-        G2[ig] = G[1,ig]^2 + G[2,ig]^2 + G[3,ig]^2
+        G[1] = RecVecs[1,1]*gi + RecVecs[2,1]*gj + RecVecs[3,1]*gk
+        G[2] = RecVecs[1,2]*gi + RecVecs[2,2]*gj + RecVecs[3,2]*gk
+        G[3] = RecVecs[1,3]*gi + RecVecs[2,3]*gj + RecVecs[3,3]*gk
+        G2 = G[1]^2 + G[2]^2 + G[3]^2
+        if 0.5*G2 < ecutrho
+            Ng = Ng + 1
+        end
     end
     end
     end
-
-    return GVectors( Ng, G, G2 )
+    return Ng
 end
 
-function init_gvecw( ecutwfc, G2 )
-    idx_gw2r = findn( 0.5*G2 .< ecutwfc )
+function init_gvec( Ns, RecVecs, ecutrho )
+
+    Ng = calc_Ng( Ns, RecVecs, ecutrho )
+
+    G_temp = zeros(Float64,3)
+
+    G  = Array{Float64}(3,Ng)
+    G2 = Array{Float64}(Ng)
+    idx_g2r = Array{Int64}(Ng)
+
+    ig = 0
+    ip = 0
+    for k in 0:Ns[3]-1
+    for j in 0:Ns[2]-1
+    for i in 0:Ns[1]-1
+        ip = ip + 1
+        gi = mm_to_nn( i, Ns[1] )
+        gj = mm_to_nn( j, Ns[2] )
+        gk = mm_to_nn( k, Ns[3] )
+        G_temp[1] = RecVecs[1,1]*gi + RecVecs[2,1]*gj + RecVecs[3,1]*gk
+        G_temp[2] = RecVecs[1,2]*gi + RecVecs[2,2]*gj + RecVecs[3,2]*gk
+        G_temp[3] = RecVecs[1,3]*gi + RecVecs[2,3]*gj + RecVecs[3,3]*gk
+        G2_temp = G_temp[1]^2 + G_temp[2]^2 + G_temp[3]^2
+        if 0.5*G2_temp < ecutrho
+            ig = ig + 1
+            G[:,ig] = G_temp[:]
+            G2[ig] = G2_temp
+            idx_g2r[ig] = ip
+        end
+    end
+    end
+    end
+
+    return GVectors( Ng, G, G2, idx_g2r )
+end
+
+function init_gvecw( ecutwfc, gvec::GVectors )
+    G2 = gvec.G2
+    idx_g2r = gvec.idx_g2r
+    #
+    idx_gw2g = findn( 0.5*G2 .< ecutwfc )
+    idx_gw2r = idx_g2r[idx_gw2g]
     Ngwx = length(idx_gw2r)
-    return GVectorsW( Ngwx, idx_gw2r )
+    #
+    return GVectorsW( Ngwx, idx_gw2g, idx_gw2r )
 end
 
 
@@ -126,23 +164,64 @@ function init_grid_R( Ns, LatVecs )
     return R
 end
 
+
+# Overloaded println
+
 import Base.println
+
 function println( pw::PWGrid )
     @printf("\nPlane wave grid\n\n")
-    @printf("ecutwfc = %10.3f Ha\n", pw.ecutwfc)
-    @printf("ecutrho = %10.3f Ha\n", pw.ecutrho)
     LatVecs = pw.LatVecs
     RecVecs = pw.RecVecs
-    @printf("Direct lattice vectors:\n")
+    @printf("\nDirect lattice vectors:\n\n")
     for i = 1:3
         @printf("%18.10f %18.10f %18.10f\n", LatVecs[i,1], LatVecs[i,2], LatVecs[i,3])
     end
-    @printf("\nReciprocal lattice vectors:\n")
+    @printf("\nReciprocal lattice vectors:\n\n")
     for i = 1:3
         @printf("%18.10f %18.10f %18.10f\n", RecVecs[i,1], RecVecs[i,2], RecVecs[i,3])
     end
     @printf("\n")
-    @printf("Direct lattive volume = %18.10f\n", pw.Ω )
-    @printf("Sampling points: [%5d,%5d,%5d]\n", pw.Ns[1], pw.Ns[2], pw.Ns[3])
-    @printf("Ngwx = %10d\n", pw.gvecw.Ngwx)
+    @printf("Direct lattive volume = %18.10f bohr^3\n", pw.Ω )
+    @printf("ecutwfc               = %18.10f Ha\n", pw.ecutwfc)
+    @printf("ecutrho               = %18.10f Ha\n", pw.ecutrho)    
+    @printf("Sampling points       = (%5d,%5d,%5d)\n", pw.Ns[1], pw.Ns[2], pw.Ns[3])
+    #
+    println( pw.gvec )
+    println( pw.gvec, pw.gvecw )
+end
+
+function println(gvec::GVectors)
+    Ng = gvec.Ng
+    G = gvec.G
+    G2 = gvec.G2
+
+    println("\nNg = ", Ng)
+    for ig = 1:3
+        @printf("%8d [%18.10f,%18.10f,%18.10f] : %18.10f\n", ig, G[1,ig], G[2,ig], G[3,ig], G2[ig])        
+    end
+    for ig = Ng-3:Ng
+        @printf("%8d [%18.10f.%18.10f,%18.10f] : %18.10f\n", ig, G[1,ig], G[2,ig], G[3,ig], G2[ig])
+    end
+    @printf("Max G2 = %18.10f\n", maximum(G2))
+end
+
+function println( gvec::GVectors, gvecw::GVectorsW )
+    G = gvec.G
+    G2 = gvec.G2
+
+    Ngwx = gvecw.Ngwx
+    idx_gw2g = gvecw.idx_gw2g
+
+    Gw = G[:,idx_gw2g]
+    Gw2 = G2[idx_gw2g]
+
+    println("\nNgwx = ", Ngwx)
+    for ig = 1:3
+        @printf("%8d [%18.10f,%18.10f,%18.10f] : %18.10f\n", ig, Gw[1,ig], Gw[2,ig], Gw[3,ig], Gw2[ig])
+    end
+    for ig = Ngwx-3:Ngwx
+        @printf("%8d [%18.10f.%18.10f,%18.10f] : %18.10f\n", ig, Gw[1,ig], Gw[2,ig], Gw[3,ig], Gw2[ig])
+    end
+    @printf("Max G2 = %18.10f\n", maximum(Gw2))    
 end

@@ -44,6 +44,59 @@ struct GVectorsNew
     idx_g2r::Array{Int64,1}
 end
 
+struct GVectorsWNew
+    Ngwx::Int64
+    idx_gw2g::Array{Int64,1}
+    idx_gw2r::Array{Int64,1}
+end
+
+function init_gvecw_new( ecutwfc, gvec::GVectorsNew )
+    G2 = gvec.G2
+    idx_g2r = gvec.idx_g2r
+    #
+    idx_gw2g = findn( 0.5*G2 .< ecutwfc )
+    idx_gw2r = idx_g2r[idx_gw2g]
+    Ngwx = length(idx_gw2r)
+    #
+    return GVectorsWNew( Ngwx, idx_gw2g, idx_gw2r )
+end
+
+import Base.println
+
+function println(gvec::GVectorsNew)
+    Ng = gvec.Ng
+    G = gvec.G
+    G2 = gvec.G2
+
+    println("\nNg = ", Ng)
+    for ig = 1:3
+        @printf("%8d [%18.10f,%18.10f,%18.10f] : %18.10f\n", ig, G[1,ig], G[2,ig], G[3,ig], G2[ig])        
+    end
+    for ig = Ng-3:Ng
+        @printf("%8d [%18.10f.%18.10f,%18.10f] : %18.10f\n", ig, G[1,ig], G[2,ig], G[3,ig], G2[ig])
+    end
+    @printf("Max G2 = %18.10f\n", maximum(G2))
+end
+
+function println( gvec::GVectorsNew, gvecw::GVectorsWNew )
+    G = gvec.G
+    G2 = gvec.G
+
+    Ngwx = gvecw.Ngwx
+    idx_gw2g = gvecw.idx_gw2g
+
+    Gw = G[:,idx_gw2g]
+    Gw2 = G2[idx_gw2g]
+
+    println("\nNgwx = ", Ngwx)
+    for ig = 1:3
+        @printf("%8d [%18.10f,%18.10f,%18.10f] : %18.10f\n", ig, Gw[1,ig], Gw[2,ig], Gw[3,ig], Gw2[ig])
+    end
+    for ig = Ngwx-3:Ngwx
+        @printf("%8d [%18.10f.%18.10f,%18.10f] : %18.10f\n", ig, Gw[1,ig], Gw[2,ig], Gw[3,ig], Gw2[ig])
+    end
+    @printf("Max G2 = %18.10f\n", maximum(G2))    
+end
 
 function init_grid_G_new( Ns, RecVecs, ecutrho )
 
@@ -109,10 +162,14 @@ function test_main()
 
     Ns = pw.Ns
     RecVecs = pw.RecVecs
+    ecutwfc = pw.ecutwfc
     ecutrho = pw.ecutrho
 
     gvec = init_grid_G_new( Ns, RecVecs, ecutrho )
-    println("Ng = ", gvec.Ng)
+    println( gvec )
+
+    gvecw = init_gvecw_new( ecutwfc, gvec )
+    println( gvec, gvecw )
 end
 
 function gen_dr( r, center )
@@ -190,6 +247,5 @@ function test_Poisson( ecutwfc_Ry::Float64 )
     @printf("Num, ana, diff = %18.10f %18.10f %18.10e\n", Ehartree, Uanal, abs(Ehartree-Uanal))    
 end
 
-#test_main()
-
-test_Poisson(30.0)
+test_main()
+#test_Poisson(30.0)

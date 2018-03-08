@@ -1,6 +1,7 @@
 .ipynb_checkpoints
 _compare
 
+OLD_*
 LOG_*
 *.xsf
 
