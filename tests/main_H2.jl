@@ -13,7 +13,7 @@ function test_main( ; method="SCF" )
     #
     pspfiles = ["../pseudopotentials/pade_gth/H-q1.gth"]
     LatVecs = 16.0*diagm( ones(3) )
-    ecutwfc_Ry = 60.0
+    ecutwfc_Ry = 30.0
     Ham = PWHamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, LatVecs )
 
 

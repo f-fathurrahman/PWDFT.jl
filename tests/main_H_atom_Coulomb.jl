@@ -13,7 +13,7 @@ function test_main( ; method="SCF" )
     # Initialize Hamiltonian
     #
     LatVecs = 16.0*diagm( ones(3) )
-    ecutwfc_Ry = 70.0
+    ecutwfc_Ry = 30.0
     Ham = PWHamiltonian( atoms, ecutwfc_Ry*0.5, LatVecs )
 
     println("sum V Ps loc = ", sum(Ham.potentials.Ps_loc))
