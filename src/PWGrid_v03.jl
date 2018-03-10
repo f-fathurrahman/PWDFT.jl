@@ -170,14 +170,21 @@ end
 import Base.println
 
 function println( pw::PWGrid )
-    @printf("\nPlane wave grid\n\n")
+    @printf("\n")
+    @printf("                                     ------\n")
+    @printf("                                     PWGrid\n")
+    @printf("                                     ------\n")
     LatVecs = pw.LatVecs
     RecVecs = pw.RecVecs
-    @printf("\nDirect lattice vectors:\n\n")
+    @printf("\n")
+    @printf("Direct lattice vectors:\n")
+    @printf("\n")
     for i = 1:3
         @printf("%18.10f %18.10f %18.10f\n", LatVecs[i,1], LatVecs[i,2], LatVecs[i,3])
     end
-    @printf("\nReciprocal lattice vectors:\n\n")
+    @printf("\n")
+    @printf("Reciprocal lattice vectors:\n")
+    @printf("\n")
     for i = 1:3
         @printf("%18.10f %18.10f %18.10f\n", RecVecs[i,1], RecVecs[i,2], RecVecs[i,3])
     end
@@ -195,14 +202,22 @@ function println(gvec::GVectors)
     Ng = gvec.Ng
     G = gvec.G
     G2 = gvec.G2
-
-    println("\nNg = ", Ng)
+    
+    @printf("\n")
+    @printf("                                    --------\n")
+    @printf("                                    GVectors\n")
+    @printf("                                    --------\n")
+    @printf("\n")
+    @printf("Ng = %12d\n", Ng)
+    @printf("\n")
     for ig = 1:3
         @printf("%8d [%18.10f,%18.10f,%18.10f] : %18.10f\n", ig, G[1,ig], G[2,ig], G[3,ig], G2[ig])        
     end
+    @printf(" ....... \n")
     for ig = Ng-3:Ng
         @printf("%8d [%18.10f.%18.10f,%18.10f] : %18.10f\n", ig, G[1,ig], G[2,ig], G[3,ig], G2[ig])
     end
+    @printf("\n")
     @printf("Max G2 = %18.10f\n", maximum(G2))
 end
 
@@ -216,12 +231,21 @@ function println( gvec::GVectors, gvecw::GVectorsW )
     Gw = G[:,idx_gw2g]
     Gw2 = G2[idx_gw2g]
 
-    println("\nNgwx = ", Ngwx)
+    @printf("\n")
+    @printf("                                    ---------\n")
+    @printf("                                    GVectorsW\n")
+    @printf("                                    ---------\n")
+    @printf("\n")
+    @printf("Ngwx = %12d\n", Ngwx)
+    @printf("\n")
     for ig = 1:3
         @printf("%8d [%18.10f,%18.10f,%18.10f] : %18.10f\n", ig, Gw[1,ig], Gw[2,ig], Gw[3,ig], Gw2[ig])
     end
+    @printf(" ....... \n")
     for ig = Ngwx-3:Ngwx
         @printf("%8d [%18.10f.%18.10f,%18.10f] : %18.10f\n", ig, Gw[1,ig], Gw[2,ig], Gw[3,ig], Gw2[ig])
     end
+    @printf("\n")
     @printf("Max G2 = %18.10f\n", maximum(Gw2))    
 end
+

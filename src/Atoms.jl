@@ -10,10 +10,16 @@ end
 # Overload println for Atoms
 import Base.println
 function println( a::Atoms )
-    @printf("\nAtoms information\n\n")
+    @printf("\n")
+    @printf("                                     -----\n")
+    @printf("                                     Atoms\n")
+    @printf("                                     -----\n")
+    @printf("\n")
     @printf("Natoms   = %5d\n", a.Natoms)
     @printf("Nspecies = %5d\n", a.Nspecies)
-    @printf("\nCoordinates in bohr:\n\n")
+    @printf("\n")
+    @printf("Coordinates in bohr:\n")
+    @printf("\n")
     for ia = 1:a.Natoms
         @printf("%5s %18.10f %18.10f %18.10f\n", a.atsymbs[ia],
                 a.positions[1,ia], a.positions[2,ia], a.positions[3,ia])

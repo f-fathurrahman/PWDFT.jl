@@ -119,14 +119,19 @@ function get_Zvals( PsPots::Array{PsPot_GTH,1} )
 end
 
 
-
 import Base.println
 function println( electrons::ElectronsInfo )
-    @printf("Electrons info:\n")
-    @printf("Nelectrons: %18.10f\n", electrons.Nelectrons)
-    @printf("Nstates = %d\n\n", electrons.Nstates)
+    @printf("\n")
+    @printf("                       -------------\n")
+    @printf("                       ElectronsInfo\n")
+    @printf("                       -------------\n")
+    @printf("\n")
+    @printf("Nelectrons    =  %18.10f\n", electrons.Nelectrons)
+    @printf("Nstates_occ   = %8d\n", electrons.Nstates_occ)
+    @printf("Nstates_empty = %8d\n\n", electrons.Nstates - electrons.Nstates_occ)
     @printf("Occupation numbers:\n\n")
     for ist = 1:electrons.Nstates
-        @printf("states = %4d, cccupation %10.5f\n", ist, electrons.Focc[ist])
+        @printf("state #%8d = %8.5f\n", ist, electrons.Focc[ist])
     end
 end
+

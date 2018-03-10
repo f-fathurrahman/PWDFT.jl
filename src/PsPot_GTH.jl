@@ -120,10 +120,19 @@ function println( psp::PsPot_GTH )
     rc = psp.rc
     h = psp.h
 
-    @printf("\nPSEUDOPOTENTIAL INFORMATION for species %s\n\n", psp.atsymb)
+    @printf("\n")
+    @printf("                                   ---------\n")
+    @printf("                                   PsPot_GTH\n")
+    @printf("                                   ---------\n")
+    @printf("\n")
+    @printf("Species: %s\n\n", psp.atsymb)
     @printf("File: %s\n", psp.pspfile)
     @printf("\nLocal pseudopotential parameters\n\n")
-    @printf("rloc: %f, c: %f, %f, %f, %f\n", rlocal, c[1], c[2], c[3], c[4])
+    @printf("rloc = %18.10f\n", rlocal)
+    @printf("c[1] = %18.10f\n", c[1])
+    @printf("c[2] = %18.10f\n", c[2])
+    @printf("c[3] = %18.10f\n", c[3])
+    @printf("c[4] = %18.10f\n", c[4])
     @printf("\n")
     if psp.lmax > -1
         @printf("Nonlocal pseudopotential parameters:\n\n")
