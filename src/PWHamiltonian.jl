@@ -14,6 +14,7 @@ end
 
 import Base.println
 function println( Energies::EnergiesT )
+    @printf("\n")
     @printf("Kinetic    energy: %18.10f\n", Energies.Kinetic )
     @printf("Ps_loc     energy: %18.10f\n", Energies.Ps_loc )
     @printf("Hartree    energy: %18.10f\n", Energies.Hartree )

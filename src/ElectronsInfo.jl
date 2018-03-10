@@ -122,9 +122,9 @@ end
 import Base.println
 function println( electrons::ElectronsInfo )
     @printf("\n")
-    @printf("                       -------------\n")
-    @printf("                       ElectronsInfo\n")
-    @printf("                       -------------\n")
+    @printf("                                 -------------\n")
+    @printf("                                 ElectronsInfo\n")
+    @printf("                                 -------------\n")
     @printf("\n")
     @printf("Nelectrons    =  %18.10f\n", electrons.Nelectrons)
     @printf("Nstates_occ   = %8d\n", electrons.Nstates_occ)
