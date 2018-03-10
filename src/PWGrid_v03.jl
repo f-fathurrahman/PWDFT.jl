@@ -121,9 +121,9 @@ function init_gvec( Ns, RecVecs, ecutrho )
         G2_temp = G_temp[1]^2 + G_temp[2]^2 + G_temp[3]^2
         if 0.5*G2_temp < ecutrho
             ig = ig + 1
-            G[:,ig] = G_temp[:]
-            G2[ig] = G2_temp
-            idx_g2r[ig] = ip
+            @inbounds G[:,ig] = G_temp[:]
+            @inbounds G2[ig] = G2_temp
+            @inbounds idx_g2r[ig] = ip
         end
     end
     end
@@ -154,9 +154,9 @@ function init_grid_R( Ns, LatVecs )
     for j in 0:Ns[2]-1
     for i in 0:Ns[1]-1
         ip = ip + 1
-        R[1,ip] = LatVecs[1,1]*i/Ns[1] + LatVecs[2,1]*j/Ns[2] + LatVecs[3,1]*k/Ns[3]
-        R[2,ip] = LatVecs[1,2]*i/Ns[1] + LatVecs[2,2]*j/Ns[2] + LatVecs[3,2]*k/Ns[3]
-        R[3,ip] = LatVecs[1,3]*i/Ns[1] + LatVecs[2,3]*j/Ns[2] + LatVecs[3,3]*k/Ns[3]
+        @inbounds R[1,ip] = LatVecs[1,1]*i/Ns[1] + LatVecs[2,1]*j/Ns[2] + LatVecs[3,1]*k/Ns[3]
+        @inbounds R[2,ip] = LatVecs[1,2]*i/Ns[1] + LatVecs[2,2]*j/Ns[2] + LatVecs[3,2]*k/Ns[3]
+        @inbounds R[3,ip] = LatVecs[1,3]*i/Ns[1] + LatVecs[2,3]*j/Ns[2] + LatVecs[3,3]*k/Ns[3]
     end
     end
     end
