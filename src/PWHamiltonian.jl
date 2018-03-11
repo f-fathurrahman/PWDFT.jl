@@ -33,12 +33,7 @@ mutable struct PotentialsT
     XC::Array{Float64,1}
 end
 
-mutable struct PsPotNL
-    NbetaNL::Int64
-    prj2beta::Array{Int64,4}
-    betaNL::Array{Complex128,2}
-    betaNL_psi::Array{Complex128,3}
-end
+include("PsPotNL.jl")
 
 mutable struct PWHamiltonian
     pw::PWGrid

@@ -87,6 +87,7 @@ export PWHamiltonian
 export op_H, op_K, op_V_loc, op_V_Ps_loc
 export Poisson_solve
 export update!
+export PsPotNL, calc_betaNL_psi
 include("PWHamiltonian.jl")
 
 export Kprec
