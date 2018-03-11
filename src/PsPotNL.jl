@@ -38,10 +38,15 @@ function PsPotNL( pw::PWGrid, atoms::Atoms, Pspots::Array{PsPot_GTH}; check_norm
                 for m = -l:l
                     NbetaNL = NbetaNL + 1
                     prj2beta[iprj,ia,l+1,m+psp.lmax+1] = NbetaNL
-                    @printf("ibeta, ia, l, m: %3d %3d %3d %3d\n", NbetaNL, ia, l, m)
                 end
             end
         end
+    end
+
+    # No nonlocal components
+    if NbetaNL == 0
+        # return dummy PsPotNL
+        return PsPotNL(0, zeros(Int64,1,1,1,1), zeros(1,1) )
     end
 
     betaNL = zeros( Complex128, Ngwx, NbetaNL )
@@ -116,31 +121,4 @@ function calc_betaNL_psi( betaNL::Array{Complex128,2}, psi::Array{Complex128,2} 
         end
     end
     return betaNL_psi
-end
-
-function calc_E_Ps_nloc( betaNL_psi, betaNL, )
-
-    # calculate E_NL
-    E_ps_NL = 0.0
-    for ist = 1:Nstates
-        enl1 = 0.0
-        for ia = 1:Natoms
-            isp = atm2species[ia]
-            for l = 0:psp.lmax
-            for m = -l:l
-                for iprj = 1:psp.Nproj_l[l+1]
-                for jprj = 1:psp.Nproj_l[l+1]
-                    ibeta = prj2beta[iprj,ia,l+1,m+psp.lmax+1]
-                    jbeta = prj2beta[jprj,ia,l+1,m+psp.lmax+1]
-                    #hij = psp.h[l+1,iprj,jprj]
-                    enl1 = enl1 + hij[ia,ibeta,jbeta]*real(conj(betaNL_psi[ia,ist,ibeta])*betaNL_psi[ia,ist,jbeta])
-                end
-                end
-            end # m
-            end # l
-        end
-        E_ps_NL = E_ps_NL + Focc[ist]*enl1
-    end
-    println("E ps NL = ", E_ps_NL)
-
 end

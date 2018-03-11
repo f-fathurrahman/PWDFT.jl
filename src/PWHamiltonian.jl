@@ -43,7 +43,7 @@ mutable struct PWHamiltonian
     electrons::ElectronsInfo
     atoms::Atoms
     pspots::Array{PsPot_GTH,1}
-    psNL
+    pspotNL::PsPotNL
 end
 
 
@@ -98,8 +98,10 @@ function PWHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
     electrons = ElectronsInfo( atoms, Pspots )
     println(electrons)
 
+    # NL pseudopotentials
+    pspotNL = PsPotNL( pw, atoms, Pspots, check_norm=false )
 
-    return PWHamiltonian( pw, potentials, energies, rhoe, electrons, atoms, Pspots, nothing )
+    return PWHamiltonian( pw, potentials, energies, rhoe, electrons, atoms, Pspots, pspotNL )
 end
 
 
@@ -150,6 +152,7 @@ end
 
 include("op_K.jl")
 include("op_V_loc.jl")
+include("op_V_Ps_nloc.jl")
 include("op_H.jl")
 
 include("Poisson_solve.jl")
