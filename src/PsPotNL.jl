@@ -38,7 +38,7 @@ function PsPotNL( pw::PWGrid, atoms::Atoms, Pspots::Array{PsPot_GTH}; check_norm
                 for m = -l:l
                     NbetaNL = NbetaNL + 1
                     prj2beta[iprj,ia,l+1,m+psp.lmax+1] = NbetaNL
-                    @printf("NbetaNL, l, m: %3d %3d %3d\n", NbetaNL, l, m)
+                    @printf("ibeta, ia, l, m: %3d %3d %3d %3d\n", NbetaNL, ia, l, m)
                 end
             end
         end
