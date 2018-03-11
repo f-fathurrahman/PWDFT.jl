@@ -7,10 +7,11 @@ function op_V_Ps_nloc( Ham::PWHamiltonian, psi::Array{Complex128,2} )
     atoms = Ham.atoms
     atm2species = atoms.atm2species
     Natoms = atoms.Natoms
-
     Pspots = Ham.pspots
+    prj2beta = Ham.pspotNL.prj2beta
+    betaNL = Ham.pspotNL.betaNL
 
-    betaNL_psi = calc_betaNL_psi( Ham.psNL.betaNL, psi )
+    betaNL_psi = calc_betaNL_psi( Ham.pspotNL.betaNL, psi )
 
     Vpsi = zeros( Complex128, Ngwx, Nstates )
 
@@ -71,7 +72,7 @@ function calc_E_Ps_nloc( Ham::PWHamiltonian, psi::Array{Complex128,2} )
         end
         E_ps_NL = E_ps_NL + Focc[ist]*enl1
     end
-    println("E ps NL = ", E_ps_NL)
+
     return E_ps_NL
 
 end

@@ -2,6 +2,7 @@ mutable struct EnergiesT
     Total::Float64
     Kinetic::Float64
     Ps_loc::Float64
+    Ps_nloc::Float64
     Hartree::Float64
     XC::Float64
     NN::Float64
@@ -9,7 +10,7 @@ end
 
 # Default: all zeroes
 function EnergiesT()
-    return EnergiesT(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+    return EnergiesT(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
 end
 
 import Base.println
@@ -17,10 +18,12 @@ function println( Energies::EnergiesT )
     @printf("\n")
     @printf("Kinetic    energy: %18.10f\n", Energies.Kinetic )
     @printf("Ps_loc     energy: %18.10f\n", Energies.Ps_loc )
+    @printf("Ps_nloc    energy: %18.10f\n", Energies.Ps_nloc )
     @printf("Hartree    energy: %18.10f\n", Energies.Hartree )
     @printf("XC         energy: %18.10f\n", Energies.XC )
     @printf("-------------------------------------\n")
-    E_elec = Energies.Kinetic + Energies.Ps_loc + Energies.Hartree + Energies.XC
+    E_elec = Energies.Kinetic + Energies.Ps_loc + Energies.Ps_nloc +
+             Energies.Hartree + Energies.XC
     @printf("Electronic energy: %18.10f\n", E_elec)
     @printf("NN         energy: %18.10f\n", Energies.NN )
     @printf("-------------------------------------\n")
