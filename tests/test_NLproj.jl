@@ -1,29 +1,35 @@
 using PWDFT
 
+"""
+Test for handling of PsPotNL.
+The new implementation in PWHamiltonian is slightly more efficient than this.
+"""
+
 function test_main()
     pw = PWGrid(60.0, 20.0*diagm(ones(3)))
     println(pw)
 
     # Atoms
-    atoms = init_atoms_xyz("N2.xyz")
+    atoms = init_atoms_xyz("PtO.xyz")
     println(atoms)
 
     # Structure factor
     strf = calc_strfact( atoms, pw )
 
-    Nspecies = 1
-    Pspots = Array{PsPot_GTH}(Nspecies)
-    Pspots[1] = PsPot_GTH("../pseudopotentials/pade_gth/N-q5.gth")
+    Nspecies = atoms.Nspecies
+    PsPots = Array{PsPot_GTH}(Nspecies)
 
-    psp = Pspots[1]
-    println(psp)
+    # XXX Need to match Nspecies
+    PsPots[1] = PsPot_GTH("../pseudopotentials/pade_gth/Pt-q10.gth")
+    PsPots[2] = PsPot_GTH("../pseudopotentials/pade_gth/O-q6.gth")
+
+    println(PsPots[1])
+    println(PsPots[2])
 
     Ngwx = pw.gvecw.Ngwx
     idx_gw2g = pw.gvecw.idx_gw2g
     idx_gw2r = pw.gvecw.idx_gw2r
     gwave = pw.gvec.G[:,idx_gw2g]
-
-    println(size(gwave))
 
     Natoms = atoms.Natoms
 
@@ -47,6 +53,7 @@ function test_main()
     NbetaNL = 0
     for ia = 1:Natoms
         isp = atm2species[ia]
+        psp = PsPots[isp]
         for l = 0:psp.lmax
             for iprj = 1:psp.Nproj_l[l+1]
                 for m = -l:l
@@ -63,6 +70,7 @@ function test_main()
     ibeta = 0
     for ia = 1:Natoms
         isp = atm2species[ia]
+        psp = PsPots[isp]
         for l = 0:psp.lmax
             for iprj = 1:psp.Nproj_l[l+1]
                 for m = -l:l
@@ -103,7 +111,7 @@ function test_main()
     Nstates = 4
     Focc = 2.0*ones(Nstates)
     srand(1234)
-    psi = rand(Ngwx,Nstates) + im*rand(Ngwx,Nstates)
+    psi = rand(Complex128,Ngwx,Nstates)
     psi = ortho_gram_schmidt(psi)
 
     # calculate < betaNL | psi >
@@ -123,6 +131,7 @@ function test_main()
     for ist = 1:Nstates
         for ia = 1:Natoms
             isp = atm2species[ia]
+            psp = PsPots[isp]
             for l = 0:psp.lmax
             for m = -l:l
                 for iprj = 1:psp.Nproj_l[l+1]
@@ -144,6 +153,7 @@ function test_main()
     hij = zeros(Natoms,NbetaNL,NbetaNL)
     for ia = 1:Natoms
         isp = atm2species[ia]
+        psp = PsPots[isp]
         for l = 0:psp.lmax
         for m = -l:l
             for iprj = 1:psp.Nproj_l[l+1]
@@ -163,6 +173,7 @@ function test_main()
         enl1 = 0.0
         for ia = 1:Natoms
             isp = atm2species[ia]
+            psp = PsPots[isp]
             for l = 0:psp.lmax
             for m = -l:l
                 for iprj = 1:psp.Nproj_l[l+1]

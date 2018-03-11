@@ -1,35 +1,34 @@
 using PWDFT
 
 function test_main()
-    pw = PWGrid(60.0, 20.0*diagm(ones(3)))
-    println(pw)
 
     # Atoms
     atoms = init_atoms_xyz("PtO.xyz")
     println(atoms)
 
-    # Structure factor
-    strf = calc_strfact( atoms, pw )
+    pspfiles = ["../pseudopotentials/pade_gth/Pt-q10.gth",
+                "../pseudopotentials/pade_gth/O-q6.gth"]
 
-    Nspecies = atoms.Nspecies
-    Pspots = Array{PsPot_GTH}(Nspecies)
-    Pspots[1] = PsPot_GTH("../pseudopotentials/pade_gth/Pt-q10.gth")
-    Pspots[2] = PsPot_GTH("../pseudopotentials/pade_gth/O-q6.gth")
-    for isp = 1:Nspecies
-        println(Pspots[isp])
+    ecutwfc = 60.0
+    LatVecs = 20.0*diagm(ones(3))
+    Ham = PWHamiltonian( atoms, pspfiles, ecutwfc, LatVecs )
+
+    println(Ham.pw)
+    for isp = 1:atoms.Nspecies
+        println(Ham.pspots[isp])
     end
 
-    @time pspotNL = PsPotNL( pw, atoms, Pspots, check_norm=true )
-
     Nstates = 4
-    Ngwx = pw.gvecw.Ngwx
+    Ngwx = Ham.pw.gvecw.Ngwx
     srand(1234)
     psi = rand(Complex128,Ngwx,Nstates)
     psi = ortho_gram_schmidt(psi)
 
-    betaNL_psi = calc_betaNL_psi( pspotNL.betaNL, psi )
+    if Ham.pspotNL.NbetaNL > 0
+        betaNL_psi = calc_betaNL_psi( Ham.pspotNL.betaNL, psi )
+        E_ps_NL = calc_E_Ps_nloc( Ham, psi )
+    end
 
 end
 
 test_main()
-
