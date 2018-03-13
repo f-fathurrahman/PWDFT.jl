@@ -2,13 +2,19 @@ struct PsPotNL
     NbetaNL::Int64
     prj2beta::Array{Int64,4}
     betaNL::Array{Complex128,2}
-    #betaNL_psi::Array{Complex128,3}
 end
 
 function PsPotNL()
     # return dummy PsPotNL
     return PsPotNL(0, zeros(Int64,1,1,1,1), zeros(1,1) )
 end
+
+import Base.println
+function println( pspotNL::PsPotNL )
+    @printf("\n")
+    @printf("NbetaNL = %d", pspotNL.NbetaNL)
+end
+
 
 function PsPotNL( pw::PWGrid, atoms::Atoms, Pspots::Array{PsPot_GTH}; check_norm=false )
 
@@ -43,6 +49,8 @@ function PsPotNL( pw::PWGrid, atoms::Atoms, Pspots::Array{PsPot_GTH}; check_norm
                 for m = -l:l
                     NbetaNL = NbetaNL + 1
                     prj2beta[iprj,ia,l+1,m+psp.lmax+1] = NbetaNL
+                    @printf("ibeta=%d ia=%d isp=%d l=%d m=%d iprj=%d\n",
+                             NbetaNL, ia, isp, l, m, iprj)
                 end
             end
         end

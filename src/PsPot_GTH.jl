@@ -126,6 +126,7 @@ function println( psp::PsPot_GTH )
     @printf("                                   ---------\n")
     @printf("\n")
     @printf("Species: %s\n\n", psp.atsymb)
+    @printf("zval: %d\n", psp.zval)
     @printf("File: %s\n", psp.pspfile)
     @printf("\nLocal pseudopotential parameters\n\n")
     @printf("rloc = %18.10f\n", rlocal)
@@ -179,8 +180,7 @@ end
 """
 Evaluate GTH local pseudopotential in G-space
 """
-function eval_Vloc_G( psp::PsPot_GTH, G2::Float64, Ω::Float64 )
-
+function eval_Vloc_G( psp::PsPot_GTH, G2::Float64 )
     rloc = psp.rlocal
     zval = psp.zval
     c1 = psp.c[1]
@@ -188,56 +188,24 @@ function eval_Vloc_G( psp::PsPot_GTH, G2::Float64, Ω::Float64 )
     c3 = psp.c[3]
     c4 = psp.c[4]
 
-    pre1 = -4*pi*zval/Ω
-    pre2 = sqrt(8*pi^3)*rloc^3/Ω
+    pre1 = -4*pi*zval
+    pre2 = sqrt(8*pi^3)*rloc^3
     Gr = sqrt(G2)*rloc
     expGr2 = exp(-0.5*Gr^2)
 
-    const SMALL = 1.0e-8
+    #const SMALL = 1.0e-8
+    const SMALL = eps()
 
     if sqrt(G2) > SMALL
-        Vg = pre1/G2*expGr2 + pre2*expGr2 * (c1 + c2*(3-Gr^2) +
-             c3*(15 - 10*Gr^2 + Gr^4) + c4*(105 - 105*Gr^2 + 21*Gr^4 - Gr^6) )
+        Vg = pre1/G2*expGr2 + pre2*expGr2 * (c1 + c2*(3.0 - Gr^2) +
+             c3*(15.0 - 10.0*Gr^2 + Gr^4) + c4*(10.05 - 105.0*Gr^2 + 21.0*Gr^4 - Gr^6) )
     else
-        # println("Small G2 = ", G2)
-        # limiting value
-        Vg = 2*pi*zval*rloc^2 + (2*pi)^1.5 * rloc^3 * (c1 + 3.0*c2 + 15*c3 + 105*c4)
+        Vg = 2*pi*zval*rloc^2 + (2*pi)^1.5 * rloc^3 * (c1 + 3.0*c2 + 15.0*c3 + 105.0*c4)
     end
 
     return Vg
 end
 
-
-
-"""
-Evaluate GTH local pseudopotential in G-space
-"""
-function eval_Vloc_G( psp::PsPot_GTH, G2::Array{Float64,1}, Ω::Float64 )
-
-    Ng = size(G2)[1]
-    Vg = zeros(Ng)
-
-    rloc = psp.rlocal
-    zval = psp.zval
-    c1 = psp.c[1]
-    c2 = psp.c[2]
-    c3 = psp.c[3]
-    c4 = psp.c[4]
-
-    pre1 = -4*pi*zval/Ω
-    pre2 = sqrt(8*pi^3)*rloc^3/Ω
-    #
-    for ig=2:Ng
-        Gr = sqrt(G2[ig])*rloc
-        expGr2 = exp(-0.5*Gr^2)
-        Vg[ig] = pre1/G2[ig]*expGr2 + pre2*expGr2 * (c1 + c2*(3-Gr^2) +
-                    c3*(15 - 10*Gr^2 + Gr^4) + c4*(105 - 105*Gr^2 + 21*Gr^4 - Gr^6) )
-    end
-    # limiting value, with minus sign ?
-    Vg[1] = 2*pi*zval*rloc^2 + (2*pi)^1.5 * rloc^3 * (c1 + 3.0*c2 + 15*c3 + 105*c4)
-
-    return Vg
-end
 
 
 """

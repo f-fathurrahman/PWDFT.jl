@@ -17,18 +17,14 @@ function test_main( ; method="SCF" )
                 "../pseudopotentials/pade_gth/Li-q1.gth"]
     Ham = PWHamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, LatVecs )
 
-    println("sum V Ps loc = ", sum(Ham.potentials.Ps_loc))
-
     #
     # calculate E_NN
     #
-    strf = calc_strfact( atoms, Ham.pw )
     Zvals = get_Zvals( Ham.pspots )
-    Ham.energies.NN = calc_E_NN( Ham.pw, strf, atoms.positions, atoms.Nspecies, atoms.atm2species, Zvals )
+    Ham.energies.NN = calc_E_NN( Ham.pw, atoms, Zvals )
 
     println("\nAfter calculating E_NN")
     println(Ham.energies)
-
 
     if method == "SCF"
         λ, v = KS_solve_SCF!( Ham )
@@ -53,4 +49,17 @@ function test_main( ; method="SCF" )
 end
 
 @time test_main(method="Emin")
-@time test_main(method="SCF")
+#@time test_main(method="SCF")
+
+"""
+ABINIT result (30 Ry) Li-q1, H-q1
+    Kinetic energy  =  6.12112937548124E-01
+    Hartree energy  =  5.79304971112604E-01
+    XC energy       = -4.78209829711666E-01
+    Ewald energy    = -2.19685854008068E-02
+    PspCore energy  = -1.98356853564844E-03
+    Loc. psp. energy= -1.49966016707742E+00
+    NL   psp  energy=  3.56955014824771E-02
+    >>>>>>>>> Etotal= -7.74708740582338E-01
+"""
+

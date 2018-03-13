@@ -81,9 +81,10 @@ function PWHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
     for isp = 1:Nspecies
         Pspots[isp] = PsPot_GTH( pspfiles[isp] )
         psp = Pspots[isp]
+        println(psp)
         for ig = 1:Ng
             ip = idx_g2r[ig]
-            Vg[ip] = strf[ig,isp] * eval_Vloc_G( psp, G2[ig], Ω )
+            Vg[ip] = strf[ig,isp] * eval_Vloc_G( psp, G2[ig] ) / Ω
         end
         #
         V_Ps_loc[:] = V_Ps_loc[:] + real( G_to_R(pw, Vg) ) * Npoints

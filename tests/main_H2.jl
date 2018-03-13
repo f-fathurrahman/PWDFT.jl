@@ -49,3 +49,27 @@ end
 
 @time test_main(method="Emin")
 @time test_main(method="SCF")
+
+
+"""
+For 30 Ry
+
+ABINIT result:
+    Kinetic energy  =  1.00939508961180E+00
+    Hartree energy  =  9.01100534759225E-01
+    XC energy       = -6.30598700701720E-01
+    Ewald energy    =  3.13170052325859E-01
+    PspCore energy  = -1.26742500464741E-06
+    Loc. psp. energy= -2.71195127559760E+00
+    NL   psp  energy=  0.00000000000000E+00
+    >>>>>>>>> Etotal= -1.11888556702743E+00
+
+
+PWSCF result:
+!    total energy              =      -2.23948549 Ry  = -1.119742745 Ha
+     one-electron contribution =      -3.40513308 Ry
+     hartree contribution      =       1.80222400 Ry
+     xc contribution           =      -1.26291639 Ry
+     ewald contribution        =       0.62633998 Ry  =  0.31316999 Ha
+"""
+
