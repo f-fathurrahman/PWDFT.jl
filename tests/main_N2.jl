@@ -1,5 +1,21 @@
 using PWDFT
 
+function test_conv_E_nn()
+    atoms = init_atoms_xyz("N2.xyz")
+    println(atoms)
+
+    LatVecs = 16.0*diagm( ones(3) )
+    Zvals = [5.0] # XXX hardwired
+
+    for i = 1:5
+        ecutwfc_Ry = 30.0 + (i-1)*10.0
+        pw = PWGrid( ecutwfc_Ry*0.5, LatVecs )
+        E_NN = calc_E_NN( pw, atoms, Zvals )
+        @printf("%18.10f %18.10f\n", ecutwfc_Ry, E_NN)
+    end
+
+end
+
 function test_main( ; method="SCF" )
 
     #
@@ -8,12 +24,11 @@ function test_main( ; method="SCF" )
     atoms = init_atoms_xyz("N2.xyz")
     println(atoms)
 
-
     #
     # Initialize Hamiltonian
     #
     LatVecs = 16.0*diagm( ones(3) )
-    ecutwfc_Ry = 40.0
+    ecutwfc_Ry = 30.0
     pspfiles = ["../pseudopotentials/pade_gth/N-q5.gth"]
     Ham = PWHamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, LatVecs )
 
@@ -45,5 +60,28 @@ function test_main( ; method="SCF" )
 
 end
 
-@time test_main(method="Emin")
+#@time test_main(method="Emin")
 #@time test_main(method="SCF")
+
+@time test_conv_E_nn()
+
+
+"""
+ABINIT result for 30 Ry:
+    Kinetic energy  =  1.15309586059089E+01
+    Hartree energy  =  1.71105433424343E+01
+    XC energy       = -4.50162677653213E+00
+    Ewald energy    =  1.79063539962452E+00
+    PspCore energy  = -7.02139897582120E-05
+    Loc. psp. energy= -4.73400706683002E+01
+    NL   psp  energy=  2.32674629031602E+00
+    >>>>>>>>> Etotal= -1.90828840205384E+01
+
+
+PWSCF result for 30 Ry
+!    total energy              =     -38.17145300 Ry = -19.0857265 Ha
+     one-electron contribution =     -66.96020106 Ry
+     hartree contribution      =      34.21524310 Ry
+     xc contribution           =      -9.00776423 Ry
+     ewald contribution        =       3.58126919 Ry =   1.790634595 Ha
+"""
