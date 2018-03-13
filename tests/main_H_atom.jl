@@ -13,7 +13,7 @@ function test_main( ; method="SCF" )
     #
     pspfiles = ["../pseudopotentials/pade_gth/H-q1.gth"]
     LatVecs = 16.0*diagm( ones(3) )
-    ecutwfc_Ry = 60.0
+    ecutwfc_Ry = 30.0
     Ham = PWHamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, LatVecs )
 
     println("sum V Ps loc = ", sum(Ham.potentials.Ps_loc))
@@ -21,12 +21,10 @@ function test_main( ; method="SCF" )
     #
     # calculate E_NN
     #
-    strf = calc_strfact( atoms, Ham.pw )
-    Ham.energies.NN = calc_E_NN( Ham.pw, strf, atoms.positions, atoms.Nspecies, atoms.atm2species, [1.0])
+    Ham.energies.NN = calc_E_NN( Ham.pw, atoms, [1.0] )
 
     println("\nAfter calculating E_NN")
     println(Ham.energies)
-
 
     if method == "SCF"
         λ, v = KS_solve_SCF!( Ham )

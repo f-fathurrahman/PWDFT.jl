@@ -22,8 +22,7 @@ function test_main( ; method="SCF" )
     #
     # calculate E_NN
     #
-    strf = calc_strfact( atoms, Ham.pw )   # structure factor
-    Ham.energies.NN = calc_E_NN( Ham.pw, strf, atoms.positions, atoms.Nspecies, atoms.atm2species, [1.0])
+    Ham.energies.NN = calc_E_NN( Ham.pw, atoms, [1.0] )
 
     println("\nAfter calculating E_NN")
     println(Ham.energies)

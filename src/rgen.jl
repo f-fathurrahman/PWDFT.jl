@@ -68,16 +68,15 @@ function rgen( dtau, rmax, mxr, at, bg )
     end
     end
   
-
+    @printf("rgen: nrm = %d\n", nrm)
     # reorder the vectors in order of increasing magnitude
     if nrm > 1
         irr = sortperm(r2[1:nrm])
         r2[1:nrm] = r2[irr]
+        r2[nrm+1:end] = 0.0
+        r[:,1:nrm] = r[1:3,irr]
+        r[:,nrm+1:end] = 0.0
     end
-    r2[nrm+1:end] = 0.0
-
-    r[:,1:nrm] = r[1:3,irr]
-    r[:,nrm+1:end] = 0.0
 
 """
     for ir = 1:nrm - 1
