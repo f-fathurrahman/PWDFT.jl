@@ -5,6 +5,11 @@ struct PsPotNL
     #betaNL_psi::Array{Complex128,3}
 end
 
+function PsPotNL()
+    # return dummy PsPotNL
+    return PsPotNL(0, zeros(Int64,1,1,1,1), zeros(1,1) )
+end
+
 function PsPotNL( pw::PWGrid, atoms::Atoms, Pspots::Array{PsPot_GTH}; check_norm=false )
 
     Natoms = atoms.Natoms

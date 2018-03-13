@@ -148,7 +148,9 @@ function PWHamiltonian( atoms::Atoms, ecutwfc::Float64, LatVecs::Array{Float64,2
 
     rhoe = zeros(Float64,Npoints)
 
-    return PWHamiltonian( pw, potentials, energies, rhoe, electrons, atoms, Pspots, nothing )
+    pspotNL = PsPotNL()
+
+    return PWHamiltonian( pw, potentials, energies, rhoe, electrons, atoms, Pspots, pspotNL )
 end
 
 

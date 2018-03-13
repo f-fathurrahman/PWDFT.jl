@@ -21,9 +21,8 @@ function test_main( ; method="SCF" )
     #
     # calculate E_NN
     #
-    strf = calc_strfact( atoms, Ham.pw )
     Zvals = get_Zatoms( atoms )
-    Ham.energies.NN = calc_E_NN( Ham.pw, strf, atoms.positions, atoms.Nspecies, atoms.atm2species, Zvals)
+    Ham.energies.NN = calc_E_NN( Ham.pw, atoms, Zvals )
 
     if method == "SCF"
         λ, v = KS_solve_SCF!( Ham )
