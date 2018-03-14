@@ -2,24 +2,8 @@ using PWDFT
 
 
 include("../src/calc_E_NN_simple.jl")
+include("../src/calc_E_NN_new.jl")
 
-
-function test_conv_E_nn_N2()
-    atoms = init_atoms_xyz("N2.xyz")
-    println(atoms)
-
-    LatVecs = 16.0*diagm( ones(3) )
-    Zvals = [5.0] # XXX hardwired
-
-    for i = 1:10
-        ecutwfc_Ry = 30.0 + (i-1)*10.0
-        pw = PWGrid( ecutwfc_Ry*0.5, LatVecs )
-        E_NN = calc_E_NN( pw, atoms, Zvals )
-        E_NN_old = calc_E_NN_simple( pw, atoms, Zvals )
-        @printf("%18.10f %18.10f %18.10f\n", ecutwfc_Ry, E_NN_old, E_NN)
-    end
-
-end
 
 """
 ewald = 3.58126919 Ry = 1.790634595 Ha
@@ -33,12 +17,17 @@ function test_N2()
 
     E_NN = calc_E_NN_simple( LatVecs, atoms, Zvals, verbose=true )
     E_NN_v2 = calc_E_NN( PWGrid(25.0,LatVecs), atoms, Zvals )
+    E_NN_v3 = calc_E_NN_new( LatVecs, atoms, Zvals ) 
 
     E_NN_ref = 1.790634595
     d1 = abs(E_NN - E_NN_ref)
     d2 = abs(E_NN_v2 - E_NN_ref)
+    d3 = abs(E_NN_v3 - E_NN_ref)
 
-    @printf("%18.10f %18.10f %18.10e %18.10e\n", E_NN, E_NN_v2, d1, d2)
+    @printf("\n version simple, now, and new\n\n")
+    @printf("%18.10f %18.10f %18.10f\n", E_NN, E_NN_v2, E_NN_v3)
+    @printf("%18.7e %18.7e %18.7e\n", d1, d2, d3)
+
 end
 
 """
@@ -53,12 +42,16 @@ function test_H2()
 
     E_NN = calc_E_NN_simple( LatVecs, atoms, Zvals, verbose=true )
     E_NN_v2 = calc_E_NN( PWGrid(25.0,LatVecs), atoms, Zvals )
+    E_NN_v3 = calc_E_NN_new( LatVecs, atoms, Zvals )    
 
     E_NN_ref = 0.31316999 
     d1 = abs(E_NN - E_NN_ref)
     d2 = abs(E_NN_v2 - E_NN_ref)
+    d3 = abs(E_NN_v3 - E_NN_ref)
 
-    @printf("%18.10f %18.10f %18.10e %18.10e\n", E_NN, E_NN_v2, d1, d2)
+    @printf("\n version simple, now, and new\n\n")
+    @printf("%18.10f %18.10f %18.10f\n", E_NN, E_NN_v2, E_NN_v3)
+    @printf("%18.7e %18.7e %18.7e\n", d1, d2, d3)
 
 end
 
@@ -74,55 +67,46 @@ function test_LiH()
 
     E_NN = calc_E_NN_simple( LatVecs, atoms, Zvals, verbose=true )
     E_NN_v2 = calc_E_NN( PWGrid(25.0,LatVecs), atoms, Zvals )
+    E_NN_v3 = calc_E_NN_new( LatVecs, atoms, Zvals )
 
     E_NN_ref = -0.02196861
     d1 = abs(E_NN - E_NN_ref)
     d2 = abs(E_NN_v2 - E_NN_ref)
+    d3 = abs(E_NN_v3 - E_NN_ref)
 
-    @printf("%18.10f %18.10f %18.10e %18.10e\n", E_NN, E_NN_v2, d1, d2)
-
-end
-
-
-
-function test_conv_E_nn_LiH()
-    atoms = init_atoms_xyz("N2.xyz")
-    println(atoms)
-
-    LatVecs = 16.0*diagm( ones(3) )
-    Zvals = [5.0] # XXX hardwired
-
-    for i = 1:10
-        ecutwfc_Ry = 30.0 + (i-1)*10.0
-        pw = PWGrid( ecutwfc_Ry*0.5, LatVecs )
-        E_NN = calc_E_NN( pw, atoms, Zvals )
-        E_NN_old = OLD_calc_E_NN( pw, atoms, Zvals, verbose=true )
-        @printf("%18.10f %18.10f %18.10f\n", ecutwfc_Ry, E_NN_old, E_NN)
-    end
+    @printf("\n version simple, now, and new\n\n")
+    @printf("%18.10f %18.10f %18.10f\n", E_NN, E_NN_v2, E_NN_v3)
+    @printf("%18.7e %18.7e %18.7e\n", d1, d2, d3)
 
 end
 
-function test_main()
-    LatVecs = 16.0*diagm( ones(3) )
-    ecutwfc_Ry = 60.0
-    pw = PWGrid( ecutwfc_Ry*0.5, LatVecs )
-    println(pw)
-    #
+"""
+PWSCF result = -0.17733109 Ry = -0.088665545 Ha
+"""
+function test_H()
     atoms = init_atoms_xyz("H.xyz")
     println(atoms)
-    #
-    strf = calc_strfact( atoms, pw )
 
-    E_NN = OLD_calc_E_NN( pw, atoms.positions, atoms.Nspecies, atoms.atm2species, [1.0])
-    @printf("E_NN = %18.10f\n", E_NN)
-    
-    E_NN = calc_E_NN( pw, atoms, [1.0] )
-    @printf("E_NN = %18.10f\n", E_NN)
+    LatVecs = 16.0*diagm( ones(3) )
+    Zvals = [1.0] # XXX hardwired
+
+    E_NN = calc_E_NN_simple( LatVecs, atoms, Zvals, verbose=true )
+    E_NN_v2 = calc_E_NN( PWGrid(25.0,LatVecs), atoms, Zvals )
+    E_NN_v3 = calc_E_NN_new( LatVecs, atoms, Zvals )
+
+    E_NN_ref = -0.088665545
+    d1 = abs(E_NN - E_NN_ref)
+    d2 = abs(E_NN_v2 - E_NN_ref)
+    d3 = abs(E_NN_v3 - E_NN_ref)
+
+    @printf("\n version simple, now, and new\n\n")
+    @printf("%18.10f %18.10f %18.10f\n", E_NN, E_NN_v2, E_NN_v3)
+    @printf("%18.7e %18.7e %18.7e\n", d1, d2, d3)
+
 end
 
-#test_main()
-#test_conv_E_nn_N2()
-test_N2()
+#test_H()
 #test_H2()
 #test_LiH()
+test_N2()
 
