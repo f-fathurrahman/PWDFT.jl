@@ -16,7 +16,7 @@ include("rgen.jl")
 Calculates Ewald energy with both G- and R-space terms.
 Determines optimal alpha. Should hopefully work for any structure.
 """
-function calc_E_NN( pw::PWGrid, atoms::Atoms, Zv::Array{Float64} )
+function calc_E_NN( pw::PWGrid, atoms::Atoms, Zv::Array{Float64,1} )
 
     Sf = calc_strfact( atoms, pw )
 
@@ -43,6 +43,9 @@ function calc_E_NN( pw::PWGrid, atoms::Atoms, Zv::Array{Float64} )
     bg = pw.RecVecs
 
     gcutm = 2*pi*maximum( pw.Ns )  
+    #gcutm = pw.ecutrho
+    #gcutm = maximum(pw.gvec.G2)/2
+    @printf("gcutm, ecutrho, max G2 = %18.10f, %18.10f, %18.10f\n", gcutm, pw.ecutrho, maximum(pw.gvec.G2))
 
     alat = 1.0
     gamma_only = false
@@ -69,11 +72,14 @@ function calc_E_NN( pw::PWGrid, atoms::Atoms, Zv::Array{Float64} )
         end
         #
         # beware of unit of gcutm
-        upperbound = 2.0*charge^2 * sqrt(2.0*alpha/(2*pi)) * erfc(sqrt(gcutm/4.0/alpha))  
+        upperbound = 2.0*charge^2 * sqrt(2.0*alpha/2.0/pi) * erfc(sqrt(gcutm/4.0/alpha))  
+        @printf("alpha, upperbound = %f %18.10e\n", alpha, upperbound)
         if upperbound <= 1.e-7
+            @printf("do_loop_alpha is false, alpha = %18.10f\n", alpha)
             do_loop_alpha = false
         end
     end
+    @printf("alpha = %18.10f\n", alpha)
     #
     # G-space sum here.
     # Determine if this processor contains G=0 and set the constant term
@@ -133,8 +139,10 @@ function calc_E_NN( pw::PWGrid, atoms::Atoms, Zv::Array{Float64} )
             end
         end
     end
-  
+    
+    @printf("ewaldg, ewaldr = %18.10f %18.10f\n", ewaldg, ewaldr)
     E_nn = 0.5*(ewaldg + ewaldr)
+    return E_nn
 
 end
 

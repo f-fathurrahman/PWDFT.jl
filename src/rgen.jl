@@ -41,9 +41,12 @@ function rgen( dtau, rmax, mxr, at, bg )
   
     # these are estimates of the maximum values of needed integer indices
 
-    nm1 = round( Int64, norm(bg[:,1])*rmax ) + 2
-    nm2 = round( Int64, norm(bg[:,2])*rmax ) + 2
-    nm3 = round( Int64, norm(bg[:,3])*rmax ) + 2
+    nm1 = round( Int64, norm(bg[:,1])*rmax ) + 4
+    nm2 = round( Int64, norm(bg[:,2])*rmax ) + 4
+    nm3 = round( Int64, norm(bg[:,3])*rmax ) + 4
+
+    @printf("rmax = %18.10f\n", rmax)
+    @printf("nm = [%d,%d,%d]\n", nm1, nm2, nm3)
   
     for i = -nm1:nm1
     for j = -nm2:nm2
@@ -68,7 +71,6 @@ function rgen( dtau, rmax, mxr, at, bg )
     end
     end
   
-    @printf("rgen: nrm = %d\n", nrm)
     # reorder the vectors in order of increasing magnitude
     if nrm > 1
         irr = sortperm(r2[1:nrm])
@@ -93,6 +95,7 @@ function rgen( dtau, rmax, mxr, at, bg )
         end
     end
 """
+    @printf("nrm = %d\n", nrm)
     return nrm, r, r2
 end
 

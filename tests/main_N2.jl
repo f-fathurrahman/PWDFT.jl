@@ -1,21 +1,5 @@
 using PWDFT
 
-function test_conv_E_nn()
-    atoms = init_atoms_xyz("N2.xyz")
-    println(atoms)
-
-    LatVecs = 16.0*diagm( ones(3) )
-    Zvals = [5.0] # XXX hardwired
-
-    for i = 1:5
-        ecutwfc_Ry = 30.0 + (i-1)*10.0
-        pw = PWGrid( ecutwfc_Ry*0.5, LatVecs )
-        E_NN = calc_E_NN( pw, atoms, Zvals )
-        @printf("%18.10f %18.10f\n", ecutwfc_Ry, E_NN)
-    end
-
-end
-
 function test_main( ; method="SCF" )
 
     #
@@ -60,10 +44,8 @@ function test_main( ; method="SCF" )
 
 end
 
-#@time test_main(method="Emin")
+@time test_main(method="Emin")
 #@time test_main(method="SCF")
-
-@time test_conv_E_nn()
 
 
 """
