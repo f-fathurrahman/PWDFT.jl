@@ -2,30 +2,22 @@ using PWDFT
 
 function test_main( ; method="SCF" )
 
-    #
     # Atoms
-    #
     atoms = init_atoms_xyz("C.xyz")
     println(atoms)
 
-    #
     # Initialize Hamiltonian
-    #
     LatVecs = 16.0*diagm( ones(3) )
     ecutwfc_Ry = 40.0
     Ham = PWHamiltonian( atoms, ecutwfc_Ry*0.5, LatVecs )
     println("sum V Ps loc = ", sum(Ham.potentials.Ps_loc))
 
-    #
     # calculate E_NN
-    #
-    strf = calc_strfact( atoms, Ham.pw )
     Zvals = get_Zatoms( atoms )
-    Ham.energies.NN = calc_E_NN( Ham.pw, strf, atoms.positions, atoms.Nspecies, atoms.atm2species, Zvals )
-
+    Ham.energies.NN = calc_E_NN( Ham.pw, atoms, Zvals )
 
     if method == "SCF"
-        #
+        # Example of manually setting occupation numbers
         Ham.electrons.Nstates = 4
         Ham.electrons.Focc = [2.0, 4.0/3, 4.0/3, 4.0/3]
         println(Ham.electrons)

@@ -18,9 +18,7 @@ function test_main( ; method="SCF" )
 
     println("sum V Ps loc = ", sum(Ham.potentials.Ps_loc))
 
-    #
     # calculate E_NN
-    #
     Zvals = get_Zvals( Ham.pspots )
     Ham.energies.NN = calc_E_NN( Ham.pw, atoms, Zvals )
 
@@ -71,4 +69,16 @@ Results from ABINIT 30 Ry with NL pspot (the usual one)
     Loc. psp. energy= -1.21257971730573E+00
     NL   psp  energy=  2.38145519069942E-01
     >>>>>>>>> Etotal= -9.91532208284459E-01
+
+Total energy components
+    Kinetic    energy:       0.3566282013
+    Ps_loc     energy:      -1.2145559006
+    Ps_nloc    energy:       0.2383401330
+    Hartree    energy:       0.3506139979
+    XC         energy:      -0.3679011972
+    -------------------------------------
+    Electronic energy:      -0.6368747655
+    NN         energy:      -0.3546621849
+    -------------------------------------
+    Total      energy:      -0.9915369505    
 """

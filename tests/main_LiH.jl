@@ -2,24 +2,18 @@ using PWDFT
 
 function test_main( ; method="SCF" )
 
-    #
     # Atoms
-    #
     atoms = init_atoms_xyz("LiH.xyz")
     println(atoms)
 
-    #
     # Initialize Hamiltonian
-    #
     LatVecs = 16.0*diagm( ones(3) )
     ecutwfc_Ry = 30.0
     pspfiles = ["../pseudopotentials/pade_gth/H-q1.gth",
                 "../pseudopotentials/pade_gth/Li-q1.gth"]
     Ham = PWHamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, LatVecs )
 
-    #
     # calculate E_NN
-    #
     Zvals = get_Zvals( Ham.pspots )
     Ham.energies.NN = calc_E_NN( Ham.pw, atoms, Zvals )
 
@@ -49,7 +43,7 @@ function test_main( ; method="SCF" )
 end
 
 @time test_main(method="Emin")
-#@time test_main(method="SCF")
+@time test_main(method="SCF")
 
 """
 ABINIT result (30 Ry) Li-q1, H-q1
@@ -61,5 +55,17 @@ ABINIT result (30 Ry) Li-q1, H-q1
     Loc. psp. energy= -1.49966016707742E+00
     NL   psp  energy=  3.56955014824771E-02
     >>>>>>>>> Etotal= -7.74708740582338E-01
+
+Total energy components
+    Kinetic    energy:       0.6039873921
+    Ps_loc     energy:      -1.4895615714
+    Ps_nloc    energy:       0.0358362128
+    Hartree    energy:       0.5766691587
+    XC         energy:      -0.4770612342
+    -------------------------------------
+    Electronic energy:      -0.7501300421
+    NN         energy:      -0.0219685854
+    -------------------------------------
+    Total      energy:      -0.7720986275
 """
 
