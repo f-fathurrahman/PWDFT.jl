@@ -30,6 +30,9 @@ function test_main( ; method="SCF" )
     if method == "SCF"
         λ, v = KS_solve_SCF!( Ham )
         println("\nAfter calling KS_solve_SCF:")
+    elseif method == "ChebySCF"
+        λ, v = KS_solve_SCF!( Ham, update_psi="CheFSI" )
+        println("\nAfter calling KS_solve_SCF:")        
     elseif method == "Emin"
         λ, v = KS_solve_Emin_PCG!( Ham, I_CG_BETA=4 )
         println("\nAfter calling KS_solve_Emin_PCG:")
@@ -47,6 +50,7 @@ function test_main( ; method="SCF" )
 
 end
 
+@time test_main(method="ChebySCF")
 @time test_main(method="Emin")
 @time test_main(method="SCF")
 

@@ -106,7 +106,6 @@ include("diag_lobpcg.jl")
 export diag_Emin_PCG
 include("diag_Emin_PCG.jl")
 
-
 export andersonmix!
 include("andersonmix.jl")
 
