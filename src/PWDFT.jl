@@ -78,10 +78,6 @@ include("init_V_coulomb_G.jl")
 export calc_E_NN
 include("calc_E_NN.jl")
 
-# for debugging purpose
-#export OLD_calc_E_NN
-#include("OLD_calc_E_NN.jl")
-
 export calc_rhoe
 include("calc_rhoe.jl")
 

@@ -1,149 +1,140 @@
-#
-# Copyright (C) 2001 PWSCF group
-# This file is distributed under the terms of the
-# GNU General Public License. See the file `License'
-# in the root directory of the present distribution,
-# or http://www.gnu.org/copyleft/gpl.txt .
-#
-# modified by Fadjar Fathurrahman
-#
 
 using SpecialFunctions: erfc
 
-include("rgen.jl")
-
-"""
-Calculates Ewald energy with both G- and R-space terms.
-Determines optimal alpha. Should hopefully work for any structure.
-"""
-function calc_E_NN( pw::PWGrid, atoms::Atoms, Zv::Array{Float64,1} )
-
-    Sf = calc_strfact( atoms, pw )
-
-    atpos = atoms.positions
-    Natoms = atoms.Natoms
-    Nspecies = atoms.Nspecies
-    atm2species = atoms.atm2species
-
-    Ns = pw.Ns
-    LL = pw.LatVecs
-    Ng = pw.gvec.Ng
-    G2 = pw.gvec.G2
-    omega = pw.Ω
-
-    ewaldg = 0.0
-    ewaldsr = 0.0
-
-    dtau = zeros(Float64,3)
-
-    # REAL(DP) :: charge, ewaldg, ewaldr, dtau (3), alpha, &
-    # r (3, mxr), r2 (mxr), rmax, rr, upperbound, fact
-
-    at = pw.LatVecs'  # assuming transpose
-    bg = pw.RecVecs
-
-    gcutm = 2*pi*maximum( pw.Ns )  
-    #gcutm = pw.ecutrho
-    #gcutm = maximum(pw.gvec.G2)/2
-    @printf("gcutm, ecutrho, max G2 = %18.10f, %18.10f, %18.10f\n", gcutm, pw.ecutrho, maximum(pw.gvec.G2))
-
-    alat = 1.0
-    gamma_only = false
-    gstart = 2
-
-    charge = 0.0
-    for ia = 1:Natoms
-        isp = atm2species[ia]
-        charge = charge + Zv[isp]
-    end
-    
-    alpha = 2.9
-
-    do_loop_alpha = true
-    while(do_loop_alpha)
-        alpha = alpha - 0.1
-        #
-        # choose alpha in order to have convergence in the sum over G
-        # upperbound is a safe upper bound for the error in the sum over G
-        if alpha <= 0.0
-            @printf("ERROR in calculating Ewald energy:\n")
-            @printf("optimal alpha not found\n")
-            exit()
-        end
-        #
-        # beware of unit of gcutm
-        upperbound = 2.0*charge^2 * sqrt(2.0*alpha/2.0/pi) * erfc(sqrt(gcutm/4.0/alpha))  
-        @printf("alpha, upperbound = %f %18.10e\n", alpha, upperbound)
-        if upperbound <= 1.e-7
-            @printf("do_loop_alpha is false, alpha = %18.10f\n", alpha)
-            do_loop_alpha = false
-        end
-    end
-    @printf("alpha = %18.10f\n", alpha)
-    #
-    # G-space sum here.
-    # Determine if this processor contains G=0 and set the constant term
-    #
-    if gstart==2
-        ewaldg = -charge^2 / alpha / 4.0
-    else
-        ewaldg = 0.0
-    end
-
-    # gamma_only should be .FALSE. for our case
-    if gamma_only
-        fact = 2.0
-    else
-        fact = 1.0
-    end
-
-    for ig = gstart:Ng
-        rhon = 0.0 + im*0.0
-        for isp = 1:Nspecies
-            rhon = rhon + Zv[isp]*conj(Sf[ig,isp])
-        end
-        ewaldg = ewaldg + fact*abs(rhon)^2 * exp( -G2[ig]/alpha/4.0 ) / G2[ig]
-    end
-    ewaldg = 2.0 * 2*pi / omega * ewaldg
-    #
-    #  Here add the other constant term
-    #
-    if gstart==2
-        for ia = 1:Natoms
-            isp = atm2species[ia]
-            ewaldg = ewaldg - Zv[isp]^2 * sqrt(8.0/2.0/pi*alpha)
-        end
-    end
-    #
-    # R-space sum here (only for the processor that contains G=0)
-    #
-    mxr = 50
-    ewaldr = 0.0
-    if gstart == 2
-        rmax = 4.0 / sqrt(alpha) / alat
-        #
-        # with this choice terms up to ZiZj*erfc(4) are counted (erfc(4)=2x10^-8
-        #
-        for ia = 1:Natoms
-            for ja = 1:Natoms
-                dtau[:] = atpos[:,ia] - atpos[:,ja]
-                # generates nearest-neighbors shells
-                nrm, r, r2 = rgen( dtau, rmax, mxr, at, bg )
-                # and sum to the real space part
-                for ir = 1:nrm
-                    rr = sqrt( r2[ir] ) * alat
-                    isp = atm2species[ia]
-                    jsp = atm2species[ja]
-                    ewaldr = ewaldr + Zv[isp] * Zv[jsp] * erfc(sqrt(alpha)*rr)/rr
-                end
-            end
-        end
-    end
-    
-    @printf("ewaldg, ewaldr = %18.10f %18.10f\n", ewaldg, ewaldr)
-    E_nn = 0.5*(ewaldg + ewaldr)
-    return E_nn
-
+function calc_E_NN( pw::PWGrid, atoms::Atoms, Zvals::Array{Float64,1} )
+    return calc_E_NN( pw.LatVecs, atoms, Zvals )
 end
 
+"""
+Code inspired from Prof. Natalie Holzwarth:
+http://users.wfu.edu/natalie/s18phy712/computerprograms/ewaldsum.f90
+"""
+function calc_E_NN( LatVecs::Array{Float64,2}, atoms::Atoms, Zvals::Array{Float64,1} )
 
+    t1 = LatVecs[1,:]
+    t2 = LatVecs[2,:]
+    t3 = LatVecs[3,:]
+  
+    volcry = t1[1]*(t2[2]*t3[3]-t2[3]*t3[2]) +
+             t1[2]*(t2[3]*t3[1]-t2[1]*t3[3]) +
+             t1[3]*(t2[1]*t3[2]-t2[2]*t3[1])
+
+    g1 = zeros(Float64,3)
+    g2 = zeros(Float64,3)
+    g3 = zeros(Float64,3)
+
+    g1[1] = 2.0*pi * (t2[2]*t3[3]-t2[3]*t3[2])/volcry
+    g1[2] = 2.0*pi * (t2[3]*t3[1]-t2[1]*t3[3])/volcry
+    g1[3] = 2.0*pi * (t2[1]*t3[2]-t2[2]*t3[1])/volcry
+    g2[1] = 2.0*pi * (t3[2]*t1[3]-t3[3]*t1[2])/volcry
+    g2[2] = 2.0*pi * (t3[3]*t1[1]-t3[1]*t1[3])/volcry
+    g2[3] = 2.0*pi * (t3[1]*t1[2]-t3[2]*t1[1])/volcry
+    g3[1] = 2.0*pi * (t1[2]*t2[3]-t1[3]*t2[2])/volcry
+    g3[2] = 2.0*pi * (t1[3]*t2[1]-t1[1]*t2[3])/volcry
+    g3[3] = 2.0*pi * (t1[1]*t2[2]-t1[2]*t2[1])/volcry
+  
+    volcry = abs(volcry)
+
+    t1m = sqrt(dot(t1,t1))
+    t2m = sqrt(dot(t2,t2))
+    t3m = sqrt(dot(t3,t3))
+    g1m = sqrt(dot(g1,g1))
+    g2m = sqrt(dot(g2,g2))
+    g3m = sqrt(dot(g3,g3))
+
+    Natoms = atoms.Natoms
+    atm2species = atoms.atm2species
+
+    # scaled atomic positions
+    tau = inv(LatVecs)*atoms.positions
+
+    const gcut = 2.0
+    const ebsl = 1e-8
+
+    tpi = 2.0*pi
+    con = volcry/(4.0*pi)
+    con2 = (4.0*pi)/volcry
+    glast2 = gcut*gcut
+    gexp = -log(ebsl)
+    eta = glast2/gexp
+
+    #@printf("eta = %18.10f\n" , eta)
+    cccc = sqrt(eta/pi)
+
+    x = 0.0
+    totalcharge = 0.0
+    for ia = 1:Natoms
+        isp = atm2species[ia]
+        x = x + Zvals[isp]^2
+        totalcharge = totalcharge + Zvals[isp]
+    end
+
+    #@printf("Total charge = %18.10f\n", totalcharge)
+
+    ewald = -cccc*x - 4.0*pi*(totalcharge^2)/(volcry*eta)
+
+    tmax = sqrt(2.0*gexp/eta)
+    seta = sqrt(eta)/2.0
+
+    mmm1 = round(Int64, tmax/t1m + 1.5)
+    mmm2 = round(Int64, tmax/t2m + 1.5)
+    mmm3 = round(Int64, tmax/t3m + 1.5)
+    #@printf("Lattice summation indices %d %d %d\n", mmm1, mmm2, mmm3)
+
+    v = zeros(Float64,3)
+    w = zeros(Float64,3)
+
+    for ia = 1:Natoms
+    for ja = 1:Natoms
+        v[:] = ( tau[1,ia] - tau[1,ja] )*t1[:] +
+               ( tau[2,ia] - tau[2,ja] )*t2[:] +
+               ( tau[3,ia] - tau[3,ja] )*t3[:]
+        isp = atm2species[ia]
+        jsp = atm2species[ja]
+        prd = Zvals[isp]*Zvals[jsp]
+        for i = -mmm1:mmm1
+        for j = -mmm2:mmm2
+        for k = -mmm3:mmm3
+            if (ia != ja) || ( (abs(i) + abs(j) + abs(k)) != 0 )
+                w[:] = v[:] + i*t1 + j*t2 + k*t3
+                rmag2 = sqrt(dot(w,w))
+                arg = rmag2*seta 
+                ewald = ewald + prd*erfc(arg)/rmag2
+            end
+        end
+        end
+        end
+    end
+    end
+
+    mmm1 = round(gcut/g1m + 1.5)
+    mmm2 = round(gcut/g2m + 1.5)
+    mmm3 = round(gcut/g3m + 1.5)
+      
+    #@printf("Reciprocal lattice summation indices: %d %d %d\n", mmm1, mmm2, mmm3)
+    for i = -mmm1:mmm1
+    for j = -mmm2:mmm2
+    for k = -mmm3:mmm3
+        if ( abs(i) + abs(j) + abs(k) ) != 0
+            w[:] = i*g1[:] + j*g2[:] + k*g3[:]
+            rmag2 = dot(w,w)
+            x = con2*exp(-rmag2/eta)/rmag2
+            for ia = 1:Natoms
+            for ja = 1:Natoms
+                v[:] = tau[:,ia] - tau[:,ja]
+                isp = atm2species[ia]
+                jsp = atm2species[ja]
+                prd = Zvals[isp]*Zvals[jsp]
+                arg = tpi*( i*v[1] + j*v[2] + k*v[3] )
+                ewald = ewald + x*prd*cos(arg)
+            end # ja
+            end # ia
+        end # if
+    end
+    end
+    end
+
+    @printf("Ewald energy %18.10f Ha\n", ewald*0.5)
+
+    return ewald*0.5
+end
