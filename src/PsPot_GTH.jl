@@ -193,12 +193,12 @@ function eval_Vloc_G( psp::PsPot_GTH, G2::Float64 )
     Gr = sqrt(G2)*rloc
     expGr2 = exp(-0.5*Gr^2)
 
-    #const SMALL = 1.0e-8
-    const SMALL = eps()
+    const SMALL = 1.0e-8
+    #const SMALL = eps()
 
     if sqrt(G2) > SMALL
         Vg = pre1/G2*expGr2 + pre2*expGr2 * (c1 + c2*(3.0 - Gr^2) +
-             c3*(15.0 - 10.0*Gr^2 + Gr^4) + c4*(10.05 - 105.0*Gr^2 + 21.0*Gr^4 - Gr^6) )
+             c3*(15.0 - 10.0*Gr^2 + Gr^4) + c4*(105.0 - 105.0*Gr^2 + 21.0*Gr^4 - Gr^6) )
     else
         Vg = 2*pi*zval*rloc^2 + (2*pi)^1.5 * rloc^3 * (c1 + 3.0*c2 + 15.0*c3 + 105.0*c4)
     end

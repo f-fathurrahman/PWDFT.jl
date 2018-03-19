@@ -49,19 +49,19 @@ function calc_energies( Ham::PWHamiltonian, psi::Array{Complex128,2} )
     E_Ps_loc = dot( Potentials.Ps_loc, rhoe ) * Ω/Npoints
 
     if Ham.pspotNL.NbetaNL > 0
-        E_ps_nloc = calc_E_Ps_nloc( Ham, psi )
+        E_Ps_nloc = calc_E_Ps_nloc( Ham, psi )
     else
-        E_ps_nloc = 0.0
+        E_Ps_nloc = 0.0
     end
 
     Energies = EnergiesT()
     Energies.Kinetic = E_kin
     Energies.Ps_loc  = E_Ps_loc
-    Energies.Ps_nloc = E_ps_nloc
+    Energies.Ps_nloc = E_Ps_nloc
     Energies.Hartree = E_Hartree
     Energies.XC      = E_xc
     Energies.NN      = Ham.energies.NN
-    Energies.Total   = E_kin + E_Ps_loc + E_ps_nloc + E_Hartree + E_xc + Ham.energies.NN
+    Energies.Total   = E_kin + E_Ps_loc + E_Ps_nloc + E_Hartree + E_xc + Ham.energies.NN
 
     return Energies
 end

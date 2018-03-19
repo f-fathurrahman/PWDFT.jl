@@ -73,7 +73,7 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
         for iterscf = 1:MaxInnerSCF
             #
             V_loc = Ham.potentials.Hartree + Ham.potentials.XC
-            if Ham.pspotNL.NbetaNL > 1
+            if Ham.pspotNL.NbetaNL > 0
                 VY = op_V_Ps_nloc( Ham, Y ) + op_V_loc( pw, V_loc, Y )
             else
                 VY = op_V_loc( Ham.pw, V_loc, Y )
