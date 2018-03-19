@@ -1,3 +1,21 @@
+function calc_E_xc( Ham::PWHamiltonian, psi::Array{Complex128,2} )
+    Ω = Ham.pw.Ω
+    Npoints = prod(Ham.pw.Ns)
+    rhoe = Ham.rhoe
+    E_xc = dot( excVWN(rhoe), rhoe ) * Ω/Npoints
+    return E_xc
+end
+
+
+function calc_E_Hartree( Ham::PWHamiltonian, psi::Array{Complex128,2} )
+    Potentials = Ham.potentials
+    Ω = Ham.pw.Ω
+    Npoints = prod(Ham.pw.Ns)
+    rhoe = Ham.rhoe
+    E_Hartree = 0.5*dot( Potentials.Hartree, rhoe ) * Ω/Npoints
+    return E_Hartree
+end
+
 #
 # psi is assumed to be already orthonormalized elsewhere
 # Potentials and Rhoe are not updated
@@ -5,12 +23,12 @@
 #
 function calc_energies( Ham::PWHamiltonian, psi::Array{Complex128,2} )
 
-    PW = Ham.pw
+    pw = Ham.pw
     Potentials = Ham.potentials
     Focc = Ham.electrons.Focc
 
-    Ω = PW.Ω
-    Ns = PW.Ns
+    Ω = pw.Ω
+    Ns = pw.Ns
     Npoints = prod(Ns)
 
     Ngwx = size(psi)[1]

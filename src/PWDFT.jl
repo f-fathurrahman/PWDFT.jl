@@ -84,7 +84,7 @@ include("calc_rhoe.jl")
 export PotentialsT
 export EnergiesT
 export PWHamiltonian
-export op_H, op_K, op_V_loc, op_V_Ps_loc
+export op_H, op_K, op_V_loc, op_V_Ps_loc, op_V_Ps_nloc
 export Poisson_solve
 export update!
 export PsPotNL, calc_betaNL_psi
@@ -94,7 +94,7 @@ include("PWHamiltonian.jl")
 export Kprec
 include("Kprec.jl")
 
-export calc_energies
+export calc_energies, calc_E_xc, calc_E_Hartree
 include("calc_energies.jl")
 
 export calc_grad
@@ -118,6 +118,9 @@ include("KS_solve_SCF.jl")
 export chebyfilt
 export get_ub_lb_lanczos
 include("CheFSI.jl")
+
+export KS_solve_DCM!
+include("KS_solve_DCM.jl")
 
 
 end

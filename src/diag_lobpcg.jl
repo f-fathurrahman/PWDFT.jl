@@ -1,5 +1,3 @@
-
-
 """
 Based on code by Knyazev.
 """

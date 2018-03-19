@@ -100,7 +100,7 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
         @printf("SCF: %8d %18.10f %18.10e %18.10e\n", iter, Etot, diffE, diffRho )
 
         if diffE < 1e-6
-            @printf("SCF is is converged: iter: %d , diffE = %10.7e\n", iter, diffE)
+            @printf("SCF is converged: iter: %d , diffE = %10.7e\n", iter, diffE)
             break
         end
         #
