@@ -18,6 +18,10 @@ function println( a::Atoms )
     @printf("Natoms   = %5d\n", a.Natoms)
     @printf("Nspecies = %5d\n", a.Nspecies)
     @printf("\n")
+    for isp = 1:a.Nspecies
+        @printf("Species %3d: %s\n", isp, a.SpeciesSymbols[isp])
+    end
+    @printf("\n")
     @printf("Coordinates in bohr:\n")
     @printf("\n")
     for ia = 1:a.Natoms

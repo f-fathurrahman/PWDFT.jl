@@ -3,7 +3,7 @@
 # Ham.energies.NN should be calculated if needed
 #
 function KS_solve_Emin_PCG!( Ham::PWHamiltonian;
-                             α_t = 3e-5, NiterMax=1000, verbose=false,
+                             α_t = 3e-5, NiterMax=200, verbose=false,
                              I_CG_BETA = 2 )
 
     pw = Ham.pw
