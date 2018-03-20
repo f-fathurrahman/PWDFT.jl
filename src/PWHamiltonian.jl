@@ -171,7 +171,8 @@ Given rhoe in real space, update Ham.rhoe, Hartree and XC potentials.
 function update!(Ham::PWHamiltonian, rhoe::Array{Float64,1})
     Ham.rhoe = rhoe
     Ham.potentials.Hartree = real( G_to_R( Ham.pw, Poisson_solve(Ham.pw, rhoe) ) )
-    Ham.potentials.XC = excVWN( rhoe ) + rhoe .* excpVWN( rhoe )
+    #Ham.potentials.XC = excVWN( rhoe ) + rhoe .* excpVWN( rhoe )
+    Ham.potentials.XC = calc_Vxc_VWN( rhoe )
 end
 
 

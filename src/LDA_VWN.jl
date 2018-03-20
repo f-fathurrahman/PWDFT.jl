@@ -1,3 +1,27 @@
+const LIBXC_SO_PATH = "/home/efefer/WORKS/my_github_repos/PWDFT.jl/src/extlibs/libxc_interface.so"
+
+function calc_Vxc_VWN( Rhoe::Array{Float64,1} )
+    Npoints = size(Rhoe)[1]
+    Vxc = zeros( Float64, Npoints )
+    #
+    ccall( (:calc_Vxc_VWN, LIBXC_SO_PATH), Void,
+           (Int64, Ptr{Float64}, Ptr{Float64}),
+           Npoints, Rhoe, Vxc )
+    #
+    return Vxc
+end
+
+function calc_epsxc_VWN( Rhoe::Array{Float64,1} )
+    Npoints = size(Rhoe)[1]
+    epsxc = zeros( Float64, Npoints )
+    #
+    ccall( (:calc_epsxc_VWN, LIBXC_SO_PATH), Void,
+           (Int64, Ptr{Float64}, Ptr{Float64}),
+           Npoints, Rhoe, epsxc )
+    #
+    return epsxc
+end
+
 #
 # VWN parameterization of the exchange correlation energy
 # Adaptep from Arias

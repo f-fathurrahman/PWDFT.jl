@@ -89,6 +89,7 @@ export Poisson_solve
 export update!
 export PsPotNL, calc_betaNL_psi
 export calc_betaNL_psi, calc_E_Ps_nloc
+export calc_epsxc_VWN, calc_Vxc_VWN
 include("PWHamiltonian.jl")
 
 export Kprec
