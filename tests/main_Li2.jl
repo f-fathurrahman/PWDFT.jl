@@ -33,6 +33,10 @@ function test_main( ; method="SCF" )
         λ, v = KS_solve_Emin_PCG!( Ham )
         println("\nAfter calling KS_solve_Emin_PCG:")
 
+    elseif method == "DCM"
+        λ, v = KS_solve_DCM!( Ham )
+        println("\nAfter calling KS_solve_Emin_PCG:")
+    
     else
         println("ERROR: unknow method = ", method)
     end
@@ -48,6 +52,7 @@ function test_main( ; method="SCF" )
 end
 
 @time test_main(method="Emin")
+@time test_main(method="DCM")
 #@time test_main(method="SCF")
 
 
