@@ -1,15 +1,20 @@
-function calc_Vxc_VWN( Rhoe::Array{Float64,1} )
+function calc_Vxc_PBE( Rhoe::Array{Float64,1} )
     Npoints = size(Rhoe)[1]
+
+    # calculate gRhoe2
+    gRhoe2 = zeros( Float64, Npoints )
+
     Vxc = zeros( Float64, Npoints )
+    Vgxc = zeros( Float64, Npoints )
     #
-    ccall( (:calc_Vxc_VWN, LIBXC_SO_PATH), Void,
-           (Int64, Ptr{Float64}, Ptr{Float64}),
-           Npoints, Rhoe, Vxc )
+    ccall( (:calc_Vxc_PBE, LIBXC_SO_PATH), Void,
+           (Int64, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}),
+           Npoints, Rhoe, gRhoe2, Vxc, Vgxc )
     #
     return Vxc
 end
 
-function calc_epsxc_VWN( Rhoe::Array{Float64,1} )
+function calc_epsxc_PBE( Rhoe::Array{Float64,1} )
     Npoints = size(Rhoe)[1]
     epsxc = zeros( Float64, Npoints )
     #

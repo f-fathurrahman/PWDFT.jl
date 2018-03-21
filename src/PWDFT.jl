@@ -81,6 +81,9 @@ include("calc_E_NN.jl")
 export calc_rhoe
 include("calc_rhoe.jl")
 
+const LIBXC_SO_PATH = "/home/efefer/WORKS/my_github_repos/PWDFT.jl/src/extlibs/libxc_interface.so"
+include("LDA_VWN.jl")
+
 export PotentialsT
 export EnergiesT
 export PWHamiltonian

@@ -162,7 +162,6 @@ include("op_V_Ps_nloc.jl")
 include("op_H.jl")
 
 include("Poisson_solve.jl")
-include("LDA_VWN.jl")
 
 
 """
