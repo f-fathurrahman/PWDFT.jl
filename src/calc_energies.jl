@@ -2,7 +2,11 @@ function calc_E_xc( Ham::PWHamiltonian, psi::Array{Complex128,2} )
     Ω = Ham.pw.Ω
     Npoints = prod(Ham.pw.Ns)
     rhoe = Ham.rhoe
-    epsxc = calc_epsxc_VWN( rhoe )
+    if Ham.xcfunc == "PBE"
+        epsxc = calc_epsxc_PBE( Ham.pw, rhoe )
+    else
+        epsxc = calc_epsxc_VWN( rhoe )
+    end
     E_xc = dot( epsxc, rhoe ) * Ω/Npoints
     return E_xc
 end
@@ -45,10 +49,14 @@ function calc_energies( Ham::PWHamiltonian, psi::Array{Complex128,2} )
 
     E_Hartree = 0.5*dot( Potentials.Hartree, rhoe ) * Ω/Npoints
 
-    epsxc = calc_epsxc_VWN( rhoe )
-    E_xc = dot( epsxc, rhoe ) * Ω/Npoints
-
     E_Ps_loc = dot( Potentials.Ps_loc, rhoe ) * Ω/Npoints
+
+    if Ham.xcfunc == "PBE"
+        epsxc = calc_epsxc_PBE( Ham.pw, rhoe )
+    else
+        epsxc = calc_epsxc_VWN( rhoe )
+    end
+    E_xc = dot( epsxc, rhoe ) * Ω/Npoints
 
     if Ham.pspotNL.NbetaNL > 0
         E_Ps_nloc = calc_E_Ps_nloc( Ham, psi )

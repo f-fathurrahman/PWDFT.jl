@@ -47,11 +47,13 @@ mutable struct PWHamiltonian
     atoms::Atoms
     pspots::Array{PsPot_GTH,1}
     pspotNL::PsPotNL
+    xcfunc::String
 end
 
 
 function PWHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
-                        ecutwfc::Float64, LatVecs::Array{Float64,2} )
+                        ecutwfc::Float64, LatVecs::Array{Float64,2};
+                        xcfunc = "VWN" )
     # Initialize plane wave grids
     pw = PWGrid( ecutwfc, LatVecs )
     println(pw)
@@ -105,14 +107,15 @@ function PWHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
     # NL pseudopotentials
     pspotNL = PsPotNL( pw, atoms, Pspots, check_norm=false )
 
-    return PWHamiltonian( pw, potentials, energies, rhoe, electrons, atoms, Pspots, pspotNL )
+    return PWHamiltonian( pw, potentials, energies, rhoe, electrons, atoms, Pspots, pspotNL, xcfunc )
 end
 
 
 #
 # No pspfiles given. Use Coulomb potential (all electrons)
 #
-function PWHamiltonian( atoms::Atoms, ecutwfc::Float64, LatVecs::Array{Float64,2} )
+function PWHamiltonian( atoms::Atoms, ecutwfc::Float64, LatVecs::Array{Float64,2};
+                        xcfunc="VWN" )
 
     #
     # Initialize plane wave grids
@@ -151,7 +154,7 @@ function PWHamiltonian( atoms::Atoms, ecutwfc::Float64, LatVecs::Array{Float64,2
 
     pspotNL = PsPotNL()
 
-    return PWHamiltonian( pw, potentials, energies, rhoe, electrons, atoms, Pspots, pspotNL )
+    return PWHamiltonian( pw, potentials, energies, rhoe, electrons, atoms, Pspots, pspotNL, xcfunc )
 end
 
 
@@ -170,8 +173,11 @@ Given rhoe in real space, update Ham.rhoe, Hartree and XC potentials.
 function update!(Ham::PWHamiltonian, rhoe::Array{Float64,1})
     Ham.rhoe = rhoe
     Ham.potentials.Hartree = real( G_to_R( Ham.pw, Poisson_solve(Ham.pw, rhoe) ) )
-    #Ham.potentials.XC = excVWN( rhoe ) + rhoe .* excpVWN( rhoe )
-    Ham.potentials.XC = calc_Vxc_VWN( rhoe )
+    if Ham.xcfunc == "PBE"
+        Ham.potentials.XC = calc_Vxc_PBE( Ham.pw, rhoe )
+    else  # VWN is the default
+        Ham.potentials.XC = calc_Vxc_VWN( rhoe )
+    end
 end
 
 

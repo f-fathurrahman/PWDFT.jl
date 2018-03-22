@@ -27,14 +27,15 @@ function calc_Vxc_PBE( pw::PWGrid, Rhoe::Array{Float64,1} )
     divh = op_nabla_dot( pw, h )
 
     for ip = 1:Npoints 
-      Vxc[ip] = Vxc[ip] - 2.0*divh[ip]
+        Vxc[ip] = Vxc[ip] - 2.0*divh[ip]
+        #Vxc[ip] = Vxc[ip] - divh[ip]
     end
 
     return Vxc
 end
 
 
-function calc_epsxc_PBE( Rhoe::Array{Float64,1} )
+function calc_epsxc_PBE( pw::PWGrid, Rhoe::Array{Float64,1} )
     Npoints = size(Rhoe)[1]
     epsxc = zeros( Float64, Npoints )
 

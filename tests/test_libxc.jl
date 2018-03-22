@@ -44,7 +44,7 @@ function test_GGA_PBE()
     Vxc = calc_Vxc_PBE( pw, Rhoe )
     @printf("sum Vxc = %18.10f\n", sum(Vxc))
 
-    epsxc = calc_Vxc_PBE( pw, Rhoe )
+    epsxc = calc_epsxc_PBE( pw, Rhoe )
     E_xc = dot( Rhoe, epsxc ) * dVol
     @printf("sum E_xc = %18.10f\n", E_xc)
 end
