@@ -1,11 +1,6 @@
-#const LIBXC_SO_PATH = "/home/efefer/WORKS/my_github_repos/PWDFT.jl/src/extlibs/libxc_interface.so"
-
-# XXX: Need to set environment variables LD_LIBRARY_PATH to directory containing
-# libxc.so.4
-
 using PWDFT
 
-function test_main()
+function test_LDA_VWN()
     Npoints = 5
     Rhoe = zeros( Float64, Npoints )
     Rhoe = [0.1, 0.2, 0.3, 0.4, 0.5]
@@ -28,4 +23,32 @@ function test_main()
     end
 end
 
-test_main()
+
+function test_GGA_PBE()
+    ecutwfc_Ry = 30.0
+    LatVecs = 16.0*eye(3)
+    pw = PWGrid( ecutwfc_Ry*0.5, LatVecs )
+
+    srand(1234)
+    Ngwx = pw.gvecw.Ngwx
+    dVol = pw.Ω/prod(pw.Ns)
+
+    Nstates = 4
+    Focc = 2.0*ones(Nstates)
+
+    psi = ortho_gram_schmidt( rand(Complex128,Ngwx,Nstates) )
+
+    Rhoe = calc_rhoe( pw, Focc, psi )
+    @printf("Integrated rhoe = %18.10f\n", sum(Rhoe)*dVol)
+
+    Vxc = calc_Vxc_PBE( pw, Rhoe )
+    @printf("sum Vxc = %18.10f\n", sum(Vxc))
+
+    epsxc = calc_Vxc_PBE( pw, Rhoe )
+    E_xc = dot( Rhoe, epsxc ) * dVol
+    @printf("sum E_xc = %18.10f\n", E_xc)
+end
+
+#test_LDA_VWN()
+
+test_GGA_PBE()

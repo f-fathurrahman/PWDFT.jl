@@ -1,8 +1,13 @@
-function calc_Vxc_PBE( Rhoe::Array{Float64,1} )
+function calc_Vxc_PBE( pw::PWGrid, Rhoe::Array{Float64,1} )
     Npoints = size(Rhoe)[1]
 
     # calculate gRhoe2
+    gRhoe = op_nabla( pw, Rhoe )
     gRhoe2 = zeros( Float64, Npoints )
+    for ip = 1:Npoints
+        gRhoe2[ip] = gRhoe[1,ip]*gRhoe[1,ip] + gRhoe[2,ip]*gRhoe[2,ip] +
+                     gRhoe[3,ip]*gRhoe[3,ip]
+    end
 
     Vxc = zeros( Float64, Npoints )
     Vgxc = zeros( Float64, Npoints )
@@ -10,72 +15,92 @@ function calc_Vxc_PBE( Rhoe::Array{Float64,1} )
     ccall( (:calc_Vxc_PBE, LIBXC_SO_PATH), Void,
            (Int64, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}),
            Npoints, Rhoe, gRhoe2, Vxc, Vgxc )
-    #
+
+    h = zeros(Float64,3,Npoints)
+    for ip = 1:Npoints
+        h[1,ip] = Vgxc[ip] * gRhoe[1,ip]
+        h[2,ip] = Vgxc[ip] * gRhoe[2,ip]
+        h[3,ip] = Vgxc[ip] * gRhoe[3,ip]
+    end
+
+    # div ( vgrho * gRhoe )
+    divh = op_nabla_dot( pw, h )
+
+    for ip = 1:Npoints 
+      Vxc[ip] = Vxc[ip] - 2.0*divh[ip]
+    end
+
     return Vxc
 end
+
 
 function calc_epsxc_PBE( Rhoe::Array{Float64,1} )
     Npoints = size(Rhoe)[1]
     epsxc = zeros( Float64, Npoints )
+
+    # calculate gRhoe2
+    gRhoe = op_nabla( pw, Rhoe )
+    gRhoe2 = zeros( Float64, Npoints )
+    for ip = 1:Npoints
+        gRhoe2[ip] = gRhoe[1,ip]*gRhoe[1,ip] + gRhoe[2,ip]*gRhoe[2,ip] +
+                     gRhoe[3,ip]*gRhoe[3,ip]
+    end
     #
-    ccall( (:calc_epsxc_VWN, LIBXC_SO_PATH), Void,
-           (Int64, Ptr{Float64}, Ptr{Float64}),
-           Npoints, Rhoe, epsxc )
+    ccall( (:calc_epsxc_PBE, LIBXC_SO_PATH), Void,
+           (Int64, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}),
+           Npoints, Rhoe, gRhoe2, epsxc )
     #
     return epsxc
 end
 
-#
-# VWN parameterization of the exchange correlation energy
-# Adaptep from Arias
-#
-function excVWN( n::Array{Float64} )
-    Npoints = size(n)[1]
-    # Constants
-    X1 =  0.75*(3.0/(2.0*pi))^(2.0/3.0)
-    A  =  0.0310907
-    x0 = -0.10498
-    b  =  3.72744
-    c  =  12.9352
-    Q = sqrt(4*c-b*b)
-    X0 = x0*x0 + b*x0 + c
-    #
-    out = zeros(Npoints)
-    for ip = 1:Npoints
-        rs = (4.0*pi/3.0*n[ip])^(-1.0/3.0)
-        #@printf("%8d %18.10f %18.10f\n", ip, n[ip], rs)
-        x = sqrt(rs)
-        X = x*x + b*x + c
-        out[ip] = -X1/rs + A*( log(x*x/X) + 2*b/Q*atan(Q/(2*x+b))
-                  -(b*x0)/X0*( log((x-x0)*(x-x0)/X) + 2*(2*x0+b)/Q*atan(Q/(2*x+b)) ))
+
+
+# Probably should be moved to PWGrid
+function op_nabla( pw::PWGrid, Rhoe::Array{Float64,1} )
+    G = pw.gvec.G
+    Ng = pw.gvec.Ng
+    idx_g2r = pw.gvec.idx_g2r
+    Npoints = prod(pw.Ns)
+
+    RhoeG = R_to_G(pw,Rhoe)[idx_g2r]
+
+    ∇RhoeG_full = zeros(Complex128,3,Npoints)
+    ∇Rhoe = zeros(Float64,3,Npoints)
+    
+    for ig = 1:Ng
+        ip = idx_g2r[ig]
+        ∇RhoeG_full[1,ip] = im*G[1,ig]*RhoeG[ig]
+        ∇RhoeG_full[2,ip] = im*G[2,ig]*RhoeG[ig]
+        ∇RhoeG_full[3,ip] = im*G[3,ig]*RhoeG[ig]
     end
-    return out
+
+    ∇Rhoe[1,:] = real(G_to_R(pw,∇RhoeG_full[1,:]))
+    ∇Rhoe[2,:] = real(G_to_R(pw,∇RhoeG_full[2,:]))
+    ∇Rhoe[3,:] = real(G_to_R(pw,∇RhoeG_full[3,:]))
+    return ∇Rhoe
+
 end
 
-#
-# d/dn deriv of VWN parameterization of the exchange correlation energy
-#
-function excpVWN( n::Array{Float64} )
-    Npoints = size(n)[1]
-    # Constants
-    X1 =  0.75*(3.0/(2.0*pi))^(2.0/3.0)
-    A  =  0.0310907
-    x0 = -0.10498
-    b  =  3.72744
-    c  = 12.9352
-    Q  = sqrt(4.0*c - b*b)
-    X0 = x0*x0 + b*x0 + c
-    out = zeros(Npoints)
-    for ip = 1:Npoints
-        rs = (4.0*pi/3.0*n[ip])^(-1.0/3.0)
-        x = sqrt(rs)
-        X = x*x + b*x + c
-        dx = 0.5/x
-        out[ip] = dx*( 2.0*X1 / (rs.*x)
-                  + A*( 2.0/x - (2*x+b)/X - 4*b/(Q*Q + (2*x+b)*(2*x+b))
-                  -(b*x0)/X0*( 2.0/(x-x0) - (2*x+b)/X - 4*(2*x0+b) /
-                  (Q*Q + (2*x+b) * (2*x+b)) ) ))
-        out[ip] = (-rs./(3*n[ip]))*out[ip]
+
+function op_nabla_dot( pw::PWGrid, h::Array{Float64,2} )
+    G = pw.gvec.G
+    Ng = pw.gvec.Ng
+    idx_g2r = pw.gvec.idx_g2r
+    Npoints = prod(pw.Ns)
+
+    hG = zeros(Complex128,3,Ng)
+    hG[1,:] = R_to_G( pw, h[1,:] )[idx_g2r]
+    hG[2,:] = R_to_G( pw, h[2,:] )[idx_g2r]
+    hG[3,:] = R_to_G( pw, h[3,:] )[idx_g2r]
+
+    divhG_full = zeros(Complex128,Npoints)
+    
+    for ig = 1:Ng
+        ip = idx_g2r[ig]
+        divhG_full[ip] = im*( G[1,ig]*hG[ig] + G[2,ig]*hG[ig] + G[3,ig]*hG[ig] )
     end
-    return out
+
+    divh = real( G_to_R( pw, divhG_full ) )
+    return divh
+
 end

@@ -82,7 +82,12 @@ export calc_rhoe
 include("calc_rhoe.jl")
 
 const LIBXC_SO_PATH = "/home/efefer/WORKS/my_github_repos/PWDFT.jl/src/extlibs/libxc_interface.so"
+
+export calc_epsxc_VWN, calc_Vxc_VWN
 include("LDA_VWN.jl")
+
+export calc_epsxc_PBE, calc_Vxc_PBE
+include("GGA_PBE.jl")
 
 export PotentialsT
 export EnergiesT
@@ -92,7 +97,6 @@ export Poisson_solve
 export update!
 export PsPotNL, calc_betaNL_psi
 export calc_betaNL_psi, calc_E_Ps_nloc
-export calc_epsxc_VWN, calc_Vxc_VWN
 include("PWHamiltonian.jl")
 
 export Kprec
