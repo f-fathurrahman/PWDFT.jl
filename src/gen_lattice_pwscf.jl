@@ -114,5 +114,101 @@ function gen_lattice_trigonal_v2( a::Float64, gamma_degree::Float64 )
     LL[1,:] = v1
     LL[2,:] = v2
     LL[3,:] = v3
-    return LL    
+    return LL
+end
+
+#Tetragonal P (st)               celldm(3)=c/a
+#v1 = a(1,0,0),  v2 = a(0,1,0),  v3 = a(0,0,c/a)
+function gen_lattice_tetragonal_P( a::Float64, c::Float64)
+    v1 = a*[1,0,0]
+    v2 = a*[0,1,0]
+    v3 = [0,0,c]
+    #
+    LL = zeros(3,3)
+    LL[1,:] = v1
+    LL[2,:] = v2
+    LL[3,:] = v3
+    return LL
+end
+
+
+#7          Tetragonal I (bct)              celldm(3)=c/a
+#v1=(a/2)(1,-1,c/a),  v2=(a/2)(1,1,c/a),  v3=(a/2)(-1,-1,c/a)
+function gen_lattice_tetragonal_I( a::Float64, c::Float64 )
+    v1 = 0.5*[a,-a,c]
+    v2 = 0.5*[a,a,c]
+    v3 = 0.5*[-a,-a,c]
+    #
+    LL = zeros(3,3)
+    LL[1,:] = v1
+    LL[2,:] = v2
+    LL[3,:] = v3
+    return LL
+end
+
+# 8          Orthorhombic P                  celldm(2)=b/a
+#                                              celldm(3)=c/a
+#       v1 = (a,0,0),  v2 = (0,b,0), v3 = (0,0,c)
+function gen_lattice_orthorhombic_P( a::Float64, b::Float64, c::Float64 )
+    v1 = [a,0,0]
+    v2 = [0,b,0]
+    v3 = [0,0,c]
+    #
+    LL = zeros(3,3)
+    LL[1,:] = v1
+    LL[2,:] = v2
+    LL[3,:] = v3
+    return LL
+end
+
+# 12          Monoclinic P, unique axis c     celldm(2)=b/a
+#                                              celldm(3)=c/a,
+#                                              celldm(4)=cos(ab)
+#       v1=(a,0,0), v2=(b*cos(gamma),b*sin(gamma),0),  v3 = (0,0,c)
+#       where gamma is the angle between axis a and b.
+function gen_lattice_monoclinic_P( a::Float64, b::Float64, c::Float64, gamma_degree::Float64 )
+    gamma = gamma_degree*pi/180
+    v1 = [a,0,0]
+    v2 = [b*cos(gamma), b*sin(gamma), 0]
+    v3 = [0,0,c]
+    #
+    LL = zeros(3,3)
+    LL[1,:] = v1
+    LL[2,:] = v2
+    LL[3,:] = v3
+    return LL
+end
+
+# 14          Triclinic                       celldm(2)= b/a,
+#                                             celldm(3)= c/a,
+#                                             celldm(4)= cos(bc),
+#                                             celldm(5)= cos(ac),
+#                                             celldm(6)= cos(ab)
+#       v1 = (a, 0, 0),
+#       v2 = (b*cos(gamma), b*sin(gamma), 0)
+#       v3 = (c*cos(beta),  c*(cos(alpha)-cos(beta)cos(gamma))/sin(gamma),
+#            c*sqrt( 1 + 2*cos(alpha)cos(beta)cos(gamma)
+#                      - cos(alpha)^2-cos(beta)^2-cos(gamma)^2 )/sin(gamma) )
+#       where alpha is the angle between axis b and c
+#              beta is the angle between axis a and c
+#             gamma is the angle between axis a and b
+
+function gen_lattice_triclinic(a::Float64, b::Float64, c::Float64,
+                               alpha_degree::Float64, beta_degree::Float64, gamma_degree::Float64)
+    alpha = alpha_degree*pi/180
+    beta = beta_degree*pi/180
+    gamma = gamma_degree*pi/180
+    #
+    v1 = [a, 0, 0]
+    v2 = [b*cos(gamma), b*sin(gamma), 0]
+    t1 = c*(cos(alpha)-cos(beta)cos(gamma))/sin(gamma)
+    t2 = c*sqrt( 1 + 2*cos(alpha)cos(beta)cos(gamma) -
+                 cos(alpha)^2-cos(beta)^2-cos(gamma)^2 )/sin(gamma)
+    v3 = [c*cos(beta), t1, t2]
+    #
+    LL = zeros(3,3)
+    LL[1,:] = v1
+    LL[2,:] = v2
+    LL[3,:] = v3
+    return LL
 end
