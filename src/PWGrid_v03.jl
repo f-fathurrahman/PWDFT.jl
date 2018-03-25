@@ -38,9 +38,9 @@ function PWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2} )
     LatVecsLen[2] = norm(LatVecs[2,:])
     LatVecsLen[3] = norm(LatVecs[3,:])
 
-    Ns1 = 2*round( Int, sqrt(ecutrho/2)*LatVecsLen[1]/pi ) + 1
-    Ns2 = 2*round( Int, sqrt(ecutrho/2)*LatVecsLen[2]/pi ) + 1
-    Ns3 = 2*round( Int, sqrt(ecutrho/2)*LatVecsLen[3]/pi ) + 1
+    Ns1 = 2*round( Int64, sqrt(ecutrho/2)*LatVecsLen[1]/pi ) + 1
+    Ns2 = 2*round( Int64, sqrt(ecutrho/2)*LatVecsLen[2]/pi ) + 1
+    Ns3 = 2*round( Int64, sqrt(ecutrho/2)*LatVecsLen[3]/pi ) + 1
 
     Ns1 = good_fft_order(Ns1)
     Ns2 = good_fft_order(Ns2)

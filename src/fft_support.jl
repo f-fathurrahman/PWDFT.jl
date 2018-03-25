@@ -1,8 +1,4 @@
-"""
-Taken from fft_support file in QE
-"""
-
-
+# Taken from fft_support file in QE
 function allowed( nr::Int64 )
 # find if the fft dimension is a good one
 # a "bad one" is either not implemented (as on IBM with ESSL)

@@ -4,7 +4,8 @@ based on [density functional theory](https://en.wikipedia.org/wiki/Density_funct
 and [Kohn-Sham equations](https://en.wikipedia.org/wiki/Kohn%E2%80%93Sham_equations).
 
 The Kohn-Sham orbitals are expanded using plane wave basis. This basis set is
-very popular within solid-state community.
+very popular within solid-state community and is also used in several electronic
+structure package such as Quantum ESPRESSO, ABINIT, VASP, etc.
 
 ## Calculation steps
 
