@@ -4,6 +4,7 @@ _compare
 OLD_*
 LOG_*
 *.xsf
+TEMP_*
 
 a.out
 *.x
