@@ -70,6 +70,8 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
             G = eye(2*Nstates)
         end
         
+        @printf("DCM iter: %3d\n", iter)
+
         for iterscf = 1:MaxInnerSCF
             #
             V_loc = Ham.potentials.Hartree + Ham.potentials.XC
@@ -91,15 +93,28 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
             rhoe = calc_rhoe( pw, Focc, psi )
             
             update!( Ham, rhoe )
+
+            # Calculate energies once again
+            Energies = calc_energies( Ham, psi )
+            Ham.energies = Energies
+            Etot = Energies.Total
+            diffE = -(Etot - Etot_old)
+
+            @printf("innerSCF: %5d %18.10f %18.10e", iterscf, Etot, diffE)
+            # positive value of diffE is taken as reducing
+            if diffE < 0.0
+                @printf(" : Energy is not reducing !\n")
+            else
+                @printf("\n")
+            end
             
         end
 
-        # Calculate energies
+        # Calculate energies once again
         Energies = calc_energies( Ham, psi )
         Ham.energies = Energies
         Etot = Energies.Total
         diffE = abs( Etot - Etot_old )
-
         @printf("DCM: %5d %18.10f %18.10e\n", iter, Etot, diffE)
 
         if diffE < 1e-7
