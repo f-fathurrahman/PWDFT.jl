@@ -22,6 +22,8 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
     rhoe = calc_rhoe( pw, Focc, psi )
     update!(Ham, rhoe)
 
+    rhoe_old = copy(rhoe)
+
     # Starting eigenvalues and psi
     λ, psi = diag_lobpcg( Ham, psi, verbose_last=false, maxit=10 )
 
@@ -90,9 +92,11 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
             #E_kin = trace( G[:,set1]' * T * G[:,set1] )
             #println("Ekin from trace = ", E_kin)
             psi = Y*G[:,set1]
-            rhoe = calc_rhoe( pw, Focc, psi )
+            rhoe = 0.9*calc_rhoe( pw, Focc, psi ) + 0.1*rhoe_old
             
             update!( Ham, rhoe )
+
+            rhoe_old = copy(rhoe)
 
             # Calculate energies once again
             Energies = calc_energies( Ham, psi )
@@ -117,7 +121,7 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
         diffE = abs( Etot - Etot_old )
         @printf("DCM: %5d %18.10f %18.10e\n", iter, Etot, diffE)
 
-        if diffE < 1e-7
+        if abs(diffE) < 1e-7
             @printf("DCM is converged: iter: %d , diffE = %10.7e\n", iter, diffE)
             break
         end
