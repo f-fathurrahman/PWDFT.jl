@@ -3,8 +3,8 @@
 # Ham.energies.NN should be calculated if needed
 #
 function KS_solve_Emin_PCG!( Ham::PWHamiltonian;
-                             α_t = 3e-5, NiterMax=200, verbose=false,
-                             I_CG_BETA = 2 )
+                             α_t = 3e-5, NiterMax=200, verbose=true,
+                             I_CG_BETA = 2, ETOT_CONV_THR=1e-6 )
 
     pw = Ham.pw
     Focc = Ham.electrons.Focc
@@ -42,7 +42,24 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian;
 
     Etot     = Energies.Total
 
-    @printf("Initial Etot = %18.10f\n", Etot)
+    if verbose
+        @printf("\n")
+        @printf("Minimizing Kohn-Sham energy using PCG\n")
+        @printf("-------------------------------------\n")
+        @printf("NiterMax  = %d\n", NiterMax)
+        @printf("α_t       = %e\n", α_t)
+        @printf("conv_trh  = %e\n", ETOT_CONV_THR)
+        if I_CG_BETA == 1
+            @printf("Using Fletcher-Reeves formula for CG_BETA\n")
+        elseif I_CG_BETA == 2
+            @printf("Using Polak-Ribiere formula for CG_BETA\n")
+        elseif I_CG_BETA == 3
+            @printf("Using Hestenes-Stiefeld formula for CG_BETA\n")
+        else
+            @printf("Using Dai-Yuan formula for CG_BETA\n")
+        end
+        @printf("\n")
+    end
 
 
     for iter = 1:NiterMax
@@ -62,7 +79,9 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian;
             end
         end
         if β < 0.0
-            @printf("β is smaller than 0, setting it to zero\n")
+            if verbose
+                @printf("β is smaller than 0, setting it to zero\n")
+            end
             β = 0.0
         end
 
@@ -96,9 +115,14 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian;
         Etot = Energies.Total
         diff = abs(Etot-Etot_old)
 
-        @printf("CG step %8d = %18.10f %10.7e\n", iter, Etot, diff)
-        if diff < 1e-6
-            @printf("CONVERGENCE ACHIEVED\n")
+        if verbose
+            @printf("CG step %8d = %18.10f %10.7e\n", iter, Etot, diff)
+        end
+        
+        if diff < ETOT_CONV_THR
+            if verbose
+                @printf("CONVERGENCE ACHIEVED\n")
+            end
             break
         end
 
@@ -108,6 +132,7 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian;
         Etot_old = Etot
     end
 
+    # Calculate eigenvalues
     psi = ortho_gram_schmidt(psi)
     Hr = psi' * op_H( Ham, psi )
     evals, evecs = eig(Hr)

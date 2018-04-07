@@ -23,20 +23,14 @@ function test_main( ; method="SCF" )
     #
     Ham.energies.NN = calc_E_NN( Ham.pw, atoms, [1.0] )
 
-    println("\nAfter calculating E_NN")
-    println(Ham.energies)
-
     if method == "SCF"
         λ, v = KS_solve_SCF!( Ham )
-        println("\nAfter calling KS_solve_SCF:")
 
     elseif method == "Emin"
-        λ, v = KS_solve_Emin_PCG!( Ham )
-        println("\nAfter calling KS_solve_Emin_PCG:")
+        λ, v = KS_solve_Emin_PCG!( Ham, verbose=false )
 
     elseif method == "DCM"
         λ, v = KS_solve_DCM!( Ham )
-        println("\nAfter calling KS_solve_Emin_DCM:")
 
     else
         println("ERROR: unknow method = ", method)
@@ -52,6 +46,7 @@ function test_main( ; method="SCF" )
 
 end
 
-@time test_main(method="Emin")
-@time test_main(method="DCM")
+#@time test_main(method="Emin")
+#@time test_main(method="Emin")
+#@time test_main(method="DCM")
 #@time test_main(method="SCF")
