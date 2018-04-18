@@ -1,5 +1,5 @@
 function KS_solve_DCM!( Ham::PWHamiltonian;
-                        NiterMax = 100 )
+                        NiterMax = 100, startingwfc=nothing )
 
 
 	pw = Ham.pw
@@ -13,9 +13,14 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
     #
     # Random guess of wave function
     #
-    srand(1234)
-    psi = rand(Complex128,Ngwx,Nstates)
-    psi = ortho_gram_schmidt(psi)
+    if startingwfc == nothing
+        srand(1234)
+        psi = rand(Complex128,Ngwx,Nstates)
+        psi = ortho_gram_schmidt(psi)
+    else
+        psi = startingwfc
+    end
+
     #
     # Calculated electron density from this wave function and update Hamiltonian
     #

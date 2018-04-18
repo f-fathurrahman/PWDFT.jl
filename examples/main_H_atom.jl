@@ -16,13 +16,14 @@ function test_main( ; method="SCF" )
     ecutwfc_Ry = 30.0
     Ham = PWHamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, LatVecs )
 
-    println("sum V Ps loc = ", sum(Ham.potentials.Ps_loc))
-
     #
     # calculate E_NN
     #
     Ham.energies.NN = calc_E_NN( Ham.pw, atoms, [1.0] )
 
+    #
+    # Solve the KS problem
+    #
     if method == "SCF"
         λ, v = KS_solve_SCF!( Ham )
 
@@ -46,7 +47,6 @@ function test_main( ; method="SCF" )
 
 end
 
-#@time test_main(method="Emin")
-#@time test_main(method="Emin")
+@time test_main(method="Emin")
 #@time test_main(method="DCM")
 #@time test_main(method="SCF")

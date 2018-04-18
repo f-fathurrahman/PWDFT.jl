@@ -1,6 +1,9 @@
 .ipynb_checkpoints
 _compare
 
+WFC.data
+*.data
+
 OLD_*
 LOG_*
 *.xsf
