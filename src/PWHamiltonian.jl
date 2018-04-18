@@ -9,7 +9,7 @@ mutable struct PWHamiltonian
     potentials::Potentials
     energies::Energies
     rhoe::Array{Float64,1}
-    electrons::ElectronsInfo
+    electrons::Electrons
     atoms::Atoms
     pspots::Array{PsPot_GTH,1}
     pspotNL::PsPotNL
@@ -67,7 +67,7 @@ function PWHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
     #
     rhoe = zeros( Float64, Npoints )
 
-    electrons = ElectronsInfo( atoms, Pspots )
+    electrons = Electrons( atoms, Pspots )
     println(electrons)
 
     # NL pseudopotentials
@@ -113,7 +113,7 @@ function PWHamiltonian( atoms::Atoms, ecutwfc::Float64, LatVecs::Array{Float64,2
     #
     rhoe = zeros( Float64, Npoints )
 
-    electrons = ElectronsInfo( atoms, Zvals )
+    electrons = Electrons( atoms, Zvals )
     println(electrons)
 
     rhoe = zeros(Float64,Npoints)

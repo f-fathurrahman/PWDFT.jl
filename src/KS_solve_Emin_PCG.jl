@@ -5,7 +5,7 @@
 function KS_solve_Emin_PCG!( Ham::PWHamiltonian;
                              startingwfc=nothing, savewfc=true,
                              α_t=3e-5, NiterMax=200, verbose=true,
-                             I_CG_BETA=2, ETOT_CONV_THR=1e-6, )
+                             I_CG_BETA=2, ETOT_CONV_THR=1e-6 )
 
     pw = Ham.pw
     Focc = Ham.electrons.Focc
@@ -143,6 +143,8 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian;
     Hr = psi' * op_H( Ham, psi )
     evals, evecs = eig(Hr)
     psi = psi*evecs
+
+    Ham.electrons.ebands = real(evals)
 
     if savewfc
         wfc_file = open("WFC.data","w")

@@ -65,9 +65,9 @@ include("PsPot_GTH.jl")
 
 
 # Electronic variables
-export ElectronsInfo
+export Electrons
 export get_Zvals
-include("ElectronsInfo.jl")
+include("Electrons.jl")
 
 export calc_strfact
 include("calc_strfact.jl")

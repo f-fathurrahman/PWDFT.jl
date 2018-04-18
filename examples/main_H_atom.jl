@@ -37,22 +37,19 @@ function test_main( ; method="SCF" )
         println("ERROR: unknow method = ", method)
     end
 
-    #Nstates = Ham.electrons.Nstates
-    #println("\nEigenvalues")
-    #for ist = 1:Nstates
-    #    @printf("%8d  %18.10f = %18.10f eV\n", ist, λ[ist], λ[ist]*Ry2eV*2)
-    #end
-    #println("\nTotal energy components")
-    #println(Ham.energies)
+    Nstates = Ham.electrons.Nstates
+    ebands = Ham.electrons.ebands
+    
+    println("\nBand energies:")
+    for ist = 1:Nstates
+        @printf("%8d  %18.10f = %18.10f eV\n", ist, ebands[ist], ebands[ist]*Ry2eV*2)
+    end
+    
+    println("\nTotal energy components")
+    println(Ham.energies)
 
 end
 
-val, t, bytes, gctime, memallocs = @timed test_main(method="Emin")
-#val, t, bytes, gctime, memallocs = @timed test_main(method="SCF")
-#val, t, bytes, gctime, memallocs = @timed test_main(method="DCM")
-
-GiB = 1024.0*1024.0*1024.0
-@printf("Allocated memory  = %f GiB\n",bytes/GiB)
-@printf("Elapsed time = %f s\n",t)
-println("malloc = ",memallocs.malloc)
-println("poolalloc = ",memallocs.poolalloc)
+@time test_main(method="Emin")
+@time test_main(method="SCF")
+@time test_main(method="DCM")

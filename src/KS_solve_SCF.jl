@@ -1,8 +1,9 @@
 function KS_solve_SCF!( Ham::PWHamiltonian ;
+                       startingwfc=nothing, savewfc=true,
                        β = 0.5, NiterMax=100, verbose=false,
                        check_rhoe_after_mix=false,
-                       update_psi="LOBPCG",
-                       cheby_degree=8 )
+                       update_psi="LOBPCG", cheby_degree=8,
+                       ETOT_CONV_THR=1e-6 )
 
     pw = Ham.pw
     Ngwx = pw.gvecw.Ngwx
@@ -15,20 +16,24 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
     #
     # Random guess of wave function
     #
-    srand(1234)
-    psi = randn(Ngwx,Nstates) + im*randn(Ngwx,Nstates)
-    psi = ortho_gram_schmidt(psi)
+    if startingwfc==nothing
+        srand(1234)
+        psi = randn(Ngwx,Nstates) + im*randn(Ngwx,Nstates)
+        psi = ortho_gram_schmidt(psi)
+    else
+        psi = startingwfc
+    end
+
     #
     # Calculated electron density from this wave function and update Hamiltonian
     #
     rhoe = calc_rhoe( pw, Focc, psi )
     update!(Ham, rhoe)
 
-
     Etot_old = 0.0
     rhoe_old = copy(rhoe)
 
-    λ = zeros(Float64,Nstates)
+    evals = zeros(Float64,Nstates)
 
     const ETHR_EVALS_LAST = 1e-6
 
@@ -41,11 +46,10 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
     df = zeros(Float64,Npoints,MIXDIM)
     dv = zeros(Float64,Npoints,MIXDIM)
 
-
     for iter = 1:NiterMax
 
         if update_psi == "LOBPCG"
-            λ, psi = diag_lobpcg( Ham, psi, verbose_last=false )
+            evals, psi = diag_lobpcg( Ham, psi, verbose_last=false )
 
         elseif update_psi == "PCG"
 
@@ -58,7 +62,7 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
                 ethr = max( ethr, ETHR_EVALS_LAST )
             end
 
-            λ, psi = diag_Emin_PCG( Ham, psi, TOL_EBANDS=ethr )
+            evals, psi = diag_Emin_PCG( Ham, psi, TOL_EBANDS=ethr )
 
         elseif update_psi == "CheFSI"
 
@@ -98,7 +102,7 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
         #
         @printf("SCF: %8d %18.10f %18.10e %18.10e\n", iter, Etot, diffE, diffRho )
 
-        if diffE < 1e-6
+        if diffE < ETOT_CONV_THR
             @printf("SCF is converged: iter: %d , diffE = %10.7e\n", iter, diffE)
             break
         end
@@ -106,11 +110,21 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
         Etot_old = Etot
     end
 
+    # Eigenvalues are not calculated if using CheFSI.
+    # We calculate them here.
     if update_psi == "CheFSI"
         Hr = psi'*op_H( Ham, psi )
-        λ = real(eigvals(Hr))
+        evals = real(eigvals(Hr))
     end
 
-    return λ, psi
+    Ham.electrons.ebands = evals
+
+    if savewfc
+        wfc_file = open("WFC.data","w")
+        write(wfc_file,psi)
+        close(wfc_file)
+    end
+
+    return
 
 end

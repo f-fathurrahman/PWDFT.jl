@@ -1,5 +1,6 @@
 function KS_solve_DCM!( Ham::PWHamiltonian;
-                        NiterMax = 100, startingwfc=nothing )
+                        NiterMax = 100, startingwfc=nothing,
+                        savewfc=true, ETOT_CONV_THR=1e-6 )
 
 
 	pw = Ham.pw
@@ -30,7 +31,7 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
     rhoe_old = copy(rhoe)
 
     # Starting eigenvalues and psi
-    λ, psi = diag_lobpcg( Ham, psi, verbose_last=false, maxit=10 )
+    evals, psi = diag_lobpcg( Ham, psi, verbose_last=false, maxit=10 )
 
     energies = calc_energies( Ham, psi )
     Ham.energies = energies
@@ -92,12 +93,15 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
             A = 0.5*( A + A' )
             #
             D, G = eig( A, B )
-            λ = D[1:Nstates]
+            evals = D[1:Nstates]
             #
             #E_kin = trace( G[:,set1]' * T * G[:,set1] )
             #println("Ekin from trace = ", E_kin)
             psi = Y*G[:,set1]
-            rhoe = 0.9*calc_rhoe( pw, Focc, psi ) + 0.1*rhoe_old
+            
+            #rhoe = 0.9*calc_rhoe( pw, Focc, psi ) + 0.1*rhoe_old # use mixing
+
+            rhoe = calc_rhoe( pw, Focc, psi )
             
             update!( Ham, rhoe )
 
@@ -125,7 +129,7 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
         diffE = abs( Etot - Etot_old )
         @printf("DCM: %5d %18.10f %18.10e\n", iter, Etot, diffE)
 
-        if abs(diffE) < 1e-7
+        if abs(diffE) < ETOT_CONV_THR
             @printf("DCM is converged: iter: %d , diffE = %10.7e\n", iter, diffE)
             break
         end
@@ -134,20 +138,22 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
 
         # No need to update potential, it is already updated in inner SCF loop
 
-        # step
         if iter > 1
             P = Y[:,set4]*G[set4,set1]
         else
             P = Y[:,set2]*G[set2,set1]
         end
-
-
     end  # end of DCM iteration
     
-    # save psi
+    Ham.electrons.ebands = evals
+
+    if savewfc
+        wfc_file = open("WFC.data","w")
+        write(wfc_file,psi)
+        close(wfc_file)
+    end
 
     return
-
 end
 
 

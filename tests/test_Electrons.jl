@@ -1,7 +1,7 @@
 using PWDFT
 
 function test_main()
-    atoms = init_atoms_xyz("CuSO4.xyz")
+    atoms = init_atoms_xyz("../examples/CuSO4.xyz")
     println(atoms)
     
     Nspecies = atoms.Nspecies
@@ -15,7 +15,7 @@ function test_main()
         println(Pspots[isp])
     end
 
-    electrons = ElectronsInfo( atoms, Pspots )
+    electrons = Electrons( atoms, Pspots )
     println(electrons)
 
 end
