@@ -25,28 +25,34 @@ function test_main( ; method="SCF" )
     # Solve the KS problem
     #
     if method == "SCF"
-        λ, v = KS_solve_SCF!( Ham )
+        KS_solve_SCF!( Ham )
 
     elseif method == "Emin"
-        λ, v = KS_solve_Emin_PCG!( Ham, verbose=false )
+        KS_solve_Emin_PCG!( Ham, verbose=true )
 
     elseif method == "DCM"
-        λ, v = KS_solve_DCM!( Ham )
+        KS_solve_DCM!( Ham )
 
     else
         println("ERROR: unknow method = ", method)
     end
 
-    Nstates = Ham.electrons.Nstates
-    println("\nEigenvalues")
-    for ist = 1:Nstates
-        @printf("%8d  %18.10f = %18.10f eV\n", ist, λ[ist], λ[ist]*Ry2eV*2)
-    end
-    println("\nTotal energy components")
-    println(Ham.energies)
+    #Nstates = Ham.electrons.Nstates
+    #println("\nEigenvalues")
+    #for ist = 1:Nstates
+    #    @printf("%8d  %18.10f = %18.10f eV\n", ist, λ[ist], λ[ist]*Ry2eV*2)
+    #end
+    #println("\nTotal energy components")
+    #println(Ham.energies)
 
 end
 
-@time test_main(method="Emin")
-#@time test_main(method="DCM")
-#@time test_main(method="SCF")
+val, t, bytes, gctime, memallocs = @timed test_main(method="Emin")
+#val, t, bytes, gctime, memallocs = @timed test_main(method="SCF")
+#val, t, bytes, gctime, memallocs = @timed test_main(method="DCM")
+
+GiB = 1024.0*1024.0*1024.0
+@printf("Allocated memory  = %f GiB\n",bytes/GiB)
+@printf("Elapsed time = %f s\n",t)
+println("malloc = ",memallocs.malloc)
+println("poolalloc = ",memallocs.poolalloc)

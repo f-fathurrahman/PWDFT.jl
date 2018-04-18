@@ -89,8 +89,8 @@ include("LDA_VWN.jl")
 export calc_epsxc_PBE, calc_Vxc_PBE
 include("GGA_PBE.jl")
 
-export PotentialsT
-export EnergiesT
+export Potentials
+export Energies
 export PWHamiltonian
 export op_H, op_K, op_V_loc, op_V_Ps_loc, op_V_Ps_nloc
 export Poisson_solve

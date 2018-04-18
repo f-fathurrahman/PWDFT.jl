@@ -3,8 +3,9 @@
 # Ham.energies.NN should be calculated if needed
 #
 function KS_solve_Emin_PCG!( Ham::PWHamiltonian;
-                             α_t = 3e-5, NiterMax=200, verbose=true,
-                             I_CG_BETA = 2, ETOT_CONV_THR=1e-6 )
+                             startingwfc=nothing, savewfc=true,
+                             α_t=3e-5, NiterMax=200, verbose=true,
+                             I_CG_BETA=2, ETOT_CONV_THR=1e-6, )
 
     pw = Ham.pw
     Focc = Ham.electrons.Focc
@@ -14,19 +15,25 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian;
     Ngwx = pw.gvecw.Ngwx
 
     #
-    # Random guess of wave function
+    # Initial wave function
     #
-    srand(1234)
-    psi = randn(Ngwx,Nstates) + im*randn(Ngwx,Nstates)
-    psi = ortho_gram_schmidt(psi)
+    if startingwfc == nothing
+        srand(1234)
+        psi = randn(Ngwx,Nstates) + im*randn(Ngwx,Nstates)
+        psi = ortho_gram_schmidt(psi)
+    else
+        psi = startingwfc
+    end
+
     #
-    # Calculated electron density from this wave function and update Hamiltonian
+    # Calculated electron density from this wave function and
+    # update Hamiltonian (calculate Hartree and XC potential).
     #
     rhoe = calc_rhoe( pw, Focc, psi )
     update!(Ham, rhoe)
 
     #
-    # Variabls for PCG
+    # Variables for PCG
     #
     d = zeros(Complex128, Ngwx, Nstates)
     g_old = zeros(Complex128, Ngwx, Nstates)
@@ -37,10 +44,10 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian;
     Etot_old = 0.0
 
     # Calculate energy at this psi
-    Energies = calc_energies(Ham, psi)
-    Ham.energies = Energies
+    energies = calc_energies(Ham, psi)
+    Ham.energies = energies
 
-    Etot     = Energies.Total
+    Etot     = energies.Total
 
     if verbose
         @printf("\n")
@@ -110,9 +117,8 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian;
 
         update!(Ham, rhoe)
 
-        Energies = calc_energies( Ham, psi )
-        Ham.energies = Energies
-        Etot = Energies.Total
+        Ham.energies = calc_energies( Ham, psi )
+        Etot = Ham.energies.Total
         diff = abs(Etot-Etot_old)
 
         if verbose
@@ -138,5 +144,12 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian;
     evals, evecs = eig(Hr)
     psi = psi*evecs
 
-    return real(evals), psi
+    if savewfc
+        wfc_file = open("WFC.data","w")
+        write(wfc_file,psi)
+        close(wfc_file)
+    end
+
+    return
+
 end

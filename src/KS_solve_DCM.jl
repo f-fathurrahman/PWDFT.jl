@@ -11,7 +11,7 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
     Nstates = Ham.electrons.Nstates
 
     #
-    # Random guess of wave function
+    # Initial wave function
     #
     if startingwfc == nothing
         srand(1234)
@@ -32,9 +32,9 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
     # Starting eigenvalues and psi
     λ, psi = diag_lobpcg( Ham, psi, verbose_last=false, maxit=10 )
 
-    Energies = calc_energies( Ham, psi )
-    Ham.energies = Energies
-    Etot_old = Energies.Total
+    energies = calc_energies( Ham, psi )
+    Ham.energies = energies
+    Etot_old = energies.Total
 
     # subspace
     Y = zeros( Complex128, Ngwx, 3*Nstates )
@@ -104,9 +104,8 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
             rhoe_old = copy(rhoe)
 
             # Calculate energies once again
-            Energies = calc_energies( Ham, psi )
-            Ham.energies = Energies
-            Etot = Energies.Total
+            Ham.energies = calc_energies( Ham, psi )
+            Etot = Ham.energies.Total
             diffE = -(Etot - Etot_old)
 
             @printf("innerSCF: %5d %18.10f %18.10e", iterscf, Etot, diffE)
@@ -120,9 +119,9 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
         end
 
         # Calculate energies once again
-        Energies = calc_energies( Ham, psi )
-        Ham.energies = Energies
-        Etot = Energies.Total
+        energies = calc_energies( Ham, psi )
+        Ham.energies = energies
+        Etot = energies.Total
         diffE = abs( Etot - Etot_old )
         @printf("DCM: %5d %18.10f %18.10e\n", iter, Etot, diffE)
 
@@ -145,7 +144,9 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
 
     end  # end of DCM iteration
     
-    return λ, psi
+    # save psi
+
+    return
 
 end
 

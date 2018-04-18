@@ -13,23 +13,23 @@ end
 
 
 function calc_E_Hartree( Ham::PWHamiltonian, psi::Array{Complex128,2} )
-    Potentials = Ham.potentials
+    potentials = Ham.potentials
     Ω = Ham.pw.Ω
     Npoints = prod(Ham.pw.Ns)
     rhoe = Ham.rhoe
-    E_Hartree = 0.5*dot( Potentials.Hartree, rhoe ) * Ω/Npoints
+    E_Hartree = 0.5*dot( potentials.Hartree, rhoe ) * Ω/Npoints
     return E_Hartree
 end
 
 #
 # psi is assumed to be already orthonormalized elsewhere
-# Potentials and Rhoe are not updated
+# `potentials` and `Rhoe` are not updated
 # Ham is assumed to be already updated at input psi
 #
 function calc_energies( Ham::PWHamiltonian, psi::Array{Complex128,2} )
 
     pw = Ham.pw
-    Potentials = Ham.potentials
+    potentials = Ham.potentials
     Focc = Ham.electrons.Focc
 
     Ω = pw.Ω
@@ -47,9 +47,9 @@ function calc_energies( Ham::PWHamiltonian, psi::Array{Complex128,2} )
 
     rhoe = Ham.rhoe
 
-    E_Hartree = 0.5*dot( Potentials.Hartree, rhoe ) * Ω/Npoints
+    E_Hartree = 0.5*dot( potentials.Hartree, rhoe ) * Ω/Npoints
 
-    E_Ps_loc = dot( Potentials.Ps_loc, rhoe ) * Ω/Npoints
+    E_Ps_loc = dot( potentials.Ps_loc, rhoe ) * Ω/Npoints
 
     if Ham.xcfunc == "PBE"
         epsxc = calc_epsxc_PBE( Ham.pw, rhoe )
@@ -64,14 +64,14 @@ function calc_energies( Ham::PWHamiltonian, psi::Array{Complex128,2} )
         E_Ps_nloc = 0.0
     end
 
-    Energies = EnergiesT()
-    Energies.Kinetic = E_kin
-    Energies.Ps_loc  = E_Ps_loc
-    Energies.Ps_nloc = E_Ps_nloc
-    Energies.Hartree = E_Hartree
-    Energies.XC      = E_xc
-    Energies.NN      = Ham.energies.NN
-    Energies.Total   = E_kin + E_Ps_loc + E_Ps_nloc + E_Hartree + E_xc + Ham.energies.NN
+    energies = Energies()
+    energies.Kinetic = E_kin
+    energies.Ps_loc  = E_Ps_loc
+    energies.Ps_nloc = E_Ps_nloc
+    energies.Hartree = E_Hartree
+    energies.XC      = E_xc
+    energies.NN      = Ham.energies.NN
+    energies.Total   = E_kin + E_Ps_loc + E_Ps_nloc + E_Hartree + E_xc + Ham.energies.NN
 
-    return Energies
+    return energies
 end

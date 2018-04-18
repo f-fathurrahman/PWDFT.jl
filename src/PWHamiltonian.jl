@@ -1,47 +1,13 @@
-mutable struct EnergiesT
-    Total::Float64
-    Kinetic::Float64
-    Ps_loc::Float64
-    Ps_nloc::Float64
-    Hartree::Float64
-    XC::Float64
-    NN::Float64
-end
+include("Energies.jl")
 
-# Default: all zeroes
-function EnergiesT()
-    return EnergiesT(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
-end
-
-import Base.println
-function println( Energies::EnergiesT )
-    @printf("\n")
-    @printf("Kinetic    energy: %18.10f\n", Energies.Kinetic )
-    @printf("Ps_loc     energy: %18.10f\n", Energies.Ps_loc )
-    @printf("Ps_nloc    energy: %18.10f\n", Energies.Ps_nloc )
-    @printf("Hartree    energy: %18.10f\n", Energies.Hartree )
-    @printf("XC         energy: %18.10f\n", Energies.XC )
-    @printf("-------------------------------------\n")
-    E_elec = Energies.Kinetic + Energies.Ps_loc + Energies.Ps_nloc +
-             Energies.Hartree + Energies.XC
-    @printf("Electronic energy: %18.10f\n", E_elec)
-    @printf("NN         energy: %18.10f\n", Energies.NN )
-    @printf("-------------------------------------\n")
-    @printf("Total      energy: %18.10f\n", Energies.Total )
-end
-
-mutable struct PotentialsT
-    Ps_loc::Array{Float64,1}
-    Hartree::Array{Float64,1}
-    XC::Array{Float64,1}
-end
+include("Potentials.jl")
 
 include("PsPotNL.jl")
 
 mutable struct PWHamiltonian
     pw::PWGrid
-    potentials::PotentialsT
-    energies::EnergiesT
+    potentials::Potentials
+    energies::Energies
     rhoe::Array{Float64,1}
     electrons::ElectronsInfo
     atoms::Atoms
@@ -95,9 +61,9 @@ function PWHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
     # other potential terms are set to zero
     V_Hartree = zeros( Float64, Npoints )
     V_XC = zeros( Float64, Npoints )
-    potentials = PotentialsT( V_Ps_loc, V_Hartree, V_XC )
+    potentials = Potentials( V_Ps_loc, V_Hartree, V_XC )
     #
-    energies = EnergiesT()
+    energies = Energies()
     #
     rhoe = zeros( Float64, Npoints )
 
@@ -141,9 +107,9 @@ function PWHamiltonian( atoms::Atoms, ecutwfc::Float64, LatVecs::Array{Float64,2
     # other potentials are set to zero
     V_Hartree = zeros( Float64, Npoints )
     V_XC = zeros( Float64, Npoints )
-    potentials = PotentialsT( V_Ps_loc, V_Hartree, V_XC )
+    potentials = Potentials( V_Ps_loc, V_Hartree, V_XC )
     #
-    energies = EnergiesT()
+    energies = Energies()
     #
     rhoe = zeros( Float64, Npoints )
 

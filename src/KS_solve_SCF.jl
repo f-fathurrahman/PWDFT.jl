@@ -91,9 +91,8 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
         update!( Ham, rhoe )
 
         # Calculate energies
-        Energies = calc_energies( Ham, psi )
-        Ham.energies = Energies
-        Etot = Energies.Total
+        Ham.energies = calc_energies( Ham, psi )
+        Etot = Ham.energies.Total
         diffE = abs( Etot - Etot_old )
 
         #

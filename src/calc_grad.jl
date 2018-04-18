@@ -1,6 +1,6 @@
 function calc_grad( Ham::PWHamiltonian, psi::Array{Complex128,2} )
 
-    Potentials = Ham.potentials
+    potentials = Ham.potentials
     Focc = Ham.electrons.Focc
     pw = Ham.pw
     #
