@@ -133,12 +133,15 @@ static void test_spg_find_primitive_corundum(void)
 
   /* lattice, position, and types are overwirtten. */
   printf("*** Example of spg_find_primitive (Corundum) ***:\n");
+
   num_primitive_atom = spg_find_primitive(lattice, position, types, num_atom, symprec);
+
   if (num_primitive_atom == 0) {
     printf("Primitive cell was not found.\n");
   } else { 
     show_cell(lattice, position, types, num_primitive_atom);
   }
+
 }
 
 static void test_spg_refine_cell_BCC(void)

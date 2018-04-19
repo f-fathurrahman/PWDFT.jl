@@ -2,26 +2,38 @@ const SPGLIB_SO_PATH = "/home/efefer/WORKS/my_github_repos/PWDFT.jl/src/extlibs/
 
 function spg_find_primitive(lattice, position, types, num_atom, symprec)
     num_primitive_atom =
-    ccall( (:spg_find_primitive,SPGLIB_SO_PATH), Int32,
-           ( Ptr{Float64}, Ptr{Float64}, Ptr{Int32}, Int32, Float64 ),
+    ccall( (:my_spg_find_primitive,SPGLIB_SO_PATH), Cint,
+           ( Ptr{Float64}, Ptr{Float64}, Ptr{Cint}, Cint, Float64 ),
            lattice, position, types, num_atom, symprec )
     return num_primitive_atom
 end
 
-
 function test_BCC()
     lattice = 4.0*diagm(ones(3))
-    
+
     Natoms = 2
     atpos = zeros(3,Natoms)
     atpos[:,1] = [0.0, 0.0, 0.0]
     atpos[:,2] = [0.5, 0.5, 0.5]
-    
-    types = [1, 1]
+
+    types = zeros(Cint,2)
+    types[1] = 1
+    types[2] = 1
+
+    println(typeof(types))
     symprec = 1e-5
-    num_primitive_atom = spg_find_primitive(lattice, atpos', types, Natoms, symprec)
+
+    println(lattice)
+    println(atpos)    
+
+    println("Before num_primitive_atom")
+    num_primitive_atom = spg_find_primitive(lattice, atpos, types, Natoms, symprec)
+
     println("num_primitive_atom = ", num_primitive_atom)
 end
+
+test_BCC()
+
 
 
 function test_corrundum()
@@ -64,17 +76,15 @@ function test_corrundum()
     atpos[:,29] = [0.9728340573121541, 0.6395007239788255, 0.0833333333333357]
     atpos[:,30] = [0.6395007239788255, 0.9728340573121541, 0.4166666666666643]
 
-    types = zeros(Int64,30)
+    types = zeros(Cint,Natoms)
     symprec = 1e-5
     
     types[1:12]  = 1
     types[13:30] = 2
-    println(lattice)
-    println(atpos)
+
     num_primitive_atom = spg_find_primitive(lattice, atpos, types, Natoms, symprec)
     println("num_primitive_atom = ", num_primitive_atom)
 
 end
 
-test_BCC()
-test_corrundum()
+#test_corrundum()
