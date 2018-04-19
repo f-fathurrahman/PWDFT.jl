@@ -25,11 +25,21 @@ int my_spg_find_primitive(double *LatVec, double *atpos, int *types,
            position[ia-1][0], position[ia-1][1], position[ia-1][2]);
   }
 
-  printf("Pass here in my_spg_find_primitive\n");
-  printf("Natoms = %d\n", Natoms);
-
   int num_primitive_atom;
   num_primitive_atom = spg_find_primitive(lattice, position, types, Natoms, symprec);
   
   return num_primitive_atom;
+}
+
+
+void test_2d_array(int a[][3], int dim1)
+{
+  int i, j;
+  for(i = 0; i < dim1; i++) {
+    for(j = 0; j < 3; j++) {
+      printf("%d ", a[i][j]);
+    }
+    printf("\n");
+  }
+  printf("Pass here in test_2d_array\n");
 }

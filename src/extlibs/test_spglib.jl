@@ -8,6 +8,27 @@ function spg_find_primitive(lattice, position, types, num_atom, symprec)
     return num_primitive_atom
 end
 
+function spg_find_primitive_v2(lattice, position, types, num_atom, symprec)
+    println("Using spg_find_primitive_v2:")
+    
+    ctypes_cnv = Base.cconvert(Array{Int32,1},types)
+
+    num_primitive_atom =
+    ccall( (:spg_find_primitive,SPGLIB_SO_PATH), Int32,
+           ( Ptr{Float64}, Ptr{Float64}, Ptr{Int32}, Int32, Float64 ),
+           lattice, position, ctypes_cnv, num_atom, symprec )
+    return num_primitive_atom
+end
+
+function test_call_2d_array()
+    a = ones(Int32,3,3)
+    println("a = ", a)
+    ccall( (:test_2d_array, SPGLIB_SO_PATH), Void,
+           (Ptr{Int32}, Int32), a, 3 )
+end
+
+#test_call_2d_array()
+
 function test_BCC()
     lattice = 4.0*diagm(ones(3))
 
@@ -16,7 +37,7 @@ function test_BCC()
     atpos[:,1] = [0.0, 0.0, 0.0]
     atpos[:,2] = [0.5, 0.5, 0.5]
 
-    types = zeros(Cint,2)
+    types = zeros(Int64,2)
     types[1] = 1
     types[2] = 1
 
@@ -27,13 +48,10 @@ function test_BCC()
     println(atpos)    
 
     println("Before num_primitive_atom")
-    num_primitive_atom = spg_find_primitive(lattice, atpos, types, Natoms, symprec)
+    num_primitive_atom = spg_find_primitive_v2(lattice, atpos, types, Natoms, symprec)
 
     println("num_primitive_atom = ", num_primitive_atom)
 end
-
-test_BCC()
-
 
 
 function test_corrundum()
@@ -82,9 +100,29 @@ function test_corrundum()
     types[1:12]  = 1
     types[13:30] = 2
 
-    num_primitive_atom = spg_find_primitive(lattice, atpos, types, Natoms, symprec)
+    println("Before find_primitive = ")
+    for i = 1:3
+        @printf("%f %f %f\n", lattice[i,1], lattice[i,2], lattice[i,3])
+    end
+    println("")    
+    for ia = 1:Natoms
+        @printf("%5d %18.10f %18.10f %18.10f\n", ia, atpos[1,ia], atpos[2,ia], atpos[3,ia])
+    end    
+
+    num_primitive_atom = spg_find_primitive_v2(lattice, atpos, types, Natoms, symprec)
+    
+    println("\nAfter find_primitive = ")
+    println("")
+    for i = 1:3
+        @printf("%f %f %f\n", lattice[i,1], lattice[i,2], lattice[i,3])
+    end
+    println("")    
+    for ia = 1:num_primitive_atom
+        @printf("%5d %18.10f %18.10f %18.10f\n", ia, atpos[1,ia], atpos[2,ia], atpos[3,ia])
+    end
     println("num_primitive_atom = ", num_primitive_atom)
 
 end
 
-#test_corrundum()
+#test_BCC()
+test_corrundum()
