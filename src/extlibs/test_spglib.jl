@@ -5,7 +5,7 @@ function spg_find_primitive(lattice, position, types, num_atom, symprec)
     ccall( (:my_spg_find_primitive,SPGLIB_SO_PATH), Cint,
            ( Ptr{Float64}, Ptr{Float64}, Ptr{Cint}, Cint, Float64 ),
            lattice, position, types, num_atom, symprec )
-    return num_primitive_atom
+    return Base.cconvert(Int64,num_primitive_atom)
 end
 
 function spg_find_primitive_v2(lattice, position, types, num_atom, symprec)
@@ -17,7 +17,45 @@ function spg_find_primitive_v2(lattice, position, types, num_atom, symprec)
     ccall( (:spg_find_primitive,SPGLIB_SO_PATH), Int32,
            ( Ptr{Float64}, Ptr{Float64}, Ptr{Int32}, Int32, Float64 ),
            lattice, position, ctypes_cnv, num_atom, symprec )
-    return num_primitive_atom
+    return Base.cconvert(Int64,num_primitive_atom)
+end
+
+function spg_get_multiplicity(
+          lattice::Array{Float64,2}, position::Array{Float64,2},
+          types::Array{Int64,1}, Natoms::Int64, symprec::Float64)
+    
+    ctypes = Base.cconvert(Array{Cint,1}, types)
+    num_atom = Base.cconvert(Cint,Natoms)
+
+    Nsym_ops =
+    ccall( (:spg_get_multiplicity,SPGLIB_SO_PATH), Cint,
+           ( Ptr{Float64}, Ptr{Float64}, Ptr{Cint}, Cint, Float64 ),
+           lattice, position, ctypes, num_atom, symprec )
+    return Base.cconvert(Int64,Nsym_ops)
+end
+
+
+function spg_get_ir_reciprocal_mesh(mesh, is_shift, lattice, position, types, Natoms, symprec)
+    Nkpts = prod(mesh)
+    kgrid = zeros(Cint,3,Nkpts)
+    mapping = zeros(Cint,Nkpts)
+
+    cmesh = Base.cconvert(Array{Cint,1},mesh)
+    cis_shift = Base.cconvert(Array{Cint,1},is_shift)
+    ctypes = Base.cconvert(Array{Cint,1},types)
+    num_atom = Base.cconvert(Cint,Natoms)
+    ONE = Base.cconvert(Cint,1)
+    
+    num_ir =
+    ccall((:spg_get_ir_reciprocal_mesh, SPGLIB_SO_PATH), Cint,
+        (Ptr{Cint}, Ptr{Cint}, Ptr{Cint}, Ptr{Cint}, Cint, Ptr{Float64}, Ptr{Float64}, 
+        Ptr{Cint}, Cint, Float64),
+        kgrid, mapping, cmesh, cis_shift, ONE, lattice, position, ctypes, num_atom, symprec)
+    
+    return Base.cconvert(Int64, num_ir),
+           Base.cconvert(Array{Int64,2}, kgrid),
+           Base.cconvert(Array{Int64,1}, mapping)
+
 end
 
 function test_call_2d_array()
@@ -29,7 +67,8 @@ end
 
 #test_call_2d_array()
 
-function test_BCC()
+
+function test_reduce_k_BCC()
     lattice = 4.0*diagm(ones(3))
 
     Natoms = 2
@@ -41,25 +80,67 @@ function test_BCC()
     types[1] = 1
     types[2] = 1
 
-    println(typeof(types))
     symprec = 1e-5
 
-    println(lattice)
-    println(atpos)    
+    Nkred, kgrid, mapping =
+    spg_get_ir_reciprocal_mesh([3,3,3], [0,0,0], lattice, atpos, types, Natoms, symprec)
 
-    println("Before num_primitive_atom")
+    println("Nkred = ", Nkred)
+    println(kgrid)
+    println(mapping)
+    
+    Nsym_ops = spg_get_multiplicity(lattice, atpos, types, Natoms, symprec)
+    println("Nsym_ops = ", Nsym_ops)
+
+end
+
+
+function test_primitive_BCC()
+    lattice = 4.0*diagm(ones(3))
+
+    Natoms = 2
+    atpos = zeros(3,Natoms)
+    atpos[:,1] = [0.0, 0.0, 0.0]
+    atpos[:,2] = [0.5, 0.5, 0.5]
+
+    types = zeros(Int64,2)
+    types[1] = 1
+    types[2] = 1
+
+    symprec = 1e-5
+
+    println("Before find_primitive = ")
+    for i = 1:3
+        @printf("%f %f %f\n", lattice[i,1], lattice[i,2], lattice[i,3])
+    end
+    println("")    
+    for ia = 1:Natoms
+        @printf("%5d %18.10f %18.10f %18.10f\n", ia, atpos[1,ia], atpos[2,ia], atpos[3,ia])
+    end
+    Nsym_ops = spg_get_multiplicity(lattice, atpos, types, Natoms, symprec)
+    println("Nsym_ops = ", Nsym_ops)
+
     num_primitive_atom = spg_find_primitive_v2(lattice, atpos, types, Natoms, symprec)
-
     println("num_primitive_atom = ", num_primitive_atom)
+
+    println("After find_primitive = ")
+    for i = 1:3
+        @printf("%f %f %f\n", lattice[i,1], lattice[i,2], lattice[i,3])
+    end
+    println("")    
+    for ia = 1:num_primitive_atom
+        @printf("%5d %18.10f %18.10f %18.10f\n", ia, atpos[1,ia], atpos[2,ia], atpos[3,ia])
+    end
+
 end
 
 
 function test_corrundum()
     lattice = zeros(3,3)
 
-    lattice[1,:] = [4.8076344022756095, -2.4038172011378047, 0]
-    lattice[2,:] = [0.0, 4.1635335244786962, 0.0]
-    lattice[3,:] = [0.0, 0.0, 13.1172699198127543]
+    lattice[:,1] = [4.8076344022756095, -2.4038172011378047, 0]
+    lattice[:,2] = [0.0, 4.1635335244786962, 0.0]
+    lattice[:,3] = [0.0, 0.0, 13.1172699198127543]
 
     Natoms = 30
     atpos = zeros(3,Natoms)
@@ -124,5 +205,6 @@ function test_corrundum()
 
 end
 
-#test_BCC()
-test_corrundum()
+test_reduce_k_BCC()
+#test_primitive_BCC()
+#test_corrundum()

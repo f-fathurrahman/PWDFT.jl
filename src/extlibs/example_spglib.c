@@ -479,7 +479,11 @@ static void test_spg_get_symmetry(void)
     }
   }
 
+  printf("\n");
+  printf("------------------------------------------------------------\n");
   printf("*** Example of spg_get_symmetry (Rutile two unit cells) ***:\n");
+  printf("------------------------------------------------------------\n");
+  
   size = spg_get_symmetry(rotation,
 			  translation,
 			  max_size,
@@ -488,6 +492,8 @@ static void test_spg_get_symmetry(void)
 			  types,
 			  num_atom,
 			  1e-5);
+
+  printf("size of symmetry = %d\n", size);
   for (i = 0; i < size; i++) {
     printf("--- %d ---\n", i + 1);
     for (j = 0; j < 3; j++)

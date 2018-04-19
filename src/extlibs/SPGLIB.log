@@ -217,7 +217,11 @@ Direct
 ------------------------------------------------------
 *** Example of spg_get_multiplicity ***:
 Number of symmetry operations: 48
+
+------------------------------------------------------------
 *** Example of spg_get_symmetry (Rutile two unit cells) ***:
+------------------------------------------------------------
+size of symmetry = 32
 --- 1 ---
  1  0  0
  0  1  0
