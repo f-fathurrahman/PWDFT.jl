@@ -20,7 +20,7 @@ OBJ = $(C_SRC:.c=.o)
 
 # Targets
 lib: $(OBJ)
-	ar rcs libspglib.so *.o
+	gcc -shared -o libspglib.so -Wl,--whole-archive $(OBJ) -Wl,--no-whole-archive
 
 clean:
 	rm -rf *.o *.mod libspglib.so *.x
