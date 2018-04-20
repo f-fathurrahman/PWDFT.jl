@@ -10,7 +10,7 @@ function test_main()
     println(pw)
 
     # Atoms
-    atoms = init_atoms_xyz("PtO.xyz")
+    atoms = init_atoms_xyz("../structures/PtO.xyz")
     println(atoms)
 
     # Structure factor

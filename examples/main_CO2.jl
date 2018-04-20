@@ -3,7 +3,7 @@ using PWDFT
 function test_main( ; method="SCF" )
 
     # Atoms
-    atoms = init_atoms_xyz("CO2.xyz")
+    atoms = init_atoms_xyz("../structures/CO2.xyz")
     println(atoms)
 
     # Initialize Hamiltonian

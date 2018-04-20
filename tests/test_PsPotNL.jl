@@ -3,7 +3,7 @@ using PWDFT
 function test_main()
 
     # Atoms
-    atoms = init_atoms_xyz("PtO.xyz")
+    atoms = init_atoms_xyz("../structures/PtO.xyz")
     println(atoms)
 
     pspfiles = ["../pseudopotentials/pade_gth/Pt-q10.gth",

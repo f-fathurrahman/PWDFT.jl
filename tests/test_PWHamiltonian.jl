@@ -2,7 +2,7 @@ using PWDFT
 
 function test_main()
     #
-    atoms = init_atoms_xyz("H.xyz")
+    atoms = init_atoms_xyz("../structures/H.xyz")
     println(atoms)
     #
     LatVecs = 16.0*diagm(ones(3))

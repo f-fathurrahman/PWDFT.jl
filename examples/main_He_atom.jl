@@ -5,7 +5,7 @@ function test_main( ; method="SCF" )
     #
     # Atoms
     #
-    atoms = init_atoms_xyz("He.xyz")
+    atoms = init_atoms_xyz("../structures/He.xyz")
     println(atoms)
 
     #

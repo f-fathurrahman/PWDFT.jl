@@ -1,7 +1,7 @@
 using PWDFT
 
 function test_main()
-    atoms = init_atoms_xyz("../examples/CuSO4.xyz")
+    atoms = init_atoms_xyz("../structures/CuSO4.xyz")
     println(atoms)
     
     Nspecies = atoms.Nspecies

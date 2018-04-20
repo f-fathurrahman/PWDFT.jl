@@ -2,7 +2,7 @@ using PWDFT
 
 function test_main()
 
-    atoms = init_atoms_xyz("../examples/H.xyz")
+    atoms = init_atoms_xyz("../structures/H.xyz")
     pspfiles = ["../pseudopotentials/pade_gth/H-q1.gth"]
     LatVecs = 16.0*diagm( ones(3) )
     ecutwfc_Ry = 30.0

@@ -1,7 +1,7 @@
 using PWDFT
 
 function test_main()
-    atoms = init_atoms_xyz("CuSO4.xyz", verbose=true)
+    atoms = init_atoms_xyz("../structures/CuSO4.xyz", verbose=true)
     println(atoms)
     
     dummy_atoms = Atoms()

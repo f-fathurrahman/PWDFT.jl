@@ -4,7 +4,7 @@ using PWDFT
 ewald = 3.58126919 Ry = 1.790634595 Ha
 """
 function test_N2()
-    atoms = init_atoms_xyz("N2.xyz")
+    atoms = init_atoms_xyz("../structures/N2.xyz")
     println(atoms)
 
     LatVecs = 16.0*diagm( ones(3) )
@@ -23,7 +23,7 @@ end
 ewald contribution = 0.62633998 Ry = 0.31316999 Ha
 """
 function test_H2()
-    atoms = init_atoms_xyz("H2.xyz")
+    atoms = init_atoms_xyz("../structures/H2.xyz")
     println(atoms)
 
     LatVecs = 16.0*diagm( ones(3) )
@@ -42,7 +42,7 @@ end
 PWSCF result = -0.04393722 Ry = -0.02196861 Ha
 """
 function test_LiH()
-    atoms = init_atoms_xyz("LiH.xyz")
+    atoms = init_atoms_xyz("../structures/LiH.xyz")
     println(atoms)
 
     LatVecs = 16.0*diagm( ones(3) )
@@ -61,7 +61,7 @@ end
 PWSCF result = -0.17733109 Ry = -0.088665545 Ha
 """
 function test_H()
-    atoms = init_atoms_xyz("H.xyz")
+    atoms = init_atoms_xyz("../structures/H.xyz")
     println(atoms)
 
     LatVecs = 16.0*diagm( ones(3) )
