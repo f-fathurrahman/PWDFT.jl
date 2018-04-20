@@ -1,0 +1,108 @@
+\documentclass[english,10pt]{beamer}
+
+\setlength{\parskip}{\smallskipamount}
+\setlength{\parindent}{0pt}
+
+\setbeamersize{text margin left=5pt, text margin right=5pt}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{braket}
+
+\usepackage{minted}
+\newminted{julia}{breaklines,fontsize=\footnotesize,texcomments=true}
+\newminted{python}{breaklines,fontsize=\footnotesize,texcomments=true}
+\newminted{bash}{breaklines,fontsize=\footnotesize,texcomments=true}
+\newminted{text}{breaklines,fontsize=\footnotesize,texcomments=true}
+
+\definecolor{mintedbg}{rgb}{0.95,0.95,0.95}
+\usepackage{mdframed}
+
+\BeforeBeginEnvironment{minted}{\begin{mdframed}[backgroundcolor=mintedbg]}
+\AfterEndEnvironment{minted}{\end{mdframed}}
+
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{3}
+
+\makeatletter
+
+ \newcommand\makebeamertitle{\frame{\maketitle}}%
+ % (ERT) argument for the TOC
+ \AtBeginDocument{%
+   \let\origtableofcontents=\tableofcontents
+   \def\tableofcontents{\@ifnextchar[{\origtableofcontents}{\gobbletableofcontents}}
+   \def\gobbletableofcontents#1{\origtableofcontents}
+ }
+
+\makeatother
+
+\usepackage{babel}
+
+\begin{document}
+
+
+\title{\texttt{PWDFT.jl}: Density Functional Theory Calculations with Julia}
+\author{Fadjar Fathurrahman}
+\institute{
+Engineering Physics Department \\
+Research Center for Nanoscience and Nanotechnology \\
+Institut Teknologi Bandung
+}
+\date{20 April 2018}
+
+\frame{\titlepage}
+
+\begin{frame}
+\frametitle{Codes for DFT}
+
+\begin{itemize}
+\item using Fortran, C, C++: ABINIT, VASP, Quantum Espresso
+\item Python: GPAW
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{PWDFT.jl}
+
+\begin{itemize}
+\item A package for doing DFT calculations using Julia
+\item plane wave basis + pseudopotentials (norm-conserving)
+\item LDA and GGA functionals can be used (via LibXC)
+\item symmetry detection (via SPGLIB)
+\item algorithms: SCF and Emin (PCG and DCM)
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Aim}
+
+\begin{itemize}
+\item Friendly-to-develop DFT package
+\item quick development for testing various algorithms
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Example}
+
+\begin{juliacode}
+using PWDFT
+atoms = init_atoms_xyz("H2.xyz")
+pspfiles = ["../pseudopotentials/pade_gth/H-q1.gth"]
+LatVecs = 16.0*diagm( ones(3) )
+ecutwfc = 15.0 # in Hartree
+Ham = PWHamiltonian( atoms, pspfiles, ecutwfc, LatVecs )
+Ham.energies.NN = calc_E_NN( Ham.pw, atoms, [1.0] )
+KS_solve_SCF!( Ham, update_psi="CheFSI" )
+\end{juliacode}
+
+\end{frame}
+
+\end{document}
+
