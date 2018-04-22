@@ -9,6 +9,7 @@ const ANG2BOHR = 1.889725989  # angstrom to bohr
 
 export Atoms
 export init_atoms_xyz
+export init_atoms_xyz_string
 export get_Zatoms
 include("Atoms.jl")
 

@@ -198,7 +198,7 @@ function println( pw::PWGrid )
     println( pw.gvec, pw.gvecw )
 end
 
-function println(gvec::GVectors)
+function println( gvec::GVectors )
     Ng = gvec.Ng
     G = gvec.G
     G2 = gvec.G2

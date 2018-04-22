@@ -45,7 +45,7 @@ end
 
 
 """
-Initialize from xyz file
+Initialize from an xyz file
 """
 function init_atoms_xyz(filexyz; in_bohr=false, verbose=false)
     f = open(filexyz, "r")
@@ -126,6 +126,84 @@ function init_atoms_xyz(filexyz; in_bohr=false, verbose=false)
 
 end
 
+"""
+Just like `init_atoms_xyz` but instead of file, the contents are directly feed
+to the function.
+"""
+function init_atoms_xyz_string(str::String; in_bohr=false, verbose=false)
+    lines = split(str,"\n")
+    l = lines[1]
+    Natoms = parse(Int64, l)
+    positions = zeros(3,Natoms)
+    atsymbs = Array{String}(Natoms)
+    #
+    for ia = 1:Natoms
+        ll = split( lines[2+ia] )
+        atsymbs[ia] = ll[1]
+        positions[1,ia] = parse( Float64, ll[2] )
+        positions[2,ia] = parse( Float64, ll[3] )
+        positions[3,ia] = parse( Float64, ll[4] )
+    end
+
+    # convert from angstrom to bohr
+    if !in_bohr
+        if verbose
+            println("Coordinate in xyz file is assumed to be given in angstrom")
+            println("It will be converted to bohr")
+        end
+        positions[:,:] = positions[:,:] * ANG2BOHR
+    else
+        if verbose
+            println("Coordinate in xyz file is assumed to be given in bohr")
+        end
+    end
+
+    # Determine number of species
+    Nspecies = 0
+    for ia = 1:Natoms
+        k2 = 0
+        for k1 = 1:ia-1
+            if atsymbs[k1] == atsymbs[ia]
+                k2 = 1
+            end
+        end
+        # find different
+        if k2 == 0
+            Nspecies = Nspecies + 1
+        end
+    end
+
+    SpeciesSymbols = Array{String}(Nspecies)
+
+    idx1 = 0
+    for ia = 1:Natoms
+        k2 = 0
+        for k1 = 1:ia-1
+            if atsymbs[k1] == atsymbs[ia]
+                k2 = 1
+            end
+        end
+        # Found different species
+        if k2==0
+            idx1 = idx1 + 1
+            SpeciesSymbols[idx1] = atsymbs[ia]
+        end
+    end
+
+    # Mapping of atoms to species index
+    atm2species = Array{Int64}(Natoms)
+    for ia = 1:Natoms
+        for isp = 1:Nspecies
+            if atsymbs[ia] == SpeciesSymbols[isp]
+                atm2species[ia] = isp
+            end
+        end
+    end
+
+    LatVecs = zeros(3,3)
+    return Atoms(Natoms, Nspecies, positions, atm2species, atsymbs, SpeciesSymbols, LatVecs )
+    
+end
 
 function get_Zatoms( atoms::Atoms )
 

@@ -18,10 +18,11 @@ end
 
 
 function PWHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
-                        ecutwfc::Float64, LatVecs::Array{Float64,2};
+                        ecutwfc::Float64 ;
                         xcfunc = "VWN" )
+
     # Initialize plane wave grids
-    pw = PWGrid( ecutwfc, LatVecs )
+    pw = PWGrid( ecutwfc, atoms.LatVecs )
     println(pw)
 
     Nspecies = atoms.Nspecies
@@ -80,13 +81,10 @@ end
 #
 # No pspfiles given. Use Coulomb potential (all electrons)
 #
-function PWHamiltonian( atoms::Atoms, ecutwfc::Float64, LatVecs::Array{Float64,2};
-                        xcfunc="VWN" )
+function PWHamiltonian( atoms::Atoms, ecutwfc::Float64; xcfunc="VWN" )
 
-    #
     # Initialize plane wave grids
-    #
-    pw = PWGrid( ecutwfc, LatVecs )
+    pw = PWGrid( ecutwfc, atoms.LatVecs )
     println(pw)
 
     Nspecies = atoms.Nspecies
