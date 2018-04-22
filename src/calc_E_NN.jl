@@ -1,6 +1,14 @@
 
 using SpecialFunctions: erfc
 
+function calc_E_NN( atoms::Atoms )
+    return calc_E_NN( atoms.LatVecs, atoms, atoms.Zvals )
+end
+
+function calc_E_NN( atoms::Atoms, Zvals::Array{Float64,1} )
+    return calc_E_NN( atoms.LatVecs, atoms, Zvals )
+end
+
 function calc_E_NN( pw::PWGrid, atoms::Atoms, Zvals::Array{Float64,1} )
     return calc_E_NN( pw.LatVecs, atoms, Zvals )
 end

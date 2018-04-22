@@ -74,6 +74,8 @@ function PWHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
     # NL pseudopotentials
     pspotNL = PsPotNL( pw, atoms, Pspots, check_norm=false )
 
+    atoms.Zvals = get_Zvals( Pspots )
+
     return PWHamiltonian( pw, potentials, energies, rhoe, electrons, atoms, Pspots, pspotNL, xcfunc )
 end
 
@@ -117,6 +119,9 @@ function PWHamiltonian( atoms::Atoms, ecutwfc::Float64; xcfunc="VWN" )
     rhoe = zeros(Float64,Npoints)
 
     pspotNL = PsPotNL()
+
+    Zatoms = get_Zatoms( atoms )
+    atoms.Zvals = Zatoms
 
     return PWHamiltonian( pw, potentials, energies, rhoe, electrons, atoms, Pspots, pspotNL, xcfunc )
 end

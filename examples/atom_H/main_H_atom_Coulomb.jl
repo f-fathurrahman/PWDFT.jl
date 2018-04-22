@@ -1,25 +1,22 @@
 using PWDFT
 
 function test_main( ; method="SCF" )
-
-    #
     # Atoms
-    #
-    atoms = init_atoms_xyz("../structures/H.xyz")
+    atoms = init_atoms_xyz_string(
+        """
+        1
+
+        H  0.0  0.0  0.0
+        """)
+    atoms.LatVecs = 16.0*diagm( ones(3) )
     println(atoms)
 
-    #
     # Initialize Hamiltonian
-    #
-    pspfiles = ["../pseudopotentials/pade_gth/H-q1.gth"]
-    LatVecs = 16.0*diagm( ones(3) )
     ecutwfc_Ry = 30.0
-    Ham = PWHamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, LatVecs )
+    Ham = PWHamiltonian( atoms, ecutwfc_Ry*0.5 )
 
-    #
     # calculate E_NN
-    #
-    Ham.energies.NN = calc_E_NN( Ham.pw, atoms, [1.0] )
+    Ham.energies.NN = calc_E_NN( atoms )
 
     #
     # Solve the KS problem
