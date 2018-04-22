@@ -19,11 +19,13 @@ end
 
 function PWHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
                         ecutwfc::Float64 ;
-                        xcfunc = "VWN" )
+                        xcfunc = "VWN", verbose=false )
 
     # Initialize plane wave grids
     pw = PWGrid( ecutwfc, atoms.LatVecs )
-    println(pw)
+    if verbose
+        println(pw)
+    end
 
     Nspecies = atoms.Nspecies
     if Nspecies != size(pspfiles)[1]
@@ -50,7 +52,9 @@ function PWHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
     for isp = 1:Nspecies
         Pspots[isp] = PsPot_GTH( pspfiles[isp] )
         psp = Pspots[isp]
-        println(psp)
+        if verbose
+            println(psp)
+        end
         for ig = 1:Ng
             ip = idx_g2r[ig]
             Vg[ip] = strf[ig,isp] * eval_Vloc_G( psp, G2[ig] ) / Ω
@@ -69,7 +73,9 @@ function PWHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
     rhoe = zeros( Float64, Npoints )
 
     electrons = Electrons( atoms, Pspots )
-    println(electrons)
+    if verbose
+        println(electrons)
+    end
 
     # NL pseudopotentials
     pspotNL = PsPotNL( pw, atoms, Pspots, check_norm=false )
@@ -83,11 +89,13 @@ end
 #
 # No pspfiles given. Use Coulomb potential (all electrons)
 #
-function PWHamiltonian( atoms::Atoms, ecutwfc::Float64; xcfunc="VWN" )
+function PWHamiltonian( atoms::Atoms, ecutwfc::Float64; xcfunc="VWN", verbose=false )
 
     # Initialize plane wave grids
     pw = PWGrid( ecutwfc, atoms.LatVecs )
-    println(pw)
+    if verbose
+        println(pw)
+    end
 
     Nspecies = atoms.Nspecies
 
@@ -114,7 +122,9 @@ function PWHamiltonian( atoms::Atoms, ecutwfc::Float64; xcfunc="VWN" )
     rhoe = zeros( Float64, Npoints )
 
     electrons = Electrons( atoms, Zvals )
-    println(electrons)
+    if verbose
+        println(electrons)
+    end
 
     rhoe = zeros(Float64,Npoints)
 
@@ -150,7 +160,8 @@ function update!(Ham::PWHamiltonian, rhoe::Array{Float64,1})
 end
 
 
-function update!( Ham::PWHamiltonian, atoms::Atoms, strf::Array{Complex128,2}, pspfiles::Array{String,1} )
+function update!( Ham::PWHamiltonian, atoms::Atoms,
+    strf::Array{Complex128,2}, pspfiles::Array{String,1} )
 
     Nspecies = atoms.Nspecies
     if Nspecies != size(pspfiles)[1]
