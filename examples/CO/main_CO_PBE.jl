@@ -3,47 +3,49 @@ using PWDFT
 function test_main( ; method="SCF" )
 
     # Atoms
-    atoms = init_atoms_xyz("../structures/CO.xyz")
+    atoms = init_atoms_xyz("../../structures/CO.xyz")
+    atoms.LatVecs = 16.0*diagm( ones(3) )
     println(atoms)
 
     # Initialize Hamiltonian
-    LatVecs = 16.0*diagm( ones(3) )
     ecutwfc_Ry = 30.0
-    pspfiles = ["../pseudopotentials/pbe_gth/C-q4.gth",
-                "../pseudopotentials/pbe_gth/O-q6.gth"]
-    Ham = PWHamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, LatVecs, xcfunc="PBE" )
+    pspfiles = ["../../pseudopotentials/pbe_gth/C-q4.gth",
+                "../../pseudopotentials/pbe_gth/O-q6.gth"]
+    Ham = PWHamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, xcfunc="PBE" )
 
     # calculate E_NN
-    Zvals = get_Zvals( Ham.pspots )
-    Ham.energies.NN = calc_E_NN( Ham.pw, atoms, Zvals )
+    Ham.energies.NN = calc_E_NN( atoms )
+
 
     if method == "SCF"
-        λ, v = KS_solve_SCF!( Ham, β=0.2 )
-        println("\nAfter calling KS_solve_SCF:")
+        KS_solve_SCF!( Ham )
+
     elseif method == "Emin"
-        λ, v = KS_solve_Emin_PCG!( Ham )
-        println("\nAfter calling KS_solve_Emin_PCG:")
+        KS_solve_Emin_PCG!( Ham, verbose=true )
+
     elseif method == "DCM"
-        λ, v = KS_solve_DCM!( Ham )
-        println("\nAfter calling KS_solve_DCM:")
+        KS_solve_DCM!( Ham, NiterMax=15 )
+
     else
         println("ERROR: unknow method = ", method)
     end
 
     Nstates = Ham.electrons.Nstates
-    println("\nEigenvalues")
+    ebands = Ham.electrons.ebands
+
+    println("\nBand energies:")
     for ist = 1:Nstates
-        @printf("%8d  %18.10f = %18.10f eV\n", ist, λ[ist], λ[ist]*Ry2eV*2)
+        @printf("%8d  %18.10f = %18.10f eV\n", ist, ebands[ist], ebands[ist]*Ry2eV*2)
     end
+
     println("\nTotal energy components")
     println(Ham.energies)
 
 end
 
-#@time test_main(method="DCM") # diverges
 @time test_main(method="Emin")
 @time test_main(method="SCF")
-
+@time test_main(method="DCM") # diverges
 
 """
     Kinetic energy  =  1.27516710648293E+01

@@ -2,62 +2,47 @@ using PWDFT
 
 function test_main( ; method="SCF" )
 
-    #
     # Atoms
-    #
-    atoms = init_atoms_xyz("../structures/H2.xyz")
+    atoms = init_atoms_xyz("../../structures/H2.xyz")
+    atoms.LatVecs = 16.0*diagm( ones(3) )
     println(atoms)
 
-    #
     # Initialize Hamiltonian
-    #
-    pspfiles = ["../pseudopotentials/pbe_gth/H-q1.gth"]
-    LatVecs = 16.0*diagm( ones(3) )
+    pspfiles = ["../../pseudopotentials/pbe_gth/H-q1.gth"]
     ecutwfc_Ry = 30.0
-    Ham = PWHamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, LatVecs, xcfunc="PBE" )
+    Ham = PWHamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, xcfunc="PBE" )
 
-
-    println("sum V Ps loc = ", sum(Ham.potentials.Ps_loc))
-
-    #
     # calculate E_NN
-    #
-    Ham.energies.NN = calc_E_NN( Ham.pw, atoms, [1.0] )
+    Ham.energies.NN = calc_E_NN( atoms )
 
     if method == "SCF"
-        λ, v = KS_solve_SCF!( Ham )
-        println("\nAfter calling KS_solve_SCF:")
-
-    elseif method == "ChebySCF"
-        λ, v = KS_solve_SCF!( Ham, update_psi="CheFSI" )
-        println("\nAfter calling KS_solve_SCF:")
+        KS_solve_SCF!( Ham )
 
     elseif method == "Emin"
-        λ, v = KS_solve_Emin_PCG!( Ham )
-        println("\nAfter calling KS_solve_Emin_PCG:")
+        KS_solve_Emin_PCG!( Ham )
 
     elseif method == "DCM"
-        λ, v = KS_solve_DCM!( Ham )
-        println("\nAfter calling KS_solve_Emin_DCM:")
+        KS_solve_DCM!( Ham, NiterMax=15 )
 
     else
         println("ERROR: unknow method = ", method)
     end
 
     Nstates = Ham.electrons.Nstates
-    println("\nEigenvalues")
+    ebands = Ham.electrons.ebands
+
+    println("\nBand energies:")
     for ist = 1:Nstates
-        @printf("%8d  %18.10f\n", ist, λ[ist])
+        @printf("%8d  %18.10f = %18.10f eV\n", ist, ebands[ist], ebands[ist]*Ry2eV*2)
     end
+
     println("\nTotal energy components")
     println(Ham.energies)
-
 end
 
-#@time test_main(method="ChebySCF")
 @time test_main(method="Emin")
+@time test_main(method="SCF")
 @time test_main(method="DCM")
-#@time test_main(method="SCF")
 
 
 """
