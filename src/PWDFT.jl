@@ -13,6 +13,10 @@ export init_atoms_xyz_string
 export get_Zatoms
 include("Atoms.jl")
 
+const SPGLIB_SO_PATH = "/home/efefer/WORKS/my_github_repos/PWDFT.jl/src/extlibs/spglib/libspglib.so"
+export spg_find_primitive
+include("spglib.jl")
+
 export write_xsf
 export write_xsf_data3d_crystal
 include("XSF_utils.jl")
