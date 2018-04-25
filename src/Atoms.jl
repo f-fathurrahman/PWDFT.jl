@@ -3,7 +3,7 @@ mutable struct Atoms
     Nspecies::Int64
     positions::Array{Float64,2}
     atm2species::Array{Int64,1}
-    atsymbs::Array{String,1}
+    atsymbs::Array{String,1}         # for each atom
     SpeciesSymbols::Array{String,1}  # unique symbols
     LatVecs::Array{Float64,2}
     Zvals::Array{Float64,1}
@@ -46,8 +46,14 @@ function Atoms()
 end
 
 
+
+function init_atoms_xyz_ext( filexyz; in_bohr=false, verbose=false )
+
+end
+
+
 """
-Initialize from an xyz file
+Initialize from a simple xyz file
 """
 function init_atoms_xyz(filexyz; in_bohr=false, verbose=false)
     f = open(filexyz, "r")
@@ -79,46 +85,13 @@ function init_atoms_xyz(filexyz; in_bohr=false, verbose=false)
     end
 
     # Determine number of species
-    Nspecies = 0
-    for ia = 1:Natoms
-        k2 = 0
-        for k1 = 1:ia-1
-            if atsymbs[k1] == atsymbs[ia]
-                k2 = 1
-            end
-        end
-        # find different
-        if k2 == 0
-            Nspecies = Nspecies + 1
-        end
-    end
+	Nspecies = get_Nspecies( atsymbs )
 
-    SpeciesSymbols = Array{String}(Nspecies)
-
-    idx1 = 0
-    for ia = 1:Natoms
-        k2 = 0
-        for k1 = 1:ia-1
-            if atsymbs[k1] == atsymbs[ia]
-                k2 = 1
-            end
-        end
-        # Found different species
-        if k2==0
-            idx1 = idx1 + 1
-            SpeciesSymbols[idx1] = atsymbs[ia]
-        end
-    end
+    # Determine unique species symbols
+	SpeciesSymbols = get_SpeciesSymbols( Nspecies, atsymbs )
 
     # Mapping of atoms to species index
-    atm2species = Array{Int64}(Natoms)
-    for ia = 1:Natoms
-        for isp = 1:Nspecies
-            if atsymbs[ia] == SpeciesSymbols[isp]
-                atm2species[ia] = isp
-            end
-        end
-    end
+    atm2species = get_atm2species( atsymbs, SpeciesSymbols )
 
     LatVecs = zeros(3,3)
     Zvals = zeros(Nspecies)
@@ -162,46 +135,13 @@ function init_atoms_xyz_string(str::String; in_bohr=false, verbose=false)
     end
 
     # Determine number of species
-    Nspecies = 0
-    for ia = 1:Natoms
-        k2 = 0
-        for k1 = 1:ia-1
-            if atsymbs[k1] == atsymbs[ia]
-                k2 = 1
-            end
-        end
-        # find different
-        if k2 == 0
-            Nspecies = Nspecies + 1
-        end
-    end
+	Nspecies = get_Nspecies( atsymbs )
 
-    SpeciesSymbols = Array{String}(Nspecies)
-
-    idx1 = 0
-    for ia = 1:Natoms
-        k2 = 0
-        for k1 = 1:ia-1
-            if atsymbs[k1] == atsymbs[ia]
-                k2 = 1
-            end
-        end
-        # Found different species
-        if k2==0
-            idx1 = idx1 + 1
-            SpeciesSymbols[idx1] = atsymbs[ia]
-        end
-    end
+    # Determine unique species symbols
+	SpeciesSymbols = get_SpeciesSymbols( Nspecies, atsymbs )
 
     # Mapping of atoms to species index
-    atm2species = Array{Int64}(Natoms)
-    for ia = 1:Natoms
-        for isp = 1:Nspecies
-            if atsymbs[ia] == SpeciesSymbols[isp]
-                atm2species[ia] = isp
-            end
-        end
-    end
+    atm2species = get_atm2species( atsymbs, SpeciesSymbols )
 
     LatVecs = zeros(3,3)
     Zvals = zeros(Nspecies)
@@ -260,3 +200,69 @@ function get_Zatoms( atoms::Atoms )
 end
 
 
+##
+## Helper functions
+##
+
+function get_Nspecies( atsymbs::Array{String,1} )
+	# Determine number of species
+    Nspecies = 0
+	Natoms = size(atsymbs)[1]
+    for ia = 1:Natoms
+        k2 = 0
+        for k1 = 1:ia-1
+            if atsymbs[k1] == atsymbs[ia]
+                k2 = 1
+            end
+        end
+        # find different
+        if k2 == 0
+            Nspecies = Nspecies + 1
+        end
+    end
+	return Nspecies
+end
+
+
+function get_SpeciesSymbols( Nspecies, atsymbs )
+    
+	SpeciesSymbols = Array{String}(Nspecies)	
+	Natoms = size(atsymbs)[1]
+
+    idx1 = 0
+    for ia = 1:Natoms
+        k2 = 0
+        for k1 = 1:ia-1
+            if atsymbs[k1] == atsymbs[ia]
+                k2 = 1
+            end
+        end
+        # Found different species
+        if k2==0
+            idx1 = idx1 + 1
+            SpeciesSymbols[idx1] = atsymbs[ia]
+        end
+    end
+
+    return SpeciesSymbols
+
+end
+
+
+function get_atm2species( atsymbs, SpeciesSymbols )
+
+    Natoms = size(atsymbs)[1]
+    Nspecies = size(SpeciesSymbols)[1]
+
+    atm2species = Array{Int64}(Natoms)
+
+    for ia = 1:Natoms
+        for isp = 1:Nspecies
+            if atsymbs[ia] == SpeciesSymbols[isp]
+                atm2species[ia] = isp
+            end
+        end
+    end
+
+    return atm2species
+end
