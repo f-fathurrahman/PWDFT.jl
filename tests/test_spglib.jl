@@ -29,12 +29,18 @@ function test_corrundum()
    atoms.LatVecs[:,3] = [0.0000000, 0.0000000, 12.9940000]
    atoms.LatVecs = atoms.LatVecs*ANG2BOHR
    
-   println(atoms)
+   println(atoms.LatVecs)
 
    write_xsf( "TEMP.xsf", atoms )
    
    Natoms_prim = spg_find_primitive(atoms)
    println("Natoms_prim = ", Natoms_prim)
+
+   println(atoms.LatVecs)
+
+   red_atoms = reduce_atoms(atoms)
+   println(red_atoms)
+   write_xsf( "TEMP_reduced.xsf", red_atoms )
 
 end
 

@@ -15,6 +15,7 @@ include("Atoms.jl")
 
 const SPGLIB_SO_PATH = "/home/efefer/WORKS/my_github_repos/PWDFT.jl/src/extlibs/spglib/libspglib.so"
 export spg_find_primitive
+export reduce_atoms
 include("spglib.jl")
 
 export write_xsf

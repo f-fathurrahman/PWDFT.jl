@@ -6,7 +6,7 @@ mutable struct Atoms
     atsymbs::Array{String,1}         # for each atom
     SpeciesSymbols::Array{String,1}  # unique symbols
     LatVecs::Array{Float64,2}
-    Zvals::Array{Float64,1}
+    Zvals::Array{Float64,1}   # unique
 end
 
 # Overload println for Atoms
