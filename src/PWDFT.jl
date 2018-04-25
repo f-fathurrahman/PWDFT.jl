@@ -13,6 +13,12 @@ export init_atoms_xyz_string
 export get_Zatoms
 include("Atoms.jl")
 
+export gen_lattice_fcc, gen_lattice_bcc, gen_lattice_trigonal, gen_lattice_trigonal_v2,
+       gen_lattice_cubic, gen_lattice_bcc_v2, gen_lattice_hexagonal,
+       gen_lattice_triclinic, gen_lattice_tetragonal_P, gen_lattice_tetragonal_I,
+       gen_lattice_orthorhombic_P, gen_lattice_monoclinic_P
+include("gen_lattice_pwscf.jl")
+
 const SPGLIB_SO_PATH = "/home/efefer/WORKS/my_github_repos/PWDFT.jl/src/extlibs/spglib/libspglib.so"
 export spg_find_primitive
 export reduce_atoms

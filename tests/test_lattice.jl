@@ -1,7 +1,5 @@
 using PWDFT
 
-include("../src/gen_lattice_pwscf.jl")
-
 function test_fcc()
     LatVecs = gen_lattice_fcc(16.0)
     ecutwfc_Ry = 1.0
