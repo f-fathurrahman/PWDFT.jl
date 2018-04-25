@@ -85,10 +85,13 @@ function init_atoms_xyz(filexyz; in_bohr=false, verbose=false)
     end
 
     # Determine number of species
-	Nspecies = get_Nspecies( atsymbs )
+	#Nspecies = get_Nspecies( atsymbs )
 
     # Determine unique species symbols
-	SpeciesSymbols = get_SpeciesSymbols( Nspecies, atsymbs )
+	#SpeciesSymbols = get_SpeciesSymbols( Nspecies, atsymbs )
+
+    SpeciesSymbols = unique(atsymbs)
+    Nspecies = length(SpeciesSymbols)
 
     # Mapping of atoms to species index
     atm2species = get_atm2species( atsymbs, SpeciesSymbols )
@@ -135,10 +138,13 @@ function init_atoms_xyz_string(str::String; in_bohr=false, verbose=false)
     end
 
     # Determine number of species
-	Nspecies = get_Nspecies( atsymbs )
+	#Nspecies = get_Nspecies( atsymbs )
 
     # Determine unique species symbols
-	SpeciesSymbols = get_SpeciesSymbols( Nspecies, atsymbs )
+	#SpeciesSymbols = get_SpeciesSymbols( Nspecies, atsymbs )
+
+    SpeciesSymbols = unique(atsymbs)
+    Nspecies = length(SpeciesSymbols)
 
     # Mapping of atoms to species index
     atm2species = get_atm2species( atsymbs, SpeciesSymbols )
@@ -204,6 +210,15 @@ end
 ## Helper functions
 ##
 
+"""
+Given all atomic symbols present in a system, `atsymbs`,
+this function returns number of species present by searching for
+unique symbols. This function use a naive algorithm.
+Similar functionality can be obtained by using the built-in `unique` function.
+```
+Nspecies = length(unique(str))
+```
+"""
 function get_Nspecies( atsymbs::Array{String,1} )
 	# Determine number of species
     Nspecies = 0
@@ -224,6 +239,15 @@ function get_Nspecies( atsymbs::Array{String,1} )
 end
 
 
+"""
+Given all atomic symbols present in a system, `atsymbs`,
+this function returns unique atomic species symbol.
+This function use a naive algorithm.
+Similar functionality can be obtained by using the built-in `unique` function.
+```
+SpeciesSymbols = unique(str)
+```
+"""
 function get_SpeciesSymbols( Nspecies, atsymbs )
     
 	SpeciesSymbols = Array{String}(Nspecies)	
@@ -248,7 +272,9 @@ function get_SpeciesSymbols( Nspecies, atsymbs )
 
 end
 
-
+"""
+Get `atm2species` which described mapping between `atsymbs` and `SpeciesSymbols`.
+"""
 function get_atm2species( atsymbs, SpeciesSymbols )
 
     Natoms = size(atsymbs)[1]
