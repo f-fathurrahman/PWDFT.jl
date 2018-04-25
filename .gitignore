@@ -8,6 +8,7 @@ OLD_*
 LOG_*
 *.xsf
 TEMP_*
+TEMP*
 
 a.out
 *.x

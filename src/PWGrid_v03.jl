@@ -25,7 +25,9 @@ struct PWGrid
     planbw::Base.DFT.ScaledPlan{Complex{Float64},Base.DFT.FFTW.cFFTWPlan{Complex{Float64},1,false,3},Float64}
 end
 
-
+"""
+LatVecs defines three lattice vectors: v1, v2, and v3 arranged by column.
+"""
 function PWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2} )
 
     ecutrho = 4.0*ecutwfc
@@ -34,9 +36,9 @@ function PWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2} )
     Ω = det(LatVecs)
     #
     LatVecsLen = Array{Float64}(3)
-    LatVecsLen[1] = norm(LatVecs[1,:])
-    LatVecsLen[2] = norm(LatVecs[2,:])
-    LatVecsLen[3] = norm(LatVecs[3,:])
+    LatVecsLen[1] = norm(LatVecs[:,1])
+    LatVecsLen[2] = norm(LatVecs[:,2])
+    LatVecsLen[3] = norm(LatVecs[:,3])
 
     Ns1 = 2*round( Int64, sqrt(ecutrho/2)*LatVecsLen[1]/pi ) + 1
     Ns2 = 2*round( Int64, sqrt(ecutrho/2)*LatVecsLen[2]/pi ) + 1
@@ -83,9 +85,9 @@ function calc_Ng( Ns, RecVecs, ecutrho )
         gi = mm_to_nn( i, Ns[1] )
         gj = mm_to_nn( j, Ns[2] )
         gk = mm_to_nn( k, Ns[3] )
-        G[1] = RecVecs[1,1]*gi + RecVecs[2,1]*gj + RecVecs[3,1]*gk
-        G[2] = RecVecs[1,2]*gi + RecVecs[2,2]*gj + RecVecs[3,2]*gk
-        G[3] = RecVecs[1,3]*gi + RecVecs[2,3]*gj + RecVecs[3,3]*gk
+        G[1] = RecVecs[1,1]*gi + RecVecs[1,2]*gj + RecVecs[1,3]*gk
+        G[2] = RecVecs[2,1]*gi + RecVecs[2,2]*gj + RecVecs[2,3]*gk
+        G[3] = RecVecs[3,1]*gi + RecVecs[3,2]*gj + RecVecs[3,3]*gk
         G2 = G[1]^2 + G[2]^2 + G[3]^2
         if 0.5*G2 < ecutrho
             Ng = Ng + 1
@@ -115,9 +117,9 @@ function init_gvec( Ns, RecVecs, ecutrho )
         gi = mm_to_nn( i, Ns[1] )
         gj = mm_to_nn( j, Ns[2] )
         gk = mm_to_nn( k, Ns[3] )
-        G_temp[1] = RecVecs[1,1]*gi + RecVecs[2,1]*gj + RecVecs[3,1]*gk
-        G_temp[2] = RecVecs[1,2]*gi + RecVecs[2,2]*gj + RecVecs[3,2]*gk
-        G_temp[3] = RecVecs[1,3]*gi + RecVecs[2,3]*gj + RecVecs[3,3]*gk
+        G_temp[1] = RecVecs[1,1]*gi + RecVecs[1,2]*gj + RecVecs[1,3]*gk
+        G_temp[2] = RecVecs[2,1]*gi + RecVecs[2,2]*gj + RecVecs[2,3]*gk
+        G_temp[3] = RecVecs[3,1]*gi + RecVecs[3,2]*gj + RecVecs[3,3]*gk
         G2_temp = G_temp[1]^2 + G_temp[2]^2 + G_temp[3]^2
         if 0.5*G2_temp < ecutrho
             ig = ig + 1
@@ -154,9 +156,9 @@ function init_grid_R( Ns, LatVecs )
     for j in 0:Ns[2]-1
     for i in 0:Ns[1]-1
         ip = ip + 1
-        @inbounds R[1,ip] = LatVecs[1,1]*i/Ns[1] + LatVecs[2,1]*j/Ns[2] + LatVecs[3,1]*k/Ns[3]
-        @inbounds R[2,ip] = LatVecs[1,2]*i/Ns[1] + LatVecs[2,2]*j/Ns[2] + LatVecs[3,2]*k/Ns[3]
-        @inbounds R[3,ip] = LatVecs[1,3]*i/Ns[1] + LatVecs[2,3]*j/Ns[2] + LatVecs[3,3]*k/Ns[3]
+        @inbounds R[1,ip] = LatVecs[1,1]*i/Ns[1] + LatVecs[1,2]*j/Ns[2] + LatVecs[1,3]*k/Ns[3]
+        @inbounds R[2,ip] = LatVecs[2,1]*i/Ns[1] + LatVecs[2,2]*j/Ns[2] + LatVecs[2,3]*k/Ns[3]
+        @inbounds R[3,ip] = LatVecs[3,1]*i/Ns[1] + LatVecs[3,2]*j/Ns[2] + LatVecs[3,3]*k/Ns[3]
     end
     end
     end

@@ -1,3 +1,13 @@
+
+# XSF spec: http://www.xcrysden.org/doc/XSF.html
+
+
+function write_xsf( filenam::String, atoms::Atoms )
+    write_xsf( filenam, atoms.LatVecs/ANG2BOHR, atoms.positions/ANG2BOHR;
+               atsymbs=atoms.atsymbs )
+end
+
+
 function write_xsf( filnam::String, LL::Array{Float64,2}, atpos::Array{Float64,2};
                     atsymbs=nothing, molecule=false )
     #
@@ -9,10 +19,13 @@ function write_xsf( filnam::String, LL::Array{Float64,2}, atpos::Array{Float64,2
     else
         @printf(f, "CRYSTAL\n")
     end
+    v1 = LL[:,1]
+    v2 = LL[:,2]
+    v3 = LL[:,3]
     @printf(f, "PRIMVEC\n")
-    @printf(f, "%18.10f %18.10f %18.10f\n", LL[1,1], LL[1,2], LL[1,3])
-    @printf(f, "%18.10f %18.10f %18.10f\n", LL[2,1], LL[2,2], LL[2,3])
-    @printf(f, "%18.10f %18.10f %18.10f\n", LL[3,1], LL[3,2], LL[3,3])
+    @printf(f, "%18.10f %18.10f %18.10f\n", v1[1], v1[2], v1[3])
+    @printf(f, "%18.10f %18.10f %18.10f\n", v2[1], v2[2], v2[3])
+    @printf(f, "%18.10f %18.10f %18.10f\n", v3[1], v3[2], v3[3])
     @printf(f, "PRIMCOORD\n")
     @printf(f, "%8d %8d\n", Natoms, 1)
     #
@@ -42,9 +55,13 @@ function write_xsf_data3d_crystal(
     @printf(f, "DATAGRID_3D_UNKNOWN\n")
     @printf(f, "%8d %8d %8d\n", Ns[1]+1, Ns[2]+1, Ns[3]+1 )
     @printf(f, "%18.10f %18.10f %18.10f\n", center[1], center[2], center[3])
-    @printf(f, "%18.10f %18.10f %18.10f\n", LL[1,1], LL[1,2], LL[1,3])
-    @printf(f, "%18.10f %18.10f %18.10f\n", LL[2,1], LL[2,2], LL[2,3])
-    @printf(f, "%18.10f %18.10f %18.10f\n", LL[3,1], LL[3,2], LL[3,3])
+    v1 = LL[:,1]
+    v2 = LL[:,2]
+    v3 = LL[:,3]
+    @printf(f, "PRIMVEC\n")
+    @printf(f, "%18.10f %18.10f %18.10f\n", v1[1], v1[2], v1[3])
+    @printf(f, "%18.10f %18.10f %18.10f\n", v2[1], v2[2], v2[3])
+    @printf(f, "%18.10f %18.10f %18.10f\n", v3[1], v3[2], v3[3])
     #
     rDat3d = reshape( data3d, (Ns[1],Ns[2],Ns[3]) )
     for k = 1:Ns[3]+1

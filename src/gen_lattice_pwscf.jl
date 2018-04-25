@@ -6,9 +6,9 @@ function gen_lattice_cubic( a::Float64 )
     v3 = a*[0,0,1]
     #
     LL = zeros(3,3)
-    LL[1,:] = v1
-    LL[2,:] = v2
-    LL[3,:] = v3
+    LL[:,1] = v1
+    LL[:,2] = v2
+    LL[:,3] = v3
     return LL
 end
 
@@ -18,9 +18,9 @@ function gen_lattice_fcc( a::Float64 )
     v3 = 0.5*a*[-1,1,0]
     #
     LL = zeros(3,3)
-    LL[1,:] = v1
-    LL[2,:] = v2
-    LL[3,:] = v3
+    LL[:,1] = v1
+    LL[:,2] = v2
+    LL[:,3] = v3
     return LL
 end
 
@@ -30,9 +30,9 @@ function gen_lattice_bcc( a::Float64 )
     v3 = 0.5*a*[-1,-1,1]
     #
     LL = zeros(3,3)
-    LL[1,:] = v1
-    LL[2,:] = v2
-    LL[3,:] = v3
+    LL[:,1] = v1
+    LL[:,2] = v2
+    LL[:,3] = v3
     return LL    
 end
 
@@ -43,9 +43,9 @@ function gen_lattice_bcc_v2( a::Float64 )
     v3 = 0.5*a*[1,1,-1]
     #
     LL = zeros(3,3)
-    LL[1,:] = v1
-    LL[2,:] = v2
-    LL[3,:] = v3
+    LL[:,1] = v1
+    LL[:,2] = v2
+    LL[:,3] = v3
     return LL
 end
 
@@ -56,9 +56,9 @@ function gen_lattice_hexagonal( a::Float64, c::Float64 )
     v3 = [0,0,c]
     #
     LL = zeros(3,3)
-    LL[1,:] = v1
-    LL[2,:] = v2
-    LL[3,:] = v3
+    LL[:,1] = v1
+    LL[:,2] = v2
+    LL[:,3] = v3
     return LL    
 end
 
@@ -81,9 +81,9 @@ function gen_lattice_trigonal( a::Float64, gamma_degree::Float64 )
     v3 = a*[-tx,-ty,tz]
     #
     LL = zeros(3,3)
-    LL[1,:] = v1
-    LL[2,:] = v2
-    LL[3,:] = v3
+    LL[:,1] = v1
+    LL[:,2] = v2
+    LL[:,3] = v3
     return LL
 end
 
@@ -111,9 +111,9 @@ function gen_lattice_trigonal_v2( a::Float64, gamma_degree::Float64 )
     v3 = ap*[v,v,u]
     #
     LL = zeros(3,3)
-    LL[1,:] = v1
-    LL[2,:] = v2
-    LL[3,:] = v3
+    LL[:,1] = v1
+    LL[:,2] = v2
+    LL[:,3] = v3
     return LL
 end
 
@@ -125,9 +125,9 @@ function gen_lattice_tetragonal_P( a::Float64, c::Float64)
     v3 = [0,0,c]
     #
     LL = zeros(3,3)
-    LL[1,:] = v1
-    LL[2,:] = v2
-    LL[3,:] = v3
+    LL[:,1] = v1
+    LL[:,2] = v2
+    LL[:,3] = v3
     return LL
 end
 
@@ -140,9 +140,9 @@ function gen_lattice_tetragonal_I( a::Float64, c::Float64 )
     v3 = 0.5*[-a,-a,c]
     #
     LL = zeros(3,3)
-    LL[1,:] = v1
-    LL[2,:] = v2
-    LL[3,:] = v3
+    LL[:,1] = v1
+    LL[:,2] = v2
+    LL[:,3] = v3
     return LL
 end
 
@@ -155,9 +155,9 @@ function gen_lattice_orthorhombic_P( a::Float64, b::Float64, c::Float64 )
     v3 = [0,0,c]
     #
     LL = zeros(3,3)
-    LL[1,:] = v1
-    LL[2,:] = v2
-    LL[3,:] = v3
+    LL[:,1] = v1
+    LL[:,2] = v2
+    LL[:,3] = v3
     return LL
 end
 
@@ -173,9 +173,9 @@ function gen_lattice_monoclinic_P( a::Float64, b::Float64, c::Float64, gamma_deg
     v3 = [0,0,c]
     #
     LL = zeros(3,3)
-    LL[1,:] = v1
-    LL[2,:] = v2
-    LL[3,:] = v3
+    LL[:,1] = v1
+    LL[:,2] = v2
+    LL[:,3] = v3
     return LL
 end
 
@@ -207,8 +207,8 @@ function gen_lattice_triclinic(a::Float64, b::Float64, c::Float64,
     v3 = [c*cos(beta), t1, t2]
     #
     LL = zeros(3,3)
-    LL[1,:] = v1
-    LL[2,:] = v2
-    LL[3,:] = v3
+    LL[:,1] = v1
+    LL[:,2] = v2
+    LL[:,3] = v3
     return LL
 end
