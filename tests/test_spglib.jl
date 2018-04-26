@@ -96,25 +96,48 @@ function test_Si_fcc_get_ir()
     end
     println("kgrid = ", size(kgrid))
     println("mapping = ", size(mapping))
-
+    
+    # Search for unique mapping (groups of kpoints with similar symmetry)
     umap = unique(mapping)
+    println("umap = ", umap)
+
     kcount = zeros(Int64,num_ir)
     for ik = 1:num_ir
         kcount[ik] = count( i -> ( i == umap[ik] ), mapping )
     end
 
-    println(umap)
+    list_ir_k = []
+    for ikk = 1:num_ir
+        for ik = 1:Nkpt
+            if umap[ikk] == mapping[ik]
+                append!( list_ir_k, [kgrid[:,ik]] )
+                break
+            end
+        end
+    end
+    println( list_ir_k )
+
+    kred = zeros(Float64,3,num_ir)
+    for ik = 1:num_ir
+        kred[1,ik] = list_ir_k[ik][1] / mesh[1]
+        kred[2,ik] = list_ir_k[ik][2] / mesh[2]
+        kred[3,ik] = list_ir_k[ik][3] / mesh[3]
+    end
+    println(RecVecs)
+    kred = RecVecs*kred  # convert to cartesian
+    println(kred)
+
     # calculate the weights
     wk = kcount[:]/sum(kcount)*2.0  # spin-degenerate
     for ik = 1:num_ir
-        @printf("%5d map=%d %8.5f\n", ik, umap[ik], wk[ik])
+        @printf("%5d map=%d (%8.5f,%8.5f,%8.5f) %8.5f\n", ik, umap[ik],
+                kred[1,ik], kred[2,ik], kred[3,ik], wk[ik])
     end
-
-    test_MonkhorstPack( mesh )
 
 end
 
 test_Si_fcc_get_ir()
+#test_MonkhorstPack( mesh )
 #test_BCC()
 #test_corrundum()
 

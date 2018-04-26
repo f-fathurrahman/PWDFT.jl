@@ -11,10 +11,8 @@ function reduce_atoms( atoms::Atoms; symprec=1e-5 )
            ( Ptr{Float64}, Ptr{Float64}, Ptr{Int32}, Int32, Float64 ),
            lattice, positions, types, num_atom, symprec )
 
-    # Reduced Atoms
-    println("num_primitive_atom = ", num_primitive_atom)
+    # Prepare for reduced Atoms
     Natoms = Base.cconvert( Int64, num_primitive_atom )
-    println("Natoms = ", Natoms)
     LatVecs = lattice
     positions = lattice*positions[:,1:num_primitive_atom]
     atm2species = Base.cconvert( Array{Int64,1}, types[1:num_primitive_atom] )
@@ -50,7 +48,8 @@ end
 
 
 function spg_get_ir_reciprocal_mesh(
-             atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{Int64}; is_time_reversal=1, symprec=1e-5
+             atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{Int64};
+             is_time_reversal=1, symprec=1e-5
          )
 
     lattice = copy(atoms.LatVecs)
@@ -61,7 +60,6 @@ function spg_get_ir_reciprocal_mesh(
     ctypes = Base.cconvert( Array{Cint,1}, atoms.atm2species)
     num_atom = Base.cconvert( Cint, atoms.Natoms )
     is_t_rev = Base.cconvert( Cint, is_time_reversal )
-    #ONE = Base.cconvert( Cint, 1 )
     
     # Prepare for output
     Nkpts = prod(mesh)
