@@ -2,8 +2,16 @@ function gen_kgrid_reduced(
            atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{Int64,1};
            time_reversal=1)
     
+    @printf("Generating kpoints:\n")
+    @printf("mesh     = (%d,%d,%d)\n", mesh[1], mesh[2], mesh[3])
+    @printf("is_shift = (%d,%d,%d)\n", is_shift[1], is_shift[2], is_shift[3])
+
     num_ir, kgrid, mapping =
     spg_get_ir_reciprocal_mesh( atoms, mesh, is_shift, is_time_reversal=time_reversal )
+
+    @printf("\n")
+    @printf("Number of irreducible kpoints = %d\n", num_ir)
+    @printf("\n")
 
     umap = unique(mapping)
 
@@ -99,7 +107,7 @@ end
 
 
 function spg_get_ir_reciprocal_mesh(
-             atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{Int64};
+             atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{Int64,1};
              is_time_reversal=1, symprec=1e-5
          )
 
@@ -111,6 +119,8 @@ function spg_get_ir_reciprocal_mesh(
     ctypes = Base.cconvert( Array{Cint,1}, atoms.atm2species)
     num_atom = Base.cconvert( Cint, atoms.Natoms )
     is_t_rev = Base.cconvert( Cint, is_time_reversal )
+
+    println("cis_shift = ", cis_shift)
     
     # Prepare for output
     Nkpts = prod(mesh)
