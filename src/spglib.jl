@@ -106,11 +106,6 @@ function spg_get_ir_reciprocal_mesh(
     lattice = copy(atoms.LatVecs)'
     positions = inv(atoms.LatVecs)*copy(atoms.positions) # convert to fractional coordinates
 
-    println("Fractional coordinates:")
-    for ia = 1:atoms.Natoms
-        @printf("%18.10f %18.10f %18.10f\n", positions[1,ia], positions[2,ia], positions[3,ia])
-    end
-
     cmesh = Base.cconvert( Array{Cint,1}, mesh )
     cis_shift = Base.cconvert( Array{Cint,1}, is_shift )
     ctypes = Base.cconvert( Array{Cint,1}, atoms.atm2species)
