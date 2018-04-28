@@ -1,6 +1,8 @@
-using PWDFT
+#
+# Test using k-points dependent Hamiltonian
+#
 
-include("../src/gen_lattice_pwscf.jl")
+using PWDFT
 
 function read_kpts( filname )
     file = open(filname)
@@ -42,19 +44,47 @@ function init_gvecw_kpts( ecutwfc, gvec::GVectors, kpts::Array{Float64,2} )
         @printf("Ngk = %8d\n\n", Ngk[ik])
     end
     Nelems = sum(Ngk)
-    memMBi = 2*Nelems*sizeof(Int64)/1024.0/1024.0
-    @printf("memMB = %f MBi\n\n", memMBi)
+    memMiB = 2*Nelems*sizeof(Int64)/1024.0/1024.0
+    @printf("mem = %f MiB\n\n", memMiB)
 end
 
-function test_main()
+function test_kpath()
     LatVecs = gen_lattice_fcc(16.0)
     ecutwfc = 30.0
     pw = PWGrid( ecutwfc, LatVecs )
     println(pw)
 
     kpts_red = read_kpts("KPATH_FCC_60")
-    kpts =  (kpts_red' * pw.RecVecs)'
+    #kpts =  (kpts_red' * pw.RecVecs)'
+    kpts = pw.RecVecs*kpts_red
     init_gvecw_kpts( ecutwfc, pw.gvec, kpts)
 end
 
-test_main()
+
+function test_kgrid()
+
+    # Atoms
+    atoms = init_atoms_xyz_string(
+        """
+        2
+
+        Si  0.0   0.0   0.0
+        Si  0.25  0.25  0.25
+        """, in_bohr=true)
+    atoms.LatVecs = gen_lattice_fcc(5.431*ANG2BOHR)
+    atoms.positions = atoms.LatVecs*atoms.positions
+
+    ecutwfc = 30.0
+    pw = PWGrid( ecutwfc, atoms.LatVecs )
+    println(pw)
+
+    kmesh  = [3,3,3]
+    kshift = [0,0,0]
+    kpts, wk = gen_kgrid_reduced( atoms, kmesh, kshift )
+    init_gvecw_kpts( ecutwfc, pw.gvec, kpts )
+end
+
+#test_kpath()
+test_kgrid()
+
+
