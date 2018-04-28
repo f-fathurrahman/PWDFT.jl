@@ -1,0 +1,45 @@
+\documentclass[a4paper,12pt]{article}
+
+\input{PREAMBLE}
+
+\usepackage[a4paper]{geometry}
+\geometry{verbose,tmargin=1.5cm,bmargin=1.5cm,lmargin=1cm,rmargin=2cm}
+
+\setlength{\parskip}{\smallskipamount}
+\setlength{\parindent}{0pt}
+
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{xcolor}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{braket}
+
+\newenvironment{markdown}%
+    {\VerbatimEnvironment\begin{VerbatimOut}{tmp.markdown}}%
+    {\end{VerbatimOut}%
+        \immediate\write18{pandoc tmp.markdown -t latex -o tmp.tex}%
+        \input{tmp}}
+
+\begin{document}
+
+\title{\texttt{PWDFT.jl} Developer's Note}
+\author{Fadjar Fathurrahman}
+\maketitle
+
+\input{Atoms}
+
+\section{k-points (Bloch wave vectors)}
+
+Monkhorst-Pack grid (used for Brillouin-zone integration)
+\begin{equation}
+\sum_{i=1,2,3} \frac{2n_i -N_i - 1}{2N_i} \mathbf{b}_i
+\end{equation}
+
+where $n_i=1,2,...,N_{i}$
+size = \((N_1, N_2, N_3)\) and the \(\mathbf{b}_i\)‘s are reciprocal lattice vectors.
+
+Please see file \texttt{kpoint\_grid.f90} in \verb|PW/src|.
+
+\end{document}

@@ -1,5 +1,6 @@
-## Describing an atomic system: `Atoms`
+\section{Describing an atomic system}
 
+\begin{markdown}
 All atomic systems are assumed to be periodic.
 
 The definition of type `Atoms` is given below.
@@ -25,9 +26,7 @@ Currently, the following functions are provided to initialize an `Atoms`:
 
 ```julia
 atoms = Atoms() # dummy constructor
-
 atoms = init_atoms_xyz(filexyz; in_bohr=false, verbose=false)
-
 atoms = init_atoms_xyz_string(filexyz; in_bohr=false, verbose=false)
 ```
 
@@ -37,3 +36,11 @@ atoms.LatVecs = 16*eye(3) # for example
 ```
 
 `Zvals` is set when constructing `PWHamiltonian`.
+
+Equation
+\begin{equation}
+\frac{\alpha}{\beta}
+\end{equation}
+
+
+\end{markdown}

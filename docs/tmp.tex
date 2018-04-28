@@ -1,0 +1,47 @@
+All atomic systems are assumed to be periodic.
+
+The definition of type \texttt{Atoms} is given below.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{mutable struct Atoms}
+\NormalTok{    Natoms::}\DataTypeTok{Int64}
+\NormalTok{    Nspecies::}\DataTypeTok{Int64}
+\NormalTok{    positions::}\DataTypeTok{Array}\NormalTok{\{}\DataTypeTok{Float64}\NormalTok{,}\FloatTok{2}\NormalTok{\}}
+\NormalTok{    atm2species::}\DataTypeTok{Array}\NormalTok{\{}\DataTypeTok{Int64}\NormalTok{,}\FloatTok{1}\NormalTok{\}}
+\NormalTok{    atsymbs::}\DataTypeTok{Array}\NormalTok{\{}\DataTypeTok{String}\NormalTok{,}\FloatTok{1}\NormalTok{\}}
+\NormalTok{    SpeciesSymbols::}\DataTypeTok{Array}\NormalTok{\{}\DataTypeTok{String}\NormalTok{,}\FloatTok{1}\NormalTok{\}}
+\NormalTok{    LatVecs::}\DataTypeTok{Array}\NormalTok{\{}\DataTypeTok{Float64}\NormalTok{,}\FloatTok{2}\NormalTok{\}}
+\NormalTok{    Zvals::}\DataTypeTok{Array}\NormalTok{\{}\DataTypeTok{Float64}\NormalTok{,}\FloatTok{1}\NormalTok{\}}
+\KeywordTok{end}
+\end{Highlighting}
+\end{Shaded}
+
+Information about \texttt{LatVecs} and \texttt{Zvals} are also available
+from \texttt{PWGrid} and \texttt{PsPots}. They are included to reduce
+number of required arguments to several functions.
+
+Currently, the following functions are provided to initialize an
+\texttt{Atoms}:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{atoms = Atoms() }\CommentTok{# dummy constructor}
+\NormalTok{atoms = init_atoms_xyz(filexyz; in_bohr=false, verbose=false)}
+\NormalTok{atoms = init_atoms_xyz_string(filexyz; in_bohr=false, verbose=false)}
+\end{Highlighting}
+\end{Shaded}
+
+Note that, \texttt{LatVecs} must be set manually by:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{atoms.LatVecs = }\FloatTok{16}\NormalTok{*eye(}\FloatTok{3}\NormalTok{) }\CommentTok{# for example}
+\end{Highlighting}
+\end{Shaded}
+
+\texttt{Zvals} is set when constructing \texttt{PWHamiltonian}.
+
+Equation \begin{equation}
+\frac{\alpha}{\beta}
+\end{equation}
