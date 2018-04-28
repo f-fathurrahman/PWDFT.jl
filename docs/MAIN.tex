@@ -1,9 +1,9 @@
-\documentclass[a4paper,12pt]{article}
+\documentclass[a4paper,10pt]{paper}
 
 \input{PREAMBLE}
 
 \usepackage[a4paper]{geometry}
-\geometry{verbose,tmargin=1.5cm,bmargin=1.5cm,lmargin=1cm,rmargin=2cm}
+%\geometry{verbose,tmargin=1.5cm,bmargin=1.5cm,lmargin=1cm,rmargin=2cm}
 
 \setlength{\parskip}{\smallskipamount}
 \setlength{\parindent}{0pt}
@@ -28,7 +28,30 @@
 \author{Fadjar Fathurrahman}
 \maketitle
 
+\begin{markdown}
+`PWDFT.jl` uses Hartree atomic units.
+\end{markdown}
+
 \input{Atoms}
+
+
+\section{Hamiltonian}
+
+\begin{markdown}
+`Hamiltonian` is the central object.
+It designed such that we can perform application or multiplication of
+Hamiltonian to wave function:
+
+```julia
+Hpsi = op_H(H, psi)
+```
+or (by 'overloading' `*` )
+```julia
+Hpsi = H*psi
+```
+\end{markdown}
+
+
 
 \section{k-points (Bloch wave vectors)}
 
