@@ -1,4 +1,3 @@
-
 """
 Bloch wave vector
 """
@@ -13,8 +12,30 @@ end
 import Base.println
 
 function println( kpoints::KPoints )
+
     @printf("\n")
     @printf("Total number of kpoints = %d\n", kpoints.Nkpt )
+    ss = abs(kpoints.RecVecs[1,1])
+    
+    @printf("\n")
+    @printf("kpoints in Cartesian coordinate (scale: %f)\n", ss)
+    @printf("\n")
+    kcart = kpoints.RecVecs*kpoints.k / ss
+    for ik = 1:kpoints.Nkpt
+        @printf("%4d [%14.10f %14.10f %14.10f] %14.10f\n",
+                ik, kcart[1,ik], kcart[2,ik], kcart[3,ik], kpoints.wk[ik])
+    end
+
+    @printf("\n")
+    @printf("kpoints in Cartesian coordinate (unscaled)\n")
+    @printf("\n")
+    kcart = kpoints.RecVecs*kpoints.k
+    for ik = 1:kpoints.Nkpt
+        @printf("%4d [%14.10f %14.10f %14.10f] %14.10f\n",
+                ik, kcart[1,ik], kcart[2,ik], kcart[3,ik], kpoints.wk[ik])
+    end
+    @printf("\n")
+    @printf("sum wk = %f\n", sum(kpoints.wk))
 end
 
 

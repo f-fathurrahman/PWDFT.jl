@@ -123,8 +123,6 @@ function spg_get_ir_reciprocal_mesh(
     num_atom = Base.cconvert( Cint, atoms.Natoms )
     is_t_rev = Base.cconvert( Cint, is_time_reversal )
 
-    println("cis_shift = ", cis_shift)
-    
     # Prepare for output
     Nkpts = prod(mesh)
     kgrid = zeros(Cint,3,Nkpts)

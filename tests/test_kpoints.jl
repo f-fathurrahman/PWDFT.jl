@@ -12,7 +12,7 @@ function test_main()
     atoms.LatVecs = gen_lattice_fcc(5.431*ANG2BOHR)
     atoms.positions = atoms.LatVecs*atoms.positions
 
-    kpoints = KPoints( atoms, [3,3,3], [0,0,0] )
+    kpoints = KPoints( atoms, [4,4,4], [0,0,0], verbose=true )
     println(kpoints)
 end
 
