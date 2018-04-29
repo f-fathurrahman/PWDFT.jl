@@ -27,6 +27,10 @@ export reduce_atoms, gen_kgrid_reduced
 include("spglib.jl")
 
 
+export KPoints
+include("KPoints.jl")
+
+
 export write_xsf
 export write_xsf_data3d_crystal
 include("XSF_utils.jl")

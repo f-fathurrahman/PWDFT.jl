@@ -1,7 +1,8 @@
-function gen_kgrid_reduced(
-           atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{Int64,1};
-           time_reversal=1)
+
+function gen_kgrid_reduced( atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{Int64,1};
+                            time_reversal=1 )
     
+    @printf("\n")
     @printf("Generating kpoints:\n")
     @printf("mesh     = (%d,%d,%d)\n", mesh[1], mesh[2], mesh[3])
     @printf("is_shift = (%d,%d,%d)\n", is_shift[1], is_shift[2], is_shift[3])
@@ -10,7 +11,7 @@ function gen_kgrid_reduced(
     spg_get_ir_reciprocal_mesh( atoms, mesh, is_shift, is_time_reversal=time_reversal )
 
     @printf("\n")
-    @printf("Number of irreducible kpoints = %d\n", num_ir)
+    @printf("Number of kpoints = %d\n", num_ir)
     @printf("\n")
 
     umap = unique(mapping)
@@ -27,6 +28,7 @@ function gen_kgrid_reduced(
         end
     end
 
+    # need to calculate this here because PWGrid instance is not passed
     RecVecs = 2*pi*inv(atoms.LatVecs')
 
     kred = zeros(Float64,3,num_ir)
@@ -49,6 +51,7 @@ function gen_kgrid_reduced(
     return kred, wk
 
 end
+
 
 
 """

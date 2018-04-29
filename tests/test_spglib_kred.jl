@@ -1,22 +1,5 @@
 using PWDFT
 
-function test_MonkhorstPack( mesh::Array{Int64,1} )
-    ik = 0
-    kpts = zeros(Float64,3,prod(mesh))
-    for k = 1:mesh[3]
-    for j = 1:mesh[2]
-    for i = 1:mesh[1]
-        ik = ik + 1
-        kpts[1,ik] = (2*i - mesh[1] - 1)/(2*mesh[1])
-        kpts[2,ik] = (2*j - mesh[2] - 1)/(2*mesh[2])
-        kpts[3,ik] = (2*k - mesh[3] - 1)/(2*mesh[3])
-        @printf("%5d %8.5f %8.5f %8.5f\n", ik, kpts[1,ik], kpts[2,ik], kpts[3,ik])
-    end
-    end
-    end
-end
-
-
 function test_Si_fcc_get_ir()
     
     # Atoms
