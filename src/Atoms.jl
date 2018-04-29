@@ -58,7 +58,7 @@ function Atoms()
     atm2species = [1]
     atsymbs = ["X"]
     SpeciesSymbols = ["X"]  # unique symbols
-    LatVecs = zeros(3,3)
+    LatVecs = 10.0*eye(3)
     Zvals = zeros(Nspecies)
     return Atoms( Natoms, Nspecies, positions, atm2species, atsymbs, SpeciesSymbols, LatVecs, Zvals )
 end
@@ -114,7 +114,7 @@ function init_atoms_xyz(filexyz; in_bohr=false, verbose=false)
     # Mapping of atoms to species index
     atm2species = get_atm2species( atsymbs, SpeciesSymbols )
 
-    LatVecs = zeros(3,3)
+    LatVecs = 10.0*eye(3)
     Zvals = zeros(Nspecies)
     return Atoms(Natoms, Nspecies, positions, atm2species, atsymbs, SpeciesSymbols, LatVecs, Zvals )
 
