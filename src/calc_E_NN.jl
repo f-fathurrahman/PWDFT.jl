@@ -19,9 +19,9 @@ http://users.wfu.edu/natalie/s18phy712/computerprograms/ewaldsum.f90
 """
 function calc_E_NN( LatVecs::Array{Float64,2}, atoms::Atoms, Zvals::Array{Float64,1} )
 
-    t1 = LatVecs[1,:]
-    t2 = LatVecs[2,:]
-    t3 = LatVecs[3,:]
+    t1 = LatVecs[:,1]
+    t2 = LatVecs[:,2]
+    t3 = LatVecs[:,3]
   
     volcry = t1[1]*(t2[2]*t3[3]-t2[3]*t3[2]) +
              t1[2]*(t2[3]*t3[1]-t2[1]*t3[3]) +
