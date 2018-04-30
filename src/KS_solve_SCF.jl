@@ -6,34 +6,40 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
                        ETOT_CONV_THR=1e-6 )
 
     pw = Ham.pw
-    Ngwx = pw.gvecw.Ngwx
+    Ngw = pw.gvecw.Ngw
+    kpoints = pw.gvecw.kpoints
+    Nkpt = kpoints.Nkpt
     Ns = pw.Ns
     Npoints = prod(Ns)
     ΔV = pw.Ω/Npoints
     Focc = Ham.electrons.Focc
     Nstates = Ham.electrons.Nstates
 
+    psik = Array{Array{Complex128,2},1}(Nkpt)
+
     #
     # Random guess of wave function
     #
     if startingwfc==nothing
         srand(1234)
-        psi = randn(Ngwx,Nstates) + im*randn(Ngwx,Nstates)
-        psi = ortho_gram_schmidt(psi)
+        for ik = 1:Nkpt
+            psi = rand(Ngw[ik],Nstates) + im*rand(Ngw[ik],Nstates)
+            psik[ik] = ortho_gram_schmidt(psi)
+        end
     else
-        psi = startingwfc
+        psik = startingwfc
     end
 
     #
     # Calculated electron density from this wave function and update Hamiltonian
     #
-    rhoe = calc_rhoe( pw, Focc, psi )
+    rhoe = calc_rhoe( pw, Focc, psik )
     update!(Ham, rhoe)
 
     Etot_old = 0.0
     rhoe_old = copy(rhoe)
 
-    evals = zeros(Float64,Nstates)
+    evals = zeros(Float64,Nstates,Nkpt)
 
     const ETHR_EVALS_LAST = 1e-6
 
@@ -49,7 +55,10 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
     for iter = 1:NiterMax
 
         if update_psi == "LOBPCG"
-            evals, psi = diag_lobpcg( Ham, psi, verbose_last=false )
+            for ik = 1:Nkpt
+                Ham.ik = ik
+                evals[:,ik], psik[ik] = diag_lobpcg( Ham, psik[ik], verbose_last=true )
+            end
 
         elseif update_psi == "PCG"
 
@@ -74,7 +83,7 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
         end
 
         #
-        rhoe_new = calc_rhoe( pw, Focc, psi )
+        rhoe_new = calc_rhoe( pw, Focc, psik )
         diffRho = norm(rhoe_new - rhoe)/Npoints
 
         #rhoe = β*rhoe_new[:] + (1-β)*rhoe[:]

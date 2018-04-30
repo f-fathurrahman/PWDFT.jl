@@ -47,7 +47,7 @@ function diag_lobpcg( Ham::PWHamiltonian, X0::Array{Complex128,2};
         end
         #
         # apply preconditioner
-        W = Kprec(pw,R)
+        W = Kprec( Ham.ik, pw, R )
         #
         # nlock == 0
         #

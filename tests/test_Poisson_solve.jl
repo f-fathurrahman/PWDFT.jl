@@ -62,5 +62,5 @@ function test_main( ecutwfc_Ry::Float64 )
     @printf("Num, ana, diff = %18.10f %18.10f %18.10e\n", Ehartree, Uanal, abs(Ehartree-Uanal))
 end
 
-@code_native test_main(1.0)
+@time test_main(30.0)
 @time test_main(30.0)
