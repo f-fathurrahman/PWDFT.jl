@@ -14,15 +14,20 @@ mutable struct PWHamiltonian
     pspots::Array{PsPot_GTH,1}
     pspotNL::PsPotNL
     xcfunc::String
+    ik::Int64   # current kpoint index
 end
 
 
 function PWHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
                         ecutwfc::Float64 ;
+                        meshk = [1,1,1], shiftk=[0,0,0],
                         xcfunc = "VWN", verbose=false )
 
+    # kpoints
+    kpoints = KPoints( atoms, meshk, shiftk )
+
     # Initialize plane wave grids
-    pw = PWGrid( ecutwfc, atoms.LatVecs )
+    pw = PWGrid( ecutwfc, atoms.LatVecs, kpoints=kpoints )
     if verbose
         println(pw)
     end
@@ -82,17 +87,24 @@ function PWHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
 
     atoms.Zvals = get_Zvals( Pspots )
 
-    return PWHamiltonian( pw, potentials, energies, rhoe, electrons, atoms, Pspots, pspotNL, xcfunc )
+    ik = 1
+    return PWHamiltonian( pw, potentials, energies, rhoe,
+                          electrons, atoms, Pspots, pspotNL, xcfunc, ik )
 end
 
 
 #
 # No pspfiles given. Use Coulomb potential (all electrons)
 #
-function PWHamiltonian( atoms::Atoms, ecutwfc::Float64; xcfunc="VWN", verbose=false )
+function PWHamiltonian( atoms::Atoms, ecutwfc::Float64;
+                        meshk = [1,1,1], shiftk=[0,0,0],    
+                        xcfunc="VWN", verbose=false )
+    
+    # kpoints
+    kpoints = KPoints( atoms, meshk, shiftk )
 
     # Initialize plane wave grids
-    pw = PWGrid( ecutwfc, atoms.LatVecs )
+    pw = PWGrid( ecutwfc, atoms.LatVecs; kpoints=kpoints )
     if verbose
         println(pw)
     end
@@ -132,8 +144,10 @@ function PWHamiltonian( atoms::Atoms, ecutwfc::Float64; xcfunc="VWN", verbose=fa
 
     Zatoms = get_Zatoms( atoms )
     atoms.Zvals = Zatoms
-
-    return PWHamiltonian( pw, potentials, energies, rhoe, electrons, atoms, Pspots, pspotNL, xcfunc )
+    
+    ik = 1
+    return PWHamiltonian( pw, potentials, energies, rhoe,
+                          electrons, atoms, Pspots, pspotNL, xcfunc, ik )
 end
 
 

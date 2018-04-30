@@ -11,7 +11,7 @@ end
 # default
 function KPoints( atoms::Atoms )
     Nkpt = 1
-    k = [0.0, 0.0, 0.0]
+    k = zeros(3,1)
     wk = [0.0]
     RecVecs = 2*pi*inv(LatVecs')
     return KPoints( Nkpt, k, wk, RecVecs )

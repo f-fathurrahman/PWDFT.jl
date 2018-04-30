@@ -5,24 +5,27 @@ function test_main()
     atoms = init_atoms_xyz("../structures/H.xyz")
     println(atoms)
     #
-    LatVecs = 16.0*diagm(ones(3))
-    pw = PWGrid(30.0, LatVecs)
-    println(pw)
+    ecutwfc = 15.0
+    Ham = PWHamiltonian( atoms, ecutwfc, verbose=true )
     #
-    Ham = PWHamiltonian( pw, atoms )
-    #
-    Ngwx = Ham.pw.gvecw.Ngwx
-    Nstates = 1
-    Focc = [1.0]
-    Ham.focc = Focc
+    pw = Ham.pw
+    Ngwx = pw.gvecw.Ngwx
+    Nstates = Ham.electrons.Nstates
+    Focc = Ham.electrons.Focc
+    Nkpt = pw.gvecw.kpoints.Nkpt
+    Ngw = pw.gvecw.Ngw
     #
     srand(1234)
-    psi = rand(Ngwx,Nstates) + im*rand(Ngwx,Nstates)
-    psi = ortho_gram_schmidt(psi)
+    psik = Array{Array{Complex128,2},1}(Nkpt)
+    for ik = 1:Nkpt
+        psi = rand(Ngw[ik],Nstates) + im*rand(Ngw[ik],Nstates)
+        psik[ik] = ortho_gram_schmidt(psi)
+    end
     #
-    rhoe = calc_rhoe( pw, Focc, psi )
+    rhoe = calc_rhoe( pw, Focc, psik )
     @printf("Integ rhoe = %18.10f\n", sum(rhoe)*pw.Ω/prod(pw.Ns))
 
+"""
     println("\nBefore updating Hamiltonian")
     @time Kpsi = op_K(Ham, psi)
     s = sum(Kpsi)
@@ -69,6 +72,8 @@ function test_main()
     Ham.energies = Energies
     println("\nUpdated energies of Hamiltonian:")
     println(Ham.energies)
+"""
+
 end
 
 test_main()

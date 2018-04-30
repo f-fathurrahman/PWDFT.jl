@@ -1,3 +1,12 @@
+function op_V_loc( Ham::PWHamiltonian, psi::Array{Complex128,2} )
+    V_loc = Ham.potentials.Ps_loc + Ham.potentials.Hartree + Ham.potentials.XC
+    return op_V_loc( Ham.pw, V_loc, psi )
+end
+
+function op_V_Ps_loc( Ham::PWHamiltonian, psi::Array{Complex128,2} )
+    return op_V_loc( Ham.pw, Ham.potentials.Ps_loc, psi )
+end
+
 function op_V_loc( pw::PWGrid, V_loc::Array{Float64,1}, psi::Array{Complex128,2} )
     Ns = pw.Ns
     Ω  = pw.Ω
@@ -21,15 +30,6 @@ function op_V_loc( pw::PWGrid, V_loc::Array{Float64,1}, psi::Array{Complex128,2}
 
     cVpsi = R_to_G( pw, ctmp )
     return cVpsi[idx,:]
-end
-
-function op_V_loc( Ham::PWHamiltonian, psi::Array{Complex128,2} )
-    V_loc = Ham.potentials.Ps_loc + Ham.potentials.Hartree + Ham.potentials.XC
-    return op_V_loc( Ham.pw, V_loc, psi )
-end
-
-function op_V_Ps_loc( Ham::PWHamiltonian, psi::Array{Complex128,2} )
-    return op_V_loc( Ham.pw, Ham.potentials.Ps_loc, psi )
 end
 
 #

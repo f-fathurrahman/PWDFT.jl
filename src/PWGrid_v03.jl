@@ -1,3 +1,6 @@
+"""
+GVectors for density and potentials
+"""
 struct GVectors
     Ng::Int64
     G::Array{Float64,2}
@@ -5,10 +8,16 @@ struct GVectors
     idx_g2r::Array{Int64,1}
 end
 
+
+"""
+GVectors for wave function
+"""
 struct GVectorsW
-    Ngwx::Int64
-    idx_gw2g::Array{Int64,1}
-    idx_gw2r::Array{Int64,1}
+    Ngwx::Int64          # maximum(Ngk)
+    Ngw::Array{Int64,1}  # no of GvectorsW for each kpoints
+    idx_gw2g::Array{Array{Int64,1},1}
+    idx_gw2r::Array{Array{Int64,1},1}
+    kpoints::KPoints
 end
 
 struct PWGrid
@@ -28,7 +37,7 @@ end
 """
 LatVecs defines three lattice vectors: v1, v2, and v3 arranged by column.
 """
-function PWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2} )
+function PWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2}; kpoints=nothing )
 
     ecutrho = 4.0*ecutwfc
     #
@@ -52,9 +61,14 @@ function PWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2} )
 
     Npoints = prod(Ns)
     r = init_grid_R( Ns, LatVecs )
-
+    
     gvec = init_gvec( Ns, RecVecs, ecutrho )
-    gvecw = init_gvecw( ecutwfc, gvec )
+
+    if kpoints==nothing
+        kpoints = KPoints( 1, zeros(3,1), [1.0], RecVecs )
+    end
+
+    gvecw = init_gvecw( ecutwfc, gvec, kpoints )
 
     planfw = plan_fft( zeros(Ns) )
     planbw = plan_ifft( zeros(Ns) )
@@ -134,15 +148,43 @@ function init_gvec( Ns, RecVecs, ecutrho )
     return GVectors( Ng, G, G2, idx_g2r )
 end
 
-function init_gvecw( ecutwfc, gvec::GVectors )
-    G2 = gvec.G2
+
+function init_gvecw( ecutwfc, gvec::GVectors, kpoints::KPoints )
+    G = gvec.G
+    Ng = gvec.Ng
     idx_g2r = gvec.idx_g2r
     #
-    idx_gw2g = findn( 0.5*G2 .< ecutwfc )
-    idx_gw2r = idx_g2r[idx_gw2g]
-    Ngwx = length(idx_gw2r)
+    kpts = kpoints.k
+    Nkpt = kpoints.Nkpt
     #
-    return GVectorsW( Ngwx, idx_gw2g, idx_gw2r )
+    Gk2 = zeros(Float64,Ng)
+    Gk = zeros(Float64,3)
+    idx_gw2g = Array{Array{Int64,1},1}(Nkpt)
+    idx_gw2r = Array{Array{Int64,1},1}(Nkpt)
+    Ngw = Array{Int64,1}(Nkpt)
+    #
+    for ik = 1:Nkpt
+        for ig = 1:Ng
+            Gk[:] = G[:,ig] .+ kpts[:,ik]
+            Gk2[ig] = Gk[1]^2 + Gk[2]^2 + Gk[3]^2
+        end
+        idx_gw2g[ik] = findn( 0.5*Gk2 .< ecutwfc )
+        idx_gw2r[ik] = idx_g2r[idx_gw2g[ik]]
+        Ngw[ik] = length(idx_gw2g[ik])
+        @printf("ik = %8d, k = [%10.5f,%10.5f,%10.5f]\n",
+                ik, kpts[1,ik], kpts[2,ik], kpts[3,ik])
+        @printf("Ngw = %8d\n\n", Ngw[ik])
+    end
+
+    # print out memory information
+    Nelems = sum(Ngw)
+    memMiB = 2*Nelems*sizeof(Int64)/1024.0/1024.0
+    @printf("mem = %f MiB\n\n", memMiB)
+    
+    Ngwx = maximum(Ngw)
+
+    return GVectorsW( Ngwx, Ngw, idx_gw2g, idx_gw2r, kpoints )
+
 end
 
 
@@ -228,10 +270,9 @@ function println( gvec::GVectors, gvecw::GVectorsW )
     G2 = gvec.G2
 
     Ngwx = gvecw.Ngwx
-    idx_gw2g = gvecw.idx_gw2g
-
-    Gw = G[:,idx_gw2g]
-    Gw2 = G2[idx_gw2g]
+    Ngw = gvecw.Ngw
+    k = gvecw.kpoints.k
+    Nkpt = gvecw.kpoints.Nkpt
 
     @printf("\n")
     @printf("                                    ---------\n")
@@ -239,15 +280,35 @@ function println( gvec::GVectors, gvecw::GVectorsW )
     @printf("                                    ---------\n")
     @printf("\n")
     @printf("Ngwx = %12d\n", Ngwx)
-    @printf("\n")
-    for ig = 1:3
-        @printf("%8d [%18.10f,%18.10f,%18.10f] : %18.10f\n", ig, Gw[1,ig], Gw[2,ig], Gw[3,ig], Gw2[ig])
+    
+    #ik = 1  # sample for first kpoint
+    
+    for ik = 1:Nkpt
+
+        idx_gw2g = gvecw.idx_gw2g[ik]
+
+        Gw = zeros(3,Ngw[ik])
+        Gw2 = zeros(Ngw[ik])
+        for igk = 1:Ngw[ik]
+            ig = idx_gw2g[igk]
+            Gw[:,igk] = G[:,ig] + k[:,ik]
+            Gw2[igk] = Gw[1,igk]^2 + Gw[2,igk]^2 + Gw[3,igk]^2
+        end
+
+        @printf("\n")
+        @printf("Several GvectorsW for k = [%f,%f,%f]\n", k[1,ik], k[2,ik], k[3,ik])
+        @printf("\n")
+        for igk = 1:3
+            @printf("%8d [%18.10f,%18.10f,%18.10f] : %18.10f\n",
+                     igk, Gw[1,igk], Gw[2,igk], Gw[3,igk], Gw2[igk])
+        end
+        @printf(" ....... \n")
+        for igk = Ngw[ik]-3:Ngw[ik]
+            @printf("%8d [%18.10f.%18.10f,%18.10f] : %18.10f\n",
+                    igk, Gw[1,igk], Gw[2,igk], Gw[3,igk], Gw2[igk])
+        end
+        @printf("\n")
+        @printf("Max Gw2[%d] = %18.10f\n", ik, maximum(Gw2))    
     end
-    @printf(" ....... \n")
-    for ig = Ngwx-3:Ngwx
-        @printf("%8d [%18.10f.%18.10f,%18.10f] : %18.10f\n", ig, Gw[1,ig], Gw[2,ig], Gw[3,ig], Gw2[ig])
-    end
-    @printf("\n")
-    @printf("Max G2 = %18.10f\n", maximum(Gw2))    
 end
 
