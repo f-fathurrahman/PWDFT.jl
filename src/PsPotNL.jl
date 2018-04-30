@@ -1,12 +1,12 @@
 struct PsPotNL
     NbetaNL::Int64
     prj2beta::Array{Int64,4}
-    betaNL::Array{Complex128,2}
+    betaNL::Array{Complex128,3}
 end
 
 function PsPotNL()
     # return dummy PsPotNL
-    return PsPotNL(0, zeros(Int64,1,1,1,1), zeros(1,1) )
+    return PsPotNL(0, zeros(Int64,1,1,1,1), zeros(1,1,1) )
 end
 
 import Base.println
@@ -16,15 +16,12 @@ function println( pspotNL::PsPotNL )
 end
 
 
-function PsPotNL( pw::PWGrid, atoms::Atoms, Pspots::Array{PsPot_GTH}; check_norm=false )
+function PsPotNL( pw::PWGrid, atoms::Atoms, Pspots::Array{PsPot_GTH},
+                  kpoints::KPoints; check_norm=false )
 
     Natoms = atoms.Natoms
     atm2species = atoms.atm2species
     atpos = atoms.positions
-
-    Ngwx = pw.gvecw.Ngwx
-    idx_gw2g = pw.gvecw.idx_gw2g
-    gwave = pw.gvec.G[:,idx_gw2g]
 
     # 4: indexed from 0:3
     # 0, 1, 2, 3  -> l indexed
@@ -62,30 +59,41 @@ function PsPotNL( pw::PWGrid, atoms::Atoms, Pspots::Array{PsPot_GTH}; check_norm
         return PsPotNL(0, zeros(Int64,1,1,1,1), zeros(1,1) )
     end
 
-    betaNL = zeros( Complex128, Ngwx, NbetaNL )
+    Nkpt = kpoints.Nkpt
+    k = kpoints.k
+    Ngw = pw.gvecw.Ngw
+    Ngwx = pw.gvecw.Ngwx
+    betaNL = zeros( Complex128, Ngwx, NbetaNL, Nkpt )
+    G = pw.gvec.G
+    g = zeros(3)
 
-    ibeta = 0
-    for ia = 1:Natoms
-        isp = atm2species[ia]
-        psp = Pspots[isp]
-        for l = 0:psp.lmax
+    for ik = 1:Nkpt
+        ibeta = 0
+        for ia = 1:Natoms
+            isp = atm2species[ia]
+            psp = Pspots[isp]
+            for l = 0:psp.lmax
             for iprj = 1:psp.Nproj_l[l+1]
-                for m = -l:l
-                    ibeta = ibeta + 1
-                    for ig = 1:Ngwx
-                        g = gwave[:,ig]
-                        Gm = norm(g)
-                        GX = atpos[1,ia]*g[1] + atpos[2,ia]*g[2] + atpos[3,ia]*g[3]
-                        Sf = cos(GX) - im*sin(GX)
-                        betaNL[ig,ibeta] = (1.0*im)^l * Ylm_real(l,m,g) * eval_proj_G( psp, l, iprj, Gm, pw.Ω ) * Sf
-                    end
+            for m = -l:l
+                ibeta = ibeta + 1
+                idx_gw2g = pw.gvecw.idx_gw2g[ik]
+                for igk = 1:Ngw[ik]
+                    ig = idx_gw2g[igk]
+                    g = G[:,ig] + k[:,ik]
+                    Gm = norm(g)
+                    GX = atpos[1,ia]*g[1] + atpos[2,ia]*g[2] + atpos[3,ia]*g[3]
+                    Sf = cos(GX) - im*sin(GX)
+                    betaNL[igk,ibeta,ik] =
+                    (1.0*im)^l * Ylm_real(l,m,g) * eval_proj_G(psp,l,iprj,Gm,pw.Ω) * Sf
                 end
             end
+            end
+            end
         end
-    end
+    end  # kpoints
 
     if check_norm
-        check_betaNL_norm( pw, betaNL )
+        check_betaNL_norm( pw, betaNL, kpoints )
     end
 
     return PsPotNL( NbetaNL, prj2beta, betaNL )
@@ -94,30 +102,37 @@ end
 
 
 
-function check_betaNL_norm( pw, betaNL )
+function check_betaNL_norm( pw, betaNL, kpoints::KPoints )
 
     Npoints = prod(pw.Ns)
     NbetaNL = size(betaNL)[2]
-    idx_gw2r = pw.gvecw.idx_gw2r
+
+    Nkpt = kpoints.Nkpt
+    Ngw = pw.gvecw.Ngw
 
     #
     # Check normalization in real space and reciprocal space
     #
     ctmp = zeros( Complex128, Npoints )
     @inbounds begin
-    for ibeta = 1:NbetaNL
-        norm_G = dot( betaNL[:,ibeta], betaNL[:,ibeta] )
-        ctmp[:] = 0.0 + im*0.0
-        ctmp[idx_gw2r] = betaNL[:,ibeta]
-        ctmp = G_to_R(pw, ctmp)*Npoints
-        data3d = real(ctmp)
-        data3d_im = imag(ctmp)
+    for ik = 1:Nkpt
         #
-        integ_prj = sum( data3d.^2 ) * pw.Ω / Npoints
-        integ_prj_im = sum( data3d_im.^2 ) * pw.Ω / Npoints
-        integ_prj_abs = sum( (abs.(ctmp)).^2 ) * pw.Ω / Npoints
-        @printf("ibeta, integ_prj = %3d %18.10f %18.10f %18.10f %18.10f %18.10f\n",
-                ibeta, integ_prj, integ_prj_im, integ_prj_abs, norm_G.re, norm_G.im)
+        idx_gw2r = pw.gvecw.idx_gw2r[ik]
+        #
+        for ibeta = 1:NbetaNL
+            norm_G = dot( betaNL[:,ibeta,ik], betaNL[:,ibeta,ik] )
+            ctmp[:] = 0.0 + im*0.0
+            ctmp[idx_gw2r] = betaNL[:,ibeta,ik]
+            ctmp = G_to_R(pw, ctmp)*Npoints
+            data3d = real(ctmp)
+            data3d_im = imag(ctmp)
+            #
+            integ_prj = sum( data3d.^2 ) * pw.Ω / Npoints
+            integ_prj_im = sum( data3d_im.^2 ) * pw.Ω / Npoints
+            integ_prj_abs = sum( (abs.(ctmp)).^2 ) * pw.Ω / Npoints
+            @printf("ibeta, integ_prj = %3d %18.10f %18.10f %18.10f %18.10f %18.10f\n",
+                     ibeta, integ_prj, integ_prj_im, integ_prj_abs, norm_G.re, norm_G.im)
+        end
     end
     end # @inbounds
 
