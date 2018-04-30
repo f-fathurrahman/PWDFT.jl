@@ -34,11 +34,15 @@ function test_Nkpt_1()
         @printf("ik=%d sum Kpsi = (%18.10f,%18.10fim)\n", ik, s.re, s.im)
     end
 
-"""
     #
-    @time Vpsi1 = op_V_loc(Ham, psi)
-    s = sum(Vpsi1)
-    @printf("sum Vpsi1 = (%18.10f,%18.10fim)\n", s.re, s.im)
+    for ik = 1:Nkpt
+        Ham.ik = ik
+        @time Vpsi1 = op_V_loc(Ham, psi)
+        s = sum(Vpsi1)
+        @printf("sum Vpsi1 = (%18.10f,%18.10fim)\n", s.re, s.im)
+    end
+
+"""
     #
     @time Vpsi2 = op_V_Ps_loc(Ham, psi)
     s = sum(Vpsi2)
@@ -121,6 +125,30 @@ function test_Si()
         @time Kpsi = op_K(Ham, psik[ik])
         s = sum(Kpsi)
         @printf("ik=%d sum Kpsi = (%18.10f,%18.10fim)\n", ik, s.re, s.im)
+    end
+
+    println("\nTesting op_V_Ps_loc")
+    for ik = 1:Nkpt
+        Ham.ik = ik
+        @time Vpsi2 = op_V_Ps_loc(Ham, psik[ik])
+        s = sum(Vpsi2)
+        @printf("sum Vpsi2 = (%18.10f,%18.10fim)\n", s.re, s.im)
+    end
+
+    println("\nTesting op_V_loc")
+    for ik = 1:Nkpt
+        Ham.ik = ik
+        @time Vpsi1 = op_V_loc(Ham, psik[ik])
+        s = sum(Vpsi1)
+        @printf("sum Vpsi1 = (%18.10f,%18.10fim)\n", s.re, s.im)
+    end
+
+    println("\nTesting op_H")
+    for ik = 1:Nkpt
+        Ham.ik = ik
+        @time Hpsi = op_H(Ham, psik[ik])
+        s = sum(Hpsi)
+        @printf("sum Hpsi = (%18.10f,%18.10fim)\n", s.re, s.im)
     end
 
 end

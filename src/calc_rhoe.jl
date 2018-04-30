@@ -37,6 +37,7 @@ function calc_rhoe( pw::PWGrid, Focc, psik::Array{Array{Complex128,2},1} )
     end
 
     # renormalize
+    # mainly for by rescaling rho[:]/Nkpt
     integ_rho = sum(rho)*Ω/Npoints
     Nelectrons = sum(Focc)
     rho = Nelectrons/integ_rho * rho
