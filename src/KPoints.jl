@@ -8,6 +8,15 @@ mutable struct KPoints
     RecVecs::Array{Float64,2} # copy of reciprocal vectors
 end
 
+# default
+function KPoints( atoms::Atoms )
+    Nkpt = 1
+    k = [0.0, 0.0, 0.0]
+    wk = [0.0]
+    RecVecs = 2*pi*inv(LatVecs')
+    return KPoints( Nkpt, k, wk, RecVecs )
+end
+
 
 import Base.println
 
@@ -28,6 +37,7 @@ function println( kpoints::KPoints )
     RecVecs = kpoints.RecVecs
     ss = maximum(abs.(RecVecs))
 
+    # This is useful for comparison with pwscf
     @printf("\n")
     @printf("kpoints in Cartesian coordinate (scale: %f)\n", ss)
     @printf("\n")
