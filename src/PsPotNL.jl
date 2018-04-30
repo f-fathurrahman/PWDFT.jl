@@ -139,13 +139,14 @@ function check_betaNL_norm( pw, betaNL, kpoints::KPoints )
 end
 
 
-function calc_betaNL_psi( betaNL::Array{Complex128,2}, psi::Array{Complex128,2} )
+function calc_betaNL_psi( ik::Int64, betaNL::Array{Complex128,3}, psi::Array{Complex128,2} )
     Nstates = size(psi)[2]
     NbetaNL = size(betaNL)[2]
+    Ngw_ik = size(psi)[1]
     betaNL_psi = zeros( Complex128, Nstates, NbetaNL )
     for ist = 1:Nstates
         for ibeta = 1:NbetaNL
-            betaNL_psi[ist,ibeta] = dot( betaNL[:,ibeta], psi[:,ist] )
+            betaNL_psi[ist,ibeta] = dot( betaNL[1:Ngw_ik,ibeta,ik], psi[:,ist] )
         end
     end
     return betaNL_psi
