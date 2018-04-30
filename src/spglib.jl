@@ -1,4 +1,5 @@
 
+# This function is now included in the KPoints constructor
 function gen_kgrid_reduced( atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{Int64,1};
                             time_reversal=1 )
     
@@ -44,6 +45,9 @@ function gen_kgrid_reduced( atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{
     # calculate the weights
     wk = kcount[:]/sum(kcount)
 
+    # convert to cartesian
+    RecVecs = 2*pi*inv(atoms.LatVecs')
+    kred = RecVecs*kred
     return kred, wk
 
 end
