@@ -54,9 +54,9 @@ function test_kpath()
     pw = PWGrid( ecutwfc, LatVecs )
     println(pw)
 
-    kpts_red = read_kpts("KPATH_FCC_60")
+    kpts = read_kpts("KPATH_FCC_60")
     #kpts =  (kpts_red' * pw.RecVecs)'
-    kpts = pw.RecVecs*kpts_red
+    kpts = pw.RecVecs*kpts
     init_gvecw_kpts( ecutwfc, pw.gvec, kpts)
 end
 
@@ -81,6 +81,7 @@ function test_kgrid()
     kmesh  = [3,3,3]
     kshift = [0,0,0]
     kpts, wk = gen_kgrid_reduced( atoms, kmesh, kshift )
+    kpts = pw.RecVecs*kpts
     init_gvecw_kpts( ecutwfc, pw.gvec, kpts )
 end
 

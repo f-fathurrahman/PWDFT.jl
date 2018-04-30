@@ -28,16 +28,12 @@ function gen_kgrid_reduced( atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{
         end
     end
 
-    # need to calculate this here because PWGrid instance is not passed
-    RecVecs = 2*pi*inv(atoms.LatVecs')
-
     kred = zeros(Float64,3,num_ir)
     for ik = 1:num_ir
         kred[1,ik] = list_ir_k[ik][1] / mesh[1]
         kred[2,ik] = list_ir_k[ik][2] / mesh[2]
         kred[3,ik] = list_ir_k[ik][3] / mesh[3]
     end
-    kred = RecVecs*kred  # convert to cartesian
     
     # prepare for
     kcount = zeros(Int64,num_ir)

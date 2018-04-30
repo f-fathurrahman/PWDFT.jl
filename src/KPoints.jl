@@ -15,25 +15,29 @@ function println( kpoints::KPoints )
 
     @printf("\n")
     @printf("Total number of kpoints = %d\n", kpoints.Nkpt )
-    ss = abs(kpoints.RecVecs[1,1])
-    
+
     @printf("\n")
-    @printf("kpoints in Cartesian coordinate (scale: %f)\n", ss)
+    @printf("kpoints in Cartesian coordinate (unscaled)\n")
     @printf("\n")
-    kcart = kpoints.RecVecs*kpoints.k / ss
+    kcart = copy(kpoints.k)
     for ik = 1:kpoints.Nkpt
         @printf("%4d [%14.10f %14.10f %14.10f] %14.10f\n",
                 ik, kcart[1,ik], kcart[2,ik], kcart[3,ik], kpoints.wk[ik])
     end
 
+    RecVecs = kpoints.RecVecs
+    ss = maximum(abs.(RecVecs))
+
     @printf("\n")
-    @printf("kpoints in Cartesian coordinate (unscaled)\n")
+    @printf("kpoints in Cartesian coordinate (scale: %f)\n", ss)
     @printf("\n")
-    kcart = kpoints.RecVecs*kpoints.k
+    kcart = kcart/ss
+
     for ik = 1:kpoints.Nkpt
         @printf("%4d [%14.10f %14.10f %14.10f] %14.10f\n",
                 ik, kcart[1,ik], kcart[2,ik], kcart[3,ik], kpoints.wk[ik])
     end
+    
     @printf("\n")
     @printf("sum wk = %f\n", sum(kpoints.wk))
 end
@@ -89,6 +93,8 @@ function KPoints( atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{Int64,1};
 
     # need to calculate this here because PWGrid instance is not passed
     RecVecs = 2*pi*inv(atoms.LatVecs')
+    
+    kred = RecVecs*kred
 
     return KPoints( Nkpt, kred, wk, RecVecs )
 
