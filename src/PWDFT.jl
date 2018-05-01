@@ -115,13 +115,13 @@ export op_H, op_K, op_V_loc, op_V_Ps_loc, op_V_Ps_nloc
 export Poisson_solve
 export update!
 export PsPotNL, calc_betaNL_psi
-export calc_betaNL_psi, calc_E_Ps_nloc
+export calc_betaNL_psi
 include("PWHamiltonian.jl")
 
 export Kprec
 include("Kprec.jl")
 
-export calc_energies, calc_E_xc, calc_E_Hartree
+export calc_energies, calc_E_xc, calc_E_Hartree, calc_E_Ps_nloc
 include("calc_energies.jl")
 
 export calc_grad
