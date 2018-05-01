@@ -12,15 +12,21 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian;
     Nstates = Ham.electrons.Nstates
     Ns = pw.Ns
     Npoints = prod(Ns)
+    Ngw = pw.gvecw.Ngw
     Ngwx = pw.gvecw.Ngwx
+    Nkpt = pw.gvecw.kpoints.Nkpt
+
+    psik = Array{Array{Complex128,2},1}(Nkpt)
 
     #
     # Initial wave function
     #
     if startingwfc == nothing
         srand(1234)
-        psi = randn(Ngwx,Nstates) + im*randn(Ngwx,Nstates)
-        psi = ortho_gram_schmidt(psi)
+        for ik = 1:Nkpt
+            psi = rand(Ngw[ik],Nstates) + im*rand(Ngw[ik],Nstates)
+            psik[ik] = ortho_gram_schmidt(psi)
+        end
     else
         psi = startingwfc
     end
@@ -29,22 +35,39 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian;
     # Calculated electron density from this wave function and
     # update Hamiltonian (calculate Hartree and XC potential).
     #
-    rhoe = calc_rhoe( pw, Focc, psi )
+    rhoe = calc_rhoe( pw, Focc, psik )
     update!(Ham, rhoe)
 
     #
     # Variables for PCG
     #
-    d = zeros(Complex128, Ngwx, Nstates)
-    g_old = zeros(Complex128, Ngwx, Nstates)
-    d_old = zeros(Complex128, Ngwx, Nstates)
-    Kg = zeros(Complex128, Ngwx, Nstates)
-    Kg_old = zeros(Complex128, Ngwx, Nstates)
-    β        = 0.0
+    g = Array{Array{Complex128,2},1}(Nkpt)
+    d = Array{Array{Complex128,2},1}(Nkpt)
+    g_old = Array{Array{Complex128,2},1}(Nkpt)
+    d_old = Array{Array{Complex128,2},1}(Nkpt)
+    Kg = Array{Array{Complex128,2},1}(Nkpt)
+    Kg_old = Array{Array{Complex128,2},1}(Nkpt)
+    psic = Array{Array{Complex128,2},1}(Nkpt)
+    gt = Array{Array{Complex128,2},1}(Nkpt)
+    #
+    for ik = 1:Nkpt
+        g[ik] = zeros(Complex128, Ngw[ik], Nstates)
+        d[ik] = zeros(Complex128, Ngw[ik], Nstates)
+        g_old[ik] = zeros(Complex128, Ngw[ik], Nstates)
+        d_old[ik] = zeros(Complex128, Ngw[ik], Nstates)
+        Kg[ik] = zeros(Complex128, Ngw[ik], Nstates)
+        Kg_old[ik] = zeros(Complex128, Ngw[ik], Nstates)
+        psic[ik] = zeros(Complex128, Ngw[ik], Nstates)
+        gt[ik] = zeros(Complex128, Ngw[ik], Nstates)
+    end
+    
+    β = zeros(Nkpt)
+    α = zeros(Nkpt)
+
     Etot_old = 0.0
 
     # Calculate energy at this psi
-    energies = calc_energies(Ham, psi)
+    energies = calc_energies(Ham, psik)
     Ham.energies = energies
 
     Etot     = energies.Total
@@ -71,53 +94,67 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian;
 
     for iter = 1:NiterMax
 
-        g = calc_grad( Ham, psi)
-        Kg = Kprec(pw,g)
+        for ik = 1:Nkpt
 
-        if iter != 1
-            if I_CG_BETA == 1
-                β = real(sum(conj(g).*Kg))/real(sum(conj(g_old).*Kg_old))
-            elseif I_CG_BETA == 2
-                β = real(sum(conj(g-g_old).*Kg))/real(sum(conj(g_old).*Kg_old))
-            elseif I_CG_BETA == 3
-                β = real(sum(conj(g-g_old).*Kg))/real(sum(conj(g-g_old).*d))
-            else
-                β = real(sum(conj(g).*Kg))/real(sum((g-g_old).*conj(d_old)))
+            Ham.ik = ik
+            g[ik] = calc_grad( Ham, psik[ik] )
+            Kg[ik] = Kprec( Ham.ik, pw, g[ik] )
+
+            # XXX: define function trace for real(sum(conj(...)))
+            if iter != 1
+                if I_CG_BETA == 1
+                    β[ik] =
+                    real(sum(conj(g[ik]).*Kg[ik]))/real(sum(conj(g_old[ik]).*Kg_old[ik]))
+                elseif I_CG_BETA == 2
+                    β[ik] =
+                    real(sum(conj(g[ik]-g_old[ik]).*Kg[ik]))/real(sum(conj(g_old[ik]).*Kg_old[ik]))
+                elseif I_CG_BETA == 3
+                    β[ik] =
+                    real(sum(conj(g[ik]-g_old[ik]).*Kg[ik]))/real(sum(conj(g[ik]-g_old[ik]).*d[ik]))
+                else
+                    β[ik] =
+                    real(sum(conj(g[ik]).*Kg[ik]))/real(sum((g[ik]-g_old[ik]).*conj(d_old[ik])))
+                end
             end
-        end
-        if β < 0.0
-            if verbose
-                @printf("β is smaller than 0, setting it to zero\n")
+            if β[ik] < 0.0
+                if verbose
+                    @printf("β is smaller than 0, setting it to zero\n")
+                end
+                β[ik] = 0.0
             end
-            β = 0.0
+
+            d[ik] = -Kg[ik] + β[ik] * d_old[ik]
+
+            psic[ik] = ortho_gram_schmidt(psik[ik] + α_t*d[ik])
         end
 
-        d = -Kprec(pw, g) + β * d_old
-
-        psic = ortho_gram_schmidt(psi + α_t*d)
         rhoe = calc_rhoe( pw, Focc, psic )
         #
         update!(Ham, rhoe)
 
-        gt = calc_grad(Ham, psic)
+        for ik = 1:Nkpt
+            Ham.ik = ik
+            gt[ik] = calc_grad(Ham, psic[ik])
 
-        denum = real(sum(conj(g-gt).*d))
-        if denum != 0.0
-            α = abs( α_t*real(sum(conj(g).*d))/denum )
-        else
-            α = 0.0
+            denum = real(sum(conj(g[ik]-gt[ik]).*d[ik]))
+            if denum != 0.0
+                α[ik] = abs( α_t*real(sum(conj(g[ik]).*d[ik]))/denum )
+            else
+                α[ik] = 0.0
+            end
+
+            # Update wavefunction
+            psik[ik] = psik[ik] + α[ik]*d[ik]
+
+            # Update potentials
+            psik[ik] = ortho_gram_schmidt(psik[ik])
         end
 
-        # Update wavefunction
-        psi = psi[:,:] + α*d[:,:]
-
-        # Update potentials
-        psi = ortho_gram_schmidt(psi)
-        rhoe = calc_rhoe( pw, Focc, psi )
+        rhoe = calc_rhoe( pw, Focc, psik )
 
         update!(Ham, rhoe)
 
-        Ham.energies = calc_energies( Ham, psi )
+        Ham.energies = calc_energies( Ham, psik )
         Etot = Ham.energies.Total
         diff = abs(Etot-Etot_old)
 
@@ -139,17 +176,21 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian;
     end
 
     # Calculate eigenvalues
-    psi = ortho_gram_schmidt(psi)
-    Hr = psi' * op_H( Ham, psi )
-    evals, evecs = eig(Hr)
-    psi = psi*evecs
-
-    Ham.electrons.ebands = real(evals)
+    for ik = 1:Nkpt
+        Ham.ik = ik
+        psik[ik] = ortho_gram_schmidt(psik[ik])
+        Hr = psik[ik]' * op_H( Ham, psik[ik] )
+        evals, evecs = eig(Hr)
+        Ham.electrons.ebands[:,ik] = real(evals[:])
+        psik[ik] = psik[ik]*evecs
+    end
 
     if savewfc
-        wfc_file = open("WFC.data","w")
-        write(wfc_file,psi)
-        close(wfc_file)
+        for ik = 1:Nkpt
+            wfc_file = open("WFC_k_"*string(ik)*".data","w")
+            write( wfc_file, psik[ik] )
+            close( wfc_file )
+        end
     end
 
     return
