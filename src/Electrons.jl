@@ -3,7 +3,7 @@ mutable struct Electrons
     Nstates::Int64
     Nstates_occ::Int64
     Focc::Array{Float64,1}
-    ebands::Array{Float64,1}
+    ebands::Array{Float64,2}
 end
 
 # dummy Electrons
@@ -12,12 +12,13 @@ function Electrons()
     Nstates = 1
     Nstates_occ = 1
     Focc = zeros(Nstates)
-    ebands = zeros(Nstates)
+    ebands = zeros(Nstates,1) # use Nkpt=1
     return Electrons( Nelectrons, Nstates, Nstates_occ, Focc, ebands )
 end
 
 
 function Electrons( atoms::Atoms, Pspots::Array{PsPot_GTH,1};
+                    Nkpt=1,
                     Nstates=nothing, Nstates_empty=0 )
 
     Nelectrons = get_Nelectrons(atoms,Pspots)
@@ -32,7 +33,7 @@ function Electrons( atoms::Atoms, Pspots::Array{PsPot_GTH,1};
     end
 
     Focc = zeros(Float64,Nstates)
-    ebands = zeros(Float64,Nstates)
+    ebands = zeros(Float64,Nstates,Nkpt)
     
     Nstates_occ = Nstates - Nstates_empty
     

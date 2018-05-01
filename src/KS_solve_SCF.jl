@@ -61,7 +61,8 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
             end
 
         elseif update_psi == "PCG"
-
+            
+            # determined convergence criteria for diagonalization
             if iter == 1
                 ethr = 0.1
             elseif iter == 2
@@ -71,14 +72,19 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
                 ethr = max( ethr, ETHR_EVALS_LAST )
             end
 
-            evals, psi = diag_Emin_PCG( Ham, psi, TOL_EBANDS=ethr )
+            for ik = 1:Nkpt
+                Ham.ik = ik
+                evals[:,ik], psik[ik] = diag_Emin_PCG( Ham, psik[ik], TOL_EBANDS=ethr )
+            end
 
         elseif update_psi == "CheFSI"
-
-            ub, lb = get_ub_lb_lanczos( Ham, Nstates*2 )
-
-            psi = chebyfilt( Ham, psi, cheby_degree, lb, ub)
-            psi = ortho_gram_schmidt(psi)
+            
+            for ik = 1:Nkpt
+                Ham.ik = ik
+                ub, lb = get_ub_lb_lanczos( Ham, Nstates*2 )
+                psik[ik] = chebyfilt( Ham, psik[ik], cheby_degree, lb, ub)
+                psik[ik] = ortho_gram_schmidt( psik[ik] )
+            end
 
         end
 
@@ -122,16 +128,21 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
     # Eigenvalues are not calculated if using CheFSI.
     # We calculate them here.
     if update_psi == "CheFSI"
-        Hr = psi'*op_H( Ham, psi )
-        evals = real(eigvals(Hr))
+        for ik = 1:Nkpt
+            Ham.ik = ik
+            Hr = psik[ik]' * op_H( Ham, psik[ik] )
+            evals[:,ik] = real(eigvals(Hr))
+        end
     end
 
     Ham.electrons.ebands = evals
 
     if savewfc
-        wfc_file = open("WFC.data","w")
-        write(wfc_file,psi)
-        close(wfc_file)
+        for ik = 1:Nkpt
+            wfc_file = open("WFC_k_"*string(ik)*".data","w")
+            write( wfc_file, psik[ik] )
+            close( wfc_file )
+        end
     end
 
     return

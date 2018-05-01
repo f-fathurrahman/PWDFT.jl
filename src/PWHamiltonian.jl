@@ -77,7 +77,7 @@ function PWHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
     #
     rhoe = zeros( Float64, Npoints )
 
-    electrons = Electrons( atoms, Pspots )
+    electrons = Electrons( atoms, Pspots, Nkpt=kpoints.Nkpt )
     if verbose
         println(electrons)
     end
@@ -104,7 +104,7 @@ function PWHamiltonian( atoms::Atoms, ecutwfc::Float64;
     kpoints = KPoints( atoms, meshk, shiftk )
 
     # Initialize plane wave grids
-    pw = PWGrid( ecutwfc, atoms.LatVecs; kpoints=kpoints )
+    pw = PWGrid( ecutwfc, atoms.LatVecs, kpoints=kpoints )
     if verbose
         println(pw)
     end
@@ -133,7 +133,7 @@ function PWHamiltonian( atoms::Atoms, ecutwfc::Float64;
     #
     rhoe = zeros( Float64, Npoints )
 
-    electrons = Electrons( atoms, Zvals )
+    electrons = Electrons( atoms, Zvals, Nkpt=kpoints.Nkpt )
     if verbose
         println(electrons)
     end
