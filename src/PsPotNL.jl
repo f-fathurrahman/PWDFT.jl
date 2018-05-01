@@ -6,7 +6,7 @@ end
 
 function PsPotNL()
     # return dummy PsPotNL
-    return PsPotNL(0, zeros(Int64,1,1,1,1), zeros(1,1,1) )
+    return PsPotNL(0, zeros(Int64,1,1,1,1), zeros(Complex128,1,1,1) )
 end
 
 import Base.println
@@ -56,7 +56,7 @@ function PsPotNL( pw::PWGrid, atoms::Atoms, Pspots::Array{PsPot_GTH},
     # No nonlocal components
     if NbetaNL == 0
         # return dummy PsPotNL
-        return PsPotNL(0, zeros(Int64,1,1,1,1), zeros(1,1) )
+        return PsPotNL(0, zeros(Int64,1,1,1,1), zeros(Complex128,1,1,1) )
     end
 
     Nkpt = kpoints.Nkpt
