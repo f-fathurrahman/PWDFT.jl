@@ -7,24 +7,25 @@ function diag_Emin_PCG( Ham::PWHamiltonian, X0::Array{Complex128,2};
                              I_CG_BETA = 1, TOL_EBANDS=1e-7 )
 
 
+    ik = Ham.ik
     pw = Ham.pw
-    Focc = Ham.focc
+    Focc = Ham.electrons.Focc
 
     Ns = pw.Ns
     Npoints = prod(Ns)
     Nstates = size(X0)[2]
-    Ngwx = pw.gvecw.Ngwx
+    Ngw_ik = pw.gvecw.Ngw[ik]
 
     psi = ortho_gram_schmidt(X0)
 
     #
     # Variabls for PCG
     #
-    d = zeros(Complex128, Ngwx, Nstates)
-    g_old = zeros(Complex128, Ngwx, Nstates)
-    d_old = zeros(Complex128, Ngwx, Nstates)
-    Kg = zeros(Complex128, Ngwx, Nstates)
-    Kg_old = zeros(Complex128, Ngwx, Nstates)
+    d = zeros(Complex128, Ngw_ik, Nstates)
+    g_old = zeros(Complex128, Ngw_ik, Nstates)
+    d_old = zeros(Complex128, Ngw_ik, Nstates)
+    Kg = zeros(Complex128, Ngw_ik, Nstates)
+    Kg_old = zeros(Complex128, Ngw_ik, Nstates)
     β        = 0.0
     Ebands_old = 0.0
 
@@ -36,7 +37,7 @@ function diag_Emin_PCG( Ham::PWHamiltonian, X0::Array{Complex128,2};
     for iter = 1:NiterMax
 
         g = calc_grad( Ham, psi)
-        Kg = Kprec(pw,g)
+        Kg = Kprec( Ham.ik, pw, g )
 
         if iter != 1
             if I_CG_BETA == 1
@@ -54,14 +55,14 @@ function diag_Emin_PCG( Ham::PWHamiltonian, X0::Array{Complex128,2};
             β = 0.0
         end
 
-        d = -Kprec(pw, g) + β * d_old
+        d = -Kg + β * d_old
 
-        psic = ortho_gram_schmidt(psi + α_t*d)
-        rhoe = calc_rhoe( pw, Focc, psic )
+        psic = ortho_gram_schmidt( psi + α_t*d )
+        rhoe = calc_rhoe( ik, pw, Focc, psic )
         #
         update!(Ham, rhoe)
 
-        gt = calc_grad(Ham, psic)
+        gt = calc_grad( Ham, psic )
 
         denum = real(sum(conj(g-gt).*d))
         if denum != 0.0

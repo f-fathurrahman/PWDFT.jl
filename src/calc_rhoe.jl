@@ -46,7 +46,7 @@ end
 
 
 
-function calc_rhoe( pw::PWGrid, Focc, psi::Array{Complex128,2} )
+function calc_rhoe( ik::Int64, pw::PWGrid, Focc, psi::Array{Complex128,2} )
     Ω  = pw.Ω
     Ns = pw.Ns
     Npoints = prod(Ns)
@@ -54,7 +54,8 @@ function calc_rhoe( pw::PWGrid, Focc, psi::Array{Complex128,2} )
 
     # Transform to real space
     cpsi = zeros( Complex128, Npoints, Nstates )
-    cpsi[pw.gvecw.idx_gw2r,:] = psi[:,:]
+    idx = pw.gvecw.idx_gw2r[ik]
+    cpsi[idx,:] = psi[:,:]
     psiR = G_to_R(pw, cpsi)
 
     # orthonormalization in real space

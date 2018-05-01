@@ -4,12 +4,12 @@ function calc_grad( Ham::PWHamiltonian, psi::Array{Complex128,2} )
     Focc = Ham.electrons.Focc
     pw = Ham.pw
     #
-    Ngwx    = size(psi)[1]
+    Ngw     = size(psi)[1]
     Nstates = size(psi)[2]
     Ω = pw.Ω
     Ns = pw.Ns
     #
-    grad = zeros( Complex128, Ngwx, Nstates )
+    grad = zeros( Complex128, Ngw, Nstates )
 
     H_psi = op_H( Ham, psi )
     for ist = 1:Nstates
