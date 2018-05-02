@@ -13,29 +13,28 @@ structure package such as Quantum ESPRESSO, ABINIT, VASP, etc.
 
 ```julia
 atoms = init_atoms_xyz("CH4.xyz")
+atoms.LatVecs = 16.0*eye(3)
 ```
 
 - create `PWHamiltonian` object
 
 ```julia
-LatVecs = 16.0*diagm( ones(3) )
 ecutwfc_Ry = 30.0
 pspfiles = ["../pseudopotentials/pade_gth/C-q4.gth",
             "../pseudopotentials/pade_gth/H-q1.gth"]
-Ham = PWHamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, LatVecs )
+Ham = PWHamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5 )
 ```
 
 - calculate interaction energy between ions (atomic centers):
 
 ```julia
-Zvals = get_Zvals( Ham.pspots )
-Ham.energies.NN = calc_E_NN( Ham.pw, atoms, Zvals )
+Ham.energies.NN = calc_E_NN( atoms )
 ```
 
 - solve Kohn-Sham equations using any of the following methods
 
 ```julia
-λ, v = KS_solve_SCF!( Ham, β=0.2 )  # using SCF (self-consistent field) method
+KS_solve_SCF!( Ham, β=0.2 )  # using SCF (self-consistent field) method
 # or
-λ, v = KS_solve_Emin_PCG!( Ham ) # direct minimization using preconditioned conjugate gradient
+KS_solve_Emin_PCG!( Ham ) # direct minimization using preconditioned conjugate gradient
 ```
