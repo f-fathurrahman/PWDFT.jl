@@ -27,6 +27,9 @@ function test_main( ; method="SCF" )
     # Solve the KS problem
     #
     if method == "SCF"
+        Ham.electrons = Electrons( atoms, Ham.pspots, Nstates=5,
+                                   Nkpt=Ham.pw.gvecw.kpoints.Nkpt, Nstates_empty=1 )
+        println(Ham.electrons)
         KS_solve_SCF!( Ham )
 
     elseif method == "Emin"
@@ -57,7 +60,7 @@ function test_main( ; method="SCF" )
 
 end
 
-@time test_main(method="Emin")
+#@time test_main(method="Emin")
 @time test_main(method="SCF")
 #@time test_main(method="DCM")
 
