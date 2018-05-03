@@ -57,7 +57,7 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
         if update_psi == "LOBPCG"
             for ik = 1:Nkpt
                 Ham.ik = ik
-                evals[:,ik], psik[ik] = diag_lobpcg( Ham, psik[ik], verbose_last=true )
+                evals[:,ik], psik[ik] = diag_lobpcg( Ham, psik[ik], verbose_last=false )
             end
 
         elseif update_psi == "PCG"
