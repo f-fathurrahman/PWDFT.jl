@@ -46,8 +46,8 @@ function PsPotNL( pw::PWGrid, atoms::Atoms, Pspots::Array{PsPot_GTH},
                 for m = -l:l
                     NbetaNL = NbetaNL + 1
                     prj2beta[iprj,ia,l+1,m+psp.lmax+1] = NbetaNL
-                    @printf("ibeta=%d ia=%d isp=%d l=%d m=%d iprj=%d\n",
-                             NbetaNL, ia, isp, l, m, iprj)
+                    #@printf("ibeta=%d ia=%d isp=%d l=%d m=%d iprj=%d\n",
+                    #         NbetaNL, ia, isp, l, m, iprj)
                 end
             end
         end

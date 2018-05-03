@@ -17,8 +17,8 @@ function test_main( ; method="SCF" )
     # Initialize Hamiltonian
     pspfiles = ["../../pseudopotentials/pade_gth/Ga-q3.gth",
                 "../../pseudopotentials/pade_gth/As-q5.gth"]
-    ecutwfc_Ry = 30.0
-    Ham = PWHamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, meshk=[3,3,3], verbose=true )
+    ecutwfc_Ry = 40.0
+    Ham = PWHamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, meshk=[4,4,4], verbose=true )
 
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( atoms )
@@ -27,6 +27,7 @@ function test_main( ; method="SCF" )
     # Solve the KS problem
     #
     if method == "SCF"
+        # FIXME: need a more effective ways to deal with this
         Ham.electrons = Electrons( atoms, Ham.pspots, Nstates=5,
                                    Nkpt=Ham.pw.gvecw.kpoints.Nkpt, Nstates_empty=1 )
         println(Ham.electrons)
@@ -60,11 +61,17 @@ function test_main( ; method="SCF" )
 
 end
 
-#@time test_main(method="Emin")
-@time test_main(method="SCF")
+@time test_main(method="Emin")
+#@time test_main(method="SCF")
 #@time test_main(method="DCM")
 
 """
+!    total energy              =     -17.28495473 Ry = -8.642477365 Ha
+     one-electron contribution =       2.73205378 Ry
+     hartree contribution      =       1.63341388 Ry
+     xc contribution           =      -4.80801106 Ry
+     ewald contribution        =     -16.84241132 Ry = -4.21060283 Ha
+
 Kinetic energy  =  3.26604416655604E+00
 Hartree energy  =  8.16569937191940E-01
 XC energy       = -2.39970840396867E+00

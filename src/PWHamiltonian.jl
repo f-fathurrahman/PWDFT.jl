@@ -83,7 +83,7 @@ function PWHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
     end
 
     # NL pseudopotentials
-    pspotNL = PsPotNL( pw, atoms, Pspots, kpoints, check_norm=true )
+    pspotNL = PsPotNL( pw, atoms, Pspots, kpoints, check_norm=false )
 
     atoms.Zvals = get_Zvals( Pspots )
 
