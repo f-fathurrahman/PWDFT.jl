@@ -4,43 +4,64 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
 
 
 	pw = Ham.pw
-    Ngwx = pw.gvecw.Ngwx
+    Ngw = pw.gvecw.Ngw
     Ns = pw.Ns
     Npoints = prod(Ns)
     ΔV = pw.Ω/Npoints
     Focc = Ham.electrons.Focc
     Nstates = Ham.electrons.Nstates
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+
+    psik = Array{Array{Complex128,2},1}(Nkpt)
 
     #
     # Initial wave function
     #
     if startingwfc == nothing
         srand(1234)
-        psi = rand(Complex128,Ngwx,Nstates)
-        psi = ortho_gram_schmidt(psi)
+        srand(1234)
+        for ik = 1:Nkpt
+            psi = rand(Ngw[ik],Nstates) + im*rand(Ngw[ik],Nstates)
+            psik[ik] = ortho_gram_schmidt(psi)
+        end
     else
-        psi = startingwfc
+        psik = startingwfc
     end
 
     #
     # Calculated electron density from this wave function and update Hamiltonian
     #
-    rhoe = calc_rhoe( pw, Focc, psi )
+    rhoe = calc_rhoe( pw, Focc, psik )
     update!(Ham, rhoe)
 
     rhoe_old = copy(rhoe)
 
+    evals = zeros(Float64,Nstates,Nkpt)
     # Starting eigenvalues and psi
-    evals, psi = diag_lobpcg( Ham, psi, verbose_last=false, maxit=10 )
+    for ik = 1:Nkpt
+        Ham.ik = ik
+        evals[:,ik], psik[ik] = diag_lobpcg( Ham, psik[ik], verbose_last=false, maxit=10 )
+    end
 
-    energies = calc_energies( Ham, psi )
+    energies = calc_energies( Ham, psik )
     Ham.energies = energies
     Etot_old = energies.Total
 
     # subspace
-    Y = zeros( Complex128, Ngwx, 3*Nstates )
-    R = zeros( Complex128, Ngwx, Nstates )
-    P = zeros( Complex128, Ngwx, Nstates )
+    Y = Array{Array{Complex128,2},1}(Nkpt)
+    R = Array{Array{Complex128,2},1}(Nkpt)
+    P = Array{Array{Complex128,2},1}(Nkpt)
+    G = Array{Array{Complex128,2},1}(Nkpt)
+    T = Array{Array{Float64,2},1}(Nkpt)
+    B = Array{Array{Float64,2},1}(Nkpt)
+    for ik = 1:Nkpt
+        Y[ik] = zeros( Complex128, Ngw[ik], 3*Nstates )
+        R[ik] = zeros( Complex128, Ngw[ik], Nstates )
+        P[ik] = zeros( Complex128, Ngw[ik], Nstates )
+        G[ik] = zeros( Complex128, 3*Nstates, 3*Nstates )
+        T[ik] = zeros( Float64, 3*Nstates, 3*Nstates )
+        B[ik] = zeros( Float64, 3*Nstates, 3*Nstates )
+    end
 
     set1 = 1:Nstates
     set2 = Nstates+1:2*Nstates
@@ -51,64 +72,74 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
 
     for iter = 1:NiterMax
 
-        Hpsi = op_H( Ham, psi )
-        #
-        T = psi' * Hpsi
-        T = 0.5*( T + T' )
-        #
-        R = Hpsi - psi*T
-        R = Kprec( pw, R )
-        #
-        Y[:,set1] = psi
-        Y[:,set2] = R
-        if iter > 1
-            Y[:,set3] = P
-        end
-        #
-        # Project kinetic and ionic potential
-        #
-        KY = op_K( Ham, Y ) + op_V_Ps_loc( Ham, Y )
-        T = real( Y'*KY )
-        B = real( Y'*Y )
-        B = 0.5*( B + B' )
+        for ik = 1:Nkpt
+            Ham.ik = ik
+            Hpsi = op_H( Ham, psik[ik] )
+            #
+            psiHpsi = psik[ik]' * Hpsi
+            psiHpsi = 0.5*( psiHpsi + psiHpsi' )
+            #
+            R[ik] = Hpsi - psik[ik]*psiHpsi
+            R[ik] = Kprec( ik, pw, R[ik] )
+            #
+            Y[ik][:,set1] = psik[ik]
+            Y[ik][:,set2] = R[ik]
+            if iter > 1
+                Y[ik][:,set3] = P[ik]
+            end
+            
+            #
+            # Project kinetic and ionic potential
+            #
+            KY = op_K( Ham, Y[ik] ) + op_V_Ps_loc( Ham, Y[ik] )
+            #
+            T[ik] = real( Y[ik]'*KY )
+            B[ik] = real( Y[ik]'*Y[ik] )
+            B[ik] = 0.5*( B[ik] + B[ik]' )
 
-        if iter > 1
-            G = eye(3*Nstates)
-        else
-            G = eye(2*Nstates)
+            if iter > 1
+                G[ik] = eye(3*Nstates)
+            else
+                G[ik] = eye(2*Nstates)
+            end
         end
         
         @printf("DCM iter: %3d\n", iter)
 
         for iterscf = 1:MaxInnerSCF
-            #
             V_loc = Ham.potentials.Hartree + Ham.potentials.XC
-            if Ham.pspotNL.NbetaNL > 0
-                VY = op_V_Ps_nloc( Ham, Y ) + op_V_loc( pw, V_loc, Y )
-            else
-                VY = op_V_loc( Ham.pw, V_loc, Y )
+
+            for ik = 1:Nkpt
+                Ham.ik = ik
+                if Ham.pspotNL.NbetaNL > 0
+                    VY = op_V_Ps_nloc( Ham, Y[ik] ) + op_V_loc( ik, pw, V_loc, Y[ik] )
+                else
+                    VY = op_V_loc( ik, pw, V_loc, Y[ik] )
+                end
+                #
+                A = real( T[ik] + Y[ik]'*VY )
+                A = 0.5*( A + A' )
+                #
+                D, G[ik] = eig( A, B[ik] )
+                evals[:,ik] = D[1:Nstates]
+                #
+                
+                #E_kin = trace( G[:,set1]' * T * G[:,set1] )
+                #println("Ekin from trace = ", E_kin)
+
+                # update psik
+                psik[ik] = Y[ik]*G[ik][:,set1]
             end
-            #
-            A = real( T + Y'*VY )
-            A = 0.5*( A + A' )
-            #
-            D, G = eig( A, B )
-            evals = D[1:Nstates]
-            #
-            #E_kin = trace( G[:,set1]' * T * G[:,set1] )
-            #println("Ekin from trace = ", E_kin)
-            psi = Y*G[:,set1]
             
             #rhoe = 0.9*calc_rhoe( pw, Focc, psi ) + 0.1*rhoe_old # use mixing
-
-            rhoe = calc_rhoe( pw, Focc, psi )
+            rhoe = calc_rhoe( pw, Focc, psik )
             
             update!( Ham, rhoe )
 
             rhoe_old = copy(rhoe)
 
             # Calculate energies once again
-            Ham.energies = calc_energies( Ham, psi )
+            Ham.energies = calc_energies( Ham, psik )
             Etot = Ham.energies.Total
             diffE = -(Etot - Etot_old)
 
@@ -123,7 +154,7 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
         end
 
         # Calculate energies once again
-        energies = calc_energies( Ham, psi )
+        energies = calc_energies( Ham, psik )
         Ham.energies = energies
         Etot = energies.Total
         diffE = abs( Etot - Etot_old )
@@ -138,19 +169,23 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
 
         # No need to update potential, it is already updated in inner SCF loop
 
-        if iter > 1
-            P = Y[:,set4]*G[set4,set1]
-        else
-            P = Y[:,set2]*G[set2,set1]
+        for ik = 1:Nkpt
+            if iter > 1
+                P[ik] = Y[ik][:,set4]*G[ik][set4,set1]
+            else
+                P[ik] = Y[ik][:,set2]*G[ik][set2,set1]
+            end
         end
     end  # end of DCM iteration
     
-    Ham.electrons.ebands = evals
+    Ham.electrons.ebands = evals[:,:]
 
     if savewfc
-        wfc_file = open("WFC.data","w")
-        write(wfc_file,psi)
-        close(wfc_file)
+        for ik = 1:Nkpt
+            wfc_file = open("WFC_k_"*string(ik)*".data","w")
+            write( wfc_file, psik[ik] )
+            close( wfc_file )
+        end
     end
 
     return
