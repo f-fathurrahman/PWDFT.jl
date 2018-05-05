@@ -15,7 +15,7 @@ function test_main()
         println(Pspots[isp])
     end
 
-    electrons = Electrons( atoms, Pspots )
+    electrons = Electrons( atoms, Pspots, Nstates_empty=1 )
     println(electrons)
 
 end
