@@ -1,5 +1,6 @@
 function calc_grad( Ham::PWHamiltonian, psi::Array{Complex128,2} )
-
+    
+    ik = Ham.ik
     potentials = Ham.potentials
     Focc = Ham.electrons.Focc
     pw = Ham.pw
@@ -17,7 +18,7 @@ function calc_grad( Ham::PWHamiltonian, psi::Array{Complex128,2} )
         for jst = 1:Nstates
             grad[:,ist] = grad[:,ist] - dot( psi[:,jst], H_psi[:,ist] ) * psi[:,jst]
         end
-        grad[:,ist] = Focc[ist]*grad[:,ist]
+        grad[:,ist] = Focc[ist,ik]*grad[:,ist]
     end
     return grad
 

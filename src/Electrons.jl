@@ -137,18 +137,49 @@ end
 
 
 import Base.println
-function println( electrons::Electrons )
+function println( electrons::Electrons, all_states=false )
+
+    Focc = electrons.Focc
+    Nelectrons = electrons.Nelectrons
+    Nstates = electrons.Nstates
+    Nstates_occ = electrons.Nstates_occ
+    Nkpt = size(Focc)[2]
+
     @printf("\n")
     @printf("                                     ---------\n")
     @printf("                                     Electrons\n")
     @printf("                                     ---------\n")
     @printf("\n")
-    @printf("Nelectrons    =  %18.10f\n", electrons.Nelectrons)
-    @printf("Nstates_occ   = %8d\n", electrons.Nstates_occ)
-    @printf("Nstates_empty = %8d\n\n", electrons.Nstates - electrons.Nstates_occ)
+    @printf("Nelectrons    =  %18.10f\n", Nelectrons)
+    @printf("Nstates_occ   = %8d\n", Nstates_occ)
+    @printf("Nstates_empty = %8d\n\n", Nstates - Nstates_occ)
     @printf("Occupation numbers:\n\n")
-    for ist = 1:electrons.Nstates
-        @printf("state #%8d = %8.5f\n", ist, electrons.Focc[ist])
+
+    if Nstates > 8
+        all_states = true
+    end
+    if all_states
+        for ist = 1:Nstates
+            for ik = 1:Nkpt
+                @printf("state #%8d = %8.5f ", ist, Focc[ist,ik])
+            end
+            @printf("\n")
+        end
+    else
+        for ist = 1:4
+            for ik = 1:Nkpt
+                @printf("state #%8d = %8.5f ", ist, Focc[ist,ik])
+            end
+            @printf("\n")
+        end
+        @printf(".....\n")
+        #
+        for ist = Nstates-3:Nstates
+            for ik = 1:Nkpt
+                @printf("state #%8d = %8.5f ", ist, Focc[ist,ik])
+            end
+            @printf("\n")
+        end
     end
 end
 

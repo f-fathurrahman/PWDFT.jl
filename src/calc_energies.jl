@@ -21,9 +21,9 @@ function calc_E_Hartree( Ham::PWHamiltonian, psi::Array{Complex128,2} )
     return E_Hartree
 end
 
-"""
-Use ik
-"""
+#
+# Use ik
+#
 function calc_E_Ps_nloc( Ham::PWHamiltonian, psik::Array{Array{Complex128,2},1} )
 
     Nstates = Ham.electrons.Nstates
@@ -61,7 +61,7 @@ function calc_E_Ps_nloc( Ham::PWHamiltonian, psik::Array{Array{Complex128,2},1} 
                 end # m
                 end # l
             end
-            E_ps_NL = E_ps_NL + wk[ik]*Focc[ist]*enl1
+            E_ps_NL = E_ps_NL + wk[ik]*Focc[ist,ik]*enl1
         end
     end
 
@@ -97,7 +97,7 @@ function calc_energies( Ham::PWHamiltonian, psik::Array{Array{Complex128,2},1} )
         psi = psik[ik]
         Kpsi = op_K( Ham, psi )
         for ist = 1:Nstates
-            E_kin = E_kin + wk[ik] * Focc[ist] * real( dot( psi[:,ist], Kpsi[:,ist] ) )
+            E_kin = E_kin + wk[ik] * Focc[ist,ik] * real( dot( psi[:,ist], Kpsi[:,ist] ) )
         end
     end
 
@@ -134,6 +134,7 @@ end
 
 
 
+# DEPRECATED !!! Not extended for general k-dependent wavefunction
 #
 # psi is assumed to be already orthonormalized elsewhere
 # `potentials` and `Rhoe` are not updated
