@@ -1,7 +1,4 @@
-include("../src/smear_FD.jl")
-include("../src/calc_Focc.jl")
-include("../src/calc_entropy.jl")
-include("../src/sum_upto_E_fermi.jl")
+using PWDFT
 
 function test_main(kT::Float64)
     

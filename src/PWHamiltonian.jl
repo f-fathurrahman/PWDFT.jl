@@ -21,7 +21,7 @@ end
 function PWHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
                         ecutwfc::Float64 ;
                         meshk = [1,1,1], shiftk=[0,0,0],
-                        xcfunc = "VWN", verbose=false )
+                        xcfunc = "VWN", verbose=false, extra_states=0 )
 
     # kpoints
     kpoints = KPoints( atoms, meshk, shiftk )
@@ -77,7 +77,7 @@ function PWHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
     #
     rhoe = zeros( Float64, Npoints )
 
-    electrons = Electrons( atoms, Pspots, Nkpt=kpoints.Nkpt )
+    electrons = Electrons( atoms, Pspots, Nkpt=kpoints.Nkpt, Nstates_empty=extra_states )
     if verbose
         println(electrons)
     end

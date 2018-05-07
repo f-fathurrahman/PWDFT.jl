@@ -124,6 +124,12 @@ include("Kprec.jl")
 export calc_energies, calc_E_xc, calc_E_Hartree, calc_E_Ps_nloc
 include("calc_energies.jl")
 
+export smear_FD, calc_Focc, calc_entropy, sum_upto_E_fermi
+include("smear_FD.jl")
+include("calc_Focc.jl")
+include("calc_entropy.jl")
+include("sum_upto_E_fermi.jl")
+
 export calc_grad
 include("calc_grad.jl")
 
@@ -139,12 +145,15 @@ include("andersonmix.jl")
 export KS_solve_Emin_PCG!
 include("KS_solve_Emin_PCG.jl")
 
-export KS_solve_SCF!
-include("KS_solve_SCF.jl")
-
 export chebyfilt
 export get_ub_lb_lanczos
 include("CheFSI.jl")
+
+export KS_solve_SCF!
+include("KS_solve_SCF.jl")
+
+export KS_solve_SCF_smearing!
+include("KS_solve_SCF_smearing.jl")
 
 export KS_solve_DCM!
 include("KS_solve_DCM.jl")

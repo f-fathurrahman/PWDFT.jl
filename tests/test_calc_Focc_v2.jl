@@ -1,7 +1,4 @@
-include("../src/smear_FD.jl")
-include("../src/calc_Focc.jl")
-include("../src/calc_entropy.jl")
-include("../src/sum_upto_E_fermi.jl")
+using PWDFT
 
 function test_main(kT::Float64)
     
@@ -37,7 +34,7 @@ function test_main(kT::Float64)
     
     @printf("sum(Focc) = %18.10f\n", sum(Focc)/Nkpt)
     
-    #@printf("Entropy (-TS) = %18.10f\n", calc_entropy( Focc[:,ik], kT, is_spinpol=spinpol ))
+    @printf("Entropy (-TS) = %18.10f\n", calc_entropy( Focc, wk, kT, is_spinpol=spinpol ))
 
 end
 
