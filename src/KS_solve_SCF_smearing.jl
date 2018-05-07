@@ -132,6 +132,7 @@ function KS_solve_SCF_smearing!( Ham::PWHamiltonian ;
 
         #
         @printf("SCF: %8d %18.10f %18.10e %18.10e\n", iter, Etot, diffE, diffRho )
+        @printf("Entropy (-TS) = %18.10f\n", Entropy)
 
         if diffE < ETOT_CONV_THR
             @printf("SCF is converged: iter: %d , diffE = %10.7e\n", iter, diffE)
