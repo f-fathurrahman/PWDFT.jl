@@ -29,10 +29,10 @@ function Electrons( atoms::Atoms, Pspots::Array{PsPot_GTH,1};
     # Nstates manually from Nelectrons
     if (Nstates == nothing)
         Nstates = round( Int64, Nelectrons/2 )
-        if is_odd
+        if Nstates*2 < Nelectrons
             Nstates = Nstates + 1
         end
-        if Nstates_empty > 0 
+        if Nstates_empty > 0
             Nstates = Nstates + Nstates_empty
         end
     end
@@ -155,7 +155,7 @@ function println( electrons::Electrons, all_states=false )
     @printf("Nstates_empty = %8d\n\n", Nstates - Nstates_occ)
     @printf("Occupation numbers:\n\n")
 
-    if Nstates > 8
+    if Nstates < 8
         all_states = true
     end
     if all_states
