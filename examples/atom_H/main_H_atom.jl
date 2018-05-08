@@ -23,7 +23,7 @@ function test_main( ; method="SCF" )
     # Solve the KS problem
     #
     if method == "SCF"
-        KS_solve_SCF!( Ham )
+        KS_solve_SCF!( Ham, mix_method="anderson" )
 
     elseif method == "Emin"
         KS_solve_Emin_PCG!( Ham, verbose=true )
@@ -32,7 +32,7 @@ function test_main( ; method="SCF" )
         KS_solve_DCM!( Ham )
 
     else
-        println("ERROR: unknow method = ", method)
+        println("ERROR: unknown method = ", method)
     end
 
     Nstates = Ham.electrons.Nstates
@@ -50,4 +50,4 @@ end
 
 @time test_main(method="Emin")
 @time test_main(method="SCF")
-#@time test_main(method="DCM")
+@time test_main(method="DCM")

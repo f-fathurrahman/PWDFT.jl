@@ -3,6 +3,7 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
                        β = 0.5, NiterMax=100, verbose=false,
                        check_rhoe_after_mix=false,
                        update_psi="LOBPCG", cheby_degree=8,
+                       mix_method="simple",
                        ETOT_CONV_THR=1e-6 )
 
     pw = Ham.pw
@@ -48,9 +49,12 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
     #
     # For mixing
     #
+    # For Anderson mixing
     MIXDIM = 4
-    df = zeros(Float64,Npoints,MIXDIM)
-    dv = zeros(Float64,Npoints,MIXDIM)
+    if mix_method == "anderson"
+        df = zeros(Float64,Npoints,MIXDIM)
+        dv = zeros(Float64,Npoints,MIXDIM)
+    end
 
     for iter = 1:NiterMax
 
@@ -92,9 +96,14 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
         rhoe_new = calc_rhoe( pw, Focc, psik )
         diffRho = norm(rhoe_new - rhoe)/Npoints
 
-        #rhoe = β*rhoe_new[:] + (1-β)*rhoe[:]
-
-        rhoe = andersonmix!( rhoe, rhoe_new, β, df, dv, iter, MIXDIM )
+        if mix_method == "simple"
+            rhoe = β*rhoe_new[:] + (1-β)*rhoe[:]
+        elseif mix_method == "anderson"
+            rhoe = andersonmix!( rhoe, rhoe_new, β, df, dv, iter, MIXDIM )
+        else
+            @printf("ERROR: Unknown mix_method = %s\n", mix_method)
+            exit()
+        end
 
         for ip = 1:Npoints
             if rhoe[ip] < 1e-12

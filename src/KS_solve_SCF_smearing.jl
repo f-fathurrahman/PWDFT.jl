@@ -46,7 +46,6 @@ function KS_solve_SCF_smearing!( Ham::PWHamiltonian ;
 
     ethr = 0.1
 
-
     # For Anderson mixing
     MIXDIM = 4
     if mix_method == "anderson"
