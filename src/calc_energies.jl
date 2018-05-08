@@ -1,3 +1,4 @@
+# FIXME: psi is not used
 function calc_E_xc( Ham::PWHamiltonian, psi::Array{Complex128,2} )
     Ω = Ham.pw.Ω
     Npoints = prod(Ham.pw.Ns)
