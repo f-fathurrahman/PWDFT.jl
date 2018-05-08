@@ -11,7 +11,7 @@ void calc_Vxc_PBE( long long Npoints, double *Rhoe, double *gRhoe2,
   double *vgrho_x = malloc( Npoints*sizeof(double) );
   double *vgrho_c = malloc( Npoints*sizeof(double) );
 
-  int ip;
+  long long ip;
   for( ip = 0; ip < Npoints; ip++ ) {
     vrho_x[ip] = 0.0;
     vrho_c[ip] = 0.0;

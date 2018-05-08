@@ -21,7 +21,7 @@ void calc_epsxc_PBE( long long Npoints, double *Rhoe, double *gRhoe2, double *ep
   xc_gga_exc( &xc_func, Npoints, Rhoe, gRhoe2, eps_c );
   xc_func_end( &xc_func );
 
-  int ip;
+  long long ip;
   for( ip = 0; ip < Npoints; ip++ ) {
     epsxc[ip] = eps_x[ip] + eps_c[ip];
   }

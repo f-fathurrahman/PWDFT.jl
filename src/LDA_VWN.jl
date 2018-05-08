@@ -21,6 +21,44 @@ function calc_epsxc_VWN( Rhoe::Array{Float64,1} )
 end
 
 #
+# Spin polarized versions
+#
+
+function calc_Vxc_VWN( Rhoe::Array{Float64,2} )
+    Npoints = size(Rhoe)[1]
+    Vxc = zeros( Float64, Npoints, 2 )
+    Vxc_tmp = zeros( Float64, 2*Npoints )
+    #
+    Rhoe_tmp = zeros(Npoints,2)
+    Rhoe_tmp[1:Npoints] = Rhoe[:,1]
+    Rhoe_tmp[Npoints+1:2*Npoints] = Rhoe[:,2]
+    #
+    ccall( (:calc_Vxc_VWN_spinpol, LIBXC_SO_PATH), Void,
+           (Int64, Ptr{Float64}, Ptr{Float64}),
+           Npoints, Rhoe_tmp, Vxc_tmp )
+    #
+    Vxc[:,1] = Vxc_tmp[1:Npoints]
+    Vxc[:,2] = Vxc_tmp[Npoints+1:2*Npoints]
+    return Vxc
+end
+
+
+function calc_epsxc_VWN( Rhoe::Array{Float64,2} )
+    Npoints = size(Rhoe)[1]
+    epsxc = zeros( Float64, Npoints )
+    #
+    Rhoe_tmp = zeros(Npoints,2)
+    Rhoe_tmp[1:Npoints] = Rhoe[:,1]
+    Rhoe_tmp[Npoints+1:2*Npoints] = Rhoe[:,2]
+    #
+    ccall( (:calc_epsxc_VWN_spinpol, LIBXC_SO_PATH), Void,
+           (Int64, Ptr{Float64}, Ptr{Float64}),
+           2*Npoints, Rhoe, epsxc )
+    #
+    return epsxc
+end
+
+#
 # VWN parameterization of the exchange correlation energy
 # Adaptep from Arias
 #
