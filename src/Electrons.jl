@@ -55,7 +55,7 @@ function Electrons( atoms::Atoms, Pspots::Array{PsPot_GTH,1};
     sFocc = sum(Focc)/Nkpt
     # Check if the generated Focc is consistent
     if abs( sFocc - Nelectrons ) > eps()
-        @printf("ERROR diff sum(Focc) and Nelectrons is not small\n")
+        @printf("ERROR: diff sum(Focc) and Nelectrons is not small\n")
         @printf("sum Focc = %f, Nelectrons = %f\n", sFocc, Nelectrons)
         exit()
     end

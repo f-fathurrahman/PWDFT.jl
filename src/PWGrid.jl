@@ -171,15 +171,15 @@ function init_gvecw( ecutwfc, gvec::GVectors, kpoints::KPoints )
         idx_gw2g[ik] = findn( 0.5*Gk2 .< ecutwfc )
         idx_gw2r[ik] = idx_g2r[idx_gw2g[ik]]
         Ngw[ik] = length(idx_gw2g[ik])
-        @printf("ik = %8d, k = [%10.5f,%10.5f,%10.5f]\n",
-                ik, kpts[1,ik], kpts[2,ik], kpts[3,ik])
-        @printf("Ngw = %8d\n\n", Ngw[ik])
+        #@printf("ik = %8d, k = [%10.5f,%10.5f,%10.5f]\n",
+        #        ik, kpts[1,ik], kpts[2,ik], kpts[3,ik])
+        #@printf("Ngw = %8d\n\n", Ngw[ik])
     end
 
     # print out memory information
-    Nelems = sum(Ngw)
-    memMiB = 2*Nelems*sizeof(Int64)/1024.0/1024.0
-    @printf("mem = %f MiB\n\n", memMiB)
+    #Nelems = sum(Ngw)
+    #memMiB = 2*Nelems*sizeof(Int64)/1024.0/1024.0
+    #@printf("mem = %f MiB\n\n", memMiB)
     
     Ngwx = maximum(Ngw)
 
