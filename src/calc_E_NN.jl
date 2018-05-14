@@ -142,6 +142,7 @@ function calc_E_NN( LatVecs::Array{Float64,2}, atoms::Atoms, Zvals::Array{Float6
     end
     end
 
+    @printf("\n")
     @printf("Ewald energy %18.10f Ha\n", ewald*0.5)
 
     return ewald*0.5

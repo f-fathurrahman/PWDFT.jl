@@ -1,17 +1,17 @@
-function  chebyfilt( Ham::PWHamiltonian, X, degree, lb, ub)
-    Ngwx    = size(X)[1]
+function chebyfilt( Ham::PWHamiltonian, X, degree, lb, ub)
+    Ngw_ik  = size(X)[1]
     Nstates = size(X)[2]
     #
-    e = (ub - lb)/2
+    ee = (ub - lb)/2
     c = (ub + lb)/2
-    sigma = e/(lb-ub)
+    sigma = ee/(lb-ub)
     sigma1 = sigma
     #
-    Y = zeros(Complex128,Ngwx,Nstates)
-    Y1 = zeros(Complex128,Ngwx,Nstates)
+    Y = zeros(Complex128,Ngw_ik,Nstates)
+    Y1 = zeros(Complex128,Ngw_ik,Nstates)
     #
     Y = op_H(Ham, X) - X*c
-    Y = Y*sigma1/e
+    Y = Y*sigma1/ee
     #
     for i = 2:degree
         sigma2 = 1/(2/sigma1 - sigma)
@@ -27,16 +27,17 @@ end
 function get_ub_lb_lanczos( Ham::PWHamiltonian, nlancz::Int64 )
     #
     pw = Ham.pw
+    ik = Ham.ik
     #
-    Ngwx = pw.gvecw.Ngwx
-    V = zeros(Complex128,Ngwx,nlancz)
-    HV = zeros(Complex128,Ngwx,nlancz)
+    Ngw_ik = pw.gvecw.Ngw[ik]
+    V = zeros(Complex128,Ngw_ik,nlancz)
+    HV = zeros(Complex128,Ngw_ik,nlancz)
     T = zeros(Float64,nlancz,nlancz)
-    f = zeros(Complex128,Ngwx)
+    f = zeros(Complex128,Ngw_ik)
     s = zeros(Complex128,nlancz)
     h = zeros(Complex128,nlancz)
     #
-    V[:,1] = randn(Ngwx) + im*randn(Ngwx)
+    V[:,1] = randn(Ngw_ik) + im*randn(Ngw_ik)
     beta = norm(V[:,1])
     V[:,1] = V[:,1] ./ beta
     #
@@ -77,7 +78,7 @@ function get_ub_lb_lanczos( Ham::PWHamiltonian, nlancz::Int64 )
     evalsT = eigvals(T)
     #lb = evalsT[Nstates+2]
     #ub = evalsT[2*Nstates]
-    lb = evalsT[Int(nlancz/2)]
+    lb = evalsT[Int64(nlancz/2)]
     ub = norm_matrix_induced(T) + norm(f)
     #
     return lb, ub
@@ -95,3 +96,4 @@ function norm_matrix_induced(A::Array{Float64,2})
     v = A*v1
     return norm(v)
 end
+

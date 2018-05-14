@@ -25,6 +25,9 @@ function test_main( ; method="SCF" )
     if method == "SCF"
         KS_solve_SCF!( Ham, mix_method="anderson" )
 
+    elseif method == "CheFSI"
+        KS_solve_SCF!( Ham, update_psi="CheFSI", β=0.5 )
+
     elseif method == "Emin"
         KS_solve_Emin_PCG!( Ham, verbose=true )
 
@@ -50,4 +53,5 @@ end
 
 @time test_main(method="Emin")
 @time test_main(method="SCF")
+@time test_main(method="CheFSI")
 @time test_main(method="DCM")

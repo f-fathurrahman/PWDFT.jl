@@ -27,7 +27,7 @@ function op_K( Ham::PWHamiltonian, psi::Array{Complex128,2} )
     return 0.5*out # two minus signs -> positive
 end
 
-
+# This function is used by CheFSI
 function op_K( Ham::PWHamiltonian, psi::Array{Complex128,1} )
     #
     ik = Ham.ik
@@ -44,7 +44,7 @@ function op_K( Ham::PWHamiltonian, psi::Array{Complex128,1} )
     for igk = 1:Ngw[ik]
         ig = idx_gw2g[igk]
         Gw[:] = pw.gvec.G[:,ig] + k[:]
-        Gw2 = Gw[1]^2 + Gw[2]^2 + Gw2[3]^2
+        Gw2 = Gw[1]^2 + Gw[2]^2 + Gw[3]^2
         out[igk] = psi[igk]*Gw2
     end
 
