@@ -1,3 +1,10 @@
+"""
+Initializes full ionic potential on a given `PWGrid`.
+The structure factor `strf` must be calculated before.
+Atomic coordinates information is thus contained in `strf`.
+Charges of atomic nuclei `Znucls` for each species present in
+atoms should also be provided.
+"""
 function init_V_coulomb_G( pw::PWGrid, strf::Array{Complex128,2}, Znucls::Array{Float64,1} )
 
     Nsp1 = size(strf)[2]

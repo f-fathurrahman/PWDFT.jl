@@ -82,8 +82,9 @@ export eval_Vloc_G
 export eval_proj_G
 include("PsPot_GTH.jl")
 
-
+#
 # Electronic variables
+#
 export Electrons
 export get_Zvals
 include("Electrons.jl")
@@ -133,21 +134,26 @@ include("sum_upto_E_fermi.jl")
 export calc_grad
 include("calc_grad.jl")
 
+#
+# Diagonalization methods
+#
 export diag_lobpcg
 include("diag_lobpcg.jl")
 
 export diag_Emin_PCG
 include("diag_Emin_PCG.jl")
 
+#
+# Mixing functions
+#
 export andersonmix!
 include("andersonmix.jl")
 
+#
+# KS solvers
+#
 export KS_solve_Emin_PCG!
 include("KS_solve_Emin_PCG.jl")
-
-export chebyfilt
-export get_ub_lb_lanczos
-include("CheFSI.jl")
 
 export KS_solve_SCF!
 include("KS_solve_SCF.jl")
@@ -158,5 +164,8 @@ include("KS_solve_SCF_smearing.jl")
 export KS_solve_DCM!
 include("KS_solve_DCM.jl")
 
+export chebyfilt
+export get_ub_lb_lanczos
+include("CheFSI.jl")
 
 end
