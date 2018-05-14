@@ -1,18 +1,30 @@
 using PWDFT
 
 function test_main()
+
+    atoms = init_atoms_xyz_string("""
+    1
+
+    H  0.0  0.0  0.0
+    """)
+    atoms.LatVecs = gen_lattice_cubic(16.0)
+    
     ecutwfc_Ry = 30.0
-    LatVecs = 16.0*diagm(ones(3))
-    pw = PWGrid( 0.5*ecutwfc_Ry, LatVecs )
+    kpoints = KPoints( atoms, [2,2,2], [0,0,0], verbose=true )
+    pw = PWGrid( ecutwfc_Ry*0.5, atoms.LatVecs, kpoints=kpoints )
+    Ngw = pw.gvecw.Ngw
+    Nkpt = pw.gvecw.kpoints.Nkpt
 
     Nstates = 4
-    Focc = 2.0*ones(Nstates)
+    Focc = 2.0*ones(Nstates,Nkpt)
 
-    Ngwx = pw.gvecw.Ngwx
-    psi = rand( Complex128, Ngwx, Nstates )
-    psi = ortho_gram_schmidt(psi)  # orthogonalize in G-space
+    psik = Array{Array{Complex128,2},1}(Nkpt)
+    for ik = 1:Nkpt
+        psi = rand( Complex128, Ngw[ik], Nstates )
+        psik[ik] = ortho_gram_schmidt(psi)  # orthogonalize in G-space
+    end
 
-    rhoe = calc_rhoe( pw, Focc, psi )
+    rhoe = calc_rhoe( pw, Focc, psik )
     dVol = pw.Ω/prod(pw.Ns)
     @printf("Integrated rhoe = %18.10f\n", sum(rhoe)*dVol)
 
