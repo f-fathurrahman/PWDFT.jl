@@ -10,7 +10,7 @@ function test_main( ; method="SCF" )
         C  0.0  0.0  0.0
         """
     )
-    atoms.LatVecs = 16.0*diagm( ones(3) )
+    atoms.LatVecs = gen_lattice_cubic(16.0)
     println(atoms)
 
     # Initialize Hamiltonian
