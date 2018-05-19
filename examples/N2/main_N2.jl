@@ -47,6 +47,17 @@ end
 
 
 """
+Kinetic    energy:      11.5329676573
+Ps_loc     energy:     -47.3445263895
+Ps_nloc    energy:       2.3268197661
+Hartree    energy:      17.1133647701
+XC         energy:      -4.5072691732
+-------------------------------------
+Electronic energy:     -20.8786433691
+NN         energy:       1.7906353998
+-------------------------------------
+Total      energy:     -19.0880079692
+
 ABINIT result for 30 Ry:
     Kinetic energy  =  1.15309586059089E+01
     Hartree energy  =  1.71105433424343E+01
