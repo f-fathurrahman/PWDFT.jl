@@ -28,13 +28,6 @@ function test_main()
     dVol = pw.Ω/prod(pw.Ns)
     @printf("Integrated rhoe = %18.10f\n", sum(rhoe)*dVol)
 
-    rhoeG_full = R_to_G( pw, rhoe )
-    println("sum rhoeG_full = ", sum(rhoeG_full))
-
-    Ng = pw.gvec.Ng
-    rhoeG = zeros( Complex128, Ng )
-    rhoeG = rhoeG_full[pw.gvec.idx_g2r]
-    println("sum rhoeG = ", sum(rhoeG))
 end
 
 test_main()

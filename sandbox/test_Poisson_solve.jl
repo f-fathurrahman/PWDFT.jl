@@ -34,7 +34,6 @@ function test_main( ecutwfc_Ry::Float64 )
     LatVecs = 16.0*diagm( ones(3) )
     #
     pw = PWGrid( ecutwfc_Ry*0.5, LatVecs )
-    println(pw)
     #
     Npoints = prod(pw.Ns)
     Ω = pw.Ω
@@ -60,7 +59,23 @@ function test_main( ecutwfc_Ry::Float64 )
     #
     Uanal = ( (1/σ1 + 1/σ2)/2 - sqrt(2) / sqrt( σ1^2 + σ2^2 ) ) / sqrt(pi)
     @printf("Num, ana, diff = %18.10f %18.10f %18.10e\n", Ehartree, Uanal, abs(Ehartree-Uanal))
+    #
+    # Calculate Ehartree using reciprocal space
+    #
+    rhoG = R_to_G( pw, rho ) / Npoints  # XXX normalize by Npoints
+    EhartreeG = 0.0
+    Ng = pw.gvec.Ng
+    G = pw.gvec.G
+    G2 = pw.gvec.G2
+    idx_g2r = pw.gvec.idx_g2r
+    for ig = 2:Ng
+        ip = idx_g2r[ig]
+        EhartreeG = EhartreeG + 0.5*real(phiG[ip]*conj(rhoG[ip]))*Ω/Npoints
+    end
+    println("Using G-space summation")
+    @printf("Num, ana, diff = %18.10f %18.10f %18.10e\n", EhartreeG, Uanal, abs(EhartreeG-Uanal))
 end
 
-@time test_main(30.0)
+@time test_main(10.0)
+@time test_main(15.0)
 @time test_main(30.0)
