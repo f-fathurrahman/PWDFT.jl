@@ -59,6 +59,12 @@ end
 #
 
 function calc_epsxc_PBE( pw::PWGrid, Rhoe::Array{Float64,2} )
+
+    Nspin = size(Rhoe)[2]
+    if Nspin == 1
+        return calc_epsxc_PBE( pw, Rhoe[:,1] )
+    end
+
     Npoints = size(Rhoe)[1]
     epsxc = zeros( Float64, Npoints )
 
@@ -81,6 +87,12 @@ end
 
 
 function calc_Vxc_PBE( pw::PWGrid, Rhoe::Array{Float64,2} )
+
+    Nspin = size(Rhoe)[2]
+    if Nspin == 1
+        return calc_Vxc_PBE( pw, Rhoe[:,1] )
+    end
+
     Npoints = size(Rhoe)[1]
 
     # calculate gRhoe2
