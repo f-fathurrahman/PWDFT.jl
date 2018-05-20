@@ -84,7 +84,7 @@ function Electrons( atoms::Atoms, Zvals::Array{Float64,1};
                     Nspin=1, Nkpt=1,
                     Nstates=nothing, Nstates_empty=0 )
 
-    assert( Nspin >= 2 )
+    assert( Nspin <= 2 )
 
     Nelectrons = 0.0
     Natoms = atoms.Natoms
