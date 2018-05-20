@@ -71,7 +71,7 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
     MaxInnerSCF = 3
 
     for iter = 1:NiterMax
-
+        
         for ik = 1:Nkpt
             Ham.ik = ik
             Hpsi = op_H( Ham, psik[ik] )
@@ -107,7 +107,8 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
         @printf("DCM iter: %3d\n", iter)
 
         for iterscf = 1:MaxInnerSCF
-            V_loc = Ham.potentials.Hartree + Ham.potentials.XC
+            ispin = 1  # FIXME setup properly for loop over Nspin
+            V_loc = Ham.potentials.Hartree + Ham.potentials.XC[:,ispin]
 
             for ik = 1:Nkpt
                 Ham.ik = ik

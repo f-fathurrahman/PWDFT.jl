@@ -1,5 +1,6 @@
 function op_V_loc( Ham::PWHamiltonian, psi::Array{Complex128,2} )
-    V_loc = Ham.potentials.Ps_loc + Ham.potentials.Hartree + Ham.potentials.XC
+    ispin = Ham.ispin
+    V_loc = Ham.potentials.Ps_loc + Ham.potentials.Hartree + Ham.potentials.XC[:,ispin]
     return op_V_loc( Ham.ik, Ham.pw, V_loc, psi )
 end
 
@@ -36,7 +37,8 @@ end
 # single-column version
 #
 function op_V_loc( Ham::PWHamiltonian, psi::Array{Complex128,1} )
-    V_loc = Ham.potentials.Ps_loc + Ham.potentials.Hartree + Ham.potentials.XC
+    ispin = Ham.ispin
+    V_loc = Ham.potentials.Ps_loc + Ham.potentials.Hartree + Ham.potentials.XC[:,ispin]
     return op_V_loc( Ham.ik, Ham.pw, V_loc, psi )
 end
 

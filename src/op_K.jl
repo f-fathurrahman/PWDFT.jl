@@ -51,21 +51,3 @@ function op_K( Ham::PWHamiltonian, psi::Array{Complex128,1} )
     return 0.5*out # two minus signs -> positive
 end
 
-
-
-"""
-function op_K( Ham::PWHamiltonian, psi::Array{Complex128,1} )
-    #
-    out = Array{Complex128}(size(psi))
-    pw = Ham.pw
-    Ngwx = pw.gvecw.Ngwx
-    idx_gw2g = pw.gvecw.idx_gw2g
-    Gw2   = pw.gvec.G2[idx_gw2g]
-
-    for ig = 1:Ngwx
-        out[ig] = psi[ig]*Gw2[ig]
-    end
-
-    return 0.5*out # two minus signs
-end
-"""

@@ -8,18 +8,20 @@ mutable struct PWHamiltonian
     pw::PWGrid
     potentials::Potentials
     energies::Energies
-    rhoe::Array{Float64,1}
+    rhoe::Array{Float64,2} # spin dependent
     electrons::Electrons
     atoms::Atoms
     pspots::Array{PsPot_GTH,1}
     pspotNL::PsPotNL
     xcfunc::String
     ik::Int64   # current kpoint index
+    ispin::Int64 # current spin index
 end
 
 
 function PWHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
                         ecutwfc::Float64 ;
+                        Nspin = 1,
                         meshk = [1,1,1], shiftk=[0,0,0],
                         xcfunc = "VWN", verbose=false, extra_states=0 )
 
@@ -70,14 +72,15 @@ function PWHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
 
     # other potential terms are set to zero
     V_Hartree = zeros( Float64, Npoints )
-    V_XC = zeros( Float64, Npoints )
+    V_XC = zeros( Float64, Npoints, Nspin )
     potentials = Potentials( V_Ps_loc, V_Hartree, V_XC )
     #
     energies = Energies()
     #
-    rhoe = zeros( Float64, Npoints )
+    rhoe = zeros( Float64, Npoints, Nspin )
 
-    electrons = Electrons( atoms, Pspots, Nkpt=kpoints.Nkpt, Nstates_empty=extra_states )
+    electrons = Electrons( atoms, Pspots, Nspin=Nspin, Nkpt=kpoints.Nkpt,
+                           Nstates_empty=extra_states )
     if verbose
         println(electrons)
     end
@@ -88,8 +91,9 @@ function PWHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
     atoms.Zvals = get_Zvals( Pspots )
 
     ik = 1
+    ispin = 1
     return PWHamiltonian( pw, potentials, energies, rhoe,
-                          electrons, atoms, Pspots, pspotNL, xcfunc, ik )
+                          electrons, atoms, Pspots, pspotNL, xcfunc, ik, ispin )
 end
 
 
@@ -97,6 +101,7 @@ end
 # No pspfiles given. Use Coulomb potential (all electrons)
 #
 function PWHamiltonian( atoms::Atoms, ecutwfc::Float64;
+                        Nspin = 1,
                         meshk = [1,1,1], shiftk=[0,0,0],    
                         xcfunc="VWN", verbose=false )
     
@@ -126,19 +131,19 @@ function PWHamiltonian( atoms::Atoms, ecutwfc::Float64;
 
     # other potentials are set to zero
     V_Hartree = zeros( Float64, Npoints )
-    V_XC = zeros( Float64, Npoints )
+    V_XC = zeros( Float64, Npoints, Nspin )
     potentials = Potentials( V_Ps_loc, V_Hartree, V_XC )
     #
     energies = Energies()
     #
     rhoe = zeros( Float64, Npoints )
 
-    electrons = Electrons( atoms, Zvals, Nkpt=kpoints.Nkpt )
+    electrons = Electrons( atoms, Zvals, Nspin=Nspin, Nkpt=kpoints.Nkpt )
     if verbose
         println(electrons)
     end
 
-    rhoe = zeros(Float64,Npoints)
+    rhoe = zeros(Float64,Npoints,Nspin)
 
     pspotNL = PsPotNL()
 
@@ -146,8 +151,9 @@ function PWHamiltonian( atoms::Atoms, ecutwfc::Float64;
     atoms.Zvals = Zatoms
     
     ik = 1
+    ispin = 1
     return PWHamiltonian( pw, potentials, energies, rhoe,
-                          electrons, atoms, Pspots, pspotNL, xcfunc, ik )
+                          electrons, atoms, Pspots, pspotNL, xcfunc, ik, ispin )
 end
 
 
@@ -164,13 +170,32 @@ include("Poisson_solve.jl")
 Given rhoe in real space, update Ham.rhoe, Hartree and XC potentials.
 """
 function update!(Ham::PWHamiltonian, rhoe::Array{Float64,1})
+    # assumption Nspin = 1
+    Ham.rhoe[:,1] = rhoe
+    Ham.potentials.Hartree = real( G_to_R( Ham.pw, Poisson_solve(Ham.pw, rhoe) ) )
+    if Ham.xcfunc == "PBE"
+        Ham.potentials.XC[:,1] = calc_Vxc_PBE( Ham.pw, rhoe )
+    else  # VWN is the default
+        Ham.potentials.XC[:,1] = calc_Vxc_VWN( rhoe )
+    end
+    return
+end
+
+function update!(Ham::PWHamiltonian, rhoe::Array{Float64,2})
+    Nspin = size(rhoe)[2]
+    if Nspin == 1
+        update!(Ham, rhoe[:,1])
+        return
+    end
     Ham.rhoe = rhoe
+    Rhoe_total = 
     Ham.potentials.Hartree = real( G_to_R( Ham.pw, Poisson_solve(Ham.pw, rhoe) ) )
     if Ham.xcfunc == "PBE"
         Ham.potentials.XC = calc_Vxc_PBE( Ham.pw, rhoe )
     else  # VWN is the default
         Ham.potentials.XC = calc_Vxc_VWN( rhoe )
     end
+    return
 end
 
 

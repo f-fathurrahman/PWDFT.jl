@@ -19,7 +19,7 @@ export gen_lattice_fcc, gen_lattice_bcc, gen_lattice_trigonal, gen_lattice_trigo
        gen_lattice_orthorhombic_P, gen_lattice_monoclinic_P
 include("gen_lattice_pwscf.jl")
 
-
+# FIXME Temporary workout until I found how to work with BinDeps
 const SPGLIB_SO_PATH = "/home/efefer/WORKS/my_github_repos/PWDFT.jl/src/extlibs/spglib/libspglib.so"
 export spg_find_primitive
 export spg_get_ir_reciprocal_mesh

@@ -1,4 +1,5 @@
-function calc_rhoe( pw::PWGrid, Focc::Array{Float64,2}, psik::Array{Array{Complex128,2},1} )
+function calc_rhoe( pw::PWGrid, Focc::Array{Float64,2},
+                    psik::Array{Array{Complex128,2},1}; renormalize=true )
     Ω  = pw.Ω
     Ns = pw.Ns
     Nkpt = pw.gvecw.kpoints.Nkpt
@@ -37,9 +38,11 @@ function calc_rhoe( pw::PWGrid, Focc::Array{Float64,2}, psik::Array{Array{Comple
     end
 
     # renormalize
-    integ_rho = sum(rho)*Ω/Npoints
-    Nelectrons = sum(Focc)/Nkpt
-    rho = Nelectrons/integ_rho * rho
+    if renormalize
+        integ_rho = sum(rho)*Ω/Npoints
+        Nelectrons = sum(Focc)/Nkpt
+        rho = Nelectrons/integ_rho * rho
+    end
 
     return rho
 end
@@ -47,9 +50,9 @@ end
 
 """
 Calculate electron density from one kpoint.
-
 """
-function calc_rhoe( ik::Int64, pw::PWGrid, Focc::Array{Float64,2}, psi::Array{Complex128,2} )
+function calc_rhoe( ik::Int64, pw::PWGrid, Focc::Array{Float64,2},
+                    psi::Array{Complex128,2}; renormalize=true )
     Ω  = pw.Ω
     Ns = pw.Ns
     Npoints = prod(Ns)
@@ -79,9 +82,11 @@ function calc_rhoe( ik::Int64, pw::PWGrid, Focc::Array{Float64,2}, psi::Array{Co
         end
     end
     # renormalize
-    integ_rho = sum(rho)*Ω/Npoints
-    Nelectrons = sum(Focc[:,ik])
-    rho = Nelectrons/integ_rho * rho
+    if renomalize
+        integ_rho = sum(rho)*Ω/Npoints
+        Nelectrons = sum(Focc[:,ik])
+        rho = Nelectrons/integ_rho * rho
+    end
 
     return rho
 end
