@@ -23,9 +23,9 @@ function calc_E_Hartree( Ham::PWHamiltonian, psi::Array{Complex128,2} )
 end
 
 #
-# Use ik
+# Use ik and spin
 #
-function calc_E_Ps_nloc( Ham::PWHamiltonian, psik::Array{Array{Complex128,2},1} )
+function calc_E_Ps_nloc( Ham::PWHamiltonian, psiks::Array{Array{Complex128,2},1} )
 
     Nstates = Ham.electrons.Nstates
     Focc = Ham.electrons.Focc
@@ -36,13 +36,16 @@ function calc_E_Ps_nloc( Ham::PWHamiltonian, psik::Array{Array{Complex128,2},1} 
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     wk = Ham.pw.gvecw.kpoints.wk
     NbetaNL = Ham.pspotNL.NbetaNL
+    Nspin = Ham.electrons.Nspin
 
     # calculate E_NL
     E_ps_NL = 0.0
 
     betaNL_psi = zeros(Complex128,Nstates,NbetaNL)
+    for ispin = 1:Nspin
     for ik = 1:Nkpt
-        psi = psik[ik]
+        ikspin = ik + (ispin - 1)*Nkpt
+        psi = psiks[ikspin]
         betaNL_psi = calc_betaNL_psi( ik, Ham.pspotNL.betaNL, psi )
         for ist = 1:Nstates
             enl1 = 0.0
@@ -62,8 +65,9 @@ function calc_E_Ps_nloc( Ham::PWHamiltonian, psik::Array{Array{Complex128,2},1} 
                 end # m
                 end # l
             end
-            E_ps_NL = E_ps_NL + wk[ik]*Focc[ist,ik]*enl1
+            E_ps_NL = E_ps_NL + wk[ik]*Focc[ist,ikspin]*enl1
         end
+    end
     end
 
     return E_ps_NL
@@ -76,7 +80,7 @@ end
 # `potentials` and `Rhoe` are not updated
 # Ham is assumed to be already updated at input psi
 #
-function calc_energies( Ham::PWHamiltonian, psik::Array{Array{Complex128,2},1} )
+function calc_energies( Ham::PWHamiltonian, psiks::Array{Array{Complex128,2},1} )
 
     pw = Ham.pw
     potentials = Ham.potentials
@@ -85,38 +89,49 @@ function calc_energies( Ham::PWHamiltonian, psik::Array{Array{Complex128,2},1} )
     Ω = pw.Ω
     Ns = pw.Ns
     Npoints = prod(Ns)
+    dVol = Ω/Npoints
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     Nstates = Ham.electrons.Nstates
     wk = Ham.pw.gvecw.kpoints.wk
+    Nspin = Ham.electrons.Nspin
     
     #
     # Kinetic energy
     #
     E_kin = 0.0
+    for ispin = 1:Nspin
     for ik = 1:Nkpt
         Ham.ik = ik
-        psi = psik[ik]
+        Ham.ispin = ispin
+        ikspin = ik + (ispin - 1)*Nkpt
+        psi = psiks[ikspin]
         Kpsi = op_K( Ham, psi )
         for ist = 1:Nstates
-            E_kin = E_kin + wk[ik] * Focc[ist,ik] * real( dot( psi[:,ist], Kpsi[:,ist] ) )
+            E_kin = E_kin + wk[ik] * Focc[ist,ikspin] * real( dot( psi[:,ist], Kpsi[:,ist] ) )
         end
     end
-
-    rhoe = Ham.rhoe
-
-    E_Hartree = 0.5*dot( potentials.Hartree, rhoe ) * Ω/Npoints
-
-    E_Ps_loc = dot( potentials.Ps_loc, rhoe ) * Ω/Npoints
-
-    if Ham.xcfunc == "PBE"
-        epsxc = calc_epsxc_PBE( Ham.pw, rhoe )
-    else
-        epsxc = calc_epsxc_VWN( rhoe )
     end
-    E_xc = dot( epsxc, rhoe ) * Ω/Npoints
+
+    Rhoe_total = zeros(Npoints)
+    for ispin = 1:Nspin
+        Rhoe_total[:] = Rhoe_total[:] + Ham.rhoe[:,ispin]
+    end
+    println("calc_energy: integRhoe = ", sum(Rhoe_total)*dVol)
+
+    E_Hartree = 0.5*dot( potentials.Hartree, Rhoe_total ) * dVol
+
+    E_Ps_loc = dot( potentials.Ps_loc, Rhoe_total ) * dVol
+
+    Rhoe = Ham.rhoe
+    if Ham.xcfunc == "PBE"
+        epsxc = calc_epsxc_PBE( Ham.pw, Rhoe )
+    else
+        epsxc = calc_epsxc_VWN( Rhoe )
+    end
+    E_xc = dot( epsxc, Rhoe_total ) * dVol
 
     if Ham.pspotNL.NbetaNL > 0
-        E_Ps_nloc = calc_E_Ps_nloc( Ham, psik )
+        E_Ps_nloc = calc_E_Ps_nloc( Ham, psiks )
     else
         E_Ps_nloc = 0.0
     end
@@ -129,6 +144,8 @@ function calc_energies( Ham::PWHamiltonian, psik::Array{Array{Complex128,2},1} )
     energies.XC      = E_xc
     energies.NN      = Ham.energies.NN
     energies.Total   = E_kin + E_Ps_loc + E_Ps_nloc + E_Hartree + E_xc + Ham.energies.NN
+
+    println(energies)
 
     return energies
 end

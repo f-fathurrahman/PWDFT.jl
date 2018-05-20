@@ -187,9 +187,11 @@ function update!(Ham::PWHamiltonian, rhoe::Array{Float64,2})
         update!(Ham, rhoe[:,1])
         return
     end
-    Ham.rhoe = rhoe
-    Rhoe_total = 
-    Ham.potentials.Hartree = real( G_to_R( Ham.pw, Poisson_solve(Ham.pw, rhoe) ) )
+    Ham.rhoe = rhoe[:,:]
+    Rhoe_total = Ham.rhoe[:,1] + Ham.rhoe[:,2] # Nspin is 2
+    dVol = Ham.pw.Ω/prod(Ham.pw.Ns)
+    println("update Rhoe: sum(Rhoe_total) = ", sum(Rhoe_total)*dVol)
+    Ham.potentials.Hartree = real( G_to_R( Ham.pw, Poisson_solve(Ham.pw, Rhoe_total) ) )
     if Ham.xcfunc == "PBE"
         Ham.potentials.XC = calc_Vxc_PBE( Ham.pw, rhoe )
     else  # VWN is the default
