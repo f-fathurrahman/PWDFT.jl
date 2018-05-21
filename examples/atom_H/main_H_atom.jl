@@ -14,7 +14,7 @@ function test_main( ; method="SCF" )
     # Initialize Hamiltonian
     pspfiles = ["../../pseudopotentials/pade_gth/H-q1.gth"]
     ecutwfc_Ry = 30.0
-    Ham = PWHamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5 )
+    Ham = PWHamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, Nspin=2, verbose=true, extra_states=1 )
 
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( atoms )
@@ -23,7 +23,7 @@ function test_main( ; method="SCF" )
     # Solve the KS problem
     #
     if method == "SCF"
-        KS_solve_SCF!( Ham, mix_method="anderson" )
+        KS_solve_SCF!( Ham )
 
     elseif method == "CheFSI"
         KS_solve_SCF!( Ham, update_psi="CheFSI", β=0.5 )
@@ -51,7 +51,7 @@ function test_main( ; method="SCF" )
 
 end
 
-@time test_main(method="Emin")
+#@time test_main(method="Emin")
 @time test_main(method="SCF")
-@time test_main(method="CheFSI")
-@time test_main(method="DCM")
+#@time test_main(method="CheFSI")
+#@time test_main(method="DCM")
