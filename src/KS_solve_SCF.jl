@@ -63,13 +63,6 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
     #
     MIXDIM = 4
     if mix_method == "anderson"
-        #if Nspin == 2
-        #    df = zeros(Float64,Npoints,MIXDIM,2)
-        #    dv = zeros(Float64,Npoints,MIXDIM,2)
-        #else
-        #    df = zeros(Float64,Npoints,MIXDIM)
-        #    dv = zeros(Float64,Npoints,MIXDIM)
-        #end
         df = zeros(Float64,Npoints,MIXDIM,Nspin)
         dv = zeros(Float64,Npoints,MIXDIM,Nspin)
     end
@@ -113,16 +106,20 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
 
             for ik = 1:Nkpt
                 Ham.ik = ik
-                evals[:,ik], psik[ik] = diag_Emin_PCG( Ham, psik[ik], TOL_EBANDS=ethr )
+                Ham.ispin = ispin
+                ikspin = ik + (ispin - 1)*Nkpt
+                evals[:,ikspin], psiks[ikspin] = diag_Emin_PCG( Ham, psiks[ikspin], TOL_EBANDS=ethr )
             end
 
         elseif update_psi == "CheFSI"
             
             for ik = 1:Nkpt
                 Ham.ik = ik
+                Ham.ispin = ispin
+                ikspin = ik + (ispin - 1)*Nkpt
                 ub, lb = get_ub_lb_lanczos( Ham, Nstates*2 )
-                psik[ik] = chebyfilt( Ham, psik[ik], cheby_degree, lb, ub)
-                psik[ik] = ortho_gram_schmidt( psik[ik] )
+                psiks[ikspin] = chebyfilt( Ham, psiks[ikspin], cheby_degree, lb, ub)
+                psiks[ikspin] = ortho_gram_schmidt( psiks[ik] )
             end
 
         end
@@ -138,14 +135,8 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
                 Rhoe[:,ispin] = β*Rhoe_new[:,ispin] + (1-β)*Rhoe[:,ispin]
             end
         elseif mix_method == "anderson"
-            for ispin = 1:Nspin
-                tmp1 = Rhoe[:,ispin]
-                tmp2 = Rhoe_new[:,ispin]
-                df1 = df[:,:,ispin]
-                dv1 = dv[:,:,ispin]
-                Rhoe[:,ispin] = andersonmix!( tmp1, tmp2, β, df1, dv1, iter, MIXDIM )
-            end
-            #Rhoe = andersonmix!( Rhoe[:,1], Rhoe_new[:,1], β, df, dv, iter, MIXDIM )
+            # FIXME: df and dv is not modified when we call it by df[:,:] or dv[:,:]
+            Rhoe[:,:] = andersonmix!( Rhoe, Rhoe_new, β, df, dv, iter, MIXDIM )
         else
             @printf("ERROR: Unknown mix_method = %s\n", mix_method)
             exit()
