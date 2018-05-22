@@ -16,7 +16,7 @@ void calc_Vxc_PBE( long long Npoints, double *Rhoe, double *gRhoe2,
     vrho_x[ip] = 0.0;
     vrho_c[ip] = 0.0;
     vgrho_x[ip] = 0.0;
-    vgrho_x[ip] = 0.0;
+    vgrho_c[ip] = 0.0;
   }
   
   xc_func_type xc_func;

@@ -14,9 +14,7 @@ void calc_epsxc_PBE_spinpol( long long Npoints, double *Rhoe, double *gRhoe2, do
   xc_gga_exc( &xc_func, Npoints, Rhoe, gRhoe2, eps_x );
   xc_func_end( &xc_func );
 
-  // VWN correlation
-  // LDA_C_VWN_1 = 28
-  // LDA_C_VWN   = 7
+  // PBE correlation
   xc_func_init( &xc_func, 130, XC_POLARIZED );
   xc_gga_exc( &xc_func, Npoints, Rhoe, gRhoe2, eps_c );
   xc_func_end( &xc_func );
