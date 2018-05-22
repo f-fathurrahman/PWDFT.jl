@@ -116,7 +116,6 @@ function calc_energies( Ham::PWHamiltonian, psiks::Array{Array{Complex128,2},1} 
     for ispin = 1:Nspin
         Rhoe_total[:] = Rhoe_total[:] + Ham.rhoe[:,ispin]
     end
-    println("calc_energy: integRhoe = ", sum(Rhoe_total)*dVol)
 
     E_Hartree = 0.5*dot( potentials.Hartree, Rhoe_total ) * dVol
 
@@ -144,8 +143,6 @@ function calc_energies( Ham::PWHamiltonian, psiks::Array{Array{Complex128,2},1} 
     energies.XC      = E_xc
     energies.NN      = Ham.energies.NN
     energies.Total   = E_kin + E_Ps_loc + E_Ps_nloc + E_Hartree + E_xc + Ham.energies.NN
-
-    println(energies)
 
     return energies
 end

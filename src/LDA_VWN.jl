@@ -1,3 +1,7 @@
+"""
+Calculate XC potential using VWN functional.
+This is fallback for spin-unpolarized system.
+"""
 function calc_Vxc_VWN( Rhoe::Array{Float64,1} )
     Npoints = size(Rhoe)[1]
     Vxc = zeros( Float64, Npoints )
@@ -9,6 +13,10 @@ function calc_Vxc_VWN( Rhoe::Array{Float64,1} )
     return Vxc
 end
 
+"""
+Calculate XC energy per particle using VWN functional.
+This is fallback for spin-unpolarized system.
+"""
 function calc_epsxc_VWN( Rhoe::Array{Float64,1} )
     Npoints = size(Rhoe)[1]
     epsxc = zeros( Float64, Npoints )
@@ -20,10 +28,11 @@ function calc_epsxc_VWN( Rhoe::Array{Float64,1} )
     return epsxc
 end
 
-#
-# Spin polarized versions
-#
 
+"""
+Calculate XC potential using VWN functional.
+This function works for both spin-polarized and spin-unpolarized system.
+"""
 function calc_Vxc_VWN( Rhoe::Array{Float64,2} )
 
     Nspin = size(Rhoe)[2]
@@ -34,23 +43,16 @@ function calc_Vxc_VWN( Rhoe::Array{Float64,2} )
     Npoints = size(Rhoe)[1]
     Vxc = zeros( Float64, Npoints, 2 )
     Vxc_tmp = zeros( Float64, 2*Npoints )
-    #
     
-    #Rhoe_tmp = zeros(Npoints,2)
-    #Rhoe_tmp[1:Npoints] = Rhoe[:,1]
-    #Rhoe_tmp[Npoints+1:2*Npoints] = Rhoe[:,2]
-    
+    # This choice is transposed version of Rhoe
     Rhoe_tmp = zeros(2,Npoints)
     Rhoe_tmp[1,:] = Rhoe[:,1]
     Rhoe_tmp[2,:] = Rhoe[:,2]
-    
-    #
+
     ccall( (:calc_Vxc_VWN_spinpol, LIBXC_SO_PATH), Void,
            (Int64, Ptr{Float64}, Ptr{Float64}),
            Npoints, Rhoe_tmp, Vxc_tmp )
-    #
-    #Vxc[:,1] = Vxc_tmp[1:Npoints]
-    #Vxc[:,2] = Vxc_tmp[Npoints+1:2*Npoints]
+
     ipp = 0
     for ip = 1:2:2*Npoints
         ipp = ipp + 1
@@ -60,7 +62,10 @@ function calc_Vxc_VWN( Rhoe::Array{Float64,2} )
     return Vxc
 end
 
-
+"""
+Calculate XC energy per particle using VWN functional.
+This function works for both spin-polarized and spin-unpolarized system.
+"""
 function calc_epsxc_VWN( Rhoe::Array{Float64,2} )
 
     Nspin = size(Rhoe)[2]
@@ -70,16 +75,11 @@ function calc_epsxc_VWN( Rhoe::Array{Float64,2} )
 
     Npoints = size(Rhoe)[1]
     epsxc = zeros( Float64, Npoints )
-    #
-    #Rhoe_tmp = zeros(Npoints,2)
-    #Rhoe_tmp[1:Npoints] = Rhoe[:,1]
-    #Rhoe_tmp[Npoints+1:2*Npoints] = Rhoe[:,2]
 
     Rhoe_tmp = zeros(2,Npoints)
     Rhoe_tmp[1,:] = Rhoe[:,1]
     Rhoe_tmp[2,:] = Rhoe[:,2]
 
-    #
     ccall( (:calc_epsxc_VWN_spinpol, LIBXC_SO_PATH), Void,
            (Int64, Ptr{Float64}, Ptr{Float64}),
            Npoints, Rhoe_tmp, epsxc )

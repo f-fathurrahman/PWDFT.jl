@@ -40,17 +40,11 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
     # Calculated electron density from this wave function and update Hamiltonian
     #
     Rhoe = zeros(Float64,Npoints,Nspin)
-    startingFocc = zeros(Nstates,Nkspin)
-    #startingFocc[1,1] = 0.5
-    #startingFocc[1,2] = 0.5
     for ispin = 1:Nspin
         idxset = (Nkpt*(ispin-1)+1):(Nkpt*ispin)
         Rhoe[:,ispin] = calc_rhoe( pw, Focc[:,idxset], psiks[idxset] )
-        #Rhoe[:,ispin] = calc_rhoe( pw, startingFocc, psiks[idxset], renormalize=false )
     end
     update!(Ham, Rhoe)
-
-    println("integ starting Rhoe = ", sum(Rhoe)*dVol)
 
     Etot_old = 0.0
 
@@ -65,14 +59,30 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
     ethr = 0.1
 
     #
-    # For mixing
-    #
     # For Anderson mixing
+    #
     MIXDIM = 4
     if mix_method == "anderson"
+        #if Nspin == 2
+        #    df = zeros(Float64,Npoints,MIXDIM,2)
+        #    dv = zeros(Float64,Npoints,MIXDIM,2)
+        #else
+        #    df = zeros(Float64,Npoints,MIXDIM)
+        #    dv = zeros(Float64,Npoints,MIXDIM)
+        #end
         df = zeros(Float64,Npoints,MIXDIM,Nspin)
         dv = zeros(Float64,Npoints,MIXDIM,Nspin)
     end
+
+    @printf("\n")
+    @printf("Self-consistent iteration begins ...\n")
+    if mix_method == "anderson"
+        @printf("Using Anderson mixing\n")
+    else
+        @printf("Using simple mixing\n")
+    end
+    @printf("Density mixing with β = %10.5f\n", β)
+    @printf("\n")
 
     for iter = 1:NiterMax
 
@@ -82,8 +92,10 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
                 Ham.ik = ik
                 Ham.ispin = ispin
                 ikspin = ik + (ispin - 1)*Nkpt
+                #
                 evals[:,ikspin], psiks[ikspin] =
                 diag_lobpcg( Ham, psiks[ikspin], verbose_last=false )
+                #
             end
             end
 
@@ -118,10 +130,8 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
         for ispin = 1:Nspin
             idxset = (Nkpt*(ispin-1)+1):(Nkpt*ispin)
             Rhoe_new[:,ispin] = calc_rhoe( pw, Focc[:,idxset], psiks[idxset] )
-            diffRhoe[ispin] = norm(Rhoe_new[:,ispin] - Rhoe[:,ispin])/Npoints
+            diffRhoe[ispin] = norm(Rhoe_new[:,ispin] - Rhoe[:,ispin])
         end
-
-        println("integ Rhoe_new = ", sum(Rhoe_new)*dVol)
 
         if mix_method == "simple"
             for ispin = 1:Nspin
@@ -129,9 +139,13 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
             end
         elseif mix_method == "anderson"
             for ispin = 1:Nspin
-                Rhoe[:,ispin] = andersonmix!( Rhoe[:,ispin], Rhoe_new[:,ispin], β,
-                                df[:,:,ispin], dv[:,:,ispin], iter, MIXDIM )
+                tmp1 = Rhoe[:,ispin]
+                tmp2 = Rhoe_new[:,ispin]
+                df1 = df[:,:,ispin]
+                dv1 = dv[:,:,ispin]
+                Rhoe[:,ispin] = andersonmix!( tmp1, tmp2, β, df1, dv1, iter, MIXDIM )
             end
+            #Rhoe = andersonmix!( Rhoe[:,1], Rhoe_new[:,1], β, df, dv, iter, MIXDIM )
         else
             @printf("ERROR: Unknown mix_method = %s\n", mix_method)
             exit()
@@ -145,10 +159,10 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
             end
         end
 
-        #if check_rhoe_after_mix
+        if check_rhoe_after_mix
             integRhoe = sum(Rhoe)*dVol
             @printf("After mixing: integRho = %18.10f\n", integRhoe)
-        #end
+        end
 
         update!( Ham, Rhoe )
 
@@ -176,10 +190,14 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
     # Eigenvalues are not calculated if using CheFSI.
     # We calculate them here.
     if update_psi == "CheFSI"
+        for ispin = 1:Nspin
         for ik = 1:Nkpt
             Ham.ik = ik
-            Hr = psik[ik]' * op_H( Ham, psik[ik] )
-            evals[:,ik] = real(eigvals(Hr))
+            Ham.ispin = ispin
+            ikspin = ik + (ispin - 1)*Nkpt
+            Hr = psik[ikspin]' * op_H( Ham, psiks[ikspin] )
+            evals[:,ikspin] = real(eigvals(Hr))
+        end
         end
     end
 
