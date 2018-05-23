@@ -116,8 +116,14 @@ function test_spinpol( ; xc="VWN", Nspin=1 )
     
     @assert Nspin <= 2
     
+    @printf("\n")
     @printf("---------------------\n")
-    @printf("Testing spinpol LibXC\n")
+    @printf("Testing LibXC: %s\n", xc)
+    if Nspin == 1
+        @printf("Non spin polarized\n")
+    else
+        @printf("Spin polarized\n")
+    end
     @printf("---------------------\n")
 
     atoms = init_atoms_xyz_string(
@@ -150,14 +156,17 @@ function test_spinpol( ; xc="VWN", Nspin=1 )
 
     if Nspin == 2
         Focc = 1.0*ones(Nstates,Nkspin)
+        #idx_up = 1:Nkpt
+        #idx_dn = Nkpt+1:2*Nkpt
+        #Focc[Nstates,idx_dn] = 0.0
     else
         Focc = 2.0*ones(Nstates,Nkspin)
+        #Focc[Nstates,:] = 1.0
     end
 
     for ispin = 1:Nspin
         for ik = 1:Nkpt
             ikspin = ik + (ispin - 1)*Nkpt
-            println("ikspin = ", ikspin)
             psiks[ikspin] = ortho_gram_schmidt( rand(Complex128,Ngw[ik],Nstates) )
         end
     end
@@ -167,11 +176,15 @@ function test_spinpol( ; xc="VWN", Nspin=1 )
     
     for ispin = 1:Nspin
         idxset = (Nkpt*(ispin-1)+1):(Nkpt*ispin)
-        println("ispin = ", ispin, ", idxset = ", idxset)
         Rhoe[:,ispin] = calc_rhoe( pw, Focc[:,idxset], psiks[idxset] )
     end
 
     @printf("Integrated rhoe = %18.10f\n", sum(Rhoe)*dVol)
+
+    if Nspin == 2
+        diffRhoe = Rhoe[:,1] - Rhoe[:,2]
+        @printf("Integrated diff rhoe = %18.10f\n", sum(diffRhoe)*dVol)
+    end
 
     if xc == "VWN"
         Vxc = calc_Vxc_VWN( Rhoe )
@@ -199,13 +212,13 @@ function test_spinpol( ; xc="VWN", Nspin=1 )
     @printf("sum E_xc = %18.10f\n", E_xc)
 end
 
-test_LDA_VWN()
-test_LDA_VWN_spinpol()
-test_GGA_PBE()
-test_GGA_PBE_spinpol()
+#test_LDA_VWN()
+#test_LDA_VWN_spinpol()
+#test_GGA_PBE()
+#test_GGA_PBE_spinpol()
 
-#test_spinpol(xc="VWN", Nspin=1)
-#test_spinpol(xc="VWN", Nspin=2)
+test_spinpol(xc="VWN", Nspin=1)
+test_spinpol(xc="VWN", Nspin=2)
 
-#test_spinpol(xc="PBE", Nspin=1)
-#test_spinpol(xc="PBE", Nspin=2)
+test_spinpol(xc="PBE", Nspin=1)
+test_spinpol(xc="PBE", Nspin=2)
