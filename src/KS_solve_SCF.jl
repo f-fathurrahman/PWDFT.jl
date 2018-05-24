@@ -13,9 +13,10 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
     Ns = pw.Ns
     Npoints = prod(Ns)
     dVol = pw.Ω/Npoints
-    Focc = Ham.electrons.Focc
-    Nstates = Ham.electrons.Nstates
-    Nspin = Ham.electrons.Nspin
+    electrons = Ham.electrons
+    Focc = electrons.Focc
+    Nstates = electrons.Nstates
+    Nspin = electrons.Nspin
     Nkspin = Nkpt*Nspin
 
     psiks = Array{Array{Complex128,2},1}(Nkspin)
@@ -67,6 +68,23 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
         dv = zeros(Float64,Npoints,MIXDIM,Nspin)
     end
 
+    E_GAP_INFO = false
+    Nstates_occ = electrons.Nstates_occ
+    if Nstates_occ < Nstates
+        E_GAP_INFO = true
+        if Nspin == 2
+            idx_HOMO = max(round(Int64,Nstates_occ/2),1)
+            idx_LUMO = idx_HOMO + 1
+        else
+            idx_HOMO = Nstates_occ
+            idx_LUMO = idx_HOMO + 1
+        end
+    end
+    
+    #println("HOMO LUMO = ", idx_HOMO, " ", idx_LUMO)
+    #exit()
+
+
     @printf("\n")
     @printf("Self-consistent iteration begins ...\n")
     if mix_method == "anderson"
@@ -87,7 +105,7 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
                 ikspin = ik + (ispin - 1)*Nkpt
                 #
                 evals[:,ikspin], psiks[ikspin] =
-                diag_lobpcg( Ham, psiks[ikspin], verbose_last=false )
+                diag_lobpcg( Ham, psiks[ikspin], verbose=false )
                 #
             end
             end
@@ -104,12 +122,15 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
                 ethr = max( ethr, ETHR_EVALS_LAST )
             end
 
+            for ispin = 1:Nspin
             for ik = 1:Nkpt
                 Ham.ik = ik
                 Ham.ispin = ispin
                 ikspin = ik + (ispin - 1)*Nkpt
-                evals[:,ikspin], psiks[ikspin] = diag_Emin_PCG( Ham, psiks[ikspin], TOL_EBANDS=ethr )
+                evals[:,ikspin], psiks[ikspin] =
+                diag_Emin_PCG( Ham, psiks[ikspin], TOL_EBANDS=ethr, verbose=false )
             end
+        end
 
         elseif update_psi == "CheFSI"
             
@@ -122,6 +143,15 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
                 psiks[ikspin] = ortho_gram_schmidt( psiks[ik] )
             end
 
+        else
+
+            printf("Unknown method for update_psi = %s\n", update_psi)
+            exit()
+
+        end
+
+        if E_GAP_INFO
+            println("E gap = ", evals[idx_LUMO,:] - evals[idx_HOMO,:] )
         end
 
         for ispin = 1:Nspin
