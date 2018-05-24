@@ -138,7 +138,7 @@ function calc_rhoe( ik::Int64, pw::PWGrid, Focc::Array{Float64,2},
         end
     end
     # renormalize
-    if renomalize
+    if renormalize
         integ_rho = sum(rho)*Ω/Npoints
         Nelectrons = sum(Focc[:,ik])
         rho = Nelectrons/integ_rho * rho
