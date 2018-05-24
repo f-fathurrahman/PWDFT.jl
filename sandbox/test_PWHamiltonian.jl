@@ -42,7 +42,7 @@ function test_Nkpt_1()
         @printf("sum Vpsi1 = (%18.10f,%18.10fim)\n", s.re, s.im)
     end
 
-"""
+    """
     #
     @time Vpsi2 = op_V_Ps_loc(Ham, psi)
     s = sum(Vpsi2)
@@ -81,7 +81,7 @@ function test_Nkpt_1()
     Ham.energies = Energies
     println("\nUpdated energies of Hamiltonian:")
     println(Ham.energies)
-"""
+    """
 
 end
 
@@ -153,6 +153,106 @@ function test_Si()
 
 end
 
-test_Si()
+
+function test_Ni_fcc(;Nspin=1)
+
+    assert( Nspin <= 2 )
+
+    #
+    atoms = init_atoms_xyz_string(
+        """
+        1
+
+        Ni  0.0   0.0   0.0
+        """)
+    atoms.LatVecs = gen_lattice_fcc(5.0)
+    println(atoms)
+    #
+    pspfiles = ["../pseudopotentials/pade_gth/Ni-q10.gth"]
+    ecutwfc = 25.0
+    Ham = PWHamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3], Nspin=Nspin, verbose=true )
+
+    #
+    pw = Ham.pw
+    Ngwx = pw.gvecw.Ngwx
+    Nstates = Ham.electrons.Nstates
+    Focc = Ham.electrons.Focc
+    Nkpt = pw.gvecw.kpoints.Nkpt
+    Ngw = pw.gvecw.Ngw
+    Nkspin = Nkpt*Nspin
+    Npoints = prod(pw.Ns)
+
+    #
+    srand(1234)
+    psiks = Array{Array{Complex128,2},1}(Nkspin)
+    for ispin = 1:Nspin
+    for ik = 1:Nkpt
+        ikspin = ik + (ispin - 1)*Nkpt
+        psi = rand(Ngw[ik],Nstates) + im*rand(Ngw[ik],Nstates)
+        psiks[ikspin] = ortho_gram_schmidt(psi)
+    end
+    end
+
+    Rhoe = zeros(Npoints,Nspin)
+    dVol = pw.Ω/prod(pw.Ns)
+    for ispin = 1:Nspin
+        idxset = (Nkpt*(ispin-1)+1):(Nkpt*ispin)
+        Rhoe[:,ispin] = calc_rhoe( pw, Focc[:,idxset], psiks[idxset], renormalize=false )
+        @printf("spin %d Integ Rhoe = %18.10f\n", ispin, sum(Rhoe[:,ispin])*dVol)
+    end
+
+    println("\nTesting op_K")
+    for ispin = 1:Nspin
+    for ik = 1:Nkpt
+        Ham.ik = ik  # don't forget set current kpoints index
+        Ham.ispin = ispin
+        ikspin = ik + (ispin - 1)*Nkpt
+        Kpsi = op_K(Ham, psiks[ikspin])
+        s = sum(Kpsi)
+        @printf("ispin = %d ik=%d sum Kpsi = (%18.10f,%18.10fim)\n", ispin, ik, s.re, s.im)
+    end
+    end
+
+    println("\nTesting op_V_Ps_loc")
+    for ispin = 1:Nspin
+    for ik = 1:Nkpt
+        Ham.ik = ik
+        Ham.ispin = ispin
+        ikspin = ik + (ispin - 1)*Nkpt
+        Vpsi2 = op_V_Ps_loc(Ham, psiks[ikspin])
+        s = sum(Vpsi2)
+        @printf("ispin = %d ik=%d sum Vpsi2 = (%18.10f,%18.10fim)\n", ispin, ik, s.re, s.im)
+    end # ik
+    end # ispin
+
+    println("\nTesting op_V_loc")
+    for ispin = 1:Nspin
+    for ik = 1:Nkpt
+        Ham.ik = ik
+        Ham.ispin = ispin
+        ikspin = ik + (ispin - 1)*Nkpt
+        Vpsi1 = op_V_loc(Ham, psiks[ikspin])
+        s = sum(Vpsi1)
+        @printf("ispin = %d ik=%d sum Vpsi1 = (%18.10f,%18.10fim)\n", ispin, ik, s.re, s.im)
+    end # ik
+    end # ispin
+
+    println("\nTesting op_H")
+    for ispin = 1:Nspin
+    for ik = 1:Nkpt
+        Ham.ik = ik
+        Ham.ispin = ispin
+        ikspin = ik + (ispin - 1)*Nkpt        
+        Hpsi = op_H(Ham, psiks[ik])
+        s = sum(Hpsi)
+        @printf("ispin = %d ik=%d sum Hpsi = (%18.10f,%18.10fim)\n", ispin, ik, s.re, s.im)        
+    end # ik
+    end # ispin
+
+end
+
+#test_Si()
+
+test_Ni_fcc(Nspin=2)
 
 #test_Nkpt_1()
