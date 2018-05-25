@@ -6,14 +6,14 @@ function calc_entropy( Focc::Array{Float64,2}, wk::Array{Float64,1},
     const SMALL = 1.e-10
     Nstates = size(Focc)[1]
     Nkpt = size(Focc)[2]
-    e = 0.0
+    ent = 0.0
     if is_spinpol
         for ik = 1:Nkpt
             for ist = 1:Nstates
                 if Focc[ist] > SMALL
-                    e = e + Focc[ist,ik]*log(Focc[ist,ik])*wk[ik]
+                    ent = ent + Focc[ist,ik]*log(Focc[ist,ik])*wk[ik]
                 else
-                    e = e + (1.0 - Focc[ist,ik])*log(1.0 - Focc[ist,ik])*wk[ik]
+                    ent = ent + (1.0 - Focc[ist,ik])*log(1.0 - Focc[ist,ik])*wk[ik]
                 end
             end
         end
@@ -22,16 +22,16 @@ function calc_entropy( Focc::Array{Float64,2}, wk::Array{Float64,1},
             for ist = 1:Nstates
                 # spin-degenerate case
                 if Focc[ist] > SMALL
-                    e = e + 0.5*Focc[ist,ik]*log(0.5*Focc[ist,ik])*wk[ik]
+                    ent = ent + 0.5*Focc[ist,ik]*log(0.5*Focc[ist,ik])*wk[ik]
                 else
-                    e = e + (1.0 - 0.5*Focc[ist,ik])*log(1.0 - 0.5*Focc[ist,ik])*wk[ik]
+                    ent = ent + (1.0 - 0.5*Focc[ist,ik])*log(1.0 - 0.5*Focc[ist,ik])*wk[ik]
                 end
             end
-            e = 2*e
+            ent = 2*ent
         end
     end
     # double negative
-    return kT*e
+    return kT*ent
 end
 
 
@@ -40,27 +40,27 @@ end
 function calc_entropy( Focc::Array{Float64,1}, kT::Float64; is_spinpol=false )
     const SMALL = 1.e-10
     Nstates = length(Focc)
-    e = 0.0
+    ent = 0.0
     if is_spinpol
         for ist = 1:Nstates
             if Focc[ist] > SMALL
-                e = e + Focc[ist]*log(Focc[ist])
+                ent = ent + Focc[ist]*log(Focc[ist])
             else
-                e = e + (1.0 - Focc[ist])*log(1.0 - Focc[ist])
+                ent = ent + (1.0 - Focc[ist])*log(1.0 - Focc[ist])
             end
         end
     else
         for ist = 1:Nstates
             # spin-degenerate case
             if Focc[ist] > SMALL
-                e = e + 0.5*Focc[ist]*log(0.5*Focc[ist])
+                ent = ent + 0.5*Focc[ist]*log(0.5*Focc[ist])
             else
-                e = e + (1.0 - 0.5*Focc[ist])*log(1.0 - 0.5*Focc[ist])
+                ent = ent + (1.0 - 0.5*Focc[ist])*log(1.0 - 0.5*Focc[ist])
             end
         end
-        e = 2*e
+        ent = 2*ent
     end
     # double negative
-    return kT*e
+    return kT*ent
 end
 
