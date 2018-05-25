@@ -2,23 +2,28 @@
 # spin-unpolarized version
 function calc_Focc( evals::Array{Float64,2}, wk::Array{Float64,1},
                     Nelectrons::Float64, kT::Float64;
-                    is_spinpol=false, verbose=false )
+                    Nspin=1, verbose=false )
 
     Nstates = size(evals)[1]
-    Nkpt = size(evals)[2]
+    Nkspin = size(evals)[2]
+    Nkpt = round(Int64,Nkspin/Nspin)
+    
+    println("Nstates = ", Nstates)
+    println("Nkspin = ", Nkspin)
+    println("Nkpt = ", Nkpt)
 
     const TOL = 1e-10
     const MAXITER = 100
 
-    Focc = zeros(Nstates,Nkpt)
+    Focc = zeros(Nstates,Nkspin)
     Nocc = round(Int64,Nelectrons/2)  # normally
     if verbose
         @printf("Nelectrons = %d\n", Nelectrons)
         @printf("Nocc = %d\n", Nocc)
     end
 
-    Focc_lb = zeros(Nstates,Nkpt)
-    Focc_ub = zeros(Nstates,Nkpt)
+    Focc_lb = zeros(Nstates,Nkspin)
+    Focc_ub = zeros(Nstates,Nkspin)
 
     # use bisection to find E_fermi such that 
     #  sum_i Focc(i) = Nelectrons
@@ -32,13 +37,16 @@ function calc_Focc( evals::Array{Float64,2}, wk::Array{Float64,1},
         # Use lb and ub as guess interval for searching Fermi energy
         flb = 0.0
         fub = 0.0
+        for ispin = 1:Nspin
         for ik = 1:Nkpt
-            Focc_lb[:,ik] = smear_FD(evals[:,ik], lb, kT, is_spinpol=is_spinpol)
-            Focc_ub[:,ik] = smear_FD(evals[:,ik], ub, kT, is_spinpol=is_spinpol)
+            ikspin = ik + (ispin - 1)*Nkpt
+            Focc_lb[:,ikspin] = smear_FD(evals[:,ikspin], lb, kT, Nspin=Nspin)
+            Focc_ub[:,ikspin] = smear_FD(evals[:,ikspin], ub, kT, Nspin=Nspin)
             #
-            flb = flb + sum(Focc_lb[:,ik])*wk[ik]
-            fub = fub + sum(Focc_ub[:,ik])*wk[ik]
-        end
+            flb = flb + sum(Focc_lb[:,ikspin])*wk[ik]
+            fub = fub + sum(Focc_ub[:,ikspin])*wk[ik]
+        end # ik
+        end # ispin
         #
         while ( (Nelectrons-flb)*(fub-Nelectrons) < 0 )
             if verbose
@@ -50,10 +58,13 @@ function calc_Focc( evals::Array{Float64,2}, wk::Array{Float64,1},
                     ilb = ilb - 1
                     lb = minimum(evals[ilb,:])
                     flb = 0.0
+                    for ispin = 1:Nspin
                     for ik = 1:Nkpt
-                        Focc[:,ik] = smear_FD(evals[:,ik], lb, kT, is_spinpol=is_spinpol)
-                        flb = flb + sum(Focc[:,ik])*wk[ik]
-                    end
+                        ikspin = ik + (ispin - 1)*Nkpt
+                        Focc[:,ikspin] = smear_FD(evals[:,ikspin], lb, kT, Nspin=Nspin)
+                        flb = flb + sum(Focc[:,ikspin])*wk[ik]
+                    end # ik
+                    end # ispin
                 else
                     @printf("ERROR in calc_Focc: cannot find a lower bound for E_fermi\n")
                     exit()
@@ -65,10 +76,13 @@ function calc_Focc( evals::Array{Float64,2}, wk::Array{Float64,1},
                     iub = iub + 1
                     ub  = maximum(evals[iub,:])
                     fub = 0.0
+                    for ispin = 1:Nspin
                     for ik = 1:Nkpt
-                        Focc[:,ik] = smear_FD(evals[:,ik], ub, kT, is_spinpol=is_spinpol)
-                        fub = fub + sum(Focc[:,ik])*wk[ik]
-                    end
+                        ikspin = ik + (ispin - 1)*Nkpt
+                        Focc[:,ikspin] = smear_FD(evals[:,ikspin], ub, kT, Nspin=Nspin)
+                        fub = fub + sum(Focc[:,ikspin])*wk[ik]
+                    end # ik
+                    end # ispin
                 else
                     @printf("ERROR in calc_Focc: cannot find an upper bound for E_fermi\n")
                     @printf("Try increasing the number of states\n")
@@ -83,9 +97,12 @@ function calc_Focc( evals::Array{Float64,2}, wk::Array{Float64,1},
         
         E_fermi = (lb + ub)/2
         occsum = 0.0
+        for ispin = 1:Nspin
         for ik = 1:Nkpt
-            Focc[:,ik] = smear_FD(evals[:,ik], E_fermi, kT, is_spinpol=is_spinpol)
-            occsum = occsum + sum(Focc[:,ik])*wk[ik]
+            ikspin = ik + (ispin - 1)*Nkpt
+            Focc[:,ikspin] = smear_FD(evals[:,ikspin], E_fermi, kT, Nspin=Nspin)
+            occsum = occsum + sum(Focc[:,ikspin])*wk[ik]
+        end
         end
         
         for iter = 1:MAXITER
@@ -106,9 +123,12 @@ function calc_Focc( evals::Array{Float64,2}, wk::Array{Float64,1},
             end
             E_fermi = (lb + ub)/2
             occsum = 0.0
+            for ispin = 1:Nspin
             for ik = 1:Nkpt
-                Focc[:,ik] = smear_FD(evals[:,ik], E_fermi, kT, is_spinpol=is_spinpol)
-                occsum = occsum + sum(Focc[:,ik])*wk[ik]
+                ikspin = ik + (ispin - 1)*Nkpt
+                Focc[:,ikspin] = smear_FD(evals[:,ikspin], E_fermi, kT, Nspin=Nspin)
+                occsum = occsum + sum(Focc[:,ikspin])*wk[ik]
+            end
             end
 
         end #
@@ -118,14 +138,23 @@ function calc_Focc( evals::Array{Float64,2}, wk::Array{Float64,1},
     # 
     elseif (Nstates == Nocc)
         @printf("calc_Focc: Nstates is equal to Nocc\n")
-        if is_spinpol
+        #
+        if Nspin == 2
+            # spin-polarized
+            for ispin = 1:Nspin
             for ik = 1:Nkpt
-                Focc[:,ik] = 2.0*ones(Nstates)
+                ikspin = ik + (ispin - 1)*Nkpt
+                Focc[:,ikspin] = ones(Nstates)
+            end
             end
             E_fermi = maximum(evals[Nstates,:])
         else
+            # No spin-polarization
+            for ispin = 1:Nspin
             for ik = 1:Nkpt
-                Focc[:,ik] = ones(Nstates)
+                ikspin = ik + (ispin - 1)*Nkpt
+                Focc[:,ik] = 2.0*ones(Nstates)
+            end
             end
             E_fermi = maximum(evals[Nstates,:])
         end
@@ -140,7 +169,8 @@ end
 
 
 
-# spin-unpolarized version
+# spin-unpolarized version, wk is 1
+# UNUSED ??
 function calc_Focc( evals::Array{Float64,1}, Nelectrons::Float64, kT::Float64;
                     is_spinpol=false, verbose=false )
 

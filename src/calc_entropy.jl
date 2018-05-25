@@ -1,14 +1,19 @@
 # F = E - TS
 # S = -k \sum( .... )
 function calc_entropy( Focc::Array{Float64,2}, wk::Array{Float64,1},
-                       kT::Float64; is_spinpol=false )
+                       kT::Float64; Nspin=1 )
     #
     const SMALL = 1.e-10
+    
     Nstates = size(Focc)[1]
-    Nkpt = size(Focc)[2]
+    Nkspin = size(Focc)[2]
+    Nkpt = round(Int64,Nkspin/Nspin)
+
     ent = 0.0
-    if is_spinpol
+    if Nspin == 2
+        for ispin = 1:Nspin
         for ik = 1:Nkpt
+            ikspin = ik + (ispin - 1)*Nkpt
             for ist = 1:Nstates
                 if Focc[ist] > SMALL
                     ent = ent + Focc[ist,ik]*log(Focc[ist,ik])*wk[ik]
@@ -16,6 +21,7 @@ function calc_entropy( Focc::Array{Float64,2}, wk::Array{Float64,1},
                     ent = ent + (1.0 - Focc[ist,ik])*log(1.0 - Focc[ist,ik])*wk[ik]
                 end
             end
+        end
         end
     else
         for ik = 1:Nkpt
@@ -35,13 +41,15 @@ function calc_entropy( Focc::Array{Float64,2}, wk::Array{Float64,1},
 end
 
 
+"""
 # F = E - TS
 # S = -k \sum( .... )
-function calc_entropy( Focc::Array{Float64,1}, kT::Float64; is_spinpol=false )
+# XXX Probably deprecated or unused
+function calc_entropy( Focc::Array{Float64,1}, kT::Float64; Nspin=1 )
     const SMALL = 1.e-10
     Nstates = length(Focc)
     ent = 0.0
-    if is_spinpol
+    if Nspin == 2
         for ist = 1:Nstates
             if Focc[ist] > SMALL
                 ent = ent + Focc[ist]*log(Focc[ist])
@@ -63,4 +71,4 @@ function calc_entropy( Focc::Array{Float64,1}, kT::Float64; is_spinpol=false )
     # double negative
     return kT*ent
 end
-
+"""
