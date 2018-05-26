@@ -15,7 +15,7 @@ function test_main( ; method="SCF" )
     pspfiles = ["../../pseudopotentials/pbe_gth/H-q1.gth"]
     ecutwfc_Ry = 30.0
     Ham = PWHamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, xcfunc="PBE",
-                         Nspin=2, verbose=true )
+                         Nspin=2, verbose=true, extra_states=0 )
 
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( atoms )
@@ -24,7 +24,7 @@ function test_main( ; method="SCF" )
     # Solve the KS problem
     #
     if method == "SCF"
-        KS_solve_SCF!( Ham, β=0.1, update_psi="PCG" )
+        KS_solve_SCF!( Ham, β=0.1, update_psi="LOBPCG", mix_method="anderson" )
 
     elseif method == "Emin"
         KS_solve_Emin_PCG!( Ham, verbose=true )
