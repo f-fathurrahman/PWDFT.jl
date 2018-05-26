@@ -7,16 +7,12 @@ function calc_Focc( evals::Array{Float64,2}, wk::Array{Float64,1},
     Nstates = size(evals)[1]
     Nkspin = size(evals)[2]
     Nkpt = round(Int64,Nkspin/Nspin)
-    
-    println("Nstates = ", Nstates)
-    println("Nkspin = ", Nkspin)
-    println("Nkpt = ", Nkpt)
 
     const TOL = 1e-10
-    const MAXITER = 100
+    const MAXITER = 500
 
     Focc = zeros(Nstates,Nkspin)
-    Nocc = round(Int64,Nelectrons/2)  # normally
+    Nocc = max( round(Int64,Nelectrons/2), 1 ) # guard against Nelectrons==1
     if verbose
         @printf("Nelectrons = %d\n", Nelectrons)
         @printf("Nocc = %d\n", Nocc)
@@ -28,7 +24,7 @@ function calc_Focc( evals::Array{Float64,2}, wk::Array{Float64,1},
     # use bisection to find E_fermi such that 
     #  sum_i Focc(i) = Nelectrons
     if Nstates > Nocc
-        ilb = Nocc - 1
+        ilb = max(Nocc - 1,1)
         iub = Nocc + 1
         # FIXME: Need to guard against the case Nocc == 1
         lb = minimum(evals[ilb,:])
@@ -37,6 +33,7 @@ function calc_Focc( evals::Array{Float64,2}, wk::Array{Float64,1},
         # Use lb and ub as guess interval for searching Fermi energy
         flb = 0.0
         fub = 0.0
+
         for ispin = 1:Nspin
         for ik = 1:Nkpt
             ikspin = ik + (ispin - 1)*Nkpt
@@ -54,8 +51,8 @@ function calc_Focc( evals::Array{Float64,2}, wk::Array{Float64,1},
                 @printf("flb = %18.10f, fub = %18.10f, Nelectrons = %d\n", flb, fub, Nelectrons)
             end
             if (flb > Nelectrons)
-                if (ilb > 1)
-                    ilb = ilb - 1
+                if (ilb >= 1)
+                    ilb = max(ilb - 1,1)
                     lb = minimum(evals[ilb,:])
                     flb = 0.0
                     for ispin = 1:Nspin
@@ -89,6 +86,9 @@ function calc_Focc( evals::Array{Float64,2}, wk::Array{Float64,1},
                     exit()
                 end
             end
+            if ilb == 1
+                break
+            end
         end  # while
         
         if verbose
@@ -102,34 +102,50 @@ function calc_Focc( evals::Array{Float64,2}, wk::Array{Float64,1},
             ikspin = ik + (ispin - 1)*Nkpt
             Focc[:,ikspin] = smear_FD(evals[:,ikspin], E_fermi, kT, Nspin=Nspin)
             occsum = occsum + sum(Focc[:,ikspin])*wk[ik]
+            #occsum = occsum + sum_upto_E_fermi( Focc[:,ikspin], evals[:,ikspin], E_fermi )*wk[ik]
         end
         end
         
+        E_fermi_old = E_fermi
+
         for iter = 1:MAXITER
             diffNelec = abs(occsum-Nelectrons)
+
             if diffNelec < TOL
                 if verbose
                     @printf("Found E_fermi = %18.10f, occsum = %18.10f\n", E_fermi, occsum )
                 end
                 return Focc, E_fermi
             end
+
             if verbose
                 @printf("%3d %18.10f %18.10f %18.10e\n", iter, E_fermi, occsum, diffNelec)
             end
+
             if (occsum < Nelectrons)
                 lb = E_fermi
             else
                 ub = E_fermi
             end
+
             E_fermi = (lb + ub)/2
+
             occsum = 0.0
             for ispin = 1:Nspin
             for ik = 1:Nkpt
                 ikspin = ik + (ispin - 1)*Nkpt
                 Focc[:,ikspin] = smear_FD(evals[:,ikspin], E_fermi, kT, Nspin=Nspin)
                 occsum = occsum + sum(Focc[:,ikspin])*wk[ik]
+                #occsum = occsum + sum_upto_E_fermi( Focc[:,ikspin], evals[:,ikspin], E_fermi )*wk[ik]
             end
             end
+
+            if abs(E_fermi - E_fermi_old) < eps()
+                @printf("WARNING: Diff E_fermi is very small, bisection stops\n")
+                return Focc, E_fermi
+            end
+
+            E_fermi_old = E_fermi
 
         end #
         @printf("WARNING: Maximum iteration achieved, E_fermi is not found within specified tolarance\n")
