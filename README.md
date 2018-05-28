@@ -8,7 +8,17 @@ The Kohn-Sham orbitals are expanded using plane wave basis. This basis set is
 very popular within solid-state community and is also used in several electronic
 structure package such as Quantum ESPRESSO, ABINIT, VASP, etc.
 
-## Calculation steps
+## Requirements
+
+- LibXC 3.0
+- spglib (included)
+
+## Units
+
+`PWDFT.jl` internally uses Hartree atomic units
+(energy in Hartree and length in bohr).
+
+## Quick start
 
 - create `Atoms` object
 
@@ -58,10 +68,8 @@ Books:
   Cambridge University Press, 2004.
 
 - Jorge Kohanoff. *Electronic Structure Calculations for Solids and Molecules:
-  Theory and Computational Methods*. 
+  Theory and Computational Methods*.
   Cambridge University Press, 2006.
 
 - Dominik Marx and Jürg Hutter. *Ab Initio Molecular Dynamics: Basic Theory and
   Advanced Methods*. Cambridge University Press, 2009.
-
-
