@@ -97,6 +97,7 @@ function KS_solve_SCF_smearing!( Ham::PWHamiltonian ;
         @printf("Using simple mixing\n")
     end
     @printf("Density mixing with β = %10.5f\n", β)
+    @printf("Smearing = %f\n", kT)
     @printf("\n")
 
     for iter = 1:NiterMax
@@ -109,7 +110,7 @@ function KS_solve_SCF_smearing!( Ham::PWHamiltonian ;
                 ikspin = ik + (ispin - 1)*Nkpt
                 #
                 evals[:,ikspin], psiks[ikspin] =
-                diag_lobpcg( Ham, psiks[ikspin], verbose=true, verbose_last=true )
+                diag_lobpcg( Ham, psiks[ikspin], verbose=false, verbose_last=false )
                 #
             end
             end
@@ -196,7 +197,7 @@ function KS_solve_SCF_smearing!( Ham::PWHamiltonian ;
 
         # Calculate energies
         Ham.energies = calc_energies( Ham, psiks )
-        Etot = Ham.energies.Total
+        Etot = Ham.energies.Total + Entropy
         diffE = abs( Etot - Etot_old )
 
         if Nspin == 1
@@ -206,6 +207,7 @@ function KS_solve_SCF_smearing!( Ham::PWHamiltonian ;
             @printf("SCF: %8d %18.10f %18.10e %18.10e %18.10e\n",
                     iter, Etot, diffE, diffRhoe[1], diffRhoe[2] )
         end
+        @printf("Entropy (-TS) = %18.10f\n", Entropy)
 
         if diffE < ETOT_CONV_THR
             @printf("SCF is converged: iter: %d , diffE = %10.7e\n", iter, diffE)
