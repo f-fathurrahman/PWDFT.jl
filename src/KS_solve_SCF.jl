@@ -95,6 +95,8 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
     @printf("Density mixing with β = %10.5f\n", β)
     @printf("\n")
 
+    CONVERGED = 0
+
     for iter = 1:NiterMax
 
         if update_psi == "LOBPCG"
@@ -201,9 +203,16 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
         end
 
         if diffE < ETOT_CONV_THR
+            CONVERGED = CONVERGED + 1
+        else  # reset CONVERGED
+            CONVERGED = 0
+        end
+
+        if CONVERGED >= 2
             @printf("SCF is converged: iter: %d , diffE = %10.7e\n", iter, diffE)
             break
         end
+
         #
         Etot_old = Etot
     end
