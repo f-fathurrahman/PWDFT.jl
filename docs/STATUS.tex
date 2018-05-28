@@ -1,0 +1,24 @@
+\section{Status}
+
+\begin{markdown}
+
+- **28 May 2018** The following features are working now:
+	
+  - LDA and GGA, spin-paired and spin polarized calculations
+  - Calculation with k-points (for periodic solids). Monkhorst-Pack grid
+    generation is done using \texttt{spglib}
+  
+  Band structure calculation is possible in principle as simply solving
+  Schrodinger equation with converged Kohn-Sham potentials, however there
+  is currently no tidy script or function to do that.
+
+  Total energy result for isolated systems (atoms and molecules) agrees quite
+  well with ABINIT and PWSCF results.
+
+  Total energy result for periodic solid is quite different from ABINIT and PWSCF.
+  I suspect that this is related to treatment of electrostatic terms in periodic system.
+
+  SCF is quite shaky for several systems, however it is working in quite well in nonmetallic
+  system.
+
+\end{markdown}
