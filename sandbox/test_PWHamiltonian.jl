@@ -27,20 +27,20 @@ function test_Nkpt_1()
     @printf("Integ rhoe = %18.10f\n", sum(rhoe)*pw.Ω/prod(pw.Ns))
 
     println("\nTesting op_K")
-    for ik = 1:Nkpt
-        Ham.ik = ik  # don't forget set current kpoints index
-        @time Kpsi = op_K(Ham, psik[ik])
+    #for ik = 1:Nkpt
+    #    Ham.ik = ik  # don't forget set current kpoints index
+        @time Kpsi = op_K(Ham, psik[1])
         s = sum(Kpsi)
-        @printf("ik=%d sum Kpsi = (%18.10f,%18.10fim)\n", ik, s.re, s.im)
-    end
+    #    @printf("ik=%d sum Kpsi = (%18.10f,%18.10fim)\n", ik, s.re, s.im)
+    #end
 
     #
-    for ik = 1:Nkpt
-        Ham.ik = ik
-        @time Vpsi1 = op_V_loc(Ham, psi)
-        s = sum(Vpsi1)
-        @printf("sum Vpsi1 = (%18.10f,%18.10fim)\n", s.re, s.im)
-    end
+    #for ik = 1:Nkpt
+    #    Ham.ik = ik
+        @time Vpsi1 = op_V_loc(Ham, psik[1])
+    #    s = sum(Vpsi1)
+    #    @printf("sum Vpsi1 = (%18.10f,%18.10fim)\n", s.re, s.im)
+    #end
 
     """
     #
@@ -165,7 +165,7 @@ function test_Ni_fcc(;Nspin=1)
 
         Ni  0.0   0.0   0.0
         """)
-    atoms.LatVecs = gen_lattice_fcc(5.0)
+    atoms.LatVecs = gen_lattice_fcc(6.65914911201)
     println(atoms)
     #
     pspfiles = ["../pseudopotentials/pade_gth/Ni-q10.gth"]
@@ -181,6 +181,11 @@ function test_Ni_fcc(;Nspin=1)
     Ngw = pw.gvecw.Ngw
     Nkspin = Nkpt*Nspin
     Npoints = prod(pw.Ns)
+    Ng = pw.gvec.Ng
+    G = pw.gvec.G
+    G2 = pw.gvec.G2
+    idx_g2r = pw.gvec.idx_g2r
+    Ω = pw.Ω
 
     #
     srand(1234)
@@ -200,6 +205,8 @@ function test_Ni_fcc(;Nspin=1)
         Rhoe[:,ispin] = calc_rhoe( pw, Focc[:,idxset], psiks[idxset], renormalize=false )
         @printf("spin %d Integ Rhoe = %18.10f\n", ispin, sum(Rhoe[:,ispin])*dVol)
     end
+
+    update!(Ham, Rhoe)
 
     println("\nTesting op_K")
     for ispin = 1:Nspin
@@ -243,16 +250,55 @@ function test_Ni_fcc(;Nspin=1)
         Ham.ik = ik
         Ham.ispin = ispin
         ikspin = ik + (ispin - 1)*Nkpt        
-        Hpsi = op_H(Ham, psiks[ik])
+        Hpsi = op_H(Ham, psiks[ikspin])
         s = sum(Hpsi)
         @printf("ispin = %d ik=%d sum Hpsi = (%18.10f,%18.10fim)\n", ispin, ik, s.re, s.im)        
     end # ik
     end # ispin
 
+    Energies = calc_energies( Ham, psiks )
+    println(Energies)
+
+    if Nspin == 2
+        Rhoe_total = Rhoe[:,1] + Rhoe[:,2]
+    else
+        Rhoe_total = Rhoe[:,1]
+    end
+    rhoG = R_to_G( pw, Rhoe_total ) / Npoints  # XXX normalize by Npoints
+    
+    phiG = Poisson_solve( pw, Rhoe_total)
+    #phiG = R_to_G( pw, Ham.potentials.Hartree )
+    EhartreeG = 0.0
+    for ig = 2:Ng
+        ip = idx_g2r[ig]
+        EhartreeG = EhartreeG + 0.5*real(phiG[ip]*conj(rhoG[ip]))*Ω/Npoints
+    end
+    println("EhartreeG = ", EhartreeG)
+    println("diff Ehartree = ", abs(EhartreeG - Energies.Hartree))
+
+    # assumption: use VWN
+    epsxcG = R_to_G( pw, calc_epsxc_VWN( Rhoe ) )
+    ExcG = 0.0
+    for ig = 1:Ng  # ig=1 is included
+        ip = idx_g2r[ig]
+        ExcG = ExcG + real(epsxcG[ip]*conj(rhoG[ip]))*Ω/Npoints
+    end
+    println("ExcG = ", ExcG)
+    println("diff Exc = ", abs(ExcG - Energies.XC))
+
+    V_ps_loc_G = R_to_G( pw, Ham.potentials.Ps_loc )
+    E_ps_loc_G = 0.0
+    for ig = 1:Ng  # ig=1 is included
+        ip = idx_g2r[ig]
+        E_ps_loc_G = E_ps_loc_G + real(V_ps_loc_G[ip]*conj(rhoG[ip]))*Ω/Npoints
+    end
+    println("E_ps_log_G = ", E_ps_loc_G)
+    println("diff E_ps_loc = ", abs(E_ps_loc_G - Energies.Ps_loc))
+
 end
 
 #test_Si()
 
-test_Ni_fcc(Nspin=2)
+test_Ni_fcc(Nspin=1)
 
 #test_Nkpt_1()

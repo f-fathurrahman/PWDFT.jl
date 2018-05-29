@@ -138,7 +138,7 @@ function Electrons( atoms::Atoms, Zvals::Array{Float64,1};
         exit()
     end
 
-    return Electrons( Nelectrons, Nstates, Nstates_occ, Focc, ebands)
+    return Electrons( Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin )
 
 
 end
