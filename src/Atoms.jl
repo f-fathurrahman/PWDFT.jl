@@ -1,3 +1,8 @@
+if VERSION > v"0.6.3"
+    using Printf
+    using LinearAlgebra
+end
+
 mutable struct Atoms
     Natoms::Int64
     Nspecies::Int64
