@@ -48,15 +48,14 @@ end
 
 """
 ABINIT 30 Ry
-Kinetic energy  =  8.06714954093561E+00
-Hartree energy  =  1.18361035301009E+01
-XC energy       = -3.43865606332895E+00
-Ewald energy    =  3.13315248577189E+00
-PspCore energy  = -3.56901459311693E-05
-Loc. psp. energy= -3.18586718047665E+01
-NL   psp  energy=  9.94081601344134E-01
->>>>>>>>> Etotal= -1.12668764000888E+01
-
+    Kinetic energy  =  8.06862489714732E+00
+    Hartree energy  =  1.18383732395827E+01
+    XC energy       = -3.44300449580879E+00
+    Ewald energy    =  3.13315248577189E+00
+    PspCore energy  = -3.56901459311693E-05
+    Loc. psp. energy= -3.18618998793985E+01
+    NL   psp  energy=  9.94019129116458E-01
+    >>>>>>>>> Etotal= -1.12707703137349E+01
 
 Total energy components
 Kinetic    energy:       8.0683940906
