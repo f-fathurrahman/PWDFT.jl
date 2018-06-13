@@ -24,7 +24,7 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian;
     if startingwfc == nothing
         srand(1234)
         for ik = 1:Nkpt
-            psi = rand(Ngw[ik],Nstates) + im*rand(Ngw[ik],Nstates)
+            psi = rand(Complex128,Ngw[ik],Nstates)
             psik[ik] = ortho_gram_schmidt(psi)
         end
     else
@@ -71,6 +71,8 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian;
     Ham.energies = energies
 
     Etot     = energies.Total
+
+    CONVERGED = 0
 
     if verbose
         @printf("\n")
@@ -163,6 +165,12 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian;
         end
         
         if diff < ETOT_CONV_THR
+            CONVERGED = CONVERGED + 1
+        else
+            CONVERGED = 0
+        end
+
+        if CONVERGED >= 2
             if verbose
                 @printf("CONVERGENCE ACHIEVED\n")
             end
