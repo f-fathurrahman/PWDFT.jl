@@ -198,15 +198,17 @@ function println( electrons::Electrons, all_states=false )
     end
     if all_states
         for ist = 1:Nstates
+            @printf("state #%4d = ", ist)
             for iks = 1:Nkspin
-                @printf("state #%8d = %8.5f ", ist, Focc[ist,iks])
+                @printf("%8.5f ", Focc[ist,iks])
             end
             @printf("\n")
         end
     else
         for ist = 1:4
+            @printf("state #%4d = ", ist)
             for iks = 1:Nkspin
-                @printf("state #%8d = %8.5f ", ist, Focc[ist,iks])
+                @printf("%8.5f ", Focc[ist,iks])
             end
             @printf("\n")
         end
@@ -214,7 +216,7 @@ function println( electrons::Electrons, all_states=false )
         #
         for ist = Nstates-3:Nstates
             for iks = 1:Nkspin
-                @printf("state #%8d = %8.5f ", ist, Focc[ist,iks])
+                @printf("state #%4d = %8.5f ", ist, Focc[ist,iks])
             end
             @printf("\n")
         end
