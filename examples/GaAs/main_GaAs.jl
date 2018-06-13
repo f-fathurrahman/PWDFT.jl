@@ -59,6 +59,12 @@ function test_main( ; method="SCF" )
     println("\nTotal energy components")
     println(Ham.energies)
 
+    pspcore_ene = calc_PspCore_ene(atoms, Ham.pspots, Ham.pw.Ω)
+    
+    println("\nPspCore ene = ", pspcore_ene)
+    println("\nTotEne + PspCore = ", pspcore_ene + Ham.energies.Total)
+
+
 end
 
 @time test_main(method="Emin")

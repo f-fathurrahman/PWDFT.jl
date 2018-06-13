@@ -54,11 +54,17 @@ function test_main( ; method="SCF" )
     println("\nTotal energy components")
     println(Ham.energies)
 
+    pspcore_ene = calc_PspCore_ene(atoms, Ham.pspots, Ham.pw.Ω)
+    println("PspCore ene = ", pspcore_ene)
+
+    println("")
+    println("TotEne + PspCore = ", pspcore_ene + Ham.energies.Total)
+
 end
 
 @time test_main(method="Emin")
-@time test_main(method="SCF")
-@time test_main(method="DCM")
+#@time test_main(method="SCF")
+#@time test_main(method="DCM")
 
 
 """
@@ -77,6 +83,21 @@ PspCore energy  = -2.94625629171302E-01
 Loc. psp. energy= -2.17494660308169E+00
 NL   psp  energy=  1.58096345360260E+00
 >>>>>>>>> Etotal= -7.90860418470260E+00
+
+Kinetic    energy:       3.2108017168
+Ps_loc     energy:      -2.1760104813
+Ps_nloc    energy:       1.5806486758
+Hartree    energy:       0.5830565701
+XC         energy:      -2.4157170879
+-------------------------------------
+Electronic energy:       0.7827793934
+NN         energy:      -8.3979258900
+-------------------------------------
+Total      energy:      -7.6151464966
+PspCore ene = -0.29462546778533705
+
+TotEne + PspCore = -7.909771964367133
+
 
 FFT grid = (27,27,27)
 Kinetic    energy:       3.2107925351

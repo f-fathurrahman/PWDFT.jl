@@ -201,6 +201,7 @@ function eval_Vloc_G( psp::PsPot_GTH, G2::Float64 )
              c3*(15.0 - 10.0*Gr^2 + Gr^4) + c4*(105.0 - 105.0*Gr^2 + 21.0*Gr^4 - Gr^6) )
     else
         Vg = 2*pi*zval*rloc^2 + (2*pi)^1.5 * rloc^3 * (c1 + 3.0*c2 + 15.0*c3 + 105.0*c4)
+        #Vg = 0.0
     end
 
     return Vg

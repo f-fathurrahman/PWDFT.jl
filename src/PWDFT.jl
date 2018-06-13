@@ -95,6 +95,9 @@ include("calc_strfact.jl")
 export init_V_coulomb_G
 include("init_V_coulomb_G.jl")
 
+export calc_PspCore_ene
+include("calc_PspCore_ene.jl")
+
 export calc_E_NN
 include("calc_E_NN.jl")
 
