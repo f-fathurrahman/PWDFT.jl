@@ -49,5 +49,20 @@ function test_read_all()
 
 end
 
-test_read_all()
-@time test_read_all()
+function test_get_symbol()
+    psp_dict = Dict()
+    ps_name = split(ALL_PS_PADE_GTH)
+    println("Dict(")
+    for p in ps_name
+        atsymb = split(p,"-")[1]
+        chg = parse(Int64, split(split(p,"-")[2],".")[1][2:end] )
+        #println("atsymb = ", atsymb)
+        #merge!(psp_dict, Dict(atsymb => p))
+        #println("chg = ", chg)
+        println("\"",atsymb,"\" => ", "\"", p,"\",")
+    end
+    #println(psp_dict["H"])
+    println(")")
+end
+
+test_get_symbol()
