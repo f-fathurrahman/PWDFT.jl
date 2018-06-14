@@ -76,7 +76,8 @@ end
 #@time do_run("Li-q1.gth")
 #@time do_run("Li-q3.gth")
 #@time do_run("C-q4.gth", ecutwfc_Ry=30.0)
-@time do_run("Pd-q10.gth")
+@time do_run("Si-q4.gth")
+#@time do_run("Pd-q10.gth")
 
 #main()
 

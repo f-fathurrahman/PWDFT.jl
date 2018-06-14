@@ -9,7 +9,7 @@ function test_main( ; method="SCF" )
         Si  0.0  0.0  0.0
         Si  0.25  0.25  0.25
         """, in_bohr=true)
-    atoms.LatVecs = gen_lattice_fcc(5.431*ANG2BOHR)
+    atoms.LatVecs = gen_lattice_fcc(10.2631)
     atoms.positions = atoms.LatVecs*atoms.positions
     println(atoms)
     write_xsf( "TEMP_Si.xsf", atoms )
@@ -29,7 +29,7 @@ function test_main( ; method="SCF" )
         KS_solve_SCF!( Ham, update_psi="PCG" )
 
     elseif method == "Emin"
-        KS_solve_Emin_PCG!( Ham, verbose=true )
+        KS_solve_Emin_PCG!( Ham, verbose=true, savewfc=false )
 
     elseif method == "DCM"
         KS_solve_DCM!( Ham, NiterMax=15 )

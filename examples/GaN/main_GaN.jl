@@ -71,14 +71,15 @@ end
      xc contribution           =     -13.10323777 Ry
      ewald contribution        =     -42.35263158 Ry = -21.17631579 Ha
 
-Kinetic energy  =  1.44366979001396E+01
-Hartree energy  =  4.90644593576941E+00
-XC energy       = -6.54616260813778E+00
-Ewald energy    = -2.11763161375599E+01
-PspCore energy  =  6.18064119181681E-01
-Loc. psp. energy= -1.83132444606018E+01
-NL   psp  energy=  2.32552493958254E+00
->>>>>>>>> Etotal= -2.37489903116263E+01
+    Kinetic energy  =  1.44378564168680E+01
+    Hartree energy  =  4.90773882272804E+00
+    XC energy       = -6.55396420607758E+00
+    Ewald energy    = -2.11763161375599E+01
+    PspCore energy  =  6.18064119181681E-01
+    Loc. psp. energy= -1.83151350511424E+01
+    NL   psp  energy=  2.32530222716897E+00
+    >>>>>>>>> Etotal= -2.37564538088332E+01
+
 
 Kinetic    energy:      14.4370546419
 Ps_loc     energy:     -17.6965369131

@@ -90,7 +90,7 @@ Total      energy:      -0.4522846455
 # Si fcc
 
 3x3x3 kpt
-LDA-VWN 15 Ha, occopt 1, tsmear 0.0001, no spin pol
+LDA-VWN 15 Ha, occopt 3, tsmear 0.0001, no spin pol
 
 ```
     Kinetic energy  =  3.21045499991613E+00
@@ -116,8 +116,10 @@ NN         energy:      -8.3979258900
 Total      energy:      -7.9092798948
 ```
 
+## Si fcc
+
 3x3x3 kpt
-LDA-VWN 15 Ha, occopt 1, tsmear 0.0001, spin pol
+LDA-VWN 15 Ha, occopt 3, tsmear 0.0001, spin pol
 
 ```
     Kinetic energy  =  3.21045499991614E+00
@@ -133,5 +135,58 @@ LDA-VWN 15 Ha, occopt 1, tsmear 0.0001, spin pol
     >>>>>>>>> Etotal= -7.91101324758540E+00
 ```
 
+## Si fcc
 
+3x3x3 kpt
+LDA-VWN 15 Ha, occopt 1, nospin
+
+```
+    Kinetic energy  =  3.21045499991613E+00
+    Hartree energy  =  5.76194835366404E-01
+    XC energy       = -2.41016569027563E+00
+    Ewald energy    = -8.39792740071415E+00
+    PspCore energy  = -2.94625629171302E-01
+    Loc. psp. energy= -2.17613632002650E+00
+    NL   psp  energy=  1.58119195731965E+00
+    >>>>>>>>> Etotal= -7.91101324758539E+00
+
+Kinetic    energy:       3.2107881383
+Ps_loc     energy:      -2.4706539833
+Ps_nloc    energy:       1.5806829708
+Hartree    energy:       0.5830528220
+XC         energy:      -2.4157147164
+-------------------------------------
+Electronic energy:       0.4881552315
+NN         energy:      -8.3979274007
+-------------------------------------
+Total      energy:      -7.9097721693
+```
+
+
+
+## GaAs
+
+```
+Kinetic energy  =  3.26683000819830E+00
+Hartree energy  =  8.17221804456118E-01
+XC energy       = -2.40229498371500E+00
+Ewald energy    = -8.42120578386954E+00
+PspCore energy  =  3.78008143191317E-01
+Loc. psp. energy= -3.13731037111346E+00
+NL   psp  energy=  8.58159437985374E-01
+>>>>>>>>> Etotal= -8.64059174486689E+00 
+
+Kinetic    energy:       3.2350078422
+Ps_loc     energy:      -2.7329323313
+Ps_nloc    energy:       0.8610819832
+Hartree    energy:       0.8024651116
+XC         energy:      -2.3993127351
+-------------------------------------
+Electronic energy:      -0.2336901294
+NN         energy:      -8.4212062785
+-------------------------------------
+Total      energy:      -8.6548964079
+```
+
+## GaN
 
