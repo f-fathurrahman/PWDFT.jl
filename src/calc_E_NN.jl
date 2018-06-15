@@ -1,4 +1,3 @@
-
 using SpecialFunctions: erfc
 
 function calc_E_NN( atoms::Atoms )
@@ -56,8 +55,9 @@ function calc_E_NN( LatVecs::Array{Float64,2}, atoms::Atoms, Zvals::Array{Float6
     # scaled atomic positions
     tau = inv(LatVecs)*atoms.positions
 
-    const gcut = 2.0
-    const ebsl = 1e-8
+    # Parameters
+    gcut = 2.0
+    ebsl = 1e-8
 
     tpi = 2.0*pi
     con = volcry/(4.0*pi)

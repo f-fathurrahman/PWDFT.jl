@@ -19,7 +19,7 @@ function KS_solve_SCF_smearing!( Ham::PWHamiltonian ;
     Nspin = electrons.Nspin
     Nkspin = Nkpt*Nspin
 
-    psiks = Array{Array{Complex128,2},1}(Nkspin)
+    psiks = Array{Array{ComplexF64,2},1}(Nkspin)
 
     #
     # Random guess of wave function

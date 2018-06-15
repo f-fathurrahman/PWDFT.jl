@@ -12,7 +12,7 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
     Nstates = Ham.electrons.Nstates
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
 
-    psik = Array{Array{Complex128,2},1}(Nkpt)
+    psik = Array{Array{ComplexF64,2},1}(Nkpt)
 
     #
     # Initial wave function
@@ -48,17 +48,17 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
     Etot_old = energies.Total
 
     # subspace
-    Y = Array{Array{Complex128,2},1}(Nkpt)
-    R = Array{Array{Complex128,2},1}(Nkpt)
-    P = Array{Array{Complex128,2},1}(Nkpt)
-    G = Array{Array{Complex128,2},1}(Nkpt)
+    Y = Array{Array{ComplexF64,2},1}(Nkpt)
+    R = Array{Array{ComplexF64,2},1}(Nkpt)
+    P = Array{Array{ComplexF64,2},1}(Nkpt)
+    G = Array{Array{ComplexF64,2},1}(Nkpt)
     T = Array{Array{Float64,2},1}(Nkpt)
     B = Array{Array{Float64,2},1}(Nkpt)
     for ik = 1:Nkpt
-        Y[ik] = zeros( Complex128, Ngw[ik], 3*Nstates )
-        R[ik] = zeros( Complex128, Ngw[ik], Nstates )
-        P[ik] = zeros( Complex128, Ngw[ik], Nstates )
-        G[ik] = zeros( Complex128, 3*Nstates, 3*Nstates )
+        Y[ik] = zeros( ComplexF64, Ngw[ik], 3*Nstates )
+        R[ik] = zeros( ComplexF64, Ngw[ik], Nstates )
+        P[ik] = zeros( ComplexF64, Ngw[ik], Nstates )
+        G[ik] = zeros( ComplexF64, 3*Nstates, 3*Nstates )
         T[ik] = zeros( Float64, 3*Nstates, 3*Nstates )
         B[ik] = zeros( Float64, 3*Nstates, 3*Nstates )
     end

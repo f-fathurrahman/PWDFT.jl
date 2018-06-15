@@ -1,7 +1,7 @@
 """
 Based on code by Knyazev.
 """
-function diag_lobpcg( Ham::PWHamiltonian, X0::Array{Complex128,2};
+function diag_lobpcg( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
                       tol=1e-5, tol_avg=1e-7, maxit=200, verbose=false,
                       verbose_last=false )
 

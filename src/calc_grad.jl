@@ -1,4 +1,4 @@
-function calc_grad( Ham::PWHamiltonian, psi::Array{Complex128,2} )
+function calc_grad( Ham::PWHamiltonian, psi::Array{ComplexF64,2} )
     
     ik = Ham.ik
     potentials = Ham.potentials
@@ -10,7 +10,7 @@ function calc_grad( Ham::PWHamiltonian, psi::Array{Complex128,2} )
     Ω = pw.Ω
     Ns = pw.Ns
     #
-    grad = zeros( Complex128, Ngw, Nstates )
+    grad = zeros( ComplexF64, Ngw, Nstates )
 
     H_psi = op_H( Ham, psi )
     for ist = 1:Nstates

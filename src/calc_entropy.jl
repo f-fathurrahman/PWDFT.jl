@@ -41,34 +41,3 @@ function calc_entropy( Focc::Array{Float64,2}, wk::Array{Float64,1},
 end
 
 
-"""
-# F = E - TS
-# S = -k \sum( .... )
-# XXX Probably deprecated or unused
-function calc_entropy( Focc::Array{Float64,1}, kT::Float64; Nspin=1 )
-    const SMALL = 1.e-10
-    Nstates = length(Focc)
-    ent = 0.0
-    if Nspin == 2
-        for ist = 1:Nstates
-            if Focc[ist] > SMALL
-                ent = ent + Focc[ist]*log(Focc[ist])
-            else
-                ent = ent + (1.0 - Focc[ist])*log(1.0 - Focc[ist])
-            end
-        end
-    else
-        for ist = 1:Nstates
-            # spin-degenerate case
-            if Focc[ist] > SMALL
-                ent = ent + 0.5*Focc[ist]*log(0.5*Focc[ist])
-            else
-                ent = ent + (1.0 - 0.5*Focc[ist])*log(1.0 - 0.5*Focc[ist])
-            end
-        end
-        ent = 2*ent
-    end
-    # double negative
-    return kT*ent
-end
-"""

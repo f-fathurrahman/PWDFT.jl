@@ -1,7 +1,7 @@
 """
 Test orthonormalization of wavefunction
 """
-function ortho_check( psi::Array{Complex128,2}; dVol=1.0 )
+function ortho_check( psi::Array{ComplexF64,2}; dVol=1.0 )
     Nstates = size(psi)[2]
     @printf("\nNorm check:\n")
     for ist = 1:Nstates

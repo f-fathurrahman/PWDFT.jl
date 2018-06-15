@@ -1,4 +1,4 @@
-function op_V_Ps_nloc( Ham::PWHamiltonian, psi::Array{Complex128,2} )
+function op_V_Ps_nloc( Ham::PWHamiltonian, psi::Array{ComplexF64,2} )
 
     ik = Ham.ik
 
@@ -17,7 +17,7 @@ function op_V_Ps_nloc( Ham::PWHamiltonian, psi::Array{Complex128,2} )
     betaNL_psi = calc_betaNL_psi( ik, Ham.pspotNL.betaNL, psi )
     
     Ngw = Ham.pw.gvecw.Ngw
-    Vpsi = zeros( Complex128, Ngw[ik], Nstates )
+    Vpsi = zeros( ComplexF64, Ngw[ik], Nstates )
 
     for ist = 1:Nstates
         for ia = 1:Natoms

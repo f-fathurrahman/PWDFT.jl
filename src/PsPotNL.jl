@@ -1,12 +1,12 @@
 struct PsPotNL
     NbetaNL::Int64
     prj2beta::Array{Int64,4}
-    betaNL::Array{Complex128,3}
+    betaNL::Array{ComplexF64,3}
 end
 
 function PsPotNL()
     # return dummy PsPotNL
-    return PsPotNL(0, zeros(Int64,1,1,1,1), zeros(Complex128,1,1,1) )
+    return PsPotNL(0, zeros(Int64,1,1,1,1), zeros(ComplexF64,1,1,1) )
 end
 
 import Base.println
@@ -56,14 +56,14 @@ function PsPotNL( pw::PWGrid, atoms::Atoms, Pspots::Array{PsPot_GTH},
     # No nonlocal components
     if NbetaNL == 0
         # return dummy PsPotNL
-        return PsPotNL(0, zeros(Int64,1,1,1,1), zeros(Complex128,1,1,1) )
+        return PsPotNL(0, zeros(Int64,1,1,1,1), zeros(ComplexF64,1,1,1) )
     end
 
     Nkpt = kpoints.Nkpt
     k = kpoints.k
     Ngw = pw.gvecw.Ngw
     Ngwx = pw.gvecw.Ngwx
-    betaNL = zeros( Complex128, Ngwx, NbetaNL, Nkpt )
+    betaNL = zeros( ComplexF64, Ngwx, NbetaNL, Nkpt )
     G = pw.gvec.G
     g = zeros(3)
 
@@ -113,7 +113,7 @@ function check_betaNL_norm( pw, betaNL, kpoints::KPoints )
     #
     # Check normalization in real space and reciprocal space
     #
-    ctmp = zeros( Complex128, Npoints )
+    ctmp = zeros( ComplexF64, Npoints )
     @inbounds begin
     for ik = 1:Nkpt
         #
@@ -139,11 +139,11 @@ function check_betaNL_norm( pw, betaNL, kpoints::KPoints )
 end
 
 
-function calc_betaNL_psi( ik::Int64, betaNL::Array{Complex128,3}, psi::Array{Complex128,2} )
+function calc_betaNL_psi( ik::Int64, betaNL::Array{ComplexF64,3}, psi::Array{ComplexF64,2} )
     Nstates = size(psi)[2]
     NbetaNL = size(betaNL)[2]
     Ngw_ik = size(psi)[1]
-    betaNL_psi = zeros( Complex128, Nstates, NbetaNL )
+    betaNL_psi = zeros( ComplexF64, Nstates, NbetaNL )
     for ist = 1:Nstates
         for ibeta = 1:NbetaNL
             betaNL_psi[ist,ibeta] = dot( betaNL[1:Ngw_ik,ibeta,ik], psi[:,ist] )

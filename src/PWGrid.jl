@@ -30,8 +30,10 @@ struct PWGrid
     r::Array{Float64,2}
     gvec::GVectors
     gvecw::GVectorsW
-    planfw::Base.DFT.FFTW.cFFTWPlan{Complex{Float64},-1,false,3}
-    planbw::Base.DFT.ScaledPlan{Complex{Float64},Base.DFT.FFTW.cFFTWPlan{Complex{Float64},1,false,3},Float64}
+    planfw::FFTW.cFFTWPlan{Complex{Float64},-1,false,1}
+    planbw::AbstractFFTs.ScaledPlan{Complex{Float64},FFTW.cFFTWPlan{Complex{Float64},1,false,1},Float64}
+    #planfw::Base.DFT.FFTW.cFFTWPlan{Complex{Float64},-1,false,3}
+    #planbw::Base.DFT.ScaledPlan{Complex{Float64},Base.DFT.FFTW.cFFTWPlan{Complex{Float64},1,false,3},Float64}
 end
 
 """

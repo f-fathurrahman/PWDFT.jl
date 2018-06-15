@@ -7,8 +7,8 @@ function chebyfilt( Ham::PWHamiltonian, X, degree, lb, ub)
     sigma = ee/(lb-ub)
     sigma1 = sigma
     #
-    Y = zeros(Complex128,Ngw_ik,Nstates)
-    Y1 = zeros(Complex128,Ngw_ik,Nstates)
+    Y = zeros(ComplexF64,Ngw_ik,Nstates)
+    Y1 = zeros(ComplexF64,Ngw_ik,Nstates)
     #
     Y = op_H(Ham, X) - X*c
     Y = Y*sigma1/ee
@@ -30,12 +30,12 @@ function get_ub_lb_lanczos( Ham::PWHamiltonian, nlancz::Int64 )
     ik = Ham.ik
     #
     Ngw_ik = pw.gvecw.Ngw[ik]
-    V = zeros(Complex128,Ngw_ik,nlancz)
-    HV = zeros(Complex128,Ngw_ik,nlancz)
+    V = zeros(ComplexF64,Ngw_ik,nlancz)
+    HV = zeros(ComplexF64,Ngw_ik,nlancz)
     T = zeros(Float64,nlancz,nlancz)
-    f = zeros(Complex128,Ngw_ik)
-    s = zeros(Complex128,nlancz)
-    h = zeros(Complex128,nlancz)
+    f = zeros(ComplexF64,Ngw_ik)
+    s = zeros(ComplexF64,nlancz)
+    h = zeros(ComplexF64,nlancz)
     #
     V[:,1] = randn(Ngw_ik) + im*randn(Ngw_ik)
     beta = norm(V[:,1])

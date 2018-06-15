@@ -1,20 +1,20 @@
-function op_V_loc( Ham::PWHamiltonian, psi::Array{Complex128,2} )
+function op_V_loc( Ham::PWHamiltonian, psi::Array{ComplexF64,2} )
     ispin = Ham.ispin
     V_loc = Ham.potentials.Ps_loc + Ham.potentials.Hartree + Ham.potentials.XC[:,ispin]
     return op_V_loc( Ham.ik, Ham.pw, V_loc, psi )
 end
 
-function op_V_Ps_loc( Ham::PWHamiltonian, psi::Array{Complex128,2} )
+function op_V_Ps_loc( Ham::PWHamiltonian, psi::Array{ComplexF64,2} )
     return op_V_loc( Ham.ik, Ham.pw, Ham.potentials.Ps_loc, psi )
 end
 
-function op_V_loc( ik::Int64, pw::PWGrid, V_loc::Array{Float64,1}, psi::Array{Complex128,2} )
+function op_V_loc( ik::Int64, pw::PWGrid, V_loc::Array{Float64,1}, psi::Array{ComplexF64,2} )
     Ns = pw.Ns
     Ω  = pw.Ω
     Npoints = prod(Ns)
     Nstates = size(psi)[2]
 
-    ctmp = zeros(Complex128, Npoints, Nstates)
+    ctmp = zeros(ComplexF64, Npoints, Nstates)
     idx = pw.gvecw.idx_gw2r[ik]
     for ist = 1:Nstates
         ctmp[idx,ist] = psi[:,ist]
@@ -36,22 +36,22 @@ end
 #
 # single-column version
 #
-function op_V_loc( Ham::PWHamiltonian, psi::Array{Complex128,1} )
+function op_V_loc( Ham::PWHamiltonian, psi::Array{ComplexF64,1} )
     ispin = Ham.ispin
     V_loc = Ham.potentials.Ps_loc + Ham.potentials.Hartree + Ham.potentials.XC[:,ispin]
     return op_V_loc( Ham.ik, Ham.pw, V_loc, psi )
 end
 
-function op_V_Ps_loc( Ham::PWHamiltonian, psi::Array{Complex128,1} )
+function op_V_Ps_loc( Ham::PWHamiltonian, psi::Array{ComplexF64,1} )
     return op_V_loc( Ham.ik, Ham.pw, Ham.potentials.Ps_loc, psi )
 end
 
-function op_V_loc( ik::Int64, pw::PWGrid, V_loc::Array{Float64,1}, psi::Array{Complex128,1} )
+function op_V_loc( ik::Int64, pw::PWGrid, V_loc::Array{Float64,1}, psi::Array{ComplexF64,1} )
     Ns = pw.Ns
     Ω  = pw.Ω
     Npoints = prod(Ns)
 
-    ctmp = zeros(Complex128, Npoints)
+    ctmp = zeros(ComplexF64, Npoints)
     idx = pw.gvecw.idx_gw2r[ik]
     ctmp[idx] = psi[:]
 

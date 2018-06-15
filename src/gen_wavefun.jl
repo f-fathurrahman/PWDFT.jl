@@ -6,7 +6,7 @@ function gen_rand_wavefun( pw::PWGrid, electrons::Electrons; seed=1234 )
     Ngw = pw.gvecw.Ngw
     Nstates = electrons.Nstates
 
-    psik = Array{Array{Complex128,2},1}(Nkpt)
+    psik = Array{Array{ComplexF64,2},1}(Nkpt)
 
     srand(seed)
 

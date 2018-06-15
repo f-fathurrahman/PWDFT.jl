@@ -5,7 +5,7 @@ Atomic coordinates information is thus contained in `strf`.
 Charges of atomic nuclei `Znucls` for each species present in
 atoms should also be provided.
 """
-function init_V_coulomb_G( pw::PWGrid, strf::Array{Complex128,2}, Znucls::Array{Float64,1} )
+function init_V_coulomb_G( pw::PWGrid, strf::Array{ComplexF64,2}, Znucls::Array{Float64,1} )
 
     Nsp1 = size(strf)[2]
     Nsp2 = size(Znucls)[1]
@@ -24,7 +24,7 @@ function init_V_coulomb_G( pw::PWGrid, strf::Array{Complex128,2}, Znucls::Array{
     Ng = pw.gvec.Ng
     idx_g2r = pw.gvec.idx_g2r
 
-    Vg = zeros(Complex128, Npoints)
+    Vg = zeros(ComplexF64, Npoints)
     V  = zeros(Float64, Npoints)
     #
     for isp = 1:Nspecies

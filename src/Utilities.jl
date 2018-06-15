@@ -9,7 +9,7 @@ function print_matrix( A::Array{Float64,2} )
     end
 end
 
-function print_matrix( A::Array{Complex128,2} )
+function print_matrix( A::Array{ComplexF64,2} )
     Nrows = size(A)[1]
     Ncols = size(A)[2]
     for ir = 1:Nrows

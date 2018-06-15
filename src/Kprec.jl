@@ -1,4 +1,4 @@
-function Kprec( ik::Int64, pw::PWGrid, psi::Array{Complex128,2} )
+function Kprec( ik::Int64, pw::PWGrid, psi::Array{ComplexF64,2} )
 
     Ngw_ik  = size(psi)[1]
     Nstates = size(psi)[2]
@@ -6,7 +6,7 @@ function Kprec( ik::Int64, pw::PWGrid, psi::Array{Complex128,2} )
     G = pw.gvec.G
     k = pw.gvecw.kpoints.k[:,ik]
 
-    Kpsi  = zeros( Complex128, Ngw_ik, Nstates )
+    Kpsi  = zeros( ComplexF64, Ngw_ik, Nstates )
     Gw = zeros(Float64,3)
 
     for ist = 1:Nstates

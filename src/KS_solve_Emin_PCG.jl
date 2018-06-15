@@ -16,7 +16,7 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian;
     Ngwx = pw.gvecw.Ngwx
     Nkpt = pw.gvecw.kpoints.Nkpt
 
-    psik = Array{Array{Complex128,2},1}(Nkpt)
+    psik = Array{Array{ComplexF64,2},1}(Nkpt)
 
     #
     # Initial wave function
@@ -24,7 +24,7 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian;
     if startingwfc == nothing
         srand(1234)
         for ik = 1:Nkpt
-            psi = rand(Complex128,Ngw[ik],Nstates)
+            psi = rand(ComplexF64,Ngw[ik],Nstates)
             psik[ik] = ortho_gram_schmidt(psi)
         end
     else
@@ -41,24 +41,24 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian;
     #
     # Variables for PCG
     #
-    g = Array{Array{Complex128,2},1}(Nkpt)
-    d = Array{Array{Complex128,2},1}(Nkpt)
-    g_old = Array{Array{Complex128,2},1}(Nkpt)
-    d_old = Array{Array{Complex128,2},1}(Nkpt)
-    Kg = Array{Array{Complex128,2},1}(Nkpt)
-    Kg_old = Array{Array{Complex128,2},1}(Nkpt)
-    psic = Array{Array{Complex128,2},1}(Nkpt)
-    gt = Array{Array{Complex128,2},1}(Nkpt)
+    g = Array{Array{ComplexF64,2},1}(Nkpt)
+    d = Array{Array{ComplexF64,2},1}(Nkpt)
+    g_old = Array{Array{ComplexF64,2},1}(Nkpt)
+    d_old = Array{Array{ComplexF64,2},1}(Nkpt)
+    Kg = Array{Array{ComplexF64,2},1}(Nkpt)
+    Kg_old = Array{Array{ComplexF64,2},1}(Nkpt)
+    psic = Array{Array{ComplexF64,2},1}(Nkpt)
+    gt = Array{Array{ComplexF64,2},1}(Nkpt)
     #
     for ik = 1:Nkpt
-        g[ik] = zeros(Complex128, Ngw[ik], Nstates)
-        d[ik] = zeros(Complex128, Ngw[ik], Nstates)
-        g_old[ik] = zeros(Complex128, Ngw[ik], Nstates)
-        d_old[ik] = zeros(Complex128, Ngw[ik], Nstates)
-        Kg[ik] = zeros(Complex128, Ngw[ik], Nstates)
-        Kg_old[ik] = zeros(Complex128, Ngw[ik], Nstates)
-        psic[ik] = zeros(Complex128, Ngw[ik], Nstates)
-        gt[ik] = zeros(Complex128, Ngw[ik], Nstates)
+        g[ik] = zeros(ComplexF64, Ngw[ik], Nstates)
+        d[ik] = zeros(ComplexF64, Ngw[ik], Nstates)
+        g_old[ik] = zeros(ComplexF64, Ngw[ik], Nstates)
+        d_old[ik] = zeros(ComplexF64, Ngw[ik], Nstates)
+        Kg[ik] = zeros(ComplexF64, Ngw[ik], Nstates)
+        Kg_old[ik] = zeros(ComplexF64, Ngw[ik], Nstates)
+        psic[ik] = zeros(ComplexF64, Ngw[ik], Nstates)
+        gt[ik] = zeros(ComplexF64, Ngw[ik], Nstates)
     end
     
     β = zeros(Nkpt)

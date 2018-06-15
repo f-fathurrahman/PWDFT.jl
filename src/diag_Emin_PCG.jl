@@ -2,7 +2,7 @@
 # Ham.potentials.V_Ps_loc should be initialized
 # Ham.energies.NN should be calculated if needed
 #
-function diag_Emin_PCG( Ham::PWHamiltonian, X0::Array{Complex128,2};
+function diag_Emin_PCG( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
                              α_t = 3e-5, NiterMax=200, verbose=false,
                              I_CG_BETA = 1, TOL_EBANDS=1e-7 )
 
@@ -21,11 +21,11 @@ function diag_Emin_PCG( Ham::PWHamiltonian, X0::Array{Complex128,2};
     #
     # Variabls for PCG
     #
-    d = zeros(Complex128, Ngw_ik, Nstates)
-    g_old = zeros(Complex128, Ngw_ik, Nstates)
-    d_old = zeros(Complex128, Ngw_ik, Nstates)
-    Kg = zeros(Complex128, Ngw_ik, Nstates)
-    Kg_old = zeros(Complex128, Ngw_ik, Nstates)
+    d = zeros(ComplexF64, Ngw_ik, Nstates)
+    g_old = zeros(ComplexF64, Ngw_ik, Nstates)
+    d_old = zeros(ComplexF64, Ngw_ik, Nstates)
+    Kg = zeros(ComplexF64, Ngw_ik, Nstates)
+    Kg_old = zeros(ComplexF64, Ngw_ik, Nstates)
     β        = 0.0
     Ebands_old = 0.0
 

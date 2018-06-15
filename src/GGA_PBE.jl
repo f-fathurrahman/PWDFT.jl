@@ -18,7 +18,7 @@ function calc_Vxc_PBE( pw::PWGrid, Rhoe::Array{Float64,1} )
     Vxc = zeros( Float64, Npoints )
     Vgxc = zeros( Float64, Npoints )
     #
-    ccall( (:calc_Vxc_PBE, LIBXC_SO_PATH), Void,
+    ccall( (:calc_Vxc_PBE, LIBXC_SO_PATH), Nothing,
            (Int64, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}),
            Npoints, Rhoe, gRhoe2, Vxc, Vgxc )
 
@@ -58,7 +58,7 @@ function calc_epsxc_PBE( pw::PWGrid, Rhoe::Array{Float64,1} )
                      gRhoe[3,ip]*gRhoe[3,ip]
     end
     #
-    ccall( (:calc_epsxc_PBE, LIBXC_SO_PATH), Void,
+    ccall( (:calc_epsxc_PBE, LIBXC_SO_PATH), Nothing,
            (Int64, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}),
            Npoints, Rhoe, gRhoe2, epsxc )
     #
@@ -99,7 +99,7 @@ function calc_epsxc_PBE( pw::PWGrid, Rhoe::Array{Float64,2} )
     Rhoe_tmp[1,:] = Rhoe[:,1]
     Rhoe_tmp[2,:] = Rhoe[:,2]
 
-    ccall( (:calc_epsxc_PBE_spinpol, LIBXC_SO_PATH), Void,
+    ccall( (:calc_epsxc_PBE_spinpol, LIBXC_SO_PATH), Nothing,
            (Int64, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}),
            Npoints, Rhoe_tmp, gRhoe2, epsxc )
 
@@ -136,7 +136,7 @@ function calc_Vxc_PBE( pw::PWGrid, Rhoe::Array{Float64,2} )
     Rhoe_tmp[2,:] = Rhoe[:,2]
 
     #
-    ccall( (:calc_Vxc_PBE_spinpol, LIBXC_SO_PATH), Void,
+    ccall( (:calc_Vxc_PBE_spinpol, LIBXC_SO_PATH), Nothing,
            (Int64, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}),
            Npoints, Rhoe_tmp, gRhoe2, Vxc_tmp, Vgxc )
 
@@ -197,7 +197,7 @@ function op_nabla( pw::PWGrid, Rhoe::Array{Float64,1} )
 
     RhoeG = R_to_G(pw,Rhoe)[idx_g2r]
 
-    ∇RhoeG_full = zeros(Complex128,3,Npoints)
+    ∇RhoeG_full = zeros(ComplexF64,3,Npoints)
     ∇Rhoe = zeros(Float64,3,Npoints)
     
     for ig = 1:Ng
@@ -221,12 +221,12 @@ function op_nabla_dot( pw::PWGrid, h::Array{Float64,2} )
     idx_g2r = pw.gvec.idx_g2r
     Npoints = prod(pw.Ns)
 
-    hG = zeros(Complex128,3,Ng)
+    hG = zeros(ComplexF64,3,Ng)
     hG[1,:] = R_to_G( pw, h[1,:] )[idx_g2r]
     hG[2,:] = R_to_G( pw, h[2,:] )[idx_g2r]
     hG[3,:] = R_to_G( pw, h[3,:] )[idx_g2r]
 
-    divhG_full = zeros(Complex128,Npoints)
+    divhG_full = zeros(ComplexF64,Npoints)
     
     for ig = 1:Ng
         ip = idx_g2r[ig]

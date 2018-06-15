@@ -1,6 +1,19 @@
+#
+# Going from 0.6 to 0.7
+#
+# Void -> Nothing
+# Complex128 -> ComplexF64
+# find! -> findall!
+# FFT Plan types
+
 __precompile__()
 
 module PWDFT
+
+using Printf
+using LinearAlgebra
+using Random
+using FFTW
 
 export Ry2eV, ANG2BOHR
 # constants

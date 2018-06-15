@@ -1,4 +1,4 @@
-function ortho_gram_schmidt( vin::Array{Complex128,2} )
+function ortho_gram_schmidt( vin::Array{ComplexF64,2} )
     Ncol = size(vin)[2]
     v = copy(vin)
     for ii = 1:Ncol

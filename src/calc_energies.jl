@@ -1,5 +1,5 @@
 # FIXME: psi is not used
-function calc_E_xc( Ham::PWHamiltonian, psi::Array{Complex128,2} )
+function calc_E_xc( Ham::PWHamiltonian, psi::Array{ComplexF64,2} )
     Ω = Ham.pw.Ω
     Npoints = prod(Ham.pw.Ns)
     rhoe = Ham.rhoe
@@ -13,7 +13,7 @@ function calc_E_xc( Ham::PWHamiltonian, psi::Array{Complex128,2} )
 end
 
 
-function calc_E_Hartree( Ham::PWHamiltonian, psi::Array{Complex128,2} )
+function calc_E_Hartree( Ham::PWHamiltonian, psi::Array{ComplexF64,2} )
     potentials = Ham.potentials
     Ω = Ham.pw.Ω
     Npoints = prod(Ham.pw.Ns)
@@ -25,7 +25,7 @@ end
 #
 # Use ik and spin
 #
-function calc_E_Ps_nloc( Ham::PWHamiltonian, psiks::Array{Array{Complex128,2},1} )
+function calc_E_Ps_nloc( Ham::PWHamiltonian, psiks::Array{Array{ComplexF64,2},1} )
 
     Nstates = Ham.electrons.Nstates
     Focc = Ham.electrons.Focc
@@ -41,7 +41,7 @@ function calc_E_Ps_nloc( Ham::PWHamiltonian, psiks::Array{Array{Complex128,2},1}
     # calculate E_NL
     E_ps_NL = 0.0
 
-    betaNL_psi = zeros(Complex128,Nstates,NbetaNL)
+    betaNL_psi = zeros(ComplexF64,Nstates,NbetaNL)
     for ispin = 1:Nspin
     for ik = 1:Nkpt
         ikspin = ik + (ispin - 1)*Nkpt
@@ -80,7 +80,7 @@ end
 # `potentials` and `Rhoe` are not updated
 # Ham is assumed to be already updated at input psi
 #
-function calc_energies( Ham::PWHamiltonian, psiks::Array{Array{Complex128,2},1} )
+function calc_energies( Ham::PWHamiltonian, psiks::Array{Array{ComplexF64,2},1} )
 
     pw = Ham.pw
     potentials = Ham.potentials
@@ -155,7 +155,7 @@ end
 # `potentials` and `Rhoe` are not updated
 # Ham is assumed to be already updated at input psi
 #
-function calc_energies( Ham::PWHamiltonian, psi::Array{Complex128,2} )
+function calc_energies( Ham::PWHamiltonian, psi::Array{ComplexF64,2} )
 
     pw = Ham.pw
     potentials = Ham.potentials

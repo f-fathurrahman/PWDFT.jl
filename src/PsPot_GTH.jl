@@ -286,7 +286,7 @@ function eval_proj_G( psp::PsPot_GTH, l::Int64, iproj::Int64, Gm::Array{Float64,
         elseif iproj == 2
             for ig = 1:Ng
                 Gr2 = (Gm[ig]*rrl)^2
-                Vprj[ig] = (2.0/3.0)/sqrt(105.0) * exp(-0.5*Gr2) * Gm[ig]^2 * (7.-Gr2)
+                Vprj[ig] = (2.0/3.0)/sqrt(105.0) * exp(-0.5*Gr2) * Gm[ig]^2 * (7.0-Gr2)
             end
         end # if iproj
 

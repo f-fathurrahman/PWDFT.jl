@@ -1,9 +1,5 @@
-if VERSION <= v"0.6.3"
-    using PWDFT
-else
-    push!(LOAD_PATH, pwd())
-    using PWDFT07
-end
+push!(LOAD_PATH, "../src")
+using PWDFT
 
 function test_main()
     atoms = init_atoms_xyz("../structures/CuSO4.xyz", verbose=true)

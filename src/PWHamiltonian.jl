@@ -51,7 +51,7 @@ function PWHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
     #
     # Initialize pseudopotentials and local potentials
     #
-    Vg = zeros(Complex128, Npoints)
+    Vg = zeros(ComplexF64, Npoints)
     V_Ps_loc = zeros(Float64, Npoints)
 
     Pspots = Array{PsPot_GTH}(Nspecies)
@@ -200,7 +200,7 @@ end
 
 
 function update!( Ham::PWHamiltonian, atoms::Atoms,
-    strf::Array{Complex128,2}, pspfiles::Array{String,1} )
+    strf::Array{ComplexF64,2}, pspfiles::Array{String,1} )
 
     Nspecies = atoms.Nspecies
     if Nspecies != size(pspfiles)[1]
@@ -214,7 +214,7 @@ function update!( Ham::PWHamiltonian, atoms::Atoms,
     Ω = pw.Ω
     G2 = pw.gvec.G2
 
-    Vg = zeros(Complex128, Npoints)
+    Vg = zeros(ComplexF64, Npoints)
     V_Ps_loc = zeros(Float64, Npoints)
 
     pw = Ham.pw

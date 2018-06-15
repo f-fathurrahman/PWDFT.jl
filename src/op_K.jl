@@ -1,6 +1,6 @@
 # Apply kinetic operator to wave function in reciprocal space
 
-function op_K( Ham::PWHamiltonian, psi::Array{Complex128,2} )
+function op_K( Ham::PWHamiltonian, psi::Array{ComplexF64,2} )
     #
     ik = Ham.ik
 
@@ -13,7 +13,7 @@ function op_K( Ham::PWHamiltonian, psi::Array{Complex128,2} )
     k = pw.gvecw.kpoints.k[:,ik]
 
     Gw = zeros(3)
-    out = Array{Complex128}(size(psi))
+    out = Array{ComplexF64}(size(psi))
 
     for ist = 1:Nstates
         for igk = 1:Ngw[ik]
@@ -28,7 +28,7 @@ function op_K( Ham::PWHamiltonian, psi::Array{Complex128,2} )
 end
 
 # This function is used by CheFSI
-function op_K( Ham::PWHamiltonian, psi::Array{Complex128,1} )
+function op_K( Ham::PWHamiltonian, psi::Array{ComplexF64,1} )
     #
     ik = Ham.ik
 
@@ -39,7 +39,7 @@ function op_K( Ham::PWHamiltonian, psi::Array{Complex128,1} )
     k = pw.gvecw.kpoints.k[:,ik]
 
     Gw = zeros(3)
-    out = Array{Complex128}(size(psi))
+    out = Array{ComplexF64}(size(psi))
 
     for igk = 1:Ngw[ik]
         ig = idx_gw2g[igk]

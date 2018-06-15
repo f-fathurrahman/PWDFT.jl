@@ -6,7 +6,7 @@ function calc_Vxc_VWN( Rhoe::Array{Float64,1} )
     Npoints = size(Rhoe)[1]
     Vxc = zeros( Float64, Npoints )
     #
-    ccall( (:calc_Vxc_VWN, LIBXC_SO_PATH), Void,
+    ccall( (:calc_Vxc_VWN, LIBXC_SO_PATH), Nothing,
            (Int64, Ptr{Float64}, Ptr{Float64}),
            Npoints, Rhoe, Vxc )
     #
@@ -21,7 +21,7 @@ function calc_epsxc_VWN( Rhoe::Array{Float64,1} )
     Npoints = size(Rhoe)[1]
     epsxc = zeros( Float64, Npoints )
     #
-    ccall( (:calc_epsxc_VWN, LIBXC_SO_PATH), Void,
+    ccall( (:calc_epsxc_VWN, LIBXC_SO_PATH), Nothing,
            (Int64, Ptr{Float64}, Ptr{Float64}),
            Npoints, Rhoe, epsxc )
     #
@@ -49,7 +49,7 @@ function calc_Vxc_VWN( Rhoe::Array{Float64,2} )
     Rhoe_tmp[1,:] = Rhoe[:,1]
     Rhoe_tmp[2,:] = Rhoe[:,2]
 
-    ccall( (:calc_Vxc_VWN_spinpol, LIBXC_SO_PATH), Void,
+    ccall( (:calc_Vxc_VWN_spinpol, LIBXC_SO_PATH), Nothing,
            (Int64, Ptr{Float64}, Ptr{Float64}),
            Npoints, Rhoe_tmp, Vxc_tmp )
 
@@ -80,7 +80,7 @@ function calc_epsxc_VWN( Rhoe::Array{Float64,2} )
     Rhoe_tmp[1,:] = Rhoe[:,1]
     Rhoe_tmp[2,:] = Rhoe[:,2]
 
-    ccall( (:calc_epsxc_VWN_spinpol, LIBXC_SO_PATH), Void,
+    ccall( (:calc_epsxc_VWN_spinpol, LIBXC_SO_PATH), Nothing,
            (Int64, Ptr{Float64}, Ptr{Float64}),
            Npoints, Rhoe_tmp, epsxc )
     #
