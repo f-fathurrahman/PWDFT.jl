@@ -161,9 +161,9 @@ function gen_lattice_orthorhombic_P( a::Float64, b::Float64, c::Float64 )
     return LL
 end
 
-# 12          Monoclinic P, unique axis c     celldm(2)=b/a
-#                                              celldm(3)=c/a,
-#                                              celldm(4)=cos(ab)
+# 12  Monoclinic P, unique axis c     celldm(2)=b/a
+#                                     celldm(3)=c/a,
+#                                     celldm(4)=cos(ab)
 #       v1=(a,0,0), v2=(b*cos(gamma),b*sin(gamma),0),  v3 = (0,0,c)
 #       where gamma is the angle between axis a and b.
 function gen_lattice_monoclinic_P( a::Float64, b::Float64, c::Float64, gamma_degree::Float64 )
@@ -179,11 +179,11 @@ function gen_lattice_monoclinic_P( a::Float64, b::Float64, c::Float64, gamma_deg
     return LL
 end
 
-# 14          Triclinic                       celldm(2)= b/a,
-#                                             celldm(3)= c/a,
-#                                             celldm(4)= cos(bc),
-#                                             celldm(5)= cos(ac),
-#                                             celldm(6)= cos(ab)
+# 14 Triclinic celldm(2)= b/a,
+#              celldm(3)= c/a,
+#              celldm(4)= cos(bc),
+#              celldm(5)= cos(ac),
+#              celldm(6)= cos(ab)
 #       v1 = (a, 0, 0),
 #       v2 = (b*cos(gamma), b*sin(gamma), 0)
 #       v3 = (c*cos(beta),  c*(cos(alpha)-cos(beta)cos(gamma))/sin(gamma),
@@ -193,8 +193,8 @@ end
 #              beta is the angle between axis a and c
 #             gamma is the angle between axis a and b
 
-function gen_lattice_triclinic(a::Float64, b::Float64, c::Float64,
-                               alpha_degree::Float64, beta_degree::Float64, gamma_degree::Float64)
+function gen_lattice_triclinic( a::Float64, b::Float64, c::Float64,
+                                alpha_degree::Float64, beta_degree::Float64, gamma_degree::Float64)
 
     if alpha_degree + beta_degree + gamma_degree <= 180.0
         println("ERROR in gen_lattice_triclinic")

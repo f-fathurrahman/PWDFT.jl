@@ -127,3 +127,51 @@ function gen_MonkhorstPack( mesh::Array{Int64,1} )
     return kpts
 end
 
+
+# adapted from ASE
+function get_special_kpoints(lattice::String)
+    if lattice == "cubic"
+        return Dict("G" => [0.0, 0.0, 0.0],
+                    "M" => [1/2, 1/2, 0.0],
+                    "R" => [1/2, 1/2, 1/2],
+                    "X" => [0.0, 1/2, 0.0])
+    elseif lattice == "fcc"
+        return Dict("G" => [0.0, 0.0, 0.0],
+                    "K" => [3/8, 3/8, 3/4],
+                    "L" => [1/2, 1/2, 1/2],
+                    "U" => [5/8, 1/4, 5/8],
+                    "W" => [1/2, 1/4, 3/4],
+                    "X" => [1/2, 0.0, 1/2])
+    elseif lattice == "bcc"
+        return Dict("G" => [0.0,  0.0, 0.0],
+                    "H" => [1/2, -1/2, 1/2],
+                    "P" => [1/4,  1/4, 1/4],
+                    "N" => [0.0,  0.0, 1/2])
+    elseif lattice == "tetragonal"
+        return Dict("G" => [0.0, 0.0, 0.0],
+                    "A" => [1/2, 1/2, 1/2],
+                    "M" => [1/2, 1/2, 0.0],
+                    "R" => [0.0, 1/2, 1/2],
+                    "X" => [0.0, 1/2, 0.0],
+                    "Z" => [0.0, 0.0, 1/2])
+    elseif lattice == "orthorhombic"
+        return Dict("G" => [0.0, 0.0, 0.0],
+                    "R" => [1/2, 1/2, 1/2],
+                    "S" => [1/2, 1/2, 0.0],
+                    "T" => [0.0, 1/2, 1/2],
+                    "U" => [1/2, 0.0, 1/2],
+                    "X" => [1/2, 0.0, 0.0],
+                    "Y" => [0.0, 1/2, 0.0],
+                    "Z" => [0.0, 0.0, 1/2])
+    elseif lattice == "hexagonal"
+        return Dict("G" => [0.0, 0.0, 0.0],
+                    "A" => [0.0, 0.0, 1/2],
+                    "H" => [1/3, 1/3, 1/2],
+                    "K" => [1/3, 1/3, 0.0],
+                    "L" => [1/2, 0.0, 1/2],
+                    "M" => [1/2, 0.0, 0.0])
+    else
+        println("ERROR: unknown lattice = ", lattice)
+        exit()
+    end
+end

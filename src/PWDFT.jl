@@ -28,6 +28,7 @@ include("spglib.jl")
 
 
 export KPoints
+export get_special_kpoints
 include("KPoints.jl")
 
 
