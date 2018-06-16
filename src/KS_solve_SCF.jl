@@ -149,7 +149,7 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
 
         else
 
-            printf("Unknown method for update_psi = %s\n", update_psi)
+            @printf("Unknown method for update_psi = %s\n", update_psi)
             exit()
 
         end
