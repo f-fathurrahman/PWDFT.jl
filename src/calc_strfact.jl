@@ -1,6 +1,6 @@
 # Calculate structure factor
-function calc_strfact( atpos::Array{Float64,2}, Nspecies::Int,
-    atm2species::Array{Int,1}, G::Array{Float64,2} )
+function calc_strfact( atpos::Array{Float64,2}, Nspecies::Int64,
+    atm2species::Array{Int64,1}, G::Array{Float64,2} )
     #
     Ng = size(G)[2]
     Na = size(atpos)[2]

@@ -15,7 +15,7 @@ function chebyfilt( Ham::PWHamiltonian, X, degree, lb, ub)
     #
     for i = 2:degree
         sigma2 = 1/(2/sigma1 - sigma)
-        Y1 = ( op_H(Ham,Y) - Y*c)*2 * sigma2/e - X*(sigma*sigma2)
+        Y1 = ( op_H(Ham,Y) - Y*c)*2 * sigma2/ee - X*(sigma*sigma2)
         X = Y
         Y = Y1
         sigma = sigma2

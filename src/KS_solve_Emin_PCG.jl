@@ -16,7 +16,7 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian;
     Ngwx = pw.gvecw.Ngwx
     Nkpt = pw.gvecw.kpoints.Nkpt
 
-    psik = Array{Array{ComplexF64,2},1}(Nkpt)
+    psik = Array{Array{ComplexF64,2},1}(undef,Nkpt)
 
     #
     # Initial wave function
@@ -41,14 +41,14 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian;
     #
     # Variables for PCG
     #
-    g = Array{Array{ComplexF64,2},1}(Nkpt)
-    d = Array{Array{ComplexF64,2},1}(Nkpt)
-    g_old = Array{Array{ComplexF64,2},1}(Nkpt)
-    d_old = Array{Array{ComplexF64,2},1}(Nkpt)
-    Kg = Array{Array{ComplexF64,2},1}(Nkpt)
-    Kg_old = Array{Array{ComplexF64,2},1}(Nkpt)
-    psic = Array{Array{ComplexF64,2},1}(Nkpt)
-    gt = Array{Array{ComplexF64,2},1}(Nkpt)
+    g = Array{Array{ComplexF64,2},1}(undef,Nkpt)
+    d = Array{Array{ComplexF64,2},1}(undef,Nkpt)
+    g_old = Array{Array{ComplexF64,2},1}(undef,Nkpt)
+    d_old = Array{Array{ComplexF64,2},1}(undef,Nkpt)
+    Kg = Array{Array{ComplexF64,2},1}(undef,Nkpt)
+    Kg_old = Array{Array{ComplexF64,2},1}(undef,Nkpt)
+    psic = Array{Array{ComplexF64,2},1}(undef,Nkpt)
+    gt = Array{Array{ComplexF64,2},1}(undef,Nkpt)
     #
     for ik = 1:Nkpt
         g[ik] = zeros(ComplexF64, Ngw[ik], Nstates)
@@ -70,7 +70,7 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian;
     energies = calc_energies(Ham, psik)
     Ham.energies = energies
 
-    Etot     = energies.Total
+    Etot = energies.Total
 
     CONVERGED = 0
 
@@ -188,7 +188,7 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian;
         Ham.ik = ik
         psik[ik] = ortho_gram_schmidt(psik[ik])
         Hr = psik[ik]' * op_H( Ham, psik[ik] )
-        evals, evecs = eig(Hr)
+        evals, evecs = eigen(Hr)
         Ham.electrons.ebands[:,ik] = real(evals[:])
         psik[ik] = psik[ik]*evecs
     end
