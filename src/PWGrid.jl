@@ -105,8 +105,8 @@ function transpose_m3x3( A::Array{Float64,2} )
     B[2,2] = A[2,2]
     B[2,3] = A[3,2]
 
-    B[3,1] = B[1,3]
-    B[3,2] = B[2,3]
+    B[3,1] = A[1,3]
+    B[3,2] = A[2,3]
     B[3,3] = A[3,3]
     
     return B

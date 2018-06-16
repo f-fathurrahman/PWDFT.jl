@@ -48,7 +48,7 @@ function Electrons( atoms::Atoms, Pspots::Array{PsPot_GTH,1};
     
     if Nspin == 1
         for ist = 1:Nstates_occ-1
-            Focc[ist,:] = 2.0
+            Focc[ist,:] .= 2.0
         end
         if is_odd
             Focc[Nstates_occ,:] .= 1.0
@@ -62,9 +62,9 @@ function Electrons( atoms::Atoms, Pspots::Array{PsPot_GTH,1};
         idx_up = 1:Nkpt
         if is_odd
             # assign only to the spin up
-            Focc[Nstates_occ,idx_up] = 1.0
+            Focc[Nstates_occ,idx_up] .= 1.0
         else
-            Focc[Nstates_occ,:] = 1.0
+            Focc[Nstates_occ,:] .= 1.0
         end
     end
 
@@ -215,8 +215,9 @@ function println( electrons::Electrons, all_states=false )
         @printf(".....\n")
         #
         for ist = Nstates-3:Nstates
+            @printf("states #%4d = ", ist)
             for iks = 1:Nkspin
-                @printf("state #%4d = %8.5f ", ist, Focc[ist,iks])
+                @printf("%8.5f ", Focc[ist,iks])
             end
             @printf("\n")
         end

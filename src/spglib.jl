@@ -59,8 +59,9 @@ This function try to reduce number of atoms by exploting crystal symmetry.
 """
 function reduce_atoms( atoms::Atoms; symprec=1e-5 )
 
-    lattice = copy(atoms.LatVecs)'
-    positions = inv_m3x3(atoms.LatVecs)*copy(atoms.positions) # convert to fractional coordinates
+    #lattice = copy(atoms.LatVecs)'
+    lattice = transpose_m3x3(atoms.LatVecs)
+    positions = inv_m3x3(atoms.LatVecs)*atoms.positions # convert to fractional coordinates
 
     num_atom = Base.cconvert( Int32, atoms.Natoms )
     types = Base.cconvert(Array{Int32,1}, atoms.atm2species)
@@ -72,12 +73,14 @@ function reduce_atoms( atoms::Atoms; symprec=1e-5 )
 
     # Prepare for reduced Atoms
     Natoms = Base.cconvert( Int64, num_primitive_atom )
-    LatVecs = lattice'
+
+    # Transpose back
+    LatVecs = transpose_m3x3(lattice)
     positions = LatVecs*positions[:,1:num_primitive_atom]
     atm2species = Base.cconvert( Array{Int64,1}, types[1:num_primitive_atom] )
     Nspecies = atoms.Nspecies
     SpeciesSymbols = atoms.SpeciesSymbols
-    atsymbs = Array{String}(Natoms)
+    atsymbs = Array{String}(undef,Natoms)
     for ia = 1:Natoms
         isp = atm2species[ia]
         atsymbs[ia] = SpeciesSymbols[isp]
@@ -90,12 +93,12 @@ end
 
 function spg_find_primitive( atoms::Atoms; symprec=1e-5)
 
-# We need to transpose lattice
-# For positions we don't need to transpose it.
+    # We need to transpose lattice
+    # For positions we don't need to transpose it.
 
     #lattice = copy(atoms.LatVecs)'
     lattice = transpose_m3x3(atoms.LatVecs)
-    positions = inv_m3x3(atoms.LatVecs)*copy(atoms.positions) # convert to fractional coordinates
+    positions = inv_m3x3(atoms.LatVecs)*atoms.positions # convert to fractional coordinates
 
     num_atom = Base.cconvert( Int32, atoms.Natoms )
     types = Base.cconvert(Array{Int32,1}, atoms.atm2species)
@@ -111,31 +114,32 @@ end
 
 
 function spg_get_ir_reciprocal_mesh(
-             atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{Int64,1};
+             atoms::Atoms, meshk::Array{Int64,1}, is_shift::Array{Int64,1};
              is_time_reversal=1, symprec=1e-5
          )
 
     #lattice = copy(atoms.LatVecs)'
     lattice = transpose_m3x3(atoms.LatVecs)
-    positions = inv_m3x3(atoms.LatVecs)*copy(atoms.positions) # convert to fractional coordinates
+    positions = inv_m3x3(atoms.LatVecs)*atoms.positions # convert to fractional coordinates
 
-    cmesh = Base.cconvert( Array{Cint,1}, mesh )
-    cis_shift = Base.cconvert( Array{Cint,1}, is_shift )
-    ctypes = Base.cconvert( Array{Cint,1}, atoms.atm2species)
-    num_atom = Base.cconvert( Cint, atoms.Natoms )
-    is_t_rev = Base.cconvert( Cint, is_time_reversal )
+    cmeshk = Base.cconvert( Array{Int32,1}, meshk )
+    cis_shift = Base.cconvert( Array{Int32,1}, is_shift )
+    ctypes = Base.cconvert( Array{Int32,1}, atoms.atm2species)
+    num_atom = Base.cconvert( Int32, atoms.Natoms )
+    is_t_rev = Base.cconvert( Int32, is_time_reversal )
 
     # Prepare for output
-    Nkpts = prod(mesh)
-    kgrid = zeros(Cint,3,Nkpts)
-    mapping = zeros(Cint,Nkpts)
-    
+    Nkpts = prod(meshk)
+    kgrid = zeros(Int32,3,Nkpts)
+    mapping = zeros(Int32,Nkpts)
+
     num_ir =
-    ccall((:spg_get_ir_reciprocal_mesh, SPGLIB_SO_PATH), Cint,
-        (Ptr{Cint}, Ptr{Cint}, Ptr{Cint}, Ptr{Cint}, Cint, Ptr{Float64}, Ptr{Float64}, 
-        Ptr{Cint}, Cint, Float64),
-        kgrid, mapping, cmesh, cis_shift, is_t_rev,
-        lattice, positions, ctypes, num_atom, symprec)
+    ccall((:spg_get_ir_reciprocal_mesh, SPGLIB_SO_PATH), Int32,
+          (Ptr{Int32}, Ptr{Int32}, Ptr{Int32},
+           Ptr{Int32}, Int32, Ptr{Float64}, Ptr{Float64}, 
+           Ptr{Int32}, Int32, Float64),
+           kgrid, mapping, cmeshk, cis_shift, is_t_rev,
+           lattice, positions, ctypes, num_atom, symprec)
     
     return Base.cconvert(Int64, num_ir),
            Base.cconvert(Array{Int64,2}, kgrid),

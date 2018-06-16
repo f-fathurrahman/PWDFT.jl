@@ -12,6 +12,8 @@ function gen_lattice_cubic( a::Float64 )
     return LL
 end
 
+gen_lattice_sc = gen_lattice_cubic
+
 function gen_lattice_fcc( a::Float64 )
     v1 = 0.5*a*[-1,0,1]
     v2 = 0.5*a*[0,1,1]

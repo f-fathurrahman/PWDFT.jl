@@ -3,7 +3,7 @@
 # kT = smearing width
 function smear_FD( ev::Array{Float64,1}, efermi::Float64, kT::Float64; Nspin=1 )
     #
-    x = (ev[:] - efermi)/kT
+    x = (ev[:] .- efermi)/kT
     #
     Nstates = length(ev)
     f = zeros(Nstates)
