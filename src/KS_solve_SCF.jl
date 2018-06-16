@@ -136,6 +136,7 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
 
         elseif update_psi == "CheFSI"
             
+            for ispin = 1:Nspin
             for ik = 1:Nkpt
                 Ham.ik = ik
                 Ham.ispin = ispin
@@ -143,6 +144,7 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
                 ub, lb = get_ub_lb_lanczos( Ham, Nstates*2 )
                 psiks[ikspin] = chebyfilt( Ham, psiks[ikspin], cheby_degree, lb, ub)
                 psiks[ikspin] = ortho_gram_schmidt( psiks[ik] )
+            end
             end
 
         else
@@ -225,7 +227,7 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
             Ham.ik = ik
             Ham.ispin = ispin
             ikspin = ik + (ispin - 1)*Nkpt
-            Hr = psik[ikspin]' * op_H( Ham, psiks[ikspin] )
+            Hr = psiks[ikspin]' * op_H( Ham, psiks[ikspin] )
             evals[:,ikspin] = real(eigvals(Hr))
         end
         end
