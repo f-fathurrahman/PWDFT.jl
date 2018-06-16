@@ -1,5 +1,5 @@
 function KS_solve_SCF!( Ham::PWHamiltonian ;
-                       startingwfc=nothing, savewfc=true,
+                       startingwfc=nothing, savewfc=false,
                        β = 0.5, NiterMax=100, verbose=false,
                        check_rhoe_after_mix=false,
                        update_psi="LOBPCG", cheby_degree=8,

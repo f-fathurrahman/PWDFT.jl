@@ -1,6 +1,6 @@
 function KS_solve_DCM!( Ham::PWHamiltonian;
                         NiterMax = 100, startingwfc=nothing,
-                        savewfc=true, ETOT_CONV_THR=1e-6 )
+                        savewfc=false, ETOT_CONV_THR=1e-6 )
 
 
 	pw = Ham.pw

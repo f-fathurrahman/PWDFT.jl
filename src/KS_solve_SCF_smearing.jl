@@ -1,5 +1,5 @@
 function KS_solve_SCF_smearing!( Ham::PWHamiltonian ;
-                       startingwfc=nothing, savewfc=true,
+                       startingwfc=nothing, savewfc=false,
                        β = 0.5, NiterMax=100, verbose=false,
                        check_rhoe_after_mix=false,
                        update_psi="LOBPCG", cheby_degree=8,
@@ -19,7 +19,7 @@ function KS_solve_SCF_smearing!( Ham::PWHamiltonian ;
     Nspin = electrons.Nspin
     Nkspin = Nkpt*Nspin
 
-    psiks = Array{Array{ComplexF64,2},1}(Nkspin)
+    psiks = Array{Array{ComplexF64,2},1}(undef,Nkspin)
 
     #
     # Random guess of wave function

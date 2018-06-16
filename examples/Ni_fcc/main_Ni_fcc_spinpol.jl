@@ -1,4 +1,4 @@
-push!(LOAD_PATH, "../../src")
+push!(LOAD_PATH, "../../src/")
 
 using Printf
 using PWDFT
@@ -20,7 +20,7 @@ function test_main()
     pspfiles = ["../../pseudopotentials/pade_gth/Ni-q18.gth"]
     ecutwfc_Ry = 30.0
     Ham = PWHamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, xcfunc="LDA",
-                         Nspin=1, meshk=[3,3,3], verbose=true, extra_states=1 )
+                         Nspin=2, meshk=[3,3,3], verbose=true, extra_states=1 )
 
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( atoms )
