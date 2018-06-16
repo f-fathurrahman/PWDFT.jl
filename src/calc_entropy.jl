@@ -3,7 +3,7 @@
 function calc_entropy( Focc::Array{Float64,2}, wk::Array{Float64,1},
                        kT::Float64; Nspin=1 )
     #
-    const SMALL = 1.e-10
+    SMALL = 1.e-10
     
     Nstates = size(Focc)[1]
     Nkspin = size(Focc)[2]

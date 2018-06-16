@@ -59,9 +59,9 @@ function c_R_to_G( Ns::Tuple{Int64,Int64,Int64}, fR::Array{ComplexF64,2} )
 end
 
 
-
-"""Using plan_fft and plan_ifft"""
-
+#
+# Using plan_fft and plan_ifft
+#
 
 function G_to_R( pw::PWGrid, fG::Array{ComplexF64,1} )
     Ns = pw.Ns

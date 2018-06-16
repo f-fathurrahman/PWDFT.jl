@@ -7,6 +7,7 @@ function diag_lobpcg( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
 
     pw = Ham.pw
     # get size info
+    Nbasis = size(X0)[1]
     Nstates = size(X0)[2]
 
     # orthonormalize the initial wave functions.
@@ -17,6 +18,9 @@ function diag_lobpcg( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
     nconv = 0
     iter = 1
     resnrm = ones(Nstates,1)
+
+    P = zeros(ComplexF64,Nbasis,Nstates)
+    HP = zeros(ComplexF64,Nbasis,Nstates)
 
     sum_evals = 0.0
     sum_evals_old = 0.0

@@ -46,7 +46,7 @@ function gen_kgrid_reduced( atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{
     wk = kcount[:]/sum(kcount)
 
     # convert to cartesian
-    RecVecs = 2*pi*inv(atoms.LatVecs')
+    RecVecs = 2*pi*invTrans_m3x3(atoms.LatVecs)
     kred = RecVecs*kred
     return kred, wk
 
@@ -60,7 +60,7 @@ This function try to reduce number of atoms by exploting crystal symmetry.
 function reduce_atoms( atoms::Atoms; symprec=1e-5 )
 
     lattice = copy(atoms.LatVecs)'
-    positions = inv(atoms.LatVecs)*copy(atoms.positions) # convert to fractional coordinates
+    positions = inv_m3x3(atoms.LatVecs)*copy(atoms.positions) # convert to fractional coordinates
 
     num_atom = Base.cconvert( Int32, atoms.Natoms )
     types = Base.cconvert(Array{Int32,1}, atoms.atm2species)
@@ -93,8 +93,9 @@ function spg_find_primitive( atoms::Atoms; symprec=1e-5)
 # We need to transpose lattice
 # For positions we don't need to transpose it.
 
-    lattice = copy(atoms.LatVecs)'
-    positions = inv(atoms.LatVecs)*copy(atoms.positions) # convert to fractional coordinates
+    #lattice = copy(atoms.LatVecs)'
+    lattice = transpose_m3x3(atoms.LatVecs)
+    positions = inv_m3x3(atoms.LatVecs)*copy(atoms.positions) # convert to fractional coordinates
 
     num_atom = Base.cconvert( Int32, atoms.Natoms )
     types = Base.cconvert(Array{Int32,1}, atoms.atm2species)
@@ -114,8 +115,9 @@ function spg_get_ir_reciprocal_mesh(
              is_time_reversal=1, symprec=1e-5
          )
 
-    lattice = copy(atoms.LatVecs)'
-    positions = inv(atoms.LatVecs)*copy(atoms.positions) # convert to fractional coordinates
+    #lattice = copy(atoms.LatVecs)'
+    lattice = transpose_m3x3(atoms.LatVecs)
+    positions = inv_m3x3(atoms.LatVecs)*copy(atoms.positions) # convert to fractional coordinates
 
     cmesh = Base.cconvert( Array{Cint,1}, mesh )
     cis_shift = Base.cconvert( Array{Cint,1}, is_shift )

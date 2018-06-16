@@ -112,7 +112,7 @@ end
 import Base.println
 function println( psp::PsPot_GTH )
 
-    const ANGMOM = ["s", "p", "d", "f"]
+    ANGMOM = ["s", "p", "d", "f"]
 
     Nproj_l = psp.Nproj_l
     c = psp.c
@@ -193,8 +193,8 @@ function eval_Vloc_G( psp::PsPot_GTH, G2::Float64 )
     Gr = sqrt(G2)*rloc
     expGr2 = exp(-0.5*Gr^2)
 
-    const SMALL = 1.0e-8
-    #const SMALL = eps()
+    SMALL = 1.0e-8
+    #SMALL = eps()
 
     if sqrt(G2) > SMALL
         Vg = pre1/G2*expGr2 + pre2*expGr2 * (c1 + c2*(3.0 - Gr^2) +

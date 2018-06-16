@@ -1,3 +1,5 @@
+push!(LOAD_PATH, "../../src")
+
 using PWDFT
 
 function test_main( ; method="SCF" )

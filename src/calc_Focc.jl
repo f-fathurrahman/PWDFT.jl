@@ -8,8 +8,8 @@ function calc_Focc( evals::Array{Float64,2}, wk::Array{Float64,1},
     Nkspin = size(evals)[2]
     Nkpt = round(Int64,Nkspin/Nspin)
 
-    const TOL = 1e-10
-    const MAXITER = 500
+    TOL = 1e-10
+    MAXITER = 500
 
     Focc = zeros(Nstates,Nkspin)
     Nocc = max( round(Int64,Nelectrons/2), 1 ) # guard against Nelectrons==1
@@ -191,8 +191,8 @@ function calc_Focc( evals::Array{Float64,1}, Nelectrons::Float64, kT::Float64;
                     is_spinpol=false, verbose=false )
 
     Nstates = length(evals)
-    const TOL = 1e-10
-    const MAXITER = 100
+    TOL = 1e-10
+    MAXITER = 100
 
     Focc = zeros(Nstates)
     Nocc = round(Int64,Nelectrons/2)  # normally

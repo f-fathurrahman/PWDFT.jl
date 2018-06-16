@@ -1,6 +1,6 @@
 function Ylm_complex( l::Int64, m::Int64, R::Array{Float64,1} )
 
-    const SMALL = 1.0e-9
+    SMALL = 1.0e-9
 
     x = R[1]
     y = R[2]

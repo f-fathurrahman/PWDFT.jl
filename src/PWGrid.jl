@@ -30,11 +30,87 @@ struct PWGrid
     r::Array{Float64,2}
     gvec::GVectors
     gvecw::GVectorsW
-    planfw::FFTW.cFFTWPlan{Complex{Float64},-1,false,1}
-    planbw::AbstractFFTs.ScaledPlan{Complex{Float64},FFTW.cFFTWPlan{Complex{Float64},1,false,1},Float64}
-    #planfw::Base.DFT.FFTW.cFFTWPlan{Complex{Float64},-1,false,3}
-    #planbw::Base.DFT.ScaledPlan{Complex{Float64},Base.DFT.FFTW.cFFTWPlan{Complex{Float64},1,false,3},Float64}
+    planfw::FFTW.cFFTWPlan{Complex{Float64},-1,false,3}
+    planbw::AbstractFFTs.ScaledPlan{Complex{Float64},FFTW.cFFTWPlan{Complex{Float64},1,false,3},Float64}
 end
+
+
+function inv_m3x3( A::Array{Float64,2} )
+
+    assert( (size(A)[1] == 3) && (size(A)[2] == 3) )
+
+    # inverse determinant of the matrix
+    detinv = 1.0/( A[1,1]*A[2,2]*A[3,3] - A[1,1]*A[2,3]*A[3,2]
+                 - A[1,2]*A[2,1]*A[3,3] + A[1,2]*A[2,3]*A[3,1]
+                 + A[1,3]*A[2,1]*A[3,2] - A[1,3]*A[2,2]*A[3,1] )
+
+    B = zeros(Float64,3,3)
+    
+    # inverse
+    B[1,1] =  detinv * (A[2,2]*A[3,3] - A[2,3]*A[3,2])
+    B[2,1] = -detinv * (A[2,1]*A[3,3] - A[2,3]*A[3,1])
+    B[3,1] =  detinv * (A[2,1]*A[3,2] - A[2,2]*A[3,1])
+
+    B[1,2] = -detinv * (A[1,2]*A[3,3] - A[1,3]*A[3,2])
+    B[2,2] =  detinv * (A[1,1]*A[3,3] - A[1,3]*A[3,1])
+    B[3,2] = -detinv * (A[1,1]*A[3,2] - A[1,2]*A[3,1])
+
+    B[1,3] =  detinv * (A[1,2]*A[2,3] - A[1,3]*A[2,2])
+    B[2,3] = -detinv * (A[1,1]*A[2,3] - A[1,3]*A[2,1])
+    B[3,3] =  detinv * (A[1,1]*A[2,2] - A[1,2]*A[2,1])
+
+    return B
+end
+
+
+function invTrans_m3x3( A::Array{Float64,2} )
+
+    assert( (size(A)[1] == 3) && (size(A)[2] == 3) )
+
+    # inverse determinant of the matrix
+    detinv = 1.0/( A[1,1]*A[2,2]*A[3,3] - A[1,1]*A[2,3]*A[3,2]
+                 - A[1,2]*A[2,1]*A[3,3] + A[1,2]*A[2,3]*A[3,1]
+                 + A[1,3]*A[2,1]*A[3,2] - A[1,3]*A[2,2]*A[3,1] )
+
+    B = zeros(Float64,3,3)
+    
+    # inverse and transpose
+    B[1,1] =  detinv * (A[2,2]*A[3,3] - A[2,3]*A[3,2])
+    B[1,2] = -detinv * (A[2,1]*A[3,3] - A[2,3]*A[3,1])
+    B[1,3] =  detinv * (A[2,1]*A[3,2] - A[2,2]*A[3,1])
+
+    B[2,1] = -detinv * (A[1,2]*A[3,3] - A[1,3]*A[3,2])
+    B[2,2] =  detinv * (A[1,1]*A[3,3] - A[1,3]*A[3,1])
+    B[2,3] = -detinv * (A[1,1]*A[3,2] - A[1,2]*A[3,1])
+
+    B[3,1] =  detinv * (A[1,2]*A[2,3] - A[1,3]*A[2,2])
+    B[3,2] = -detinv * (A[1,1]*A[2,3] - A[1,3]*A[2,1])
+    B[3,3] =  detinv * (A[1,1]*A[2,2] - A[1,2]*A[2,1])
+
+    return B
+end
+
+function transpose_m3x3( A::Array{Float64,2} )
+    assert( (size(A)[1] == 3) && (size(A)[2] == 3) )
+
+    B = zeros(Float64,3,3)
+
+    B[1,1] = A[1,1]
+    B[1,2] = A[2,1]
+    B[1,3] = A[3,1]
+
+    B[2,1] = A[1,2]
+    B[2,2] = A[2,2]
+    B[2,3] = A[3,2]
+
+    B[3,1] = B[1,3]
+    B[3,2] = B[2,3]
+    B[3,3] = A[3,3]
+    
+    return B
+end
+
+
 
 """
 LatVecs defines three lattice vectors: v1, v2, and v3 arranged by column.
@@ -43,7 +119,9 @@ function PWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2}; kpoints=nothing )
 
     ecutrho = 4.0*ecutwfc
     #
-    RecVecs = 2*pi*inv(LatVecs')
+    #RecVecs = 2*pi*inv(LatVecs')
+    RecVecs = 2*pi*invTrans_m3x3(LatVecs)
+
     Ω = det(LatVecs)
     #
     LatVecsLen = Array{Float64}(3)
@@ -170,7 +248,7 @@ function init_gvecw( ecutwfc, gvec::GVectors, kpoints::KPoints )
             Gk[:] = G[:,ig] .+ kpts[:,ik]
             Gk2[ig] = Gk[1]^2 + Gk[2]^2 + Gk[3]^2
         end
-        idx_gw2g[ik] = findn( 0.5*Gk2 .< ecutwfc )
+        idx_gw2g[ik] = findall( 0.5*Gk2 .< ecutwfc )
         idx_gw2r[ik] = idx_g2r[idx_gw2g[ik]]
         Ngw[ik] = length(idx_gw2g[ik])
         #@printf("ik = %8d, k = [%10.5f,%10.5f,%10.5f]\n",

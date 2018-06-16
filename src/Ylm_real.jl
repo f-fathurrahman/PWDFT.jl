@@ -4,7 +4,7 @@
 #
 function Ylm_real( l::Int64, m::Int64, R::Array{Float64,1} )
 
-    const SMALL = 1.0e-9
+    SMALL = 1.0e-9
 
     Rmod = sqrt( R[1]^2 + R[2]^2 + R[3]^2 )
     if Rmod < SMALL

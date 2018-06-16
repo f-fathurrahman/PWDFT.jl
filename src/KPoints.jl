@@ -13,7 +13,7 @@ function KPoints( atoms::Atoms )
     Nkpt = 1
     k = zeros(3,1)
     wk = [0.0]
-    RecVecs = 2*pi*inv(LatVecs')
+    RecVecs = 2*pi*invTrans_m3x3(LatVecs)
     return KPoints( Nkpt, k, wk, RecVecs )
 end
 
@@ -102,7 +102,7 @@ function KPoints( atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{Int64,1};
     wk = kcount[:]/sum(kcount)
 
     # need to calculate this here because PWGrid instance is not passed
-    RecVecs = 2*pi*inv(atoms.LatVecs')
+    RecVecs = 2*pi*invTrans_m3x3(atoms.LatVecs)
     
     kred = RecVecs*kred
 

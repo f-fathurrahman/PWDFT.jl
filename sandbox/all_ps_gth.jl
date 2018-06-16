@@ -1,3 +1,5 @@
+push!(LOAD_PATH, "../src")
+
 using PWDFT
 
 const ALL_PS_PADE_GTH = """

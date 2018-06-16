@@ -78,7 +78,7 @@ function init_atoms_xyz(filexyz; in_bohr=false, verbose=false)
     l = readline(f)
     Natoms = parse(Int64, l)
     positions = zeros(3,Natoms)
-    atsymbs = Array{String}(Natoms)
+    atsymbs = Array{String}(undef,Natoms)
     l = readline(f)
     for ia = 1:Natoms
         ll = split( readline(f) )
@@ -298,7 +298,7 @@ function get_atm2species( atsymbs, SpeciesSymbols )
     Natoms = size(atsymbs)[1]
     Nspecies = size(SpeciesSymbols)[1]
 
-    atm2species = Array{Int64}(Natoms)
+    atm2species = Array{Int64}(undef,Natoms)
 
     for ia = 1:Natoms
         for isp = 1:Nspecies

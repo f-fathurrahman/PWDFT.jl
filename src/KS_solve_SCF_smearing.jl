@@ -55,7 +55,7 @@ function KS_solve_SCF_smearing!( Ham::PWHamiltonian ;
 
     evals = zeros(Float64,Nstates,Nkspin)
 
-    const ETHR_EVALS_LAST = 1e-6
+    ETHR_EVALS_LAST = 1e-6
 
     ethr = 0.1
 
