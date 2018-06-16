@@ -54,7 +54,7 @@ function test_main( ; method="SCF" )
 
 end
 
-#@time test_main(method="Emin")
+@time test_main(method="Emin")
 #@time test_main(method="SCF")
-@time test_main(method="CheFSI")
+#@time test_main(method="CheFSI")
 #@time test_main(method="DCM")

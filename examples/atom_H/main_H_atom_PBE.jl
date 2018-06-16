@@ -1,3 +1,6 @@
+push!(LOAD_PATH, "../../src")
+
+using Printf
 using PWDFT
 
 function test_main( ; method="SCF" )
