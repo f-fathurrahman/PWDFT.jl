@@ -15,59 +15,73 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian;
     Ngw = pw.gvecw.Ngw
     Ngwx = pw.gvecw.Ngwx
     Nkpt = pw.gvecw.kpoints.Nkpt
+    Nspin = Ham.electrons.Nspin
+    Nkspin = Nkpt*Nspin
 
-    psik = Array{Array{ComplexF64,2},1}(undef,Nkpt)
+    println("Nkspin = ", Nkspin)
+    psiks = Array{Array{ComplexF64,2},1}(undef,Nkspin)
 
     #
     # Initial wave function
     #
     if startingwfc == nothing
         srand(1234)
+        for ispin = 1:Nspin
         for ik = 1:Nkpt
+            ikspin = ik + (ispin-1)*Nkpt
             psi = rand(ComplexF64,Ngw[ik],Nstates)
-            psik[ik] = ortho_gram_schmidt(psi)
+            psiks[ikspin] = ortho_gram_schmidt(psi)
+        end
         end
     else
-        psi = startingwfc
+        psiks = startingwfc
     end
 
     #
     # Calculated electron density from this wave function and
     # update Hamiltonian (calculate Hartree and XC potential).
     #
-    rhoe = calc_rhoe( pw, Focc, psik )
-    update!(Ham, rhoe)
+    Rhoe = zeros(Float64,Npoints,Nspin)
+    for ispin = 1:Nspin
+        idxset = (Nkpt*(ispin-1)+1):(Nkpt*ispin)
+        Rhoe[:,ispin] = calc_rhoe( pw, Focc[:,idxset], psiks[idxset] )
+    end
+    update!(Ham, Rhoe)
+
 
     #
     # Variables for PCG
     #
-    g = Array{Array{ComplexF64,2},1}(undef,Nkpt)
-    d = Array{Array{ComplexF64,2},1}(undef,Nkpt)
-    g_old = Array{Array{ComplexF64,2},1}(undef,Nkpt)
-    d_old = Array{Array{ComplexF64,2},1}(undef,Nkpt)
-    Kg = Array{Array{ComplexF64,2},1}(undef,Nkpt)
-    Kg_old = Array{Array{ComplexF64,2},1}(undef,Nkpt)
-    psic = Array{Array{ComplexF64,2},1}(undef,Nkpt)
-    gt = Array{Array{ComplexF64,2},1}(undef,Nkpt)
+    g = Array{Array{ComplexF64,2},1}(undef,Nkspin)
+    d = Array{Array{ComplexF64,2},1}(undef,Nkspin)
+    g_old = Array{Array{ComplexF64,2},1}(undef,Nkspin)
+    d_old = Array{Array{ComplexF64,2},1}(undef,Nkspin)
+    Kg = Array{Array{ComplexF64,2},1}(undef,Nkspin)
+    Kg_old = Array{Array{ComplexF64,2},1}(undef,Nkspin)
+    psic = Array{Array{ComplexF64,2},1}(undef,Nkspin)
+    gt = Array{Array{ComplexF64,2},1}(undef,Nkspin)
     #
+    for ispin = 1:Nspin
     for ik = 1:Nkpt
-        g[ik] = zeros(ComplexF64, Ngw[ik], Nstates)
-        d[ik] = zeros(ComplexF64, Ngw[ik], Nstates)
-        g_old[ik] = zeros(ComplexF64, Ngw[ik], Nstates)
-        d_old[ik] = zeros(ComplexF64, Ngw[ik], Nstates)
-        Kg[ik] = zeros(ComplexF64, Ngw[ik], Nstates)
-        Kg_old[ik] = zeros(ComplexF64, Ngw[ik], Nstates)
-        psic[ik] = zeros(ComplexF64, Ngw[ik], Nstates)
-        gt[ik] = zeros(ComplexF64, Ngw[ik], Nstates)
+        ikspin = ik + (ispin - 1)*Nkpt
+        g[ikspin] = zeros(ComplexF64, Ngw[ik], Nstates)
+        d[ikspin] = zeros(ComplexF64, Ngw[ik], Nstates)
+        g_old[ikspin] = zeros(ComplexF64, Ngw[ik], Nstates)
+        d_old[ikspin] = zeros(ComplexF64, Ngw[ik], Nstates)
+        Kg[ikspin] = zeros(ComplexF64, Ngw[ik], Nstates)
+        Kg_old[ikspin] = zeros(ComplexF64, Ngw[ik], Nstates)
+        psic[ikspin] = zeros(ComplexF64, Ngw[ik], Nstates)
+        gt[ikspin] = zeros(ComplexF64, Ngw[ik], Nstates)
+    end
     end
     
-    β = zeros(Nkpt)
-    α = zeros(Nkpt)
+    β = zeros(Nkspin)
+    α = zeros(Nkspin)
 
     Etot_old = 0.0
 
     # Calculate energy at this psi
-    energies = calc_energies(Ham, psik)
+    energies = calc_energies(Ham, psiks)
     Ham.energies = energies
 
     Etot = energies.Total
@@ -96,67 +110,82 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian;
 
     for iter = 1:NiterMax
 
+        for ispin = 1:Nspin
         for ik = 1:Nkpt
 
             Ham.ik = ik
-            g[ik] = calc_grad( Ham, psik[ik] )
-            Kg[ik] = Kprec( Ham.ik, pw, g[ik] )
+            Ham.ispin = ispin
+            ikspin = ik + (ispin - 1)*Nkpt
+
+            g[ikspin] = calc_grad( Ham, psiks[ikspin] )
+            Kg[ikspin] = Kprec( Ham.ik, pw, g[ikspin] )
 
             # XXX: define function trace for real(sum(conj(...)))
             if iter != 1
                 if I_CG_BETA == 1
-                    β[ik] =
-                    real(sum(conj(g[ik]).*Kg[ik]))/real(sum(conj(g_old[ik]).*Kg_old[ik]))
+                    β[ikspin] =
+                    real(sum(conj(g[ikspin]).*Kg[ikspin]))/real(sum(conj(g_old[ikspin]).*Kg_old[ikspin]))
                 elseif I_CG_BETA == 2
-                    β[ik] =
-                    real(sum(conj(g[ik]-g_old[ik]).*Kg[ik]))/real(sum(conj(g_old[ik]).*Kg_old[ik]))
+                    β[ikspin] =
+                    real(sum(conj(g[ikspin]-g_old[ikspin]).*Kg[ikspin]))/real(sum(conj(g_old[ikspin]).*Kg_old[ikspin]))
                 elseif I_CG_BETA == 3
-                    β[ik] =
-                    real(sum(conj(g[ik]-g_old[ik]).*Kg[ik]))/real(sum(conj(g[ik]-g_old[ik]).*d[ik]))
+                    β[ikspin] =
+                    real(sum(conj(g[ikspin]-g_old[ikspin]).*Kg[ikspin]))/real(sum(conj(g[ikspin]-g_old[ikspin]).*d[ikspin]))
                 else
-                    β[ik] =
-                    real(sum(conj(g[ik]).*Kg[ik]))/real(sum((g[ik]-g_old[ik]).*conj(d_old[ik])))
+                    β[ikspin] =
+                    real(sum(conj(g[ikspin]).*Kg[ikspin]))/real(sum((g[ikspin]-g_old[ikspin]).*conj(d_old[ikspin])))
                 end
             end
-            if β[ik] < 0.0
+            if β[ikspin] < 0.0
                 if verbose
                     @printf("β is smaller than 0, setting it to zero\n")
                 end
-                β[ik] = 0.0
+                β[ikspin] = 0.0
             end
 
-            d[ik] = -Kg[ik] + β[ik] * d_old[ik]
+            d[ikspin] = -Kg[ikspin] + β[ikspin] * d_old[ikspin]
 
-            psic[ik] = ortho_gram_schmidt(psik[ik] + α_t*d[ik])
-        end
-
-        rhoe = calc_rhoe( pw, Focc, psic )
+            psic[ikspin] = ortho_gram_schmidt(psiks[ikspin] + α_t*d[ikspin])
+        end # ik
+        end # ispin
         #
-        update!(Ham, rhoe)
+        for ispin = 1:Nspin
+            idxset = (Nkpt*(ispin-1)+1):(Nkpt*ispin)
+            Rhoe[:,ispin] = calc_rhoe( pw, Focc[:,idxset], psiks[idxset] )
+        end
+        #
+        update!(Ham, Rhoe)
 
+        for ispin = 1:Nspin
         for ik = 1:Nkpt
             Ham.ik = ik
-            gt[ik] = calc_grad(Ham, psic[ik])
+            Ham.ispin = ispin
+            ikspin = ik + (ispin - 1)*Nkpt
+            gt[ikspin] = calc_grad(Ham, psic[ikspin])
 
-            denum = real(sum(conj(g[ik]-gt[ik]).*d[ik]))
+            denum = real(sum(conj(g[ikspin]-gt[ikspin]).*d[ikspin]))
             if denum != 0.0
-                α[ik] = abs( α_t*real(sum(conj(g[ik]).*d[ik]))/denum )
+                α[ikspin] = abs( α_t*real(sum(conj(g[ikspin]).*d[ikspin]))/denum )
             else
-                α[ik] = 0.0
+                α[ikspin] = 0.0
             end
 
             # Update wavefunction
-            psik[ik] = psik[ik] + α[ik]*d[ik]
+            psiks[ikspin] = psiks[ikspin] + α[ikspin]*d[ikspin]
 
             # Update potentials
-            psik[ik] = ortho_gram_schmidt(psik[ik])
+            psiks[ikspin] = ortho_gram_schmidt(psiks[ikspin])
+        end
         end
 
-        rhoe = calc_rhoe( pw, Focc, psik )
+        for ispin = 1:Nspin
+            idxset = (Nkpt*(ispin-1)+1):(Nkpt*ispin)
+            Rhoe[:,ispin] = calc_rhoe( pw, Focc[:,idxset], psiks[idxset] )
+        end
 
-        update!(Ham, rhoe)
+        update!(Ham, Rhoe)
 
-        Ham.energies = calc_energies( Ham, psik )
+        Ham.energies = calc_energies( Ham, psiks )
         Etot = Ham.energies.Total
         diff = abs(Etot-Etot_old)
 
@@ -184,22 +213,27 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian;
     end
 
     # Calculate eigenvalues
+    for ispin = 1:Nspin
     for ik = 1:Nkpt
         Ham.ik = ik
-        psik[ik] = ortho_gram_schmidt(psik[ik])
-        Hr = psik[ik]' * op_H( Ham, psik[ik] )
+        Ham.ispin = ispin
+        ikspin = ik + (ispin - 1)*Nkpt
+        psiks[ikspin] = ortho_gram_schmidt(psiks[ikspin])
+        Hr = psiks[ikspin]' * op_H( Ham, psiks[ikspin] )
         evals, evecs = eigen(Hr)
-        Ham.electrons.ebands[:,ik] = real(evals[:])
-        psik[ik] = psik[ik]*evecs
+        Ham.electrons.ebands[:,ikspin] = real(evals[:])
+        psiks[ikspin] = psiks[ikspin]*evecs
+    end
     end
 
     if savewfc
-        for ik = 1:Nkpt
-            wfc_file = open("WFC_k_"*string(ik)*".data","w")
-            write( wfc_file, psik[ik] )
+        for ikspin = 1:Nkpt*Nspin
+            wfc_file = open("WFC_ikspin_"*string(ikspin)*".data","w")
+            write( wfc_file, psiks[ikspin] )
             close( wfc_file )
         end
     end
+
 
     return
 

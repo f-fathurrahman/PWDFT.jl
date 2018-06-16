@@ -1,3 +1,6 @@
+push!(LOAD_PATH, "../../src")
+
+using Printf
 using PWDFT
 
 function test_main()
@@ -15,11 +18,11 @@ function test_main()
     write_xsf( "TEMP_Si.xsf", atoms )
 
     # Initialize Hamiltonian
-    #pspfiles = ["../../pseudopotentials/pade_gth/Si-q4.gth"]
-    pspfiles = ["../../pseudopotentials/pbe_gth/Si-q4.gth"]
+    pspfiles = ["../../pseudopotentials/pade_gth/Si-q4.gth"]
+    #pspfiles = ["../../pseudopotentials/pbe_gth/Si-q4.gth"]
     ecutwfc_Ry = 30.0
-    Ham = PWHamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, xcfunc="PBE",
-                         meshk=[3,3,3], verbose=true, Nspin=2, extra_states=3 )
+    Ham = PWHamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, xcfunc="VWN",
+                         meshk=[3,3,3], verbose=true, Nspin=2, extra_states=0 )
 
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( atoms )
@@ -27,8 +30,9 @@ function test_main()
     #
     # Solve the KS problem
     #
+    KS_solve_Emin_PCG!( Ham )
     #KS_solve_SCF!( Ham, update_psi="LOBPCG" )
-    KS_solve_SCF_smearing!( Ham, update_psi="LOBPCG", mix_method="simple" )
+    #KS_solve_SCF_smearing!( Ham, update_psi="LOBPCG", mix_method="simple" )
 
     Nstates = Ham.electrons.Nstates
     ebands = Ham.electrons.ebands

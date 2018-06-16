@@ -1,3 +1,6 @@
+push!(LOAD_PATH, "../../src")
+
+using Printf
 using PWDFT
 
 function test_main( ; method="SCF" )
@@ -29,7 +32,7 @@ function test_main( ; method="SCF" )
         KS_solve_SCF!( Ham, update_psi="PCG" )
 
     elseif method == "Emin"
-        KS_solve_Emin_PCG!( Ham, verbose=true, savewfc=false )
+        KS_solve_Emin_PCG!( Ham, verbose=true )
 
     elseif method == "DCM"
         KS_solve_DCM!( Ham, NiterMax=15 )
