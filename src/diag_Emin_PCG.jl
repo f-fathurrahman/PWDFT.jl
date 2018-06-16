@@ -96,7 +96,7 @@ function diag_Emin_PCG( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
 
     psi = ortho_gram_schmidt(psi)
     Hr = psi' * op_H( Ham, psi )
-    evals, evecs = eig(Hr)
+    evals, evecs = eigen(Hr)
     psi = psi*evecs
 
     return real(evals), psi
