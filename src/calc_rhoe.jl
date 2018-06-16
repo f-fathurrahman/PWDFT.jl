@@ -8,12 +8,12 @@ function calc_rhoe( pw::PWGrid, Focc::Array{Float64,2},
     Npoints = prod(Ns)
     Nstates = size(psik[1])[2]
 
-    cpsi = zeros( ComplexF64, Npoints, Nstates )
-    psiR = zeros( ComplexF64, Npoints, Nstates )
+    cpsi = zeros(ComplexF64, Npoints, Nstates)
+    psiR = zeros(ComplexF64, Npoints, Nstates)
     rho = zeros(Float64,Npoints)
 
     for ik = 1:Nkpt
-        cpsi[:,:] = 0.0 + im*0.0
+        cpsi[:,:] .= 0.0 + im*0.0
         # Transform to real space
         idx = pw.gvecw.idx_gw2r[ik]
         psi = psik[ik]
@@ -21,7 +21,7 @@ function calc_rhoe( pw::PWGrid, Focc::Array{Float64,2},
         psiR = G_to_R(pw, cpsi)
         # orthonormalization in real space
         ortho_gram_schmidt!( Nstates, psiR )
-        scale!( sqrt(Npoints/Ω), psiR )
+        psiR = sqrt(Npoints/Ω)*psiR
         #
         for ist = 1:Nstates
             for ip = 1:Npoints
@@ -66,7 +66,7 @@ function calc_rhoe( ik::Int64, pw::PWGrid, Focc::Array{Float64,2},
 
     # orthonormalization in real space
     ortho_gram_schmidt!( Nstates, psiR )
-    scale!( sqrt(Npoints/Ω), psiR )
+    psiR = sqrt(Npoints/Ω)*psiR
 
     rho = zeros(Float64,Npoints)
     for ist = 1:Nstates

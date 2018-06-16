@@ -54,7 +54,7 @@ function PWHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
     Vg = zeros(ComplexF64, Npoints)
     V_Ps_loc = zeros(Float64, Npoints)
 
-    Pspots = Array{PsPot_GTH}(Nspecies)
+    Pspots = Array{PsPot_GTH}(undef,Nspecies)
 
     for isp = 1:Nspecies
         Pspots[isp] = PsPot_GTH( pspfiles[isp] )

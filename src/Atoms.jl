@@ -132,7 +132,7 @@ function init_atoms_xyz_string(str::String; in_bohr=false, verbose=false)
     l = lines[1]
     Natoms = parse(Int64, l)
     positions = zeros(3,Natoms)
-    atsymbs = Array{String}(Natoms)
+    atsymbs = Array{String}(undef,Natoms)
     #
     for ia = 1:Natoms
         ll = split( lines[2+ia] )
@@ -268,7 +268,7 @@ SpeciesSymbols = unique(str)
 """
 function get_SpeciesSymbols( Nspecies, atsymbs )
     
-	SpeciesSymbols = Array{String}(Nspecies)	
+	SpeciesSymbols = Array{String}(undef,Nspecies)
 	Natoms = size(atsymbs)[1]
 
     idx1 = 0

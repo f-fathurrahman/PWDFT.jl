@@ -37,7 +37,7 @@ end
 
 function inv_m3x3( A::Array{Float64,2} )
 
-    assert( (size(A)[1] == 3) && (size(A)[2] == 3) )
+    @assert( (size(A)[1] == 3) && (size(A)[2] == 3) )
 
     # inverse determinant of the matrix
     detinv = 1.0/( A[1,1]*A[2,2]*A[3,3] - A[1,1]*A[2,3]*A[3,2]
@@ -65,7 +65,7 @@ end
 
 function invTrans_m3x3( A::Array{Float64,2} )
 
-    assert( (size(A)[1] == 3) && (size(A)[2] == 3) )
+    @assert( (size(A)[1] == 3) && (size(A)[2] == 3) )
 
     # inverse determinant of the matrix
     detinv = 1.0/( A[1,1]*A[2,2]*A[3,3] - A[1,1]*A[2,3]*A[3,2]
@@ -90,8 +90,10 @@ function invTrans_m3x3( A::Array{Float64,2} )
     return B
 end
 
+
 function transpose_m3x3( A::Array{Float64,2} )
-    assert( (size(A)[1] == 3) && (size(A)[2] == 3) )
+    
+    @assert( (size(A)[1] == 3) && (size(A)[2] == 3) )
 
     B = zeros(Float64,3,3)
 
@@ -124,7 +126,7 @@ function PWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2}; kpoints=nothing )
 
     Ω = det(LatVecs)
     #
-    LatVecsLen = Array{Float64}(3)
+    LatVecsLen = Array{Float64}(undef,3)
     LatVecsLen[1] = norm(LatVecs[:,1])
     LatVecsLen[2] = norm(LatVecs[:,2])
     LatVecsLen[3] = norm(LatVecs[:,3])
@@ -198,9 +200,9 @@ function init_gvec( Ns, RecVecs, ecutrho )
 
     G_temp = zeros(Float64,3)
 
-    G  = Array{Float64}(3,Ng)
-    G2 = Array{Float64}(Ng)
-    idx_g2r = Array{Int64}(Ng)
+    G  = Array{Float64}(undef,3,Ng)
+    G2 = Array{Float64}(undef,Ng)
+    idx_g2r = Array{Int64}(undef,Ng)
 
     ig = 0
     ip = 0
@@ -239,9 +241,9 @@ function init_gvecw( ecutwfc, gvec::GVectors, kpoints::KPoints )
     #
     Gk2 = zeros(Float64,Ng)
     Gk = zeros(Float64,3)
-    idx_gw2g = Array{Array{Int64,1},1}(Nkpt)
-    idx_gw2r = Array{Array{Int64,1},1}(Nkpt)
-    Ngw = Array{Int64,1}(Nkpt)
+    idx_gw2g = Array{Array{Int64,1},1}(undef,Nkpt)
+    idx_gw2r = Array{Array{Int64,1},1}(undef,Nkpt)
+    Ngw = Array{Int64,1}(undef,Nkpt)
     #
     for ik = 1:Nkpt
         for ig = 1:Ng
@@ -272,7 +274,7 @@ function init_grid_R( Ns, LatVecs )
     #
     Npoints = prod(Ns)
     #
-    R = Array{Float64}(3,Npoints)
+    R = Array{Float64}(undef,3,Npoints)
     ip = 0
     for k in 0:Ns[3]-1
     for j in 0:Ns[2]-1

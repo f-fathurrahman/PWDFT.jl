@@ -23,7 +23,7 @@ function Electrons( atoms::Atoms, Pspots::Array{PsPot_GTH,1};
                     Nspin=1, Nkpt=1,
                     Nstates=nothing, Nstates_empty=0 )
     
-    assert( Nspin <= 2 )
+    @assert( Nspin <= 2 )
 
     Nelectrons = get_Nelectrons(atoms,Pspots)
 
@@ -51,13 +51,13 @@ function Electrons( atoms::Atoms, Pspots::Array{PsPot_GTH,1};
             Focc[ist,:] = 2.0
         end
         if is_odd
-            Focc[Nstates_occ,:] = 1.0
+            Focc[Nstates_occ,:] .= 1.0
         else
-            Focc[Nstates_occ,:] = 2.0
+            Focc[Nstates_occ,:] .= 2.0
         end
     else
         for ist = 1:Nstates_occ-1
-            Focc[ist,:] = 1.0
+            Focc[ist,:] .= 1.0
         end
         idx_up = 1:Nkpt
         if is_odd

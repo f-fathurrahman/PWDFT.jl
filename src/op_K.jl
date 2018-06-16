@@ -13,7 +13,7 @@ function op_K( Ham::PWHamiltonian, psi::Array{ComplexF64,2} )
     k = pw.gvecw.kpoints.k[:,ik]
 
     Gw = zeros(3)
-    out = Array{ComplexF64}(size(psi))
+    out = Array{ComplexF64}(undef,size(psi))
 
     for ist = 1:Nstates
         for igk = 1:Ngw[ik]
@@ -39,7 +39,7 @@ function op_K( Ham::PWHamiltonian, psi::Array{ComplexF64,1} )
     k = pw.gvecw.kpoints.k[:,ik]
 
     Gw = zeros(3)
-    out = Array{ComplexF64}(size(psi))
+    out = Array{ComplexF64}(undef,size(psi))
 
     for igk = 1:Ngw[ik]
         ig = idx_gw2g[igk]

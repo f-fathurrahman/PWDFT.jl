@@ -59,7 +59,7 @@ function diag_lobpcg( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
         #
         C  = W'*W
         C = ( C + C' )/2
-        R  = chol(C)
+        R  = (cholesky(C)).U
         W  = W/R
         HW = HW/R
         #
@@ -73,7 +73,7 @@ function diag_lobpcg( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
         T = Q'*(HQ); T = (T+T')/2;
         G = Q'*Q; G = (G+G')/2;
 
-        sd, S = eig( T, G ) # evals, evecs
+        sd, S = eigen( T, G ) # evals, evecs
         U = S[:,1:Nstates]
         X = Q*U
         HX = HQ*U
@@ -84,7 +84,7 @@ function diag_lobpcg( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
             HP = HW*U[set2,:] + HP*U[set3,:]
             C = P'*P
             C = (C + C')/2
-            R = chol(C)
+            R = (cholesky(C)).U
             P = P/R
             HP = HP/R
         else
@@ -97,7 +97,7 @@ function diag_lobpcg( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
 
     S = X'*HX
     S = (S+S')/2
-    lambda, Q = eig(S)
+    lambda, Q = eigen(S)
     X = X*Q
     if verbose_last
         for j = 1:Nstates
