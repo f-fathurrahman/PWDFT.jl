@@ -1,8 +1,10 @@
- function calc_grad( Ham::PWHamiltonian, psi::Array{ComplexF64,2} )
+ function calc_grad_v2( Ham::PWHamiltonian, psi::Array{ComplexF64,2} )
     
     ik = Ham.ik
     ispin = Ham.ispin
-    ikspin = 
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+    ikspin = ik + (ispin - 1)*Nkpt
+    #
     potentials = Ham.potentials
     Focc = Ham.electrons.Focc
     pw = Ham.pw
@@ -20,8 +22,26 @@
         for jst = 1:Nstates
             grad[:,ist] = grad[:,ist] - dot( psi[:,jst], H_psi[:,ist] ) * psi[:,jst]
         end
-        grad[:,ist] = Focc[ist,ik]*grad[:,ist]
+        grad[:,ist] = Focc[ist,ikspin]*grad[:,ist]
     end
+
+    # Calculate reduced Hamiltonian
+    Hred = zeros(ComplexF64,Nstates,Nstates)
+    for ist = 1:Nstates
+        for jst = ist:Nstates
+            Hred[ist,jst] = dot(psi[:,jst], H_psi[:,ist])
+            Hred[jst,ist] = Hred[ist,jst]
+        end
+    end
+
+    # Additional contribution
+    for ist = 1:Nstates
+        for jst = 1:Nstates
+            grad[:,ist] = grad[:,ist] + 0.5*Hred[ist,jst]*
+                          (Focc[ist,ikspin]-Focc[jst,ikspin])*psi[:,jst]
+        end
+    end
+
     return grad
 
 end

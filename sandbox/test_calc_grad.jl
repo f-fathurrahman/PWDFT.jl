@@ -1,33 +1,45 @@
+push!(LOAD_PATH,"../src")
+
+using Printf
+using Random
+using LinearAlgebra
 using PWDFT
+
+include("../src/calc_grad_v2.jl")
 
 function test_main()
     #
-    atoms = init_atoms_xyz("../structures/H.xyz")
+    atoms = init_atoms_xyz("../structures/CuSO4.xyz")
+    atoms.LatVecs = gen_lattice_sc(16.0)
     println(atoms)
     #
-    LatVecs = 16.0*diagm(ones(3))
-    pw = PWGrid(30.0, LatVecs)
-    println(pw)
+    Ham = PWHamiltonian( atoms, 15.0, verbose=true, Nspin=2 )
     #
-    Ham = PWHamiltonian( pw, atoms )
-    #
-    Ngwx = Ham.pw.gvecw.Ngwx
-    Nstates = 1
-    Focc = [1.0]
-    Ham.focc = Focc
+    pw = Ham.pw
+    Ngwx = pw.gvecw.Ngwx
+    Nstates = Ham.electrons.Nstates
+    Focc = Ham.electrons.Focc
     #
     srand(1234)
-    psi = rand(Ngwx,Nstates) + im*rand(Ngwx,Nstates)
-    psi = ortho_gram_schmidt(psi)
+    psi = ortho_gram_schmidt(rand(ComplexF64,Ngwx,Nstates))
     #
-    rhoe = calc_rhoe( pw, Focc, psi )
+    rhoe = calc_rhoe( 1, pw, Focc, psi )
     @printf("Integ rhoe = %18.10f\n", sum(rhoe)*pw.Ω/prod(pw.Ns))
     #
     update!(Ham, rhoe)
     #
-    g = calc_grad(Ham, psi)
-    s = sum(g)
-    @printf("sum g = (%18.10f,%18.10fim)\n", s.re, s.im)
+    Nspin = Ham.electrons.Nspin
+    for ispin = 1:Nspin
+        Ham.ispin = ispin
+        # ik is default to 1
+        g = calc_grad(Ham, psi)
+        s = sum(g)
+        @printf("sum g = (%18.10f,%18.10fim)\n", s.re, s.im)
+        #
+        g = calc_grad_v2(Ham, psi)
+        s = sum(g)
+        @printf("sum g = (%18.10f,%18.10fim)\n", s.re, s.im)
+    end
 end
 
 test_main()
