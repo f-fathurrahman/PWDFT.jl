@@ -1,3 +1,6 @@
+push!(LOAD_PATH, "../../src")
+
+using Printf
 using PWDFT
 
 function test_main( ; method="SCF" )
@@ -46,7 +49,7 @@ end
 @time test_main(method="DCM")
 
 
-"""
+#=
 For 30 Ry
 
 ABINIT result:
@@ -66,5 +69,5 @@ PWSCF result:
      hartree contribution      =       1.80222400 Ry
      xc contribution           =      -1.26291639 Ry
      ewald contribution        =       0.62633998 Ry  =  0.31316999 Ha
-"""
+=#
 

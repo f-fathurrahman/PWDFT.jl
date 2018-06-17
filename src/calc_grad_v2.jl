@@ -1,4 +1,4 @@
- function calc_grad_v2( Ham::PWHamiltonian, psi::Array{ComplexF64,2} )
+ function calc_grad( Ham::PWHamiltonian, psi::Array{ComplexF64,2} )
     
     ik = Ham.ik
     ispin = Ham.ispin
@@ -23,6 +23,12 @@
             grad[:,ist] = grad[:,ist] - dot( psi[:,jst], H_psi[:,ist] ) * psi[:,jst]
         end
         grad[:,ist] = Focc[ist,ikspin]*grad[:,ist]
+    end
+
+    # the usual case of constant occupation numbers
+    if all(Focc[:,ikspin] .== 2.0) == true || all(Focc[:,ikspin] .== 1.0) == true
+        # immediate return
+        return grad
     end
 
     # Calculate reduced Hamiltonian

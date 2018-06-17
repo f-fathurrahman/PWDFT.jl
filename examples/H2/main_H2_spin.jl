@@ -1,3 +1,6 @@
+push!(LOAD_PATH, "../../src")
+
+using Printf
 using PWDFT
 
 function test_main( ; method="SCF" )
@@ -11,7 +14,7 @@ function test_main( ; method="SCF" )
     pspfiles = ["../../pseudopotentials/pade_gth/H-q1.gth"]
     ecutwfc_Ry = 30.0
     Ham = PWHamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5,
-                         Nspin=2, verbose=true, extra_states=1 )
+                         Nspin=2, verbose=true, extra_states=0 )
 
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( atoms )
@@ -42,12 +45,12 @@ function test_main( ; method="SCF" )
 
 end
 
-#@time test_main(method="Emin")
+@time test_main(method="Emin")
 @time test_main(method="SCF")
 #@time test_main(method="DCM")
 
 
-"""
+#=
 For 30 Ry
 
 ABINIT result:
@@ -72,5 +75,5 @@ Electronic energy:      -1.4326850340
 NN         energy:       0.3131700523
 -------------------------------------
 Total      energy:      -1.1195149817
-"""
+=#
 

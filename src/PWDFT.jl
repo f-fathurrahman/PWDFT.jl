@@ -150,7 +150,7 @@ include("calc_entropy.jl")
 include("sum_upto_E_fermi.jl")
 
 export calc_grad
-include("calc_grad.jl")
+include("calc_grad_v2.jl")
 
 #
 # Diagonalization methods
