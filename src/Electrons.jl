@@ -96,10 +96,15 @@ function Electrons( atoms::Atoms, Zvals::Array{Float64,1};
 
     is_odd = round(Int64,Nelectrons)%2 == 1
 
-    if Nstates == nothing
+    # If Nstates is not specified and Nstates_empty == 0, we calculate
+    # Nstates manually from Nelectrons
+    if (Nstates == nothing)
         Nstates = round( Int64, Nelectrons/2 )
-        if is_odd
+        if Nstates*2 < Nelectrons
             Nstates = Nstates + 1
+        end
+        if Nstates_empty > 0
+            Nstates = Nstates + Nstates_empty
         end
     end
 
