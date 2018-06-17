@@ -103,7 +103,7 @@ end
 function PWHamiltonian( atoms::Atoms, ecutwfc::Float64;
                         Nspin = 1,
                         meshk = [1,1,1], shiftk=[0,0,0],    
-                        xcfunc="VWN", verbose=false )
+                        xcfunc="VWN", verbose=false, extra_states=0 )
     
     # kpoints
     kpoints = KPoints( atoms, meshk, shiftk )
@@ -119,7 +119,7 @@ function PWHamiltonian( atoms::Atoms, ecutwfc::Float64;
     Npoints = prod(pw.Ns)
 
     # dummy pspots
-    Pspots = Array{PsPot_GTH}(1)
+    Pspots = Array{PsPot_GTH}(undef,1)
     Pspots[1] = PsPot_GTH()
 
     #
@@ -135,10 +135,13 @@ function PWHamiltonian( atoms::Atoms, ecutwfc::Float64;
     potentials = Potentials( V_Ps_loc, V_Hartree, V_XC )
     #
     energies = Energies()
-    #
-    rhoe = zeros( Float64, Npoints )
 
-    electrons = Electrons( atoms, Zvals, Nspin=Nspin, Nkpt=kpoints.Nkpt )
+    Zatoms = get_Zatoms( atoms )
+    atoms.Zvals = Zatoms
+    
+    # use Zatoms as Zvals
+    electrons = Electrons( atoms, Zatoms, Nspin=Nspin, Nkpt=kpoints.Nkpt,
+                           Nstates_empty=extra_states )
     if verbose
         println(electrons)
     end
@@ -146,9 +149,6 @@ function PWHamiltonian( atoms::Atoms, ecutwfc::Float64;
     rhoe = zeros(Float64,Npoints,Nspin)
 
     pspotNL = PsPotNL()
-
-    Zatoms = get_Zatoms( atoms )
-    atoms.Zvals = Zatoms
     
     ik = 1
     ispin = 1
