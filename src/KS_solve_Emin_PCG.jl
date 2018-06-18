@@ -221,8 +221,11 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian;
         psiks[ikspin] = ortho_gram_schmidt(psiks[ikspin])
         Hr = psiks[ikspin]' * op_H( Ham, psiks[ikspin] )
         evals, evecs = eigen(Hr)
-        Ham.electrons.ebands[:,ikspin] = real(evals[:])
-        psiks[ikspin] = psiks[ikspin]*evecs
+        evals = real(evals[:])
+        # We need to sort this
+        idx_sorted = sortperm(evals)
+        Ham.electrons.ebands[:,ikspin] = evals[idx_sorted]
+        psiks[ikspin] = psiks[ikspin]*evecs[:,idx_sorted]
     end
     end
 
