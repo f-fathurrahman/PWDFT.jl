@@ -1,3 +1,6 @@
+push!(LOAD_PATH, "../../src")
+
+using Printf
 using PWDFT
 
 function test_main( ; method="SCF" )
@@ -14,16 +17,15 @@ function test_main( ; method="SCF" )
     println(atoms)
 
     # Initialize Hamiltonian
-    ecutwfc_Ry = 40.0
-    Ham = PWHamiltonian( atoms, ecutwfc_Ry*0.5 )
+    ecutwfc_Ry = 30.0
+    Ham = PWHamiltonian( atoms, ecutwfc_Ry*0.5, extra_states=1 )
+    # Set Focc manually
+    Ham.electrons.Focc[:,1] = [2.0, 4.0/3, 4.0/3, 4.0/3]
 
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( atoms )
 
     if method == "SCF"
-        # Example of manually setting occupation numbers
-        Ham.electrons.Nstates = 4
-        Ham.electrons.Focc = [2.0, 4.0/3, 4.0/3, 4.0/3]
         KS_solve_SCF!( Ham )
 
     elseif method == "Emin"
