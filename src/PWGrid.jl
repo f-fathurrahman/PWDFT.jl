@@ -217,11 +217,11 @@ function init_gvec( Ns, RecVecs, ecutrho )
         G_temp[2] = RecVecs[2,1]*gi + RecVecs[2,2]*gj + RecVecs[2,3]*gk
         G_temp[3] = RecVecs[3,1]*gi + RecVecs[3,2]*gj + RecVecs[3,3]*gk
         G2_temp = G_temp[1]^2 + G_temp[2]^2 + G_temp[3]^2
-        if 0.5*G2_temp < ecutrho
+        if 0.5*G2_temp <= ecutrho
             ig = ig + 1
-            @inbounds G[:,ig] = G_temp[:]
-            @inbounds G2[ig] = G2_temp
-            @inbounds idx_g2r[ig] = ip
+            G[:,ig] = G_temp[:]
+            G2[ig] = G2_temp
+            idx_g2r[ig] = ip
         end
     end
     end
@@ -250,7 +250,7 @@ function init_gvecw( ecutwfc, gvec::GVectors, kpoints::KPoints )
             Gk[:] = G[:,ig] .+ kpts[:,ik]
             Gk2[ig] = Gk[1]^2 + Gk[2]^2 + Gk[3]^2
         end
-        idx_gw2g[ik] = findall( 0.5*Gk2 .< ecutwfc )
+        idx_gw2g[ik] = findall( 0.5*Gk2 .<= ecutwfc )
         idx_gw2r[ik] = idx_g2r[idx_gw2g[ik]]
         Ngw[ik] = length(idx_gw2g[ik])
         #@printf("ik = %8d, k = [%10.5f,%10.5f,%10.5f]\n",

@@ -66,7 +66,6 @@ function calc_E_NN( LatVecs::Array{Float64,2}, atoms::Atoms, Zvals::Array{Float6
     gexp = -log(ebsl)
     eta = glast2/gexp
 
-    #@printf("eta = %18.10f\n" , eta)
     cccc = sqrt(eta/pi)
 
     x = 0.0
@@ -77,8 +76,6 @@ function calc_E_NN( LatVecs::Array{Float64,2}, atoms::Atoms, Zvals::Array{Float6
         totalcharge = totalcharge + Zvals[isp]
     end
 
-    #@printf("Total charge = %18.10f\n", totalcharge)
-
     ewald = -cccc*x - 4.0*pi*(totalcharge^2)/(volcry*eta)
 
     tmax = sqrt(2.0*gexp/eta)
@@ -87,7 +84,6 @@ function calc_E_NN( LatVecs::Array{Float64,2}, atoms::Atoms, Zvals::Array{Float6
     mmm1 = round(Int64, tmax/t1m + 1.5)
     mmm2 = round(Int64, tmax/t2m + 1.5)
     mmm3 = round(Int64, tmax/t3m + 1.5)
-    #@printf("Lattice summation indices %d %d %d\n", mmm1, mmm2, mmm3)
 
     v = zeros(Float64,3)
     w = zeros(Float64,3)
@@ -119,7 +115,6 @@ function calc_E_NN( LatVecs::Array{Float64,2}, atoms::Atoms, Zvals::Array{Float6
     mmm2 = round(gcut/g2m + 1.5)
     mmm3 = round(gcut/g3m + 1.5)
       
-    #@printf("Reciprocal lattice summation indices: %d %d %d\n", mmm1, mmm2, mmm3)
     for i = -mmm1:mmm1
     for j = -mmm2:mmm2
     for k = -mmm3:mmm3

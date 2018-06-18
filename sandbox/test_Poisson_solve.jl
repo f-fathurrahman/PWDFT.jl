@@ -1,8 +1,12 @@
+push!(LOAD_PATH, "../src")
+
+using Printf
+using LinearAlgebra
 using PWDFT
 
 function gen_dr( r, center )
     Npoints = size(r)[2]
-    dr = Array{Float64}(Npoints)
+    dr = Array{Float64}(undef,Npoints)
     #
     for ip=1:Npoints
         dx2 = ( r[1,ip] - center[1] )^2
@@ -15,7 +19,7 @@ end
 
 function gen_rho( dr, σ1, σ2 )
     Npoints = size(dr)[1]
-    rho = Array{Float64}(Npoints)
+    rho = Array{Float64}(undef,Npoints)
     c1 = 2*σ1^2
     c2 = 2*σ2^2
     cc1 = sqrt(2*pi*σ1^2)^3
@@ -31,9 +35,10 @@ end
 
 function test_main( ecutwfc_Ry::Float64 )
     #
-    LatVecs = 16.0*diagm( ones(3) )
+    LatVecs = gen_lattice_sc(16.0)
     #
     pw = PWGrid( ecutwfc_Ry*0.5, LatVecs )
+    println(pw)
     #
     Npoints = prod(pw.Ns)
     Ω = pw.Ω
@@ -42,13 +47,13 @@ function test_main( ecutwfc_Ry::Float64 )
     #
     # Generate array of distances
     #
-    center = sum(LatVecs,2)/2
+    center = sum(LatVecs,dims=2)/2
     dr = gen_dr( pw.r, center )
     #
     # Generate charge density
     #
-    const σ1 = 0.75
-    const σ2 = 0.50
+    σ1 = 0.75
+    σ2 = 0.50
     rho = gen_rho( dr, σ1, σ2 )
     #
     # Solve Poisson equation and calculate Hartree energy
