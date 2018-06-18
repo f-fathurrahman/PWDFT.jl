@@ -19,7 +19,6 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
     #
     if startingwfc == nothing
         srand(1234)
-        srand(1234)
         for ik = 1:Nkpt
             psi = rand(Ngw[ik],Nstates) + im*rand(Ngw[ik],Nstates)
             psik[ik] = ortho_gram_schmidt(psi)
