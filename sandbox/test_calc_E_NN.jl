@@ -1,13 +1,15 @@
+using LinearAlgebra
+using Printf
 using PWDFT
 
-"""
+#=
 ewald = 3.58126919 Ry = 1.790634595 Ha
-"""
+=#
 function test_N2()
     atoms = init_atoms_xyz("../structures/N2.xyz")
     println(atoms)
 
-    LatVecs = 16.0*diagm( ones(3) )
+    LatVecs = gen_lattice_sc(16.0)
     Zvals = [5.0] # XXX hardwired
 
     E_NN = calc_E_NN( LatVecs, atoms, Zvals )
@@ -26,7 +28,7 @@ function test_H2()
     atoms = init_atoms_xyz("../structures/H2.xyz")
     println(atoms)
 
-    LatVecs = 16.0*diagm( ones(3) )
+    LatVecs = gen_lattice_sc(16.0)
     Zvals = [1.0] # XXX hardwired
 
     E_NN = calc_E_NN( LatVecs, atoms, Zvals )
@@ -45,7 +47,7 @@ function test_LiH()
     atoms = init_atoms_xyz("../structures/LiH.xyz")
     println(atoms)
 
-    LatVecs = 16.0*diagm( ones(3) )
+    LatVecs = gen_lattice_sc(16.0)
     Zvals = [1.0,1.0] # XXX hardwired
 
     E_NN = calc_E_NN( LatVecs, atoms, Zvals )
@@ -64,7 +66,7 @@ function test_H()
     atoms = init_atoms_xyz("../structures/H.xyz")
     println(atoms)
 
-    LatVecs = 16.0*diagm( ones(3) )
+    LatVecs = gen_lattice_sc(16.0)
     Zvals = [1.0] # XXX hardwired
 
     E_NN = calc_E_NN( LatVecs, atoms, Zvals )

@@ -1,3 +1,4 @@
+using Printf
 using PWDFT
 
 function test_no_spin(kT::Float64)
@@ -7,14 +8,14 @@ function test_no_spin(kT::Float64)
     Nkpt = 2
     Nspin = 1
 
-    evals = Array{Float64}(Nstates,Nkpt)
+    evals = Array{Float64}(undef,Nstates,Nkpt)
     evals[:,1] = [-2.4, -1.0, -0.5, -0.2, -0.19, -0.10, -0.05, -0.05]
     evals[:,2] = [-2.4, -1.0, -0.5, -0.2, -0.18, -0.11, -0.10, -0.05]
 
-    Focc = Array{Float64}(Nstates,Nkpt)
+    Focc = Array{Float64}(undef,Nstates,Nkpt)
 
     wk = zeros(Nkpt)
-    wk[:] = 1.0/Nkpt
+    wk[:] .= 1.0/Nkpt
 
     println("\nkT = ", kT)
     
@@ -45,7 +46,7 @@ function test_spin(kT::Float64)
     Nspin = 2
     Nkspin = Nkpt*Nspin
 
-    evals = Array{Float64}(Nstates,Nkspin)
+    evals = Array{Float64}(undef,Nstates,Nkspin)
     # spin up
     evals[:,1] = [-2.4, -1.0, -0.5, -0.2, -0.19, -0.10, -0.05, -0.05]
     evals[:,2] = [-2.4, -1.0, -0.5, -0.2, -0.18, -0.11, -0.10, -0.05]
@@ -53,10 +54,10 @@ function test_spin(kT::Float64)
     evals[:,3] = [-2.5, -1.1, -0.6, -0.3, -0.20, -0.11, -0.06, -0.04]
     evals[:,4] = [-2.5, -1.1, -0.6, -0.3, -0.19, -0.12, -0.10, -0.01]
 
-    Focc = Array{Float64}(Nstates,Nkspin)
+    Focc = Array{Float64}(undef,Nstates,Nkspin)
 
     wk = zeros(Nkpt)
-    wk[:] = 1.0/Nkpt
+    wk[:] .= 1.0/Nkpt
 
     println("\nkT = ", kT)
     
