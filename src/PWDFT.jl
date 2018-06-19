@@ -186,4 +186,6 @@ export chebyfilt
 export get_ub_lb_lanczos
 include("CheFSI.jl")
 
+#include("do_precompile.jl")
+
 end
