@@ -1,5 +1,3 @@
-push!(LOAD_PATH, "../src")
-
 using LinearAlgebra
 using Printf
 using PWDFT

@@ -18,9 +18,9 @@ function test_main()
     Nstates = 4
     Focc = 2.0*ones(Nstates,Nkpt)
 
-    psik = Array{Array{Complex128,2},1}(Nkpt)
+    psik = Array{Array{ComplexF64,2},1}(Nkpt)
     for ik = 1:Nkpt
-        psi = rand( Complex128, Ngw[ik], Nstates )
+        psi = rand( ComplexF64, Ngw[ik], Nstates )
         psik[ik] = ortho_gram_schmidt(psi)  # orthogonalize in G-space
     end
 

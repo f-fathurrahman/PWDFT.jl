@@ -50,11 +50,11 @@ function test_GGA_PBE()
     dVol = pw.Ω/prod(pw.Ns)
     
     Nkpt = 1
-    psik = Array{Array{Complex128,2},1}(Nkpt)
+    psik = Array{Array{ComplexF64,2},1}(Nkpt)
 
     Nstates = 4
     Focc = 2.0*ones(Nstates,Nkpt)
-    psik[1] = ortho_gram_schmidt( rand(Complex128,Ngwx,Nstates) )
+    psik[1] = ortho_gram_schmidt( rand(ComplexF64,Ngwx,Nstates) )
 
     Rhoe = calc_rhoe( pw, Focc, psik )
     @printf("Integrated rhoe = %18.10f\n", sum(Rhoe)*dVol)
@@ -84,13 +84,13 @@ function test_GGA_PBE_spinpol()
     dVol = pw.Ω/prod(pw.Ns)
     
     Nkpt = 2
-    psik = Array{Array{Complex128,2},1}(Nkpt)
+    psik = Array{Array{ComplexF64,2},1}(Nkpt)
 
     Nstates = 4
     Focc = 1.0*ones(Nstates,Nkpt)
 
-    psik[1] = ortho_gram_schmidt( rand(Complex128,Ngwx,Nstates) )
-    psik[2] = ortho_gram_schmidt( rand(Complex128,Ngwx,Nstates) )
+    psik[1] = ortho_gram_schmidt( rand(ComplexF64,Ngwx,Nstates) )
+    psik[2] = ortho_gram_schmidt( rand(ComplexF64,Ngwx,Nstates) )
 
     Npoints = prod(pw.Ns)
     Rhoe = zeros(Npoints,2)
@@ -150,7 +150,7 @@ function test_spinpol( ; xc="VWN", Nspin=1 )
     Nkpt = kpoints.Nkpt
     Nkspin = Nkpt*Nspin
 
-    psiks = Array{Array{Complex128,2},1}(Nkspin)
+    psiks = Array{Array{ComplexF64,2},1}(Nkspin)
 
     Nstates = 4
 
@@ -167,7 +167,7 @@ function test_spinpol( ; xc="VWN", Nspin=1 )
     for ispin = 1:Nspin
         for ik = 1:Nkpt
             ikspin = ik + (ispin - 1)*Nkpt
-            psiks[ikspin] = ortho_gram_schmidt( rand(Complex128,Ngw[ik],Nstates) )
+            psiks[ikspin] = ortho_gram_schmidt( rand(ComplexF64,Ngw[ik],Nstates) )
         end
     end
 

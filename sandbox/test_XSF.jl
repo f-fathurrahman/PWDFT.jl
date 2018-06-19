@@ -19,8 +19,8 @@ function test_main()
     l = 1
     ia = 1
     for m = -l:l
-        ctmp = zeros( Complex128, Npoints )
-        psi = zeros( Complex128, Ngwx )
+        ctmp = zeros( ComplexF64, Npoints )
+        psi = zeros( ComplexF64, Ngwx )
         for ig = 1:Ngwx
             g = gwave[:,ig]
             Gm = norm(g)

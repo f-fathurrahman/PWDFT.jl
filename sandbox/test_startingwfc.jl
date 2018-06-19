@@ -19,7 +19,7 @@ function test_main()
     Ngwx = Ham.pw.gvecw.Ngwx
     Nstates = Ham.electrons.Nstates
     f = open("WFC.data","r")
-    psi0 = read(f,Complex128,(Ngwx,Nstates))
+    psi0 = read(f,ComplexF64,(Ngwx,Nstates))
 
     λ2, v2 = KS_solve_DCM!( Ham, startingwfc=psi0 )
 

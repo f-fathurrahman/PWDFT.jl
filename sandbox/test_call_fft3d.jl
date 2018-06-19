@@ -1,12 +1,15 @@
+using LinearAlgebra
+using Random
+using Printf
 using PWDFT
 
 function test_multicolumn( ecutwfc_Ry::Float64, Nstates::Int64 )
 
-    pw = PWGrid( 0.5*ecutwfc_Ry, 16.0*diagm(ones(3)) )
+    pw = PWGrid( 0.5*ecutwfc_Ry, gen_lattice_sc(16.0) )
     Ns = pw.Ns
     Npoints = prod(Ns)
 
-    in1 = rand(Complex128, Npoints, Nstates )
+    in1 = rand(ComplexF64, Npoints, Nstates )
 
     println("\n\nMulti column version")
     println("Data size: ", Ns)
@@ -37,11 +40,11 @@ end
 
 function test_singlecolumn( ecutwfc_Ry::Float64 )
 
-    pw = PWGrid( 0.5*ecutwfc_Ry, 16.0*diagm(ones(3)) )
+    pw = PWGrid( 0.5*ecutwfc_Ry, gen_lattice_sc(16.0) )
     Ns = pw.Ns
     Npoints = prod(Ns)
 
-    in1 = rand(Complex128, Npoints)
+    in1 = rand(ComplexF64, Npoints)
 
     println("\n\nSingle column version")
     println("Data size:", Ns)
