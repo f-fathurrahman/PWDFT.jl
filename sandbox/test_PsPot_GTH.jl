@@ -1,3 +1,5 @@
+push!(LOAD_PATH, "../src")
+
 using PWDFT
 
 function test_read()
@@ -16,7 +18,7 @@ import PyPlot
 const plt = PyPlot
 
 function test_main()
-    LatVecs = 16*diagm(ones(3))
+    LatVecs = gen_lattice_sc(16.0)
     pw = PWGrid(15.0, LatVecs)
     println(pw)
 
@@ -25,13 +27,13 @@ function test_main()
 
     psp = PsPot_GTH("../pseudopotentials/pade_gth/Ni-q18.gth")
     println(psp)
-    Vg = eval_Vloc_G(psp, G2, Ω)
+    Vg = eval_Vloc_G(psp, G2)
 
     plt.clf()
     plt.plot( G2, Vg, marker="o" )
     plt.xlim(0.1,1)
-    plt.savefig("Ni_V_ps_loc_G.png", dpi=200)
+    plt.savefig("TEMP_Ni_V_ps_loc_G.png", dpi=200)
 end
 
 test_read()
-#test_main()
+test_main()

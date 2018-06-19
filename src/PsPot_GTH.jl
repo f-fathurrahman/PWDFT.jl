@@ -180,6 +180,16 @@ end
 """
 Evaluate GTH local pseudopotential in G-space
 """
+function eval_Vloc_G( psp::PsPot_GTH, G2::Array{Float64,1} )
+    Ng = size(G2)[1]
+    Vg = Array{Float64}(undef,Ng)
+    for ig = 1:Ng
+        Vg[ig] = eval_Vloc_G( psp, G2[ig] )
+    end
+    return Vg
+end
+
+
 function eval_Vloc_G( psp::PsPot_GTH, G2::Float64 )
     rloc = psp.rlocal
     zval = psp.zval
