@@ -189,6 +189,7 @@ function println( electrons::Electrons, all_states=false )
     @printf("Nspin         = %8d\n", Nspin)
     @printf("Nkpt          = %8d\n", Nkspin/Nspin)
     @printf("Nelectrons    =  %18.10f\n", Nelectrons)
+    @printf("Nstates       = %8d\n", Nstates)
     @printf("Nstates_occ   = %8d\n", Nstates_occ)
     @printf("Nstates_empty = %8d\n\n", Nstates - Nstates_occ)
 
