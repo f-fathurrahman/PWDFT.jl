@@ -1,3 +1,6 @@
+push!(LOAD_PATH, "../src")
+
+using Printf
 using PWDFT
 
 const ABINIT_PSP_LDA = 
@@ -102,7 +105,7 @@ end
 function get_abinit_psp( SpeciesSymbols )
     psps = split( ABINIT_PSP_LDA )
     Nspecies = size(SpeciesSymbols)[1]
-    psp_path = Array{String,1}(Nspecies)
+    psp_path = Array{String,1}(undef,Nspecies)
     for isp = 1:Nspecies
         s = SpeciesSymbols[isp]
         for ps in psps

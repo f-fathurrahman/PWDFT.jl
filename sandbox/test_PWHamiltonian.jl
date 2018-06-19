@@ -1,9 +1,14 @@
+push!(LOAD_PATH, "../src")
+
+using Random
+using Printf
 using PWDFT
 
 function test_Nkpt_1()
     #
     #atoms = init_atoms_xyz("../structures/H.xyz")
     atoms = init_atoms_xyz("../structures/H2.xyz")
+    atoms.LatVecs = gen_lattice_sc(16.0)
     println(atoms)
     #
     ecutwfc = 15.0
@@ -17,7 +22,7 @@ function test_Nkpt_1()
     Ngw = pw.gvecw.Ngw
     #
     srand(1234)
-    psik = Array{Array{Complex128,2},1}(Nkpt)
+    psik = Array{Array{ComplexF64,2},1}(undef,Nkpt)
     for ik = 1:Nkpt
         psi = rand(Ngw[ik],Nstates) + im*rand(Ngw[ik],Nstates)
         psik[ik] = ortho_gram_schmidt(psi)
@@ -110,7 +115,7 @@ function test_Si()
     Ngw = pw.gvecw.Ngw
     #
     srand(1234)
-    psik = Array{Array{Complex128,2},1}(Nkpt)
+    psik = Array{Array{ComplexF64,2},1}(undef,Nkpt)
     for ik = 1:Nkpt
         psi = rand(Ngw[ik],Nstates) + im*rand(Ngw[ik],Nstates)
         psik[ik] = ortho_gram_schmidt(psi)
@@ -156,7 +161,7 @@ end
 
 function test_Ni_fcc(;Nspin=1)
 
-    assert( Nspin <= 2 )
+    @assert( Nspin <= 2 )
 
     #
     atoms = init_atoms_xyz_string(
@@ -189,7 +194,7 @@ function test_Ni_fcc(;Nspin=1)
 
     #
     srand(1234)
-    psiks = Array{Array{Complex128,2},1}(Nkspin)
+    psiks = Array{Array{ComplexF64,2},1}(undef,Nkspin)
     for ispin = 1:Nspin
     for ik = 1:Nkpt
         ikspin = ik + (ispin - 1)*Nkpt
@@ -297,8 +302,9 @@ function test_Ni_fcc(;Nspin=1)
 
 end
 
-#test_Si()
+test_Si()
 
 test_Ni_fcc(Nspin=1)
+test_Ni_fcc(Nspin=2)
 
-#test_Nkpt_1()
+test_Nkpt_1()

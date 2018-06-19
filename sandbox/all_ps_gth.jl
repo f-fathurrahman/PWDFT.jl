@@ -1,5 +1,6 @@
 push!(LOAD_PATH, "../src")
 
+using Printf
 using PWDFT
 
 const ALL_PS_PADE_GTH = """

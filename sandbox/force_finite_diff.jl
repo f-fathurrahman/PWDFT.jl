@@ -1,3 +1,7 @@
+push!(LOAD_PATH, "../src")
+
+using LinearAlgebra
+using Printf
 using PWDFT
 
 function calc_force_finite_diff( atoms::Atoms, pspfiles, ecutwfc )
@@ -45,7 +49,7 @@ function test_main()
         H      4.63030059       4.23341768       4.23341768
         """
     )
-    atoms.LatVecs = 16.0*diagm( ones(3) )
+    atoms.LatVecs = gen_lattice_sc(16.0)
     println(atoms)
 
     pspfiles = ["../pseudopotentials/pade_gth/H-q1.gth"]

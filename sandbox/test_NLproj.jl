@@ -1,12 +1,17 @@
+push!(LOAD_PATH, "../src")
+
+using LinearAlgebra
+using Random
+using Printf
 using PWDFT
 
-"""
+#=
 Test for handling of PsPotNL.
 The new implementation in PWHamiltonian is slightly more efficient than this.
-"""
-
+=#
 function test_main()
-    pw = PWGrid(60.0, 20.0*diagm(ones(3)))
+    LatVecs = gen_lattice_sc(20.0)
+    pw = PWGrid(60.0, LatVecs)
     println(pw)
 
     # Atoms
@@ -17,7 +22,7 @@ function test_main()
     strf = calc_strfact( atoms, pw )
 
     Nspecies = atoms.Nspecies
-    PsPots = Array{PsPot_GTH}(Nspecies)
+    PsPots = Array{PsPot_GTH}(undef,Nspecies)
 
     # XXX Need to match Nspecies
     PsPots[1] = PsPot_GTH("../pseudopotentials/pade_gth/Pt-q10.gth")
@@ -26,9 +31,10 @@ function test_main()
     println(PsPots[1])
     println(PsPots[2])
 
+    ik = 1
     Ngwx = pw.gvecw.Ngwx
-    idx_gw2g = pw.gvecw.idx_gw2g
-    idx_gw2r = pw.gvecw.idx_gw2r
+    idx_gw2g = pw.gvecw.idx_gw2g[ik]
+    idx_gw2r = pw.gvecw.idx_gw2r[ik]
     gwave = pw.gvec.G[:,idx_gw2g]
 
     Natoms = atoms.Natoms
@@ -44,8 +50,8 @@ function test_main()
     # -2, -1, 0, 1, 2  -> m
     #  1,  2, 3, 4, 5  -> 3 + m, lmax = 2 + 1
 
-    prj2beta = Array{Int64}( 3, Natoms, 4, 7 )
-    prj2beta[:,:,:,:] = -1   # set to invalid index
+    prj2beta = Array{Int64}( undef, 3, Natoms, 4, 7 )
+    prj2beta[:,:,:,:] .= -1   # set to invalid index
 
     atm2species = atoms.atm2species
     atpos = atoms.positions
@@ -65,7 +71,7 @@ function test_main()
         end
     end
 
-    betaNL = zeros( Complex128, Ngwx, NbetaNL )
+    betaNL = zeros( ComplexF64, Ngwx, NbetaNL )
 
     ibeta = 0
     for ia = 1:Natoms
@@ -94,7 +100,7 @@ function test_main()
     #
     for ibeta = 1:NbetaNL
         norm_G = dot( betaNL[:,ibeta], betaNL[:,ibeta] )
-        ctmp = zeros( Complex128, Npoints )
+        ctmp = zeros( ComplexF64, Npoints )
         ctmp[idx_gw2r] = betaNL[:,ibeta]
         ctmp = G_to_R(pw, ctmp)*Npoints
         data3d = real(ctmp)
@@ -111,11 +117,11 @@ function test_main()
     Nstates = 4
     Focc = 2.0*ones(Nstates)
     srand(1234)
-    psi = rand(Complex128,Ngwx,Nstates)
+    psi = rand(ComplexF64,Ngwx,Nstates)
     psi = ortho_gram_schmidt(psi)
 
     # calculate < betaNL | psi >
-    betaNL_psi = zeros( Complex128, Natoms, Nstates, NbetaNL )
+    betaNL_psi = zeros( ComplexF64, Natoms, Nstates, NbetaNL )
     for ia = 1:Natoms
         for ist = 1:Nstates
             for ibeta = 1:NbetaNL
@@ -126,7 +132,7 @@ function test_main()
 
 
     # calculate op_V_NL | psi >
-    Vpsi = zeros( Complex128, Ngwx, Nstates )
+    Vpsi = zeros( ComplexF64, Ngwx, Nstates )
 
     for ist = 1:Nstates
         for ia = 1:Natoms

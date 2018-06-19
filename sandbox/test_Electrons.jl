@@ -1,3 +1,6 @@
+push!(LOAD_PATH, "../src")
+
+using Printf
 using PWDFT
 
 function test_CuSO4()
@@ -6,7 +9,7 @@ function test_CuSO4()
     
     Nspecies = atoms.Nspecies
     
-    Pspots = Array{PsPot_GTH}(Nspecies)
+    Pspots = Array{PsPot_GTH}(undef,Nspecies)
     pspfiles = ["../pseudopotentials/pade_gth/Cu-q11.gth",
                 "../pseudopotentials/pade_gth/O-q6.gth",
                 "../pseudopotentials/pade_gth/S-q6.gth"]
@@ -37,7 +40,7 @@ function test_Ni_fcc()
     
     Nspecies = atoms.Nspecies
     
-    Pspots = Array{PsPot_GTH}(Nspecies)
+    Pspots = Array{PsPot_GTH}(undef,Nspecies)
     pspfiles = ["../pseudopotentials/pade_gth/Ni-q18.gth"]
 
     for isp = 1:Nspecies

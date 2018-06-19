@@ -1,3 +1,6 @@
+push!(LOAD_PATH, "../src")
+
+using Printf
 using PWDFT
 
 function test_main()
@@ -19,5 +22,4 @@ function test_main()
     println(pw)
 end
 
-@time test_main()
 @time test_main()
