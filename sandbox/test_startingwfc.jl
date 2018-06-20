@@ -3,25 +3,35 @@ using PWDFT
 function test_main()
 
     atoms = init_atoms_xyz("../structures/H.xyz")
+    atoms.LatVecs = gen_lattice_sc(16.0)
+    
     pspfiles = ["../pseudopotentials/pade_gth/H-q1.gth"]
-    LatVecs = 16.0*diagm( ones(3) )
     ecutwfc_Ry = 30.0
-    Ham = PWHamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, LatVecs )
+    Ham = PWHamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5 )
 
     Ham.energies.NN = calc_E_NN( Ham.pw, atoms, [1.0] )
 
-    λ, v = KS_solve_Emin_PCG!( Ham, NiterMax=5, verbose=true )
+    KS_solve_Emin_PCG!( Ham, NiterMax=5, verbose=true, savewfc=true )
 
-    f = open("WFC.data","w")
-    write(f,v)
-    close(f)
-
-    Ngwx = Ham.pw.gvecw.Ngwx
     Nstates = Ham.electrons.Nstates
-    f = open("WFC.data","r")
-    psi0 = read(f,ComplexF64,(Ngwx,Nstates))
+    Ngw = Ham.pw.gvecw.Ngw
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+    Nspin = Ham.electrons.Nspin
+    psiks = Array{Array{ComplexF64,2},1}(undef,Nkpt)
 
-    λ2, v2 = KS_solve_DCM!( Ham, startingwfc=psi0 )
+
+    for ispin = 1:Nspin
+    for ik = 1:Nkpt
+        ikspin = ik + (ispin-1)*Nkpt
+        # Don't forget to use read mode
+        wfc_file = open("WFC_ikspin_"*string(ikspin)*".data","r")
+        psiks[ikspin] = Array{ComplexF64}(undef,Ngw[ik],Nstates)
+        psiks[ikspin] = read!( wfc_file, psiks[ikspin] )
+        close( wfc_file )
+    end
+    end
+
+    KS_solve_DCM!( Ham, NiterMax=15, startingwfc=psiks )
 
 end
 
