@@ -1,5 +1,3 @@
-push!(LOAD_PATH, "../../src")
-
 using Printf
 using PWDFT
 
@@ -13,7 +11,7 @@ function test_main( ; method="SCF" )
         C  0.0  0.0  0.0
         """
     )
-    atoms.LatVecs = gen_lattice_cubic(16.0)
+    atoms.LatVecs = gen_lattice_sc(16.0)
     println(atoms)
 
     # Initialize Hamiltonian

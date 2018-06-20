@@ -1,3 +1,4 @@
+using Printf
 using PWDFT
 
 function test_main()

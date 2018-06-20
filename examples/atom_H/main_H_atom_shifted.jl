@@ -1,3 +1,4 @@
+using Printf
 using PWDFT
 
 function test_main( newpos ; method="SCF" )
@@ -8,7 +9,7 @@ function test_main( newpos ; method="SCF" )
 
         H  0.0  0.0  0.0
         """)
-    atoms.LatVecs = gen_lattice_cubic(16.0)
+    atoms.LatVecs = gen_lattice_sc(16.0)
     atoms.positions[:,1] = newpos  # manually set the position
     println(atoms)
 

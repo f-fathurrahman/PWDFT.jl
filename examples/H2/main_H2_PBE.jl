@@ -1,10 +1,11 @@
+using Printf
 using PWDFT
 
 function test_main( ; method="SCF" )
 
     # Atoms
     atoms = init_atoms_xyz("../../structures/H2.xyz")
-    atoms.LatVecs = gen_lattice_cubic(16.0)
+    atoms.LatVecs = gen_lattice_sc(16.0)
     println(atoms)
 
     # Initialize Hamiltonian

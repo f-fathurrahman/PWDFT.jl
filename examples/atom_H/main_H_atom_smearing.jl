@@ -1,3 +1,4 @@
+using Printf
 using PWDFT
 
 function test_main()
@@ -8,7 +9,7 @@ function test_main()
 
         H  0.0  0.0  0.0
         """)
-    atoms.LatVecs = gen_lattice_cubic(16.0)
+    atoms.LatVecs = gen_lattice_sc(16.0)
     println(atoms)
 
     # Initialize Hamiltonian
