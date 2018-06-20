@@ -2,6 +2,7 @@
 # Test using k-points dependent Hamiltonian
 #
 
+using Printf
 using PWDFT
 
 function read_kpts( filname )
@@ -27,16 +28,16 @@ function init_gvecw_kpts( ecutwfc, gvec::GVectors, kpts::Array{Float64,2} )
     #
     Gk2 = zeros(Float64,Ng)
     Gk = zeros(Float64,3)
-    idx_gw2g = Array{Array{Int64,1},1}(Nkpts)
-    idx_gw2r = Array{Array{Int64,1},1}(Nkpts)
-    Ngk = Array{Int64,1}(Nkpts)
+    idx_gw2g = Array{Array{Int64,1},1}(undef,Nkpts)
+    idx_gw2r = Array{Array{Int64,1},1}(undef,Nkpts)
+    Ngk = Array{Int64,1}(undef,Nkpts)
     #
     for ik = 1:Nkpts
         for ig = 1:Ng
             Gk[:] = G[:,ig] .+ kpts[:,ik]
             Gk2[ig] = Gk[1]^2 + Gk[2]^2 + Gk[3]^2
         end
-        idx_gw2g[ik] = findn( 0.5*Gk2 .< ecutwfc )
+        idx_gw2g[ik] = findall( 0.5*Gk2 .<= ecutwfc )
         idx_gw2r[ik] = idx_g2r[idx_gw2g[ik]]
         Ngk[ik] = length(idx_gw2g[ik])
         @printf("ik = %8d, k = [%10.5f,%10.5f,%10.5f]\n",
@@ -85,7 +86,7 @@ function test_kgrid()
     init_gvecw_kpts( ecutwfc, pw.gvec, kpts )
 end
 
-#test_kpath()
+test_kpath()
 test_kgrid()
 
 

@@ -1,9 +1,12 @@
+using LinearAlgebra
+using Random
+using Printf
 using PWDFT
 
 function test_LDA_VWN()
     Npoints = 5
-    Rhoe = zeros( Float64, Npoints )
-    Rhoe = [0.1, 0.2, 0.3, 0.4, 0.5]
+    Rhoe = Array{Float64}(undef,Npoints)
+    Rhoe[:] = [0.1, 0.2, 0.3, 0.4, 0.5]
 
     epsxc = calc_epsxc_VWN( Rhoe )
     Vxc = calc_Vxc_VWN( Rhoe )
@@ -19,7 +22,7 @@ function test_LDA_VWN_spinpol()
     Npoints = 5
     Nspin = 2
     
-    Rhoe = zeros( Float64, Npoints, Nspin )
+    Rhoe = Array{Float64}(undef,Npoints,Nspin)
     
     Rhoe[:,1] = [0.1, 0.2, 0.3, 0.4, 0.5]
     Rhoe[:,2] = [0.1, 0.2, 0.3, 0.4, 0.5]
@@ -42,7 +45,7 @@ function test_GGA_PBE()
     @printf("---------------\n")
 
     ecutwfc_Ry = 30.0
-    LatVecs = 16.0*eye(3)
+    LatVecs = gen_lattice_sc(16.0)
     pw = PWGrid( ecutwfc_Ry*0.5, LatVecs )
 
     srand(1234)
@@ -50,7 +53,7 @@ function test_GGA_PBE()
     dVol = pw.Ω/prod(pw.Ns)
     
     Nkpt = 1
-    psik = Array{Array{ComplexF64,2},1}(Nkpt)
+    psik = Array{Array{ComplexF64,2},1}(undef,Nkpt)
 
     Nstates = 4
     Focc = 2.0*ones(Nstates,Nkpt)
@@ -76,7 +79,7 @@ function test_GGA_PBE_spinpol()
     @printf("-----------------------\n")
 
     ecutwfc_Ry = 30.0
-    LatVecs = 16.0*eye(3)
+    LatVecs = gen_lattice_sc(16.0)
     pw = PWGrid( ecutwfc_Ry*0.5, LatVecs )
 
     srand(1234)
@@ -84,7 +87,7 @@ function test_GGA_PBE_spinpol()
     dVol = pw.Ω/prod(pw.Ns)
     
     Nkpt = 2
-    psik = Array{Array{ComplexF64,2},1}(Nkpt)
+    psik = Array{Array{ComplexF64,2},1}(undef,Nkpt)
 
     Nstates = 4
     Focc = 1.0*ones(Nstates,Nkpt)
@@ -112,7 +115,7 @@ end
 
 function test_spinpol( ; xc="VWN", Nspin=1 )
 
-    assert( xc=="VWN" || xc=="PBE" )
+    @assert( xc=="VWN" || xc=="PBE" )
     
     @assert Nspin <= 2
     
@@ -140,7 +143,7 @@ function test_spinpol( ; xc="VWN", Nspin=1 )
     kpoints = KPoints( atoms, meshk, shiftk )
 
     ecutwfc_Ry = 30.0
-    LatVecs = 16.0*eye(3)
+    LatVecs = gen_lattice_sc(16.0)
     pw = PWGrid( ecutwfc_Ry*0.5, LatVecs, kpoints=kpoints )
 
     srand(1234)
@@ -150,7 +153,7 @@ function test_spinpol( ; xc="VWN", Nspin=1 )
     Nkpt = kpoints.Nkpt
     Nkspin = Nkpt*Nspin
 
-    psiks = Array{Array{ComplexF64,2},1}(Nkspin)
+    psiks = Array{Array{ComplexF64,2},1}(undef,Nkspin)
 
     Nstates = 4
 
@@ -212,10 +215,10 @@ function test_spinpol( ; xc="VWN", Nspin=1 )
     @printf("sum E_xc = %18.10f\n", E_xc)
 end
 
-#test_LDA_VWN()
-#test_LDA_VWN_spinpol()
-#test_GGA_PBE()
-#test_GGA_PBE_spinpol()
+test_LDA_VWN()
+test_LDA_VWN_spinpol()
+test_GGA_PBE()
+test_GGA_PBE_spinpol()
 
 test_spinpol(xc="VWN", Nspin=1)
 test_spinpol(xc="VWN", Nspin=2)

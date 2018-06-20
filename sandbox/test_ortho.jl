@@ -1,3 +1,4 @@
+using Random
 using PWDFT
 
 function test_main()

@@ -1,3 +1,4 @@
+using Printf
 using PWDFT
 
 function test_Si_diamond()
@@ -50,7 +51,8 @@ function test_kpath()
     println(kdict)
 end
 
-#test_Si_diamond()
-#test_Fe_bcc()
+test_Si_diamond()
+
+test_Fe_bcc()
 
 test_kpath()

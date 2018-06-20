@@ -1,7 +1,17 @@
+using Printf
+using LinearAlgebra
+using PWDFT
+
+#=
+rgen is presently not used now. It is remnant of required functions for calc_Ewald_qe
+which is adapted from QE.
+It is still included here because it might be used again to test Ewald force calculation
+againsts QE.
+=#
 include("../src/rgen.jl")
 
 function test_rgen()
-    at = diagm( 16.0*ones(3) )
+    at = gen_lattice_sc(16.0)
 
     bg = zeros(Float64,3,3)
 

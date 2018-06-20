@@ -7,7 +7,7 @@ function test_fcc()
     pw = PWGrid( 0.5*ecutwfc_Ry, LatVecs)
     println(pw)
 
-    write_xsf("fcc.xsf", LatVecs, pw.r)    
+    write_xsf("TEMP_fcc.xsf", LatVecs, pw.r)
 end
 
 function test_bcc()
@@ -17,7 +17,7 @@ function test_bcc()
     pw = PWGrid( 0.5*ecutwfc_Ry, LatVecs)
     println(pw)
 
-    write_xsf("bcc.xsf", LatVecs, pw.r)
+    write_xsf("TEMP_bcc.xsf", LatVecs, pw.r)
 end
 
 function test_bcc_v2()
@@ -27,7 +27,7 @@ function test_bcc_v2()
     pw = PWGrid( 0.5*ecutwfc_Ry, LatVecs)
     println(pw)
 
-    write_xsf("bcc_v2.xsf", LatVecs, pw.r)
+    write_xsf("TEMP_bcc_v2.xsf", LatVecs, pw.r)
 end
 
 function test_hexagonal()
@@ -37,7 +37,7 @@ function test_hexagonal()
     pw = PWGrid( 0.5*ecutwfc_Ry, LatVecs)
     println(pw)
 
-    write_xsf("hexagonal.xsf", LatVecs, pw.r)
+    write_xsf("TEMP_hexagonal.xsf", LatVecs, pw.r)
 end
 
 function test_trigonal()
@@ -46,25 +46,25 @@ function test_trigonal()
     ecutwfc_Ry = 1.0
     pw = PWGrid( 0.5*ecutwfc_Ry, LatVecs)
     println(pw)
-    write_xsf("trigonal_30.xsf", LatVecs, pw.r)    
+    write_xsf("TEMP_trigonal_30.xsf", LatVecs, pw.r)    
     #
     LatVecs = gen_lattice_trigonal(16.0, 45.0)
     ecutwfc_Ry = 1.0
     pw = PWGrid( 0.5*ecutwfc_Ry, LatVecs)
     println(pw)
-    write_xsf("trigonal_45.xsf", LatVecs, pw.r)
+    write_xsf("TEMP_trigonal_45.xsf", LatVecs, pw.r)
     #
     LatVecs = gen_lattice_trigonal(16.0, 60.0)
     ecutwfc_Ry = 1.0
     pw = PWGrid( 0.5*ecutwfc_Ry, LatVecs)
     println(pw)
-    write_xsf("trigonal_60.xsf", LatVecs, pw.r)
+    write_xsf("TEMP_trigonal_60.xsf", LatVecs, pw.r)
     #
     LatVecs = gen_lattice_trigonal(16.0, 90.0)
     ecutwfc_Ry = 1.0
     pw = PWGrid( 0.5*ecutwfc_Ry, LatVecs)
     println(pw)
-    write_xsf("trigonal_90.xsf", LatVecs, pw.r)
+    write_xsf("TEMP_trigonal_90.xsf", LatVecs, pw.r)
 end
 
 function test_tetragonal_P()
@@ -74,7 +74,7 @@ function test_tetragonal_P()
     pw = PWGrid( 0.5*ecutwfc_Ry, LatVecs )
     println(pw)
 
-    write_xsf("tetragonal_P.xsf", LatVecs, pw.r)
+    write_xsf("TEMP_tetragonal_P.xsf", LatVecs, pw.r)
 end
 
 function test_tetragonal_I()
@@ -84,7 +84,7 @@ function test_tetragonal_I()
     pw = PWGrid( 0.5*ecutwfc_Ry, LatVecs )
     println(pw)
 
-    write_xsf("tetragonal_I.xsf", LatVecs, pw.r)
+    write_xsf("TEMP_tetragonal_I.xsf", LatVecs, pw.r)
 end
 
 function test_orthorhombic_P()
@@ -94,7 +94,7 @@ function test_orthorhombic_P()
     pw = PWGrid( 0.5*ecutwfc_Ry, LatVecs )
     println(pw)
 
-    write_xsf("orthorhombic_P.xsf", LatVecs, pw.r)
+    write_xsf("TEMP_orthorhombic_P.xsf", LatVecs, pw.r)
 end
 
 function test_monoclinic_P()
@@ -104,7 +104,7 @@ function test_monoclinic_P()
     pw = PWGrid( 0.5*ecutwfc_Ry, LatVecs )
     println(pw)
 
-    write_xsf("monoclinic_P.xsf", LatVecs, pw.r)
+    write_xsf("TEMP_monoclinic_P.xsf", LatVecs, pw.r)
 end
 
 function test_triclinic()
@@ -114,16 +114,16 @@ function test_triclinic()
     pw = PWGrid( 0.5*ecutwfc_Ry, LatVecs )
     println(pw)
 
-    write_xsf("triclinic.xsf", LatVecs, pw.r)
+    write_xsf("TEMP_triclinic.xsf", LatVecs, pw.r)
 end
 
-#test_fcc()
-#test_bcc()
-#test_bcc_v2()
-#test_hexagonal()
-#test_trigonal()
-#test_tetragonal_P()
-#test_tetragonal_I()
-#test_orthorhombic_P()
-#test_monoclinic_P()
+test_fcc()
+test_bcc()
+test_bcc_v2()
+test_hexagonal()
+test_trigonal()
+test_tetragonal_P()
+test_tetragonal_I()
+test_orthorhombic_P()
+test_monoclinic_P()
 test_triclinic()
