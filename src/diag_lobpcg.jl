@@ -11,7 +11,8 @@ function diag_lobpcg( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
     Nstates = size(X0)[2]
 
     # orthonormalize the initial wave functions.
-    X = ortho_gram_schmidt(X0)  # normalize (again)
+    #X = ortho_gram_schmidt(X0)  # normalize (again) XXX ?
+    X = copy(X0)
 
     HX = op_H( Ham, X )
 
@@ -58,7 +59,7 @@ function diag_lobpcg( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
         HW = op_H( Ham, W )
         #
         C  = W'*W
-        C = ( C + C' )/2
+        C = 0.5*( C + C' )
         R  = (cholesky(C)).U
         W  = W/R
         HW = HW/R
@@ -83,7 +84,7 @@ function diag_lobpcg( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
             P  = W*U[set2,:]  + P*U[set3,:]
             HP = HW*U[set2,:] + HP*U[set3,:]
             C = P'*P
-            C = (C + C')/2
+            C = 0.5*(C + C')
             R = (cholesky(C)).U
             P = P/R
             HP = HP/R
