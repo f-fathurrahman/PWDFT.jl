@@ -110,6 +110,28 @@ function KPoints( atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{Int64,1};
 
 end
 
+# Temporary work around for generating kpoints for band structure calculations
+function kpoints_from_file( atoms::Atoms, filename::String )
+    file = open(filename)
+    str = readline(file)
+    Nkpt = parse( Int, str )
+    kred = zeros( Float64, 3,Nkpt )
+    for ik = 1:Nkpt
+        str = split(readline(file))
+        kred[1,ik] = parse( Float64, str[1] )
+        kred[2,ik] = parse( Float64, str[2] )
+        kred[3,ik] = parse( Float64, str[3] )
+    end
+    close(file)
+    # kpts need to be converted to Cartesian form
+    RecVecs = 2*pi*invTrans_m3x3(atoms.LatVecs)
+    kpts = RecVecs*kred
+    #
+    wk = ones(Nkpt) # not used for non-scf calculations
+    #
+    return KPoints(Nkpt, kred, wk, RecVecs)
+end
+
 
 function gen_MonkhorstPack( mesh::Array{Int64,1} )
     ik = 0
