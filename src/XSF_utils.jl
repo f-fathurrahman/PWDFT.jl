@@ -58,7 +58,6 @@ function write_xsf_data3d_crystal(
     v1 = LL[:,1]
     v2 = LL[:,2]
     v3 = LL[:,3]
-    @printf(f, "PRIMVEC\n")
     @printf(f, "%18.10f %18.10f %18.10f\n", v1[1], v1[2], v1[3])
     @printf(f, "%18.10f %18.10f %18.10f\n", v2[1], v2[2], v2[3])
     @printf(f, "%18.10f %18.10f %18.10f\n", v3[1], v3[2], v3[3])

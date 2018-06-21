@@ -1,26 +1,31 @@
+using Printf
+using LinearAlgebra
 using PWDFT
 
 function test_main()
-    LatVecs = 16.0*diagm( ones(3) )
-    ecutRy = 30.0
-    pw = PWGrid( 0.5*ecutRy, LatVecs )
+    LatVecs = gen_lattice_sc(16.0)
+    ecutwfc_Ry = 30.0
+    pw = PWGrid( 0.5*ecutwfc_Ry, LatVecs )
     println( pw )
 
     Natoms = 1
     atpos = zeros( 3, Natoms )
     atpos[:,1] = [ 8.0, 2.0, 7.0 ]
 
+    ik = 1
     Npoints = prod( pw.Ns )
     idx_gw2g = pw.gvecw.idx_gw2g
     idx_gw2r = pw.gvecw.idx_gw2r
-    gwave = pw.gvec.G[:,idx_gw2g]
+    gwave = pw.gvec.G[:,idx_gw2g[ik]]
     Ngwx = pw.gvecw.Ngwx
+    println("Ngwx = ", Ngwx)
 
     l = 1
     ia = 1
+    psi = Array{ComplexF64}(undef,Ngwx)
+    ctmp =Array{ComplexF64}(undef,Npoints)
     for m = -l:l
-        ctmp = zeros( ComplexF64, Npoints )
-        psi = zeros( ComplexF64, Ngwx )
+        ctmp .= 0.0 + im*0.0 # need to zero out ctmp first
         for ig = 1:Ngwx
             g = gwave[:,ig]
             Gm = norm(g)
@@ -28,9 +33,9 @@ function test_main()
             Sf = cos(GX) - im*sin(GX)
             psi[ig] = (1.0*im)^l * Ylm_real(l,m,g) * exp( -0.5*Gm^2 ) * Sf
         end
-        ctmp[idx_gw2r] = psi
+        ctmp[idx_gw2r[ik]] = psi
         psiR_real = real( G_to_R( pw, ctmp ) ) * Npoints
-        filxsf = "psi_l_" * string(l) * "_m_" * string(m) * ".xsf"
+        filxsf = "TEMP_psi_l_" * string(l) * "_m_" * string(m) * ".xsf"
         write_xsf( filxsf, LatVecs/ANG2BOHR, atpos/ANG2BOHR, molecule=false )
         write_xsf_data3d_crystal(  filxsf, pw.Ns, LatVecs/ANG2BOHR, psiR_real )
         @printf("File %s is written\n", filxsf)
