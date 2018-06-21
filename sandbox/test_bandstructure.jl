@@ -115,19 +115,31 @@ function test_bandstructure()
     end
     end
 
+    k = Ham.pw.gvecw.kpoints.k
     for ispin = 1:Nspin
     for ik = 1:Nkpt
         Ham.ik = ik
         Ham.ispin = ispin
         ikspin = ik + (ispin - 1)*Nkpt
         #
+        @printf("\nispin = %d, ik = %d, ikspin=%d\n", ispin, ik, ikspin)
+        @printf("kpts = [%f,%f,%f]\n", k[1,ik], k[2,ik], k[3,ik])
+        #
         evals[:,ikspin], psiks[ikspin] =
-        diag_lobpcg( Ham, psiks[ikspin], verbose_last=true )
+        diag_davidson( Ham, psiks[ikspin], verbose_last=true, NiterMax=300 )
+
+        #if ikspin == 55 # problematic kpoints
+        #    evals[:,ikspin], psiks[ikspin] =
+        #    diag_Emin_PCG( Ham, psiks[ikspin], verbose=true, NiterMax=300 )
+        #else
+        #    evals[:,ikspin], psiks[ikspin] =
+        #    diag_lobpcg( Ham, psiks[ikspin], verbose_last=true )
+        #end
         #
     end
     end
 
-    dump_bandstructure( evals, kpoints.k, filename="band_free_fcc.dat" )
+    dump_bandstructure( evals, kpoints.k, filename="TEMP_band_free_fcc_davidson.dat" )
 
 end
 
