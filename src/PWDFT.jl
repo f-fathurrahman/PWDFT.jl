@@ -162,6 +162,9 @@ include("diag_lobpcg.jl")
 export diag_Emin_PCG
 include("diag_Emin_PCG.jl")
 
+export diag_davidson
+include("diag_davidson.jl")
+
 #
 # Mixing functions
 #
