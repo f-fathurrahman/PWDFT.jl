@@ -31,7 +31,7 @@ function test_main(kT::Float64)
     Nstates = 5
     Nspin = 2
     
-    Focc = zeros(Nstates,Nspin)
+    Focc    = zeros(Nstates,Nspin)
     Focc_v2 = zeros(Nstates,Nspin)
     
     ev = Array{Float64}(undef,Nstates,Nspin)
