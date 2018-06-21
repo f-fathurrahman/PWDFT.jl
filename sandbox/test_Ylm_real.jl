@@ -1,8 +1,9 @@
+using Printf
 using PWDFT
 
 function test_main()
 
-    pw = PWGrid( 5.0, 3.0*diagm(ones(3)) )
+    pw = PWGrid( 5.0, gen_lattice_sc(3.0) )
     G = pw.gvec.G
 
     println(pw)
@@ -40,7 +41,7 @@ function test_second()
 end
 
 
-#test_main()
+test_main()
 test_second()
 
 
