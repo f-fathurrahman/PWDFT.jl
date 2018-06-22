@@ -56,15 +56,10 @@ ymin, ymax = plt.gca().get_ylim()
 print("ymin ymax = ", ymin, ymax)
 
 for ik in range(Nkpt_spec):
-    x = xticks_pos[ik]
-    plt.plot( [x,x], [ymin,ymax], color="gray" )
+    xt = xticks_pos[ik]
+    plt.plot( [xt,xt], [ymin,ymax], color="gray" )
 
-#w = plt.xlim()[1] - plt.xlim()[0]
-#h = plt.ylim()[1] - plt.ylim()[0]
-#aspect_orig = get_aspect(plt.axes())
-#h_w = h/w
-#print("h_w = ", h_w)
-#plt.axes().set_aspect(h_w/aspect_orig*aspect_orig)
+plt.gca().set_ylim([ymin,ymax])
 
 filplot = sys.argv[1].replace(".dat",".pdf")
 plt.savefig(filplot)
