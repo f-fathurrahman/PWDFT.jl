@@ -147,13 +147,13 @@ function kpath_from_file( atoms::Atoms, filename::String )
     # Kpath
     Nkpt_spec = parse(Int64, readline(file))
     println("Nkpt_spec = ", Nkpt_spec)
-    kpt_spec = zeros(Float64, 3,Nkpt_spec)
+    kpt_spec_red = zeros(Float64, 3,Nkpt_spec)
     kpt_spec_labels = Array{String}(undef,Nkpt_spec)
     for ik = 1:Nkpt_spec
         str = split(readline(file))
-        kpt_spec[1,ik] = parse(Float64, str[1])
-        kpt_spec[2,ik] = parse(Float64, str[2])
-        kpt_spec[3,ik] = parse(Float64, str[3])
+        kpt_spec_red[1,ik] = parse(Float64, str[1])
+        kpt_spec_red[2,ik] = parse(Float64, str[2])
+        kpt_spec_red[3,ik] = parse(Float64, str[3])
         kpt_spec_labels[ik] = str[4]
     end
 
@@ -161,11 +161,11 @@ function kpath_from_file( atoms::Atoms, filename::String )
     # kpts need to be converted to Cartesian form
     RecVecs = 2*pi*invTrans_m3x3(atoms.LatVecs)
     kpt = RecVecs*kred
-    kpt_spec = RecVecs*kpt_spec
+    kpt_spec = RecVecs*kpt_spec_red
     #
     wk = ones(Nkpt) # not used for non-scf calculations
     #
-    return KPoints(Nkpt, kred, wk, RecVecs), kpt_spec, kpt_spec_labels
+    return KPoints(Nkpt, kpt, wk, RecVecs), kpt_spec, kpt_spec_labels
 end
 
 function gen_MonkhorstPack( mesh::Array{Int64,1} )
