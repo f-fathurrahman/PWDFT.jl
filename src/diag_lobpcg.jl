@@ -41,8 +41,8 @@ function diag_lobpcg( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
             @printf("LOBPCG iter = %8d, %18.10e\n", iter, conv)
         end
         if conv <= tol_avg
-            if verbose
-                @printf("LOBPCG convergence: tol_avg\n")
+            if verbose || verbose_last
+                @printf("LOBPCG convergence: tol_avg in iter = %d\n", iter)
             end
             break
         end
@@ -59,7 +59,9 @@ function diag_lobpcg( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
         HW = op_H( Ham, W )
         #
         C  = W'*W
-        C = 0.5*( C + C' )
+        #C = 0.5*( C + C' )
+        C = Hermitian(C)
+        #
         R  = (cholesky(C)).U
         W  = W/R
         HW = HW/R
@@ -71,8 +73,13 @@ function diag_lobpcg( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
             HQ = [HQ HP]
         end
 
-        T = Q'*(HQ); T = (T+T')/2;
-        G = Q'*Q; G = (G+G')/2;
+        T = Q'*(HQ)
+        #T = (T+T')/2
+        T = Hermitian(T)
+        
+        G = Q'*Q
+        #G = (G+G')/2
+        G = Hermitian(G)
 
         sd, S = eigen( T, G ) # evals, evecs
         U = S[:,1:Nstates]
@@ -84,7 +91,8 @@ function diag_lobpcg( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
             P  = W*U[set2,:]  + P*U[set3,:]
             HP = HW*U[set2,:] + HP*U[set3,:]
             C = P'*P
-            C = 0.5*(C + C')
+            #C = 0.5*(C + C')
+            C = Hermitian(C)
             R = (cholesky(C)).U
             P = P/R
             HP = HP/R

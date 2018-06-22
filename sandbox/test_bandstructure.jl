@@ -18,7 +18,7 @@ function test_bandstructure()
     atoms.positions = atoms.LatVecs*atoms.positions
     println(atoms)
     #
-    kpoints = kpoints_from_file(atoms, "KPATH_FCC_60")
+    kpoints = kpoints_from_file(atoms, "KPATH_FCC_60_v2")
     println(kpoints)
     #
     pw = PWGrid(15.0, atoms.LatVecs, kpoints=kpoints)
@@ -110,8 +110,7 @@ function test_bandstructure()
     for ispin = 1:Nspin
     for ik = 1:Nkpt
         ikspin = ik + (ispin - 1)*Nkpt
-        psi = rand(Ngw[ik],Nstates) + im*rand(Ngw[ik],Nstates)
-        psiks[ikspin] = ortho_gram_schmidt(psi)
+        psiks[ikspin] = ortho_gram_schmidt(rand(ComplexF64,Ngw[ik],Nstates))
     end
     end
 
@@ -125,21 +124,21 @@ function test_bandstructure()
         @printf("\nispin = %d, ik = %d, ikspin=%d\n", ispin, ik, ikspin)
         @printf("kpts = [%f,%f,%f]\n", k[1,ik], k[2,ik], k[3,ik])
         #
-        evals[:,ikspin], psiks[ikspin] =
-        diag_davidson( Ham, psiks[ikspin], verbose_last=true, NiterMax=300 )
-
+        #evals[:,ikspin], psiks[ikspin] =
+        #diag_davidson( Ham, psiks[ikspin], verbose_last=true, NiterMax=300 )
+        #
         #if ikspin == 55 # problematic kpoints
         #    evals[:,ikspin], psiks[ikspin] =
         #    diag_Emin_PCG( Ham, psiks[ikspin], verbose=true, NiterMax=300 )
         #else
-        #    evals[:,ikspin], psiks[ikspin] =
-        #    diag_lobpcg( Ham, psiks[ikspin], verbose_last=true )
+            evals[:,ikspin], psiks[ikspin] =
+            diag_lobpcg( Ham, psiks[ikspin], verbose_last=true )
         #end
         #
     end
     end
 
-    dump_bandstructure( evals, kpoints.k, filename="TEMP_band_free_fcc_davidson.dat" )
+    dump_bandstructure( evals, kpoints.k, filename="TEMP_band_free_fcc_v2_lobpcg.dat" )
 
 end
 
