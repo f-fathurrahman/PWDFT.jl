@@ -54,7 +54,7 @@ end
 # also for trigonal P
 function gen_lattice_hexagonal( a::Float64, c::Float64 )
     v1 = a*[1,0,0]
-    v2 = a*[-1/2,sqrt(3)/2,0]
+    v2 = a*[-0.5,sqrt(3)/2,0]
     v3 = [0,0,c]
     #
     LL = zeros(3,3)
