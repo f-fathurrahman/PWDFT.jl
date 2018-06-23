@@ -28,6 +28,8 @@ function test_empty_lattice(lattice::String, band_file::String)
         atoms.LatVecs = gen_lattice_monoclinic(6.0,7.0,6.5,80.0)
     elseif lattice == "tetragonal"
         atoms.LatVecs = gen_lattice_tetragonal_P(6.0,7.0)
+    elseif lattice == "rhombohedral"
+        atoms.LatVecs = gen_lattice_rhombohedral(6.0,80.0)
     else
         @printf("lattice is not known: %s\n", lattice)
     end
@@ -47,7 +49,9 @@ function test_empty_lattice(lattice::String, band_file::String)
     elseif lattice == "monoclinic"
         kpoints, kpt_spec, kpt_spec_labels = kpath_from_file(atoms, "KPATH_MONOCLINIC_60")
     elseif lattice == "tetragonal"
-        kpoints, kpt_spec, kpt_spec_labels = kpath_from_file(atoms, "KPATH_TETRAGONAL_60")        
+        kpoints, kpt_spec, kpt_spec_labels = kpath_from_file(atoms, "KPATH_TETRAGONAL_60")
+    elseif lattice == "rhombohedral"
+        kpoints, kpt_spec, kpt_spec_labels = kpath_from_file(atoms, "KPATH_RHOMBOHEDRAL_T1_SEG_1_60")
     else
         @printf("lattice is not known: %s\n", lattice)
     end
@@ -178,4 +182,7 @@ end
 
 #test_empty_lattice("monoclinic", "TEMP_empty_lattice_monoclinic.dat")
 
-test_empty_lattice("tetragonal", "TEMP_empty_lattice_tetragonal.dat")
+#test_empty_lattice("tetragonal", "TEMP_empty_lattice_tetragonal.dat")
+
+test_empty_lattice("rhombohedral", "TEMP_empty_lattice_rhombohedral.dat")
+
