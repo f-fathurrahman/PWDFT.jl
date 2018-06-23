@@ -18,9 +18,9 @@ function dump_bandstructure( evals, kpath, kpt_spec, kpt_spec_labels;
         dk = kpath[:,ik] - kpath[:,ik-1]
         Xcoords[ik] = Xcoords[ik-1] + norm( dk )
         dnorm_spec = norm(kpath[:,ik]-kpt_spec[:,ikpt_spec])
-        @printf("%d %18.10e\n", ik, dnorm_spec)
+        #@printf("%d %18.10e\n", ik, dnorm_spec)
         if dnorm_spec < SMALL
-            @printf("Found ikpt_spec: %d\n", ikpt_spec)
+            #@printf("Found ikpt_spec: %d\n", ikpt_spec)
             Xticks[ikpt_spec] = Xcoords[ik]
             ikpt_spec = ikpt_spec + 1
         end
