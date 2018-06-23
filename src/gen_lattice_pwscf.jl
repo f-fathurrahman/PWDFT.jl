@@ -151,7 +151,7 @@ end
 # 8          Orthorhombic P                  celldm(2)=b/a
 #                                              celldm(3)=c/a
 #       v1 = (a,0,0),  v2 = (0,b,0), v3 = (0,0,c)
-function gen_lattice_orthorhombic_P( a::Float64, b::Float64, c::Float64 )
+function gen_lattice_orthorhombic( a::Float64, b::Float64, c::Float64 )
     v1 = [a,0,0]
     v2 = [0,b,0]
     v3 = [0,0,c]
@@ -168,7 +168,7 @@ end
 #                                     celldm(4)=cos(ab)
 #       v1=(a,0,0), v2=(b*cos(gamma),b*sin(gamma),0),  v3 = (0,0,c)
 #       where gamma is the angle between axis a and b.
-function gen_lattice_monoclinic_P( a::Float64, b::Float64, c::Float64, gamma_degree::Float64 )
+function gen_lattice_monoclinic( a::Float64, b::Float64, c::Float64, gamma_degree::Float64 )
     gamma = gamma_degree*pi/180
     v1 = [a,0,0]
     v2 = [b*cos(gamma), b*sin(gamma), 0]

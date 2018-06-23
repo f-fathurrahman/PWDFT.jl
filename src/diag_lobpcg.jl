@@ -74,11 +74,11 @@ function diag_lobpcg( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
         end
 
         T = Q'*(HQ)
-        #T = (T+T')/2
+        #T = 0.5*(T+T')
         T = Hermitian(T)
         
         G = Q'*Q
-        #G = (G+G')/2
+        #G = 0.5*(G+G')
         G = Hermitian(G)
 
         sd, S = eigen( T, G ) # evals, evecs

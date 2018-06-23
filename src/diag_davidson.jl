@@ -21,13 +21,15 @@ function diag_davidson( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
     Sred     = zeros(ComplexF64, 2*Nstates, 2*Nstates)
     res      = zeros(Float64, Nstates)
     res_norm = zeros(Float64, Nstates)
+    devals   = zeros(Float64, Nstates)
 
     HX = op_H( Ham, X )
 
     # Initial eigenvalues
     for ic = 1:Nstates
         for ig = 1:Nbasis
-            evals[ic] = evals[ic] + real( conj(X[ig,ic]) * HX[ig,ic] )
+            #evals[ic] = evals[ic] + real( conj(X[ig,ic]) * HX[ig,ic] )
+            evals[ic] = real( conj(X[ig,ic]) * HX[ig,ic] )
         end
     end
 
@@ -82,7 +84,6 @@ function diag_davidson( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
             for ic = 1:Nstates
                 Hred[ic,ic] = evals[ic] + im*0.0 # use diagm ?
             end
-            #Hred[set1,set1] = diagm(evals[:])
         end
 
         Hred[set1,set2] = X' * HR
