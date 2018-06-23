@@ -89,6 +89,8 @@ function gen_lattice_trigonal( a::Float64, gamma_degree::Float64 )
     return LL
 end
 
+gen_lattice_rhombohedral = gen_lattice_trigonal
+
 #   -5          Trigonal R, 3fold axis <111>    celldm(4)=cos(gamma)
 # The crystallographic vectors form a three-fold star around
 # <111>. Defining a' = a/sqrt(3) :
