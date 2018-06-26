@@ -1,5 +1,5 @@
 function diag_davidson( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
-                        tol=1e-5, tol_avg=1e-7, NiterMax=200, verbose=false,
+                        tol=1e-5, tol_avg=1e-7, NiterMax=100, verbose=false,
                         verbose_last=false )
       
 
@@ -7,13 +7,11 @@ function diag_davidson( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
     Nstates = size(X0)[2]
     Nbasis  = size(X0)[1]
 
-    if Nstates <= 0
-        @printf("diag_davidson requires at least one initial wave function!\n");
-        return
-    end
+    @assert(Nstates >= 1)
     
     # orthonormalize the initial wave functions.
-    X = ortho_gram_schmidt(X0)  # normalize (again)?
+    # X = ortho_gram_schmidt(X0)  # normalize (again)?
+    X = copy(X0)
 
     evals    = zeros(Float64, Nstates)
     R        = zeros(ComplexF64, Nbasis, Nstates)
@@ -22,13 +20,13 @@ function diag_davidson( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
     res      = zeros(Float64, Nstates)
     res_norm = zeros(Float64, Nstates)
     devals   = zeros(Float64, Nstates)
+    evals_old = zeros(Float64, Nstates)
 
     HX = op_H( Ham, X )
 
     # Initial eigenvalues
     for ic = 1:Nstates
         for ig = 1:Nbasis
-            #evals[ic] = evals[ic] + real( conj(X[ig,ic]) * HX[ig,ic] )
             evals[ic] = real( conj(X[ig,ic]) * HX[ig,ic] )
         end
     end
@@ -56,6 +54,8 @@ function diag_davidson( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
     sum_evals = sum(evals)
     sum_evals_old = sum_evals
 
+    evals_old = copy(evals)
+
     for iter = 1:NiterMax
 
         res_norm[:] .= 1.0
@@ -64,9 +64,6 @@ function diag_davidson( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
             if EPS < res[ic]
                 res_norm[ic] = 1.0/res[ic]
             end
-        end
-
-        for ic = 1:Nstates
             for ig = 1:Nbasis
                 R[ig,ic] = res_norm[ic] * R[ig,ic]
             end
@@ -95,16 +92,14 @@ function diag_davidson( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
         Sred[set2,set2] = R' * R
         Sred[set2,set1] = Sred[set1,set2]'
 
-        Hred = (Hred + Hred')/2.0
-        Sred = (Sred + Sred')/2.0
+        Hred = 0.5*(Hred + Hred')
+        Sred = 0.5*(Sred + Sred')
 
         λ_red, X_red = eigen( Hermitian(Hred), Hermitian(Sred) )
 
         evals = λ_red[1:Nstates]
 
-        #for ic = 1:2*Nstates
-        #  print(ic); print(" "); println(λ_red[ic])
-        #end
+        devals = abs.(evals - evals_old)
 
         X  = X  * X_red[set1,set1] + R  * X_red[set2,set1]
         HX = HX * X_red[set1,set1] + HR * X_red[set2,set1]
@@ -125,8 +120,12 @@ function diag_davidson( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
         end
         
         sum_evals = sum(evals)
-        diffSum = abs(sum_evals - sum_evals_old)
+        diffSum = abs(sum_evals - sum_evals_old)/Nstates
         if verbose
+            @printf("\n")
+            for j = 1:Nstates
+                @printf("eigval[%2d] = %18.10f, devals = %18.10e\n", j, evals[j], devals[j] )
+            end
             @printf("iter %d tol_avg = %18.10e\n", iter, abs(diffSum))
         end
         if diffSum < tol_avg
@@ -136,11 +135,12 @@ function diag_davidson( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
             break
         end
         sum_evals_old = sum_evals
+        evals_old = copy(evals)
     end
 
     if verbose_last
         for j = 1:Nstates
-            @printf("eigval[%2d] = %18.10f, resnrm = %18.10e\n", j, evals[j], res[j] )
+            @printf("eigval[%2d] = %18.10f, devals = %18.10e\n", j, evals[j], devals[j] )
         end
     end
 
