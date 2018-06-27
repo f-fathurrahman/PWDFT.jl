@@ -89,13 +89,6 @@ function test_empty_lattice(lattice::String, band_file::String)
         Pspots[isp] = PsPot_GTH( pspfiles[isp] )
         psp = Pspots[isp]
         println(psp)
-        #for ig = 1:Ng
-        #    ip = idx_g2r[ig]
-        #    #Vg[ip] = strf[ig,isp] * eval_Vloc_G( psp, G2[ig] ) / Ω
-        #    Vg[ip] = 0.0
-        #end
-        #
-        #V_Ps_loc[:] = V_Ps_loc[:] + real( G_to_R(pw, Vg) ) * Npoints
     end
 
     Nspin = 1
@@ -109,10 +102,10 @@ function test_empty_lattice(lattice::String, band_file::String)
     #
     rhoe = zeros( Float64, Npoints, Nspin )
 
-    #electrons = Electrons( atoms, Pspots, Nspin=Nspin, Nkpt=kpoints.Nkpt,
-    #                       Nstates_empty=0 )
-    #println(electrons)
     Nkpt = kpoints.Nkpt
+    
+    #
+    # Construct Electrons manually so that we are not limited by our dummy H atom
     #
     Nstates = 4
     electrons = Electrons(
@@ -187,7 +180,7 @@ end
 #test_empty_lattice("rhombohedral", "TEMP_empty_lattice_rhombohedral.dat")
 
 function save_potential(Ham::PWHamiltonian)
-
+    # TO BE IMPLEMENTED
 end
 
 
@@ -228,7 +221,7 @@ function test_Si_fcc()
 
     # Manually construct Ham.electrons
     Ham.electrons = Electrons( atoms, Ham.pspots, Nspin=1, Nkpt=kpoints.Nkpt,
-                               Nstates_empty=1 )
+                               Nstates_empty=2 )
 
     Nstates = Ham.electrons.Nstates
     ebands = Ham.electrons.ebands
@@ -263,7 +256,7 @@ function test_Si_fcc()
         #evals[:,ikspin], psiks[ikspin] =
         #diag_lobpcg( Ham, psiks[ikspin], verbose_last=true )
         evals[:,ikspin], psiks[ikspin] =
-        diag_davidson( Ham, psiks[ikspin], verbose_last=true )
+        diag_davidson( Ham, psiks[ikspin], verbose=true )
 
     end
     end
