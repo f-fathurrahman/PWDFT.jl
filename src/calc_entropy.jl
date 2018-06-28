@@ -3,7 +3,7 @@
 function calc_entropy( Focc::Array{Float64,2}, wk::Array{Float64,1},
                        kT::Float64; Nspin=1 )
     #
-    SMALL = 1.e-10
+    SMALL = eps()
     
     Nstates = size(Focc)[1]
     Nkspin = size(Focc)[2]
@@ -15,7 +15,7 @@ function calc_entropy( Focc::Array{Float64,2}, wk::Array{Float64,1},
         for ik = 1:Nkpt
             ikspin = ik + (ispin - 1)*Nkpt
             for ist = 1:Nstates
-                if Focc[ist] > SMALL
+                if Focc[ist,ik] > SMALL
                     ent = ent + Focc[ist,ik]*log(Focc[ist,ik])*wk[ik]
                 else
                     ent = ent + (1.0 - Focc[ist,ik])*log(1.0 - Focc[ist,ik])*wk[ik]
@@ -27,15 +27,16 @@ function calc_entropy( Focc::Array{Float64,2}, wk::Array{Float64,1},
         for ik = 1:Nkpt
             for ist = 1:Nstates
                 # spin-degenerate case
-                if Focc[ist] > SMALL
+                if Focc[ist,ik] > SMALL
                     ent = ent + 0.5*Focc[ist,ik]*log(0.5*Focc[ist,ik])*wk[ik]
                 else
                     ent = ent + (1.0 - 0.5*Focc[ist,ik])*log(1.0 - 0.5*Focc[ist,ik])*wk[ik]
                 end
             end
-            ent = 2*ent
         end
+        ent = 2*ent
     end
+
     # double negative
     return kT*ent
 end
