@@ -214,7 +214,7 @@ end
 
 # Overloaded println
 
-import Base.println
+import Base: println
 
 function println( pw::PWGrid )
     @printf("\n")
@@ -283,13 +283,9 @@ function println( gvec::GVectors, gvecw::GVectorsW )
     @printf("                                    ---------\n")
     @printf("\n")
     @printf("Ngwx = %12d\n", Ngwx)
-    
-    #ik = 1  # sample for first kpoint
-    
+        
     for ik = 1:Nkpt
-
         idx_gw2g = gvecw.idx_gw2g[ik]
-
         Gw = zeros(3,Ngw[ik])
         Gw2 = zeros(Ngw[ik])
         for igk = 1:Ngw[ik]
@@ -297,21 +293,7 @@ function println( gvec::GVectors, gvecw::GVectorsW )
             Gw[:,igk] = G[:,ig] + k[:,ik]
             Gw2[igk] = Gw[1,igk]^2 + Gw[2,igk]^2 + Gw[3,igk]^2
         end
-
-        @printf("\n")
-        @printf("Several GvectorsW for k = [%f,%f,%f]\n", k[1,ik], k[2,ik], k[3,ik])
-        @printf("\n")
-        for igk = 1:3
-            @printf("%8d [%18.10f,%18.10f,%18.10f] : %18.10f\n",
-                     igk, Gw[1,igk], Gw[2,igk], Gw[3,igk], Gw2[igk])
-        end
-        @printf(" ....... \n")
-        for igk = Ngw[ik]-3:Ngw[ik]
-            @printf("%8d [%18.10f.%18.10f,%18.10f] : %18.10f\n",
-                    igk, Gw[1,igk], Gw[2,igk], Gw[3,igk], Gw2[igk])
-        end
-        @printf("\n")
-        @printf("Max Gw2[%d] = %18.10f\n", ik, maximum(Gw2))    
+        @printf("Max Gw2[%3d] = %18.10f\n", ik, maximum(Gw2))    
     end
 end
 

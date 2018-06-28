@@ -171,7 +171,8 @@ function get_Zvals( PsPots::Array{PsPot_GTH,1} )
 end
 
 
-import Base.println
+import Base: println
+
 function println( electrons::Electrons, all_states=false )
 
     Nspin = electrons.Nspin
@@ -207,6 +208,10 @@ function println( electrons::Electrons, all_states=false )
             @printf("state #%4d = ", ist)
             for iks = 1:Nkspin
                 @printf("%8.5f ", Focc[ist,iks])
+                if (iks % 10) == 0
+                    @printf("\n")
+                    @printf("              ")
+                end
             end
             @printf("\n")
         end
@@ -215,15 +220,23 @@ function println( electrons::Electrons, all_states=false )
             @printf("state #%4d = ", ist)
             for iks = 1:Nkspin
                 @printf("%8.5f ", Focc[ist,iks])
+                if (iks % 10) == 0
+                    @printf("\n")
+                    @printf("              ")
+                end
             end
             @printf("\n")
         end
-        @printf(".....\n")
+        @printf(".....\n\n")
         #
         for ist = Nstates-3:Nstates
             @printf("state #%4d = ", ist)
             for iks = 1:Nkspin
                 @printf("%8.5f ", Focc[ist,iks])
+                if (iks % 10) == 0
+                    @printf("\n")
+                    @printf("              ")
+                end
             end
             @printf("\n")
         end

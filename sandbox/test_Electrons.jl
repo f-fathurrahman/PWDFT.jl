@@ -46,10 +46,10 @@ function test_Ni_fcc()
         println(Pspots[isp])
     end
 
-    electrons = Electrons( atoms, Pspots, Nstates_empty=1 )
+    electrons = Electrons( atoms, Pspots, Nkpt=14, Nstates_empty=1 )
     println(electrons)
 
-    electrons = Electrons( atoms, Pspots, Nstates_empty=1, Nspin=2 )
+    electrons = Electrons( atoms, Pspots, Nkpt=14, Nstates_empty=1, Nspin=2 )
     println(electrons)
 
 end
