@@ -157,9 +157,9 @@ function KS_solve_SCF_smearing!( Ham::PWHamiltonian ;
 
         end
 
-        if E_GAP_INFO
-            println("E gap = ", evals[idx_LUMO,:] - evals[idx_HOMO,:] )
-        end
+        #if E_GAP_INFO
+        #    println("E gap = ", evals[idx_LUMO,:] - evals[idx_HOMO,:] )
+        #end
 
         Focc, E_fermi = calc_Focc( evals, wk, Nelectrons, kT, Nspin=Nspin )
         Entropy = calc_entropy( Focc, wk, kT, Nspin=Nspin )

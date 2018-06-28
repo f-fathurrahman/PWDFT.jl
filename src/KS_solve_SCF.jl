@@ -154,9 +154,9 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
 
         end
 
-        if E_GAP_INFO
-            println("E gap = ", evals[idx_LUMO,:] - evals[idx_HOMO,:] )
-        end
+        #if E_GAP_INFO
+        #    println("E gap = ", evals[idx_LUMO,:] - evals[idx_HOMO,:] )
+        #end
 
         for ispin = 1:Nspin
             idxset = (Nkpt*(ispin-1)+1):(Nkpt*ispin)
