@@ -18,7 +18,7 @@ function KPoints( atoms::Atoms )
 end
 
 
-import Base.println
+import Base: println
 
 function println( kpoints::KPoints )
 

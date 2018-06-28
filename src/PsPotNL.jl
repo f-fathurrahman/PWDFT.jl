@@ -9,7 +9,7 @@ function PsPotNL()
     return PsPotNL(0, zeros(Int64,1,1,1,1), zeros(ComplexF64,1,1,1) )
 end
 
-import Base.println
+import Base: println
 function println( pspotNL::PsPotNL )
     @printf("\n")
     @printf("NbetaNL = %d", pspotNL.NbetaNL)

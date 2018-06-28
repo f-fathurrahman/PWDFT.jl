@@ -109,7 +109,7 @@ end
 
 
 # Display information about GTH pseudopotential
-import Base.println
+import Base: println
 function println( psp::PsPot_GTH )
 
     ANGMOM = ["s", "p", "d", "f"]

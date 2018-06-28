@@ -13,7 +13,7 @@ function Energies()
     return Energies(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
 end
 
-import Base.println
+import Base: println
 function println( energies::Energies )
     @printf("\n")
     @printf("Kinetic    energy: %18.10f\n", energies.Kinetic )

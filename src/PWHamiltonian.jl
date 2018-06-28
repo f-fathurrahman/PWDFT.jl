@@ -32,6 +32,7 @@ function PWHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
     pw = PWGrid( ecutwfc, atoms.LatVecs, kpoints=kpoints )
     if verbose
         println(pw)
+        println(kpoints)
     end
 
     Nspecies = atoms.Nspecies

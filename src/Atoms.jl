@@ -10,7 +10,7 @@ mutable struct Atoms
 end
 
 # Overload println for Atoms
-import Base.println
+import Base: println
 function println( a::Atoms )
     @printf("\n")
     @printf("                                     -----\n")

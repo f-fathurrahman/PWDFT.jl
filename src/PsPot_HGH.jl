@@ -1,5 +1,3 @@
-using PWDFT: print_matrix
-
 using SpecialFunctions: erf
 
 struct PsPot_HGH
@@ -149,7 +147,7 @@ function PsPot_HGH( atsymb::String, filename::String; verbose=false )
 end
 
 
-import Base.println
+import Base: println
 function println( psp::PsPot_HGH )
 
     const ANGMOM = ["s", "p", "d", "f"]
