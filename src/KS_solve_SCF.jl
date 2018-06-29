@@ -80,13 +80,10 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
             idx_LUMO = idx_HOMO + 1
         end
     end
-    
-    #println("HOMO LUMO = ", idx_HOMO, " ", idx_LUMO)
-    #exit()
-
 
     @printf("\n")
     @printf("Self-consistent iteration begins ...\n")
+    @printf("\n")
     if mix_method == "anderson"
         @printf("Using Anderson mixing\n")
     else

@@ -1,3 +1,5 @@
+include("mix_anderson.jl")
+
 function KS_solve_SCF_smearing!( Ham::PWHamiltonian ;
                        startingwfc=nothing, savewfc=false,
                        β = 0.5, NiterMax=100, verbose=false,
@@ -8,16 +10,24 @@ function KS_solve_SCF_smearing!( Ham::PWHamiltonian ;
 
     pw = Ham.pw
     Ngw = pw.gvecw.Ngw
+    wk = Ham.pw.gvecw.kpoints.wk
+    #
     kpoints = pw.gvecw.kpoints
     Nkpt = kpoints.Nkpt
+    #
     Ns = pw.Ns
     Npoints = prod(Ns)
     dVol = pw.Ω/Npoints
+    #
     electrons = Ham.electrons
+    Nelectrons = electrons.Nelectrons
     Focc_orig = electrons.Focc
     Nstates = electrons.Nstates
     Nspin = electrons.Nspin
+    #
     Nkspin = Nkpt*Nspin
+
+    Nstates_occ = electrons.Nstates_occ
 
     psiks = Array{Array{ComplexF64,2},1}(undef,Nkspin)
 
@@ -59,13 +69,11 @@ function KS_solve_SCF_smearing!( Ham::PWHamiltonian ;
 
     ethr = 0.1
 
-    #
     # For Anderson mixing
-    #
     MIXDIM = 4
     if mix_method == "anderson"
-        df = zeros(Float64,Npoints,MIXDIM,Nspin)
-        dv = zeros(Float64,Npoints,MIXDIM,Nspin)
+        df = zeros(Float64,Npoints*Nspin,MIXDIM)
+        dv = zeros(Float64,Npoints*Nspin,MIXDIM)
     end
 
     E_GAP_INFO = false
@@ -81,16 +89,12 @@ function KS_solve_SCF_smearing!( Ham::PWHamiltonian ;
         end
     end
     
-    #println("HOMO LUMO = ", idx_HOMO, " ", idx_LUMO)
-    #exit()
-
-    wk = Ham.pw.gvecw.kpoints.wk
     Focc = zeros(Nstates,Nkspin)
     kT = 0.01
-    Nelectrons = Ham.electrons.Nelectrons
 
     @printf("\n")
     @printf("Self-consistent iteration begins ...\n")
+    @printf("\n")
     if mix_method == "anderson"
         @printf("Using Anderson mixing\n")
     else
@@ -104,6 +108,8 @@ function KS_solve_SCF_smearing!( Ham::PWHamiltonian ;
 
     for iter = 1:NiterMax
 
+        println("")
+
         if update_psi == "LOBPCG"
             for ispin = 1:Nspin
             for ik = 1:Nkpt
@@ -112,7 +118,8 @@ function KS_solve_SCF_smearing!( Ham::PWHamiltonian ;
                 ikspin = ik + (ispin - 1)*Nkpt
                 #
                 evals[:,ikspin], psiks[ikspin] =
-                diag_lobpcg( Ham, psiks[ikspin], verbose=false, verbose_last=false )
+                diag_lobpcg( Ham, psiks[ikspin], verbose=false, verbose_last=false,
+                             Nstates_conv = Nstates_occ )
                 #
             end
             end
@@ -152,14 +159,14 @@ function KS_solve_SCF_smearing!( Ham::PWHamiltonian ;
 
         else
 
-            printf("Unknown method for update_psi = %s\n", update_psi)
+            @printf("Unknown method for update_psi = %s\n", update_psi)
             exit()
 
         end
 
-        #if E_GAP_INFO
-        #    println("E gap = ", evals[idx_LUMO,:] - evals[idx_HOMO,:] )
-        #end
+        if E_GAP_INFO
+            println("E gap = ", minimum(evals[idx_LUMO,:] - evals[idx_HOMO,:]))
+        end
 
         Focc, E_fermi = calc_Focc( evals, wk, Nelectrons, kT, Nspin=Nspin )
         Entropy = calc_entropy( Focc, wk, kT, Nspin=Nspin )
@@ -176,7 +183,8 @@ function KS_solve_SCF_smearing!( Ham::PWHamiltonian ;
             end
         elseif mix_method == "anderson"
             # FIXME: df and dv is not modified when we call it by df[:,:] or dv[:,:]
-            Rhoe[:,:] = andersonmix!( Rhoe, Rhoe_new, β, df, dv, iter, MIXDIM )
+            #Rhoe[:,:] = andersonmix!( Rhoe, Rhoe_new, β, df, dv, iter, MIXDIM )
+            Rhoe[:,:] = mix_anderson!( Nspin, Rhoe, Rhoe_new, β, df, dv, iter, MIXDIM )
         else
             @printf("ERROR: Unknown mix_method = %s\n", mix_method)
             exit()
@@ -190,9 +198,14 @@ function KS_solve_SCF_smearing!( Ham::PWHamiltonian ;
             end
         end
 
-        if check_rhoe_after_mix
+        #if check_rhoe_after_mix
+        # renormalize
+        if true
             integRhoe = sum(Rhoe)*dVol
-            @printf("After mixing: integRho = %18.10f\n", integRhoe)
+            @printf("After mixing: integRhoe = %18.10f\n", integRhoe)
+            Rhoe = Nelectrons/integRhoe * Rhoe
+            integRhoe = sum(Rhoe)*dVol
+            @printf("After renormalize Rhoe: = %18.10f\n", integRhoe)
         end
 
         update!( Ham, Rhoe )

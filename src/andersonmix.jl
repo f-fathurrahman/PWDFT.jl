@@ -21,7 +21,8 @@ function andersonmix!( vin::Array{Float64,2}, vout::Array{Float64,2},
     #@printf("ipos = %d\n", ipos)
 
     if iter > 1
-        # compute the changes in function evaluations and the step (changes in potentials)
+        # compute the changes in function evaluations and the
+        # step (changes in potentials)
         df[:,ipos,:] = df[:,ipos,:] - dvout[:,:]
         dv[:,ipos,:] = dv[:,ipos,:] - vin[:,:]
     end
@@ -31,12 +32,20 @@ function andersonmix!( vin::Array{Float64,2}, vout::Array{Float64,2},
 
     vinsave[:,:]  = vin[:,:]
     dvoutsave[:,:] = dvout[:,:]
-
+    
+    gammas = zeros(Float64,iterused,Nspin)
     if (iter > 1)
-        gammas = pinv(df[:,1:iterused])*dvout
+        for ispin=1:Nspin
+            gammas[1:iterused,ispin] = pinv(df[:,1:iterused,ispin])*dvout[:,ispin]
+            #gammas2 = pinv(df[:,1:iterused,ispin])*dvout[:,ispin]
+            #println("gammas2 = ", gammas2)
+        end
+        #exit()
         for i = 1:iterused
-            vin[:,:]  = vin[:,:]  - gammas[i] * dv[:,i,:]
-            dvout[:,:] = dvout[:,:] - gammas[i] * df[:,i,:]
+            for ispin = 1:Nspin
+                vin[:,ispin]  = vin[:,ispin]  - gammas[i,ispin] * dv[:,i,ispin]
+                dvout[:,ispin] = dvout[:,ispin] - gammas[i,ispin] * df[:,i,ispin]
+            end
         end
     end
 
