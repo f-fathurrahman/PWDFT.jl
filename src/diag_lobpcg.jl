@@ -2,7 +2,7 @@
 Based on code by Knyazev.
 """
 function diag_lobpcg( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
-                      tol=1e-8, tol_avg=1e-6, maxit=200, verbose=false,
+                      tol=1e-6, NiterMax=200, verbose=false,
                       verbose_last=false, Nstates_conv=0 )
 
     pw = Ham.pw
@@ -33,7 +33,7 @@ function diag_lobpcg( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
 
     IS_CONV = false
     
-    for iter = 1:maxit
+    for iter = 1:NiterMax
 
         # Rayleigh quotient
         S = X'*HX
@@ -49,7 +49,9 @@ function diag_lobpcg( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
         nconv = length( findall( resnrm .< tol ) )
         if nconv >= Nstates_conv
             IS_CONV = true
-            println("LOBPCG convergence: nconv in iter ", iter)
+            if verbose
+                println("LOBPCG convergence: nconv in iter ", iter)
+            end
             break
         end
 
@@ -57,14 +59,7 @@ function diag_lobpcg( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
             @printf("LOBPCG iter = %8d, nconv=%d, %18.10e\n", iter, nconv, conv)
         end
         
-        #=if conv <= tol_avg
-            IS_CONV = true
-            if verbose || verbose_last
-                @printf("LOBPCG convergence: tol_avg in iter = %d\n", iter)
-            end
-            break
-        end=#
-        #
+
         for j = 1:Nstates
             resnrm[j] = norm( R[:,j] )
         end
@@ -123,7 +118,7 @@ function diag_lobpcg( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
     end
 
     if !IS_CONV
-        @printf("\nWARNING: LOBPCG is not converged after %d iterations\n", maxit)
+        @printf("\nWARNING: LOBPCG is not converged after %d iterations\n", NiterMax)
     end
 
     S = X'*HX
