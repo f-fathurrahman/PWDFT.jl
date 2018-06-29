@@ -1,5 +1,10 @@
 """
+Locally-optimal block preconditioned conjugate gradient method for
+finding `PWHamiltonian` eigenstates and eigenvalues.
+
 Based on code by Knyazev.
+
+TODO: Add references
 """
 function diag_lobpcg( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
                       tol=1e-6, NiterMax=200, verbose=false,
@@ -99,9 +104,9 @@ function diag_lobpcg( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
         X = Q*U
         HX = HQ*U
         if iter > 1
-            set2 = Nstates  +1:2*Nstates
-            set3 = 2*Nstates + 1:3*Nstates
-            P  = W*U[set2,:]  + P*U[set3,:]
+            set2 = Nstates+1:2*Nstates
+            set3 = 2*Nstates+1:3*Nstates
+            P  = W*U[set2,:] + P*U[set3,:]
             HP = HW*U[set2,:] + HP*U[set3,:]
             C = P'*P
             #C = 0.5*(C + C')
