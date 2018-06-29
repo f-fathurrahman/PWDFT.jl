@@ -27,8 +27,8 @@ function test_main()
     #
     # Solve the KS problem
     #
-    KS_solve_Emin_PCG!( Ham )
-    #KS_solve_SCF!( Ham, update_psi="LOBPCG" )
+    #KS_solve_Emin_PCG!( Ham )
+    KS_solve_SCF!( Ham, mix_method="anderson" )
     #KS_solve_SCF_smearing!( Ham, update_psi="LOBPCG", mix_method="simple" )
 
     Nstates = Ham.electrons.Nstates
