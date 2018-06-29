@@ -39,7 +39,7 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
     # Starting eigenvalues and psi
     for ik = 1:Nkpt
         Ham.ik = ik
-        evals[:,ik], psik[ik] = diag_lobpcg( Ham, psik[ik], verbose_last=false, maxit=10 )
+        evals[:,ik], psik[ik] = diag_lobpcg( Ham, psik[ik], verbose_last=false, NiterMax=10 )
     end
 
     energies = calc_energies( Ham, psik )
