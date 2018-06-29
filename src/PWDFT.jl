@@ -169,8 +169,8 @@ include("diag_davidson.jl")
 #
 # Mixing functions
 #
-export andersonmix!
-include("andersonmix.jl")
+export mix_anderson!
+include("mix_anderson.jl")
 
 #
 # KS solvers

@@ -2,13 +2,17 @@
 Based on code by Knyazev.
 """
 function diag_lobpcg( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
-                      tol=1e-5, tol_avg=1e-7, maxit=200, verbose=false,
-                      verbose_last=false )
+                      tol=1e-8, tol_avg=1e-6, maxit=200, verbose=false,
+                      verbose_last=false, Nstates_conv=0 )
 
     pw = Ham.pw
     # get size info
     Nbasis = size(X0)[1]
     Nstates = size(X0)[2]
+
+    if Nstates_conv == 0
+        Nstates_conv = Nstates
+    end
 
     # orthonormalize the initial wave functions.
     #X = ortho_gram_schmidt(X0)  # normalize (again) XXX ?
@@ -26,7 +30,11 @@ function diag_lobpcg( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
     sum_evals = 0.0
     sum_evals_old = 0.0
     conv = 0.0
-    while iter <= maxit && nconv < Nstates
+
+    IS_CONV = false
+    
+    for iter = 1:maxit
+
         # Rayleigh quotient
         S = X'*HX
         lambda = real(eigvals(S))  #
@@ -37,15 +45,25 @@ function diag_lobpcg( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
         conv = abs(sum_evals - sum_evals_old)/Nstates
         sum_evals_old = sum_evals
         R = HX - X*S
-        if verbose
-            @printf("LOBPCG iter = %8d, %18.10e\n", iter, conv)
+
+        nconv = length( findall( resnrm .< tol ) )
+        if nconv >= Nstates_conv
+            IS_CONV = true
+            println("LOBPCG convergence: nconv in iter ", iter)
+            break
         end
-        if conv <= tol_avg
+
+        if verbose
+            @printf("LOBPCG iter = %8d, nconv=%d, %18.10e\n", iter, nconv, conv)
+        end
+        
+        #=if conv <= tol_avg
+            IS_CONV = true
             if verbose || verbose_last
                 @printf("LOBPCG convergence: tol_avg in iter = %d\n", iter)
             end
             break
-        end
+        end=#
         #
         for j = 1:Nstates
             resnrm[j] = norm( R[:,j] )
@@ -102,6 +120,10 @@ function diag_lobpcg( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
         end
 
         iter = iter + 1
+    end
+
+    if !IS_CONV
+        @printf("\nWARNING: LOBPCG is not converged after %d iterations\n", maxit)
     end
 
     S = X'*HX

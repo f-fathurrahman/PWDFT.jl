@@ -1,5 +1,3 @@
-include("mix_anderson.jl")
-
 function KS_solve_SCF_smearing!( Ham::PWHamiltonian ;
                        startingwfc=nothing, savewfc=false,
                        β = 0.5, NiterMax=100, verbose=false,

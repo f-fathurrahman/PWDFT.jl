@@ -62,10 +62,17 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
     #
     # For Anderson mixing
     #
-    MIXDIM = 4
+    #=MIXDIM = 4
     if mix_method == "anderson"
         df = zeros(Float64,Npoints,MIXDIM,Nspin)
         dv = zeros(Float64,Npoints,MIXDIM,Nspin)
+    end
+    =#
+
+    MIXDIM = 4
+    if mix_method == "anderson"
+        df = zeros(Float64,Npoints*Nspin,MIXDIM)
+        dv = zeros(Float64,Npoints*Nspin,MIXDIM)
     end
 
     E_GAP_INFO = false
@@ -167,7 +174,8 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
             end
         elseif mix_method == "anderson"
             # FIXME: df and dv is not modified when we call it by df[:,:] or dv[:,:]
-            Rhoe[:,:] = andersonmix!( Rhoe, Rhoe_new, β, df, dv, iter, MIXDIM )
+            #Rhoe[:,:] = andersonmix!( Rhoe, Rhoe_new, β, df, dv, iter, MIXDIM )
+            Rhoe[:,:] = mix_anderson!( Nspin, Rhoe, Rhoe_new, β, df, dv, iter, MIXDIM )
         else
             @printf("ERROR: Unknown mix_method = %s\n", mix_method)
             exit()
