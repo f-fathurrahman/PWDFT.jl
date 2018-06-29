@@ -14,8 +14,6 @@ function mix_anderson!( Nspin::Int64,
     dvout = zeros(Float64,Npoints*Nspin)
     dvout = vout[:] - vin[:]
 
-    println("In mix_anderson, norm(dvout) = ", norm(dvout))
-
     iterused = min(iter-1,mixdim)
     ipos = iter - 1 - floor(Int64, (iter-2)/mixdim)*mixdim
 
