@@ -31,6 +31,7 @@
         return grad
     end
 
+"""
     # Calculate reduced Hamiltonian
     Hred = zeros(ComplexF64,Nstates,Nstates)
     for ist = 1:Nstates
@@ -47,6 +48,13 @@
                           (Focc[ist,ikspin]-Focc[jst,ikspin])*psi[:,jst]
         end
     end
+"""
+
+    F = Matrix(Diagonal(Focc[:,ikspin]))
+    ℍ = psi' * H_psi
+    HFH = ℍ*F - F*ℍ
+    ℚ = 0.5*HFH
+    grad[:,:] = grad[:,:] + psi*ℚ
 
     return grad
 
