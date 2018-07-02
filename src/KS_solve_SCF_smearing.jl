@@ -196,9 +196,8 @@ function KS_solve_SCF_smearing!( Ham::PWHamiltonian ;
             end
         end
 
-        #if check_rhoe_after_mix
         # renormalize
-        if true
+        if check_rhoe_after_mix
             integRhoe = sum(Rhoe)*dVol
             @printf("After mixing: integRhoe = %18.10f\n", integRhoe)
             Rhoe = Nelectrons/integRhoe * Rhoe

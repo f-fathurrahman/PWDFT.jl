@@ -14,6 +14,7 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
     Npoints = prod(Ns)
     dVol = pw.Ω/Npoints
     electrons = Ham.electrons
+    Nelectrons = electrons.Nelectrons
     Focc = electrons.Focc
     Nstates = electrons.Nstates
     Nspin = electrons.Nspin
@@ -111,7 +112,8 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
                 ikspin = ik + (ispin - 1)*Nkpt
                 #
                 evals[:,ikspin], psiks[ikspin] =
-                diag_lobpcg( Ham, psiks[ikspin], verbose=false )
+                diag_lobpcg( Ham, psiks[ikspin], verbose=false, verbose_last=false,
+                             Nstates_conv = Nstates_occ )
                 #
             end
             end
@@ -191,7 +193,10 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
 
         if check_rhoe_after_mix
             integRhoe = sum(Rhoe)*dVol
-            @printf("After mixing: integRho = %18.10f\n", integRhoe)
+            @printf("After mixing: integRhoe = %18.10f\n", integRhoe)
+            Rhoe = Nelectrons/integRhoe * Rhoe
+            integRhoe = sum(Rhoe)*dVol
+            @printf("After renormalize Rhoe: = %18.10f\n", integRhoe)
         end
 
         update!( Ham, Rhoe )
