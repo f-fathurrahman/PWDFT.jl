@@ -1,11 +1,3 @@
-#
-# Going from 0.6 to 0.7
-#
-# Void -> Nothing
-# Complex128 -> ComplexF64
-# find! -> findall!
-# FFT Plan types
-
 __precompile__()
 
 module PWDFT
@@ -34,7 +26,7 @@ export gen_lattice_fcc, gen_lattice_bcc, gen_lattice_trigonal, gen_lattice_trigo
 include("gen_lattice_pwscf.jl")
 
 # FIXME Temporary workout until I found how to work with BinDeps
-const SPGLIB_SO_PATH = "/home/efefer/WORKS/my_github_repos/PWDFT.jl/src/extlibs/spglib/libspglib.so"
+const SPGLIB_SO_PATH = joinpath(dirname(@__DIR__), "src", "extlibs", "spglib", "libspglib.so")
 export spg_find_primitive
 export spg_get_ir_reciprocal_mesh
 export reduce_atoms, gen_kgrid_reduced
@@ -121,8 +113,7 @@ include("calc_E_NN.jl")
 export calc_rhoe
 include("calc_rhoe.jl")
 
-const LIBXC_SO_PATH = "/home/efefer/WORKS/my_github_repos/PWDFT.jl/src/extlibs/libxc_interface.so"
-
+const LIBXC_SO_PATH = joinpath(dirname(@__DIR__), "src", "extlibs", "libxc_interface.so")
 export calc_epsxc_VWN, calc_Vxc_VWN
 include("LDA_VWN.jl")
 
