@@ -10,8 +10,20 @@ structure package such as Quantum ESPRESSO, ABINIT, VASP, etc.
 
 ## Requirements
 
+- Julia 0.7, with `FFTW` and `SpecialFunctions` packages installed.
 - LibXC 3.0
 - spglib (included)
+
+## Installation
+
+Currently, this package is not yet registered. You can install this package by
+cloning this repository under `.julia/dev` directory.
+To make sure the package is installed correctly, you can load the package
+and verify that there are no error messages after the loading.
+
+```julia
+using PWDFT
+```
 
 ## Units
 
