@@ -51,7 +51,7 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
     for ik = 1:Nkpt
         Ham.ik = ik
         Ham.ispin = ispin
-        ikspin = ik + (ispin - 1)*Nspin
+        ikspin = ik + (ispin - 1)*Nkpt
         evals[:,ikspin], psiks[ikspin] =
         diag_lobpcg( Ham, psiks[ikspin], verbose_last=false, NiterMax=10 )
     end
