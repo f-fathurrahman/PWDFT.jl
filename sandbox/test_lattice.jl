@@ -87,24 +87,24 @@ function test_tetragonal_I()
     write_xsf("TEMP_tetragonal_I.xsf", LatVecs, pw.r)
 end
 
-function test_orthorhombic_P()
-    LatVecs = gen_lattice_orthorhombic_P(16.0, 5.0, 7.0)
+function test_orthorhombic()
+    LatVecs = gen_lattice_orthorhombic(16.0, 5.0, 7.0)
     ecutwfc_Ry = 1.0
 
     pw = PWGrid( 0.5*ecutwfc_Ry, LatVecs )
     println(pw)
 
-    write_xsf("TEMP_orthorhombic_P.xsf", LatVecs, pw.r)
+    write_xsf("TEMP_orthorhombic.xsf", LatVecs, pw.r)
 end
 
-function test_monoclinic_P()
-    LatVecs = gen_lattice_monoclinic_P(11.0, 10.0, 5.0, 60.0)
+function test_monoclinic()
+    LatVecs = gen_lattice_monoclinic(11.0, 10.0, 5.0, 60.0)
     ecutwfc_Ry = 1.0
 
     pw = PWGrid( 0.5*ecutwfc_Ry, LatVecs )
     println(pw)
 
-    write_xsf("TEMP_monoclinic_P.xsf", LatVecs, pw.r)
+    write_xsf("TEMP_monoclinic.xsf", LatVecs, pw.r)
 end
 
 function test_triclinic()
@@ -124,6 +124,6 @@ test_hexagonal()
 test_trigonal()
 test_tetragonal_P()
 test_tetragonal_I()
-test_orthorhombic_P()
-test_monoclinic_P()
+test_orthorhombic()
+test_monoclinic()
 test_triclinic()
