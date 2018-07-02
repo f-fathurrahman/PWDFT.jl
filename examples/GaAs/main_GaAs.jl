@@ -1,3 +1,4 @@
+using Printf
 using PWDFT
 
 function test_main( ; method="SCF" )
@@ -31,10 +32,10 @@ function test_main( ; method="SCF" )
         Ham.electrons = Electrons( atoms, Ham.pspots, Nstates=5,
                                    Nkpt=Ham.pw.gvecw.kpoints.Nkpt, Nstates_empty=1 )
         println(Ham.electrons)
-        KS_solve_SCF!( Ham )
+        KS_solve_SCF!( Ham, mix_method="anderson", β=0.2 )
 
     elseif method == "Emin"
-        KS_solve_Emin_PCG!( Ham, verbose=true, savewfc=false )
+        KS_solve_Emin_PCG!( Ham, verbose=true )
 
     elseif method == "DCM"
         KS_solve_DCM!( Ham, NiterMax=15 )
@@ -43,19 +44,6 @@ function test_main( ; method="SCF" )
         println("ERROR: unknow method = ", method)
     end
 
-    Nstates = Ham.electrons.Nstates
-    ebands = Ham.electrons.ebands
-    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
-    k = Ham.pw.gvecw.kpoints.k
-    
-    println("\nBand energies:")
-    for ik = 1:Nkpt
-        @printf("%d k = [%f,%f,%f]\n", ik, k[1,ik], k[2,ik], k[3,ik])
-        for ist = 1:Nstates
-            @printf("%8d  %18.10f = %18.10f eV\n", ist, ebands[ist,ik], ebands[ist,ik]*Ry2eV*2)
-        end
-    end
-    
     println("\nTotal energy components")
     println(Ham.energies)
 
@@ -68,10 +56,10 @@ function test_main( ; method="SCF" )
 end
 
 @time test_main(method="Emin")
-#@time test_main(method="SCF")
-#@time test_main(method="DCM")
+@time test_main(method="SCF")
+@time test_main(method="DCM")
 
-"""
+#=
 !    total energy              =     -17.28495473 Ry = -8.642477365 Ha
      one-electron contribution =       2.73205378 Ry
      hartree contribution      =       1.63341388 Ry
@@ -97,5 +85,4 @@ Electronic energy:      -0.2336901294
 NN         energy:      -8.4212062785
 -------------------------------------
 Total      energy:      -8.6548964079
-
-"""
+=#

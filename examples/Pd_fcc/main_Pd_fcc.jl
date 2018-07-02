@@ -1,3 +1,4 @@
+using Printf
 using PWDFT
 
 function test_main()
@@ -27,19 +28,6 @@ function test_main()
     #
     KS_solve_SCF_smearing!( Ham )
 
-    Nstates = Ham.electrons.Nstates
-    ebands = Ham.electrons.ebands
-    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
-    k = Ham.pw.gvecw.kpoints.k
-    
-    println("\nBand energies:")
-    for ik = 1:Nkpt
-        @printf("%d k = [%f,%f,%f]\n", ik, k[1,ik], k[2,ik], k[3,ik])
-        for ist = 1:Nstates
-            @printf("%8d  %18.10f = %18.10f eV\n", ist, ebands[ist,ik], ebands[ist,ik]*Ry2eV*2)
-        end
-    end
-    
     println("\nTotal energy components")
     println(Ham.energies)
 
@@ -47,7 +35,7 @@ end
 
 @time test_main()
 
-"""
+#=
 !    total energy              =     -57.24503621 Ry = -28.622518105 Ha
      one-electron contribution =       9.04437856 Ry
      hartree contribution      =       6.25916206 Ry
@@ -77,4 +65,4 @@ Electronic energy:       2.4420398879
 NN         energy:     -31.1867538034
 -------------------------------------
 Total      energy:     -28.7447139155
-"""
+=#

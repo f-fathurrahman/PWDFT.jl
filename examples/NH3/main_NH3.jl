@@ -1,3 +1,4 @@
+using Printf
 using PWDFT
 
 function test_main( ; method="SCF" )
@@ -46,7 +47,7 @@ end
 @time test_main(method="SCF")
 @time test_main(method="DCM")
 
-"""
+#=
 ABINIT 30 Ry
     Kinetic energy  =  8.06862489714732E+00
     Hartree energy  =  1.18383732395827E+01
@@ -68,4 +69,4 @@ Electronic energy:     -14.4039261263
 NN         energy:       3.1331531467
 -------------------------------------
 Total      energy:     -11.2707729796
-"""
+=#

@@ -40,19 +40,6 @@ function test_main( ; method="SCF" )
         println("ERROR: unknow method = ", method)
     end
 
-    Nstates = Ham.electrons.Nstates
-    ebands = Ham.electrons.ebands
-    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
-    k = Ham.pw.gvecw.kpoints.k
-    
-    println("\nBand energies:")
-    for ik = 1:Nkpt
-        @printf("%d k = [%f,%f,%f]\n", ik, k[1,ik], k[2,ik], k[3,ik])
-        for ist = 1:Nstates
-            @printf("%8d  %18.10f = %18.10f eV\n", ist, ebands[ist,ik], ebands[ist,ik]*Ry2eV*2)
-        end
-    end
-    
     println("\nTotal energy components")
     println(Ham.energies)
 
@@ -62,7 +49,7 @@ end
 @time test_main(method="SCF")
 @time test_main(method="DCM")
 
-"""
+#=
 Kinetic energy  =  3.19227108452527E+00
 Hartree energy  =  5.74882034691866E-01
 XC energy       = -2.42725552640522E+00
@@ -94,4 +81,4 @@ Electronic energy:       0.5444455419
 NN         energy:      -8.3979258900
 -------------------------------------
 Total      energy:      -7.8534803481
-"""
+=#

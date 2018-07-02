@@ -1,3 +1,4 @@
+using Printf
 using PWDFT
 
 function test_main( ; method="SCF" )
@@ -45,7 +46,7 @@ end
 @time test_main(method="DCM")
 
 
-"""
+#=
 Result from ABINIT: (30 Ry):
     Kinetic energy  =  2.16029548905902E-01
     Hartree energy  =  1.78287277495300E-01
@@ -56,4 +57,4 @@ Result from ABINIT: (30 Ry):
     NL   psp  energy=  1.48929934899351E-01
     >>>>>>>>> Etotal= -3.73347732313342E-01
 
-"""
+=#

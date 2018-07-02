@@ -51,8 +51,7 @@ end
 
 @time test_main()
 
-"""
-
+#=
 No smearing:
 
 Total energy components
@@ -111,4 +110,4 @@ PWSCF
      ewald contribution        =     -16.79585054 Ry
      smearing contrib. (-TS)   =      -0.00163437 Ry
 
-"""
+=#

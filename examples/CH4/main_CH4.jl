@@ -1,3 +1,4 @@
+using Printf
 using PWDFT
 
 function test_main( ; method="SCF" )
@@ -17,7 +18,7 @@ function test_main( ; method="SCF" )
     Ham.energies.NN = calc_E_NN( atoms )
 
     if method == "SCF"
-        KS_solve_SCF!( Ham, β=0.2 )
+        KS_solve_SCF!( Ham, β=0.2, mix_method="anderson" )
 
     elseif method == "Emin"
         KS_solve_Emin_PCG!( Ham )
@@ -42,12 +43,12 @@ function test_main( ; method="SCF" )
 
 end
 
-@time test_main(method="DCM") # diverges
-@time test_main(method="Emin")
+#@time test_main(method="DCM") # diverges
+#@time test_main(method="Emin")
 @time test_main(method="SCF")
 
 
-"""
+#=
 Kinetic energy  =  6.21988590075257E+00
 Hartree energy  =  9.51102621859118E+00
 XC energy       = -3.06030478665958E+00
@@ -67,4 +68,4 @@ Electronic energy:     -11.8106735008
 NN         energy:       3.9278278464
 -------------------------------------
 Total      energy:      -7.8828456544
-"""
+=#

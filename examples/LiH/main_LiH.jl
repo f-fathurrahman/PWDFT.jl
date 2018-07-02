@@ -1,3 +1,4 @@
+using Printf
 using PWDFT
 
 function test_main( ; method="SCF" )
@@ -17,7 +18,7 @@ function test_main( ; method="SCF" )
     Ham.energies.NN = calc_E_NN( atoms )
 
     if method == "SCF"
-        KS_solve_SCF!( Ham )
+        KS_solve_SCF!( Ham, mix_method="anderson" )
 
     elseif method == "Emin"
         KS_solve_Emin_PCG!( Ham )
@@ -46,7 +47,7 @@ end
 @time test_main(method="SCF")
 @time test_main(method="DCM") # diverges
 
-"""
+#=
 ABINIT result (30 Ry) Li-q1, H-q1
     Kinetic energy  =  6.03326166300386E-01
     Hartree energy  =  5.76057114250496E-01
@@ -95,5 +96,5 @@ NN         energy:      -0.4205679411
 Total      energy:      -7.0003164593
 ----------------------------------------------------------
 
-"""
+=#
 

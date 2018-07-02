@@ -1,3 +1,4 @@
+using Printf
 using PWDFT
 
 function test_main( ; method="SCF" )
@@ -41,19 +42,6 @@ function test_main( ; method="SCF" )
         println("ERROR: unknow method = ", method)
     end
 
-    Nstates = Ham.electrons.Nstates
-    ebands = Ham.electrons.ebands
-    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
-    k = Ham.pw.gvecw.kpoints.k
-    
-    println("\nBand energies:")
-    for ik = 1:Nkpt
-        @printf("%d k = [%f,%f,%f]\n", ik, k[1,ik], k[2,ik], k[3,ik])
-        for ist = 1:Nstates
-            @printf("%8d  %18.10f = %18.10f eV\n", ist, ebands[ist,ik], ebands[ist,ik]*Ry2eV*2)
-        end
-    end
-    
     println("\nTotal energy components")
     println(Ham.energies)
 
@@ -64,7 +52,7 @@ end
 @time test_main(method="DCM")
 
 
-"""
+#=
 !    total energy              =     -47.51053311 Ry = -23.755266555 Ha
      one-electron contribution =      -1.86091588 Ry
      hartree contribution      =       9.80625212 Ry
@@ -91,4 +79,4 @@ Electronic energy:      -2.5787314534
 NN         energy:     -21.1763173814
 -------------------------------------
 Total      energy:     -23.7550488349
-"""
+=#

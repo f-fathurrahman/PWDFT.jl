@@ -1,3 +1,4 @@
+using Printf
 using PWDFT
 
 function test_main( ; method="SCF" )
@@ -16,7 +17,7 @@ function test_main( ; method="SCF" )
     Ham.energies.NN = calc_E_NN( atoms )
 
     if method == "SCF"
-        KS_solve_SCF!( Ham, mix_method="anderson" )
+        KS_solve_SCF!( Ham, mix_method="anderson", β=0.2 )
 
     elseif method == "Emin"
         KS_solve_Emin_PCG!( Ham )
@@ -46,7 +47,7 @@ end
 @time test_main(method="DCM")
 
 
-"""
+#=
 Kinetic    energy:      11.5329676573
 Ps_loc     energy:     -47.3445263895
 Ps_nloc    energy:       2.3268197661
@@ -75,4 +76,4 @@ PWSCF result for 30 Ry
      hartree contribution      =      34.21524310 Ry
      xc contribution           =      -9.00776423 Ry
      ewald contribution        =       3.58126919 Ry =   1.790634595 Ha
-"""
+=#

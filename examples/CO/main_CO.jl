@@ -1,3 +1,4 @@
+using Printf
 using PWDFT
 
 function test_main( ; method="SCF" )
@@ -17,7 +18,7 @@ function test_main( ; method="SCF" )
     Ham.energies.NN = calc_E_NN( atoms )
 
     if method == "SCF"
-        KS_solve_SCF!( Ham )
+        KS_solve_SCF!( Ham, mix_method="anderson" )
 
     elseif method == "Emin"
         KS_solve_Emin_PCG!( Ham )
