@@ -10,6 +10,7 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
     ΔV = pw.Ω/Npoints
     Focc = Ham.electrons.Focc
     Nstates = Ham.electrons.Nstates
+    Nocc = Ham.electrons.Nstates_occ
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     Nspin = Ham.electrons.Nspin
 
@@ -59,7 +60,8 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
 
     Ham.energies = calc_energies( Ham, psiks )
     
-    Etot_old = Ham.energies.Total
+    Etot = Ham.energies.Total
+    Etot_old = Etot
 
     # subspace
     Y = Array{Array{ComplexF64,2},1}(undef,Nkspin)
@@ -68,6 +70,8 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
     G = Array{Array{ComplexF64,2},1}(undef,Nkspin)
     T = Array{Array{Float64,2},1}(undef,Nkspin)
     B = Array{Array{Float64,2},1}(undef,Nkspin)
+    A = Array{Array{Float64,2},1}(undef,Nkspin)
+    C = Array{Array{Float64,2},1}(undef,Nkspin)
     for ispin = 1:Nspin
     for ik = 1:Nkpt
         ikspin = ik + (ispin - 1)*Nkpt
@@ -77,8 +81,14 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
         G[ikspin] = zeros( ComplexF64, 3*Nstates, 3*Nstates )
         T[ikspin] = zeros( Float64, 3*Nstates, 3*Nstates )
         B[ikspin] = zeros( Float64, 3*Nstates, 3*Nstates )
+        A[ikspin] = zeros( Float64, 3*Nstates, 3*Nstates )
+        C[ikspin] = zeros( Float64, 3*Nstates, 3*Nstates )
     end
     end
+
+    D = zeros(Float64,3*Nstates,Nkspin)  # array for saving eigenvalues of subspace problem
+
+    #XXX use plain 3d-array for G, T, and B ?
 
     set1 = 1:Nstates
     set2 = Nstates+1:2*Nstates
@@ -86,6 +96,9 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
     set4 = Nstates+1:3*Nstates
 
     MaxInnerSCF = 3
+    MAXTRY = 10
+    FUDGE = 1e-12
+    SMALL = 1e-12
 
     for iter = 1:NiterMax
         
@@ -99,10 +112,10 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
             #
             psiHpsi = psiks[ikspin]' * Hpsi
             psiHpsi = 0.5*( psiHpsi + psiHpsi' )
-            #
+            # Calculate residual
             R[ikspin] = Hpsi - psiks[ikspin]*psiHpsi
             R[ikspin] = Kprec( ik, pw, R[ikspin] )
-            #
+            # Construct subspace
             Y[ikspin][:,set1] = psiks[ikspin]
             Y[ikspin][:,set2] = R[ikspin]
             #
@@ -115,8 +128,8 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
             #
             KY = op_K( Ham, Y[ikspin] ) + op_V_Ps_loc( Ham, Y[ikspin] )
             #
-            T[ikspin] = real( Y[ikspin]'*KY )
-            B[ikspin] = real( Y[ikspin]'*Y[ikspin] )
+            T[ikspin] = real(Y[ikspin]'*KY)
+            B[ikspin] = real(Y[ikspin]'*Y[ikspin])
             B[ikspin] = 0.5*( B[ikspin] + B[ikspin]' )
 
             if iter > 1
@@ -129,6 +142,10 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
         
         @printf("DCM iter: %3d\n", iter)
 
+        sigma = 0.0
+        numtry = 0
+        Etot0 = Ham.energies.Total
+
         for iterscf = 1:MaxInnerSCF
             
             for ispin = 1:Nspin
@@ -138,21 +155,34 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
                 Ham.ispin = ispin
                 ikspin = ik + (ispin - 1)*Nkpt
                 #
-                V_loc = Ham.potentials.Hartree + Ham.potentials.XC[:,ispin]
+                # Project Hartree, XC potential, and nonlocal pspot if any
                 #
+                V_loc = Ham.potentials.Hartree + Ham.potentials.XC[:,ispin]
+                # allocate memory for VY ?
                 if Ham.pspotNL.NbetaNL > 0
                     VY = op_V_Ps_nloc( Ham, Y[ikspin] ) + op_V_loc( ik, pw, V_loc, Y[ikspin] )
                 else
                     VY = op_V_loc( ik, pw, V_loc, Y[ikspin] )
                 end
                 #
-                A = real( T[ikspin] + Y[ikspin]'VY )
-                A = 0.5*( A + A' )
+                A[ikspin] = real( T[ikspin] + Y[ikspin]'VY )
+                A[ikspin] = 0.5*( A[ikspin] + A[ikspin]' )
                 #
-                D, G[ikspin] = eigen( A, B[ikspin] )
-                evals[:,ikspin] = D[1:Nstates]
+                BG = B[ikspin]*G[ikspin][:,1:Nstates_occ]
+                C[ikspin] = real( BG*BG' )
+                C[ikspin] = 0.5*( C[ikspin] + C[ikspin]' )
                 #
-                # update
+                # apply trust region if necessary
+                if abs(sigma) != eps()
+                    println("Trust region is imposed")
+                    D[:,ikspin], G[ikspin] = eigen( A[ikspin] - sigma*C[ikspin], B[ikspin] )
+                else
+                    D[:,ikspin], G[ikspin] = eigen( A[ikspin], B[ikspin] )
+                end
+                #
+                evals[:,ikspin] = D[1:Nstates,ikspin]  # XXX Not needed ?
+                #
+                # update wavefunction
                 psiks[ikspin] = Y[ikspin]*G[ikspin][:,set1]
             end
             end
@@ -169,15 +199,48 @@ function KS_solve_DCM!( Ham::PWHamiltonian;
             # Calculate energies once again
             Ham.energies = calc_energies( Ham, psiks )
             Etot = Ham.energies.Total
-            diffE = -(Etot - Etot_old)
 
-            @printf("innerSCF: %5d %18.10f %18.10e", iterscf, Etot, diffE)
-            # positive value of diffE is taken as reducing
-            if diffE < 0.0
-                @printf(" : Energy is not reducing !\n")
-            else
-                @printf("\n")
-            end
+            if Etot > Etot0
+
+                # Total energy is increased, impose trust region
+                # Do this for all kspin
+
+                for ikspin = 1:Nkspin
+
+                if iterdcm == 1
+                    gaps = D[2:2*Nstates,ikspin] - D[1:2*Nstates-1,ikspin]
+                    gapmax = maximum(gaps)
+                else
+                    gaps = D[2:3*Nstates] - D[1:3*Nstates-1]
+                    gapmax = maximum(gaps)
+                end
+                gap0 = D[Nocc+1,ikspin] - D[Nocc,ikspin]
+
+                while (gap0 < 0.9*gapmax) & (numtry < MAXTRY)
+                    println("Increase sigma")
+                    if abs(sigma) < SMALL
+                        sigma = 2*gapmax
+                    else
+                        sigma = 2*sigma
+                    end
+                    D[:,ikspin], G[ikspin] = eigen( A[ikspin] - sigma*C[ikspin], B[ikspin] )
+                    
+                    if iterdcm == 1
+                        gaps = D[2:2*Nstates,ikspin] - D[1:2*Nstates-1,ikspin]
+                        gapmax = maximum(gaps)
+                    else
+                        gaps = D[2:3*Nstates] - D[1:3*Nstates-1]
+                        gapmax = maximum(gaps)
+                    end
+                    gap0 = D[Nocc+1,ikspin] - D[Nocc,ikspin]
+                    numtry = numtry + 1
+                end
+
+                end # Nkspin
+
+            end # if Etot > Etot0
+
+
             
         end
 
