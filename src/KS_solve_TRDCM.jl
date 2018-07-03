@@ -92,6 +92,7 @@ function KS_solve_TRDCM!( Ham::PWHamiltonian;
     set2 = Nstates+1:2*Nstates
     set3 = 2*Nstates+1:3*Nstates
     set4 = Nstates+1:3*Nstates
+    set5 = 1:2*Nstates
 
     MaxInnerSCF = 3
     MAXTRY = 10
@@ -127,16 +128,23 @@ function KS_solve_TRDCM!( Ham::PWHamiltonian;
             #
             # Project kinetic and ionic potential
             #
-            KY = op_K( Ham, Y[ikspin] ) + op_V_Ps_loc( Ham, Y[ikspin] )
-            #
-            T[ikspin] = real(Y[ikspin]'*KY)
-            B[ikspin] = real(Y[ikspin]'*Y[ikspin])
-            B[ikspin] = 0.5*( B[ikspin] + B[ikspin]' )
+            if iter > 1
+                KY = op_K( Ham, Y[ikspin] ) + op_V_Ps_loc( Ham, Y[ikspin] )
+                T[ikspin] = real(Y[ikspin]'*KY)
+                B[ikspin] = real(Y[ikspin]'*Y[ikspin])
+                B[ikspin] = 0.5*( B[ikspin] + B[ikspin]' )
+            else
+                # only set5=1:2*Nstates is active for iter=1
+                KY = op_K( Ham, Y[ikspin][:,set5] ) + op_V_Ps_loc( Ham, Y[ikspin][:,set5] )
+                T[ikspin][set5,set5] = real(Y[ikspin][:,set5]'*KY)
+                bb = real(Y[ikspin][set5,set5]'*Y[ikspin][set5,set5])
+                B[ikspin][set5,set5] = 0.5*( bb + bb' )
+            end
 
             if iter > 1
                 G[ikspin] = Matrix(1.0I, 3*Nstates, 3*Nstates) #eye(3*Nstates)
             else
-                G[ikspin] = Matrix(1.0I, 2*Nstates, 2*Nstates)
+                G[ikspin][set5,set5] = Matrix(1.0I, 2*Nstates, 2*Nstates)
             end
         end
         end
@@ -146,6 +154,8 @@ function KS_solve_TRDCM!( Ham::PWHamiltonian;
         sigma[:] .= 0.0  # reset sigma to zero at the beginning of inner SCF iteration
         numtry = 0
         Etot0 = Ham.energies.Total
+
+        println("Etot0 = ", Etot0)
 
         for iterscf = 1:MaxInnerSCF
             
@@ -160,12 +170,11 @@ function KS_solve_TRDCM!( Ham::PWHamiltonian;
                 #
                 V_loc = Ham.potentials.Hartree + Ham.potentials.XC[:,ispin]
                 #
-                #if iter > 1
-                #    yy = Y[ikspin]
-                #else
-                #    yy = Y[ikspin][:,1:2*Nstates]
-                #end
-                yy = Y[ikspin]
+                if iter > 1
+                    yy = Y[ikspin]
+                else
+                    yy = Y[ikspin][:,set5]
+                end
                 # 
                 if Ham.pspotNL.NbetaNL > 0
                     VY = op_V_Ps_nloc( Ham, yy ) + op_V_loc( ik, pw, V_loc, yy )
@@ -173,31 +182,53 @@ function KS_solve_TRDCM!( Ham::PWHamiltonian;
                     VY = op_V_loc( ik, pw, V_loc, yy )
                 end
                 #
-                println( size(yy'*VY) )
-                A[ikspin] = real( T[ikspin] + yy'*VY )
-                A[ikspin] = 0.5*( A[ikspin] + A[ikspin]' )
+                if iter > 1
+                    A[ikspin] = real( T[ikspin] + yy'*VY )
+                    A[ikspin] = 0.5*( A[ikspin] + A[ikspin]' )
+                else
+                    aa = real( T[ikspin][set5,set5] + yy'*VY )
+                    A[ikspin] = 0.5*( aa + aa' )
+                end
                 #
-                BG = B[ikspin]*G[ikspin][:,1:Nocc]
-                println( size(BG) )
-                C[ikspin] = real( BG*BG' )
-                C[ikspin] = 0.5*( C[ikspin] + C[ikspin]' )
-                exit()
+                if iter > 1
+                    BG = B[ikspin]*G[ikspin][:,1:Nocc]
+                    C[ikspin] = real( BG*BG' )
+                    C[ikspin] = 0.5*( C[ikspin] + C[ikspin]' )
+                else
+                    BG = B[ikspin][set5,set5]*G[ikspin][set5,1:Nocc]
+                    cc = real( BG*BG' )
+                    C[ikspin][set5,set5] = 0.5*( cc + cc' )
+                end
                 #
                 # apply trust region if necessary
-                if abs(sigma[ikspin]) != eps()
+                if abs(sigma[ikspin]) > SMALL # sigma is not zero
                     println("Trust region is imposed")
-                    D[:,ikspin], G[ikspin] = eigen( A[ikspin] - sigma[ikspin]*C[ikspin], B[ikspin] )
+                    if iter > 1
+                        D[:,ikspin], G[ikspin] = eigen( A[ikspin] - sigma[ikspin]*C[ikspin], B[ikspin] )
+                    else
+                        D[set5,ikspin], G[ikspin][set5,set5] =
+                        eigen( A[ikspin][set5,set5] - sigma[ikspin]*C[ikspin][set5,set5], B[ikspin][set5,set5] )
+                    end
                 else
-                    D[:,ikspin], G[ikspin] = eigen( A[ikspin], B[ikspin] )
+                    if iter > 1
+                        D[:,ikspin], G[ikspin] = eigen( A[ikspin], B[ikspin] )
+                    else
+                        D[set5,ikspin], G[ikspin][set5,set5] = eigen( A[ikspin][set5,set5], B[ikspin][set5,set5] )
+                    end
                 end
                 #
                 evals[:,ikspin] = D[1:Nstates,ikspin]  # XXX Not needed ?
                 #
                 # update wavefunction
-                psiks[ikspin] = Y[ikspin]*G[ikspin][:,set1]
+                if iter > 1
+                    psiks[ikspin] = Y[ikspin]*G[ikspin][:,set1]
+                    ortho_gram_schmidt!(psiks[ikspin])  # is this necessary ?
+                else
+                    psiks[ikspin] = Y[ikspin][:,set5]*G[ikspin][set5,set1]
+                    ortho_gram_schmidt!(psiks[ikspin])
+                end
             end
             end
-            
 
             for ispin = 1:Nspin
                 idxset = (Nkpt*(ispin-1)+1):(Nkpt*ispin)
@@ -209,6 +240,8 @@ function KS_solve_TRDCM!( Ham::PWHamiltonian;
             Ham.energies = calc_energies( Ham, psiks )
             Etot = Ham.energies.Total
 
+            println("Etot = ", Etot)
+
             if Etot > Etot0
 
                 # Total energy is increased, impose trust region
@@ -216,7 +249,7 @@ function KS_solve_TRDCM!( Ham::PWHamiltonian;
 
                 for ikspin = 1:Nkspin
 
-                    if iterdcm == 1
+                    if iter == 1
                         gaps = D[2:2*Nstates,ikspin] - D[1:2*Nstates-1,ikspin]
                         gapmax[ikspin] = maximum(gaps)
                     else
@@ -225,22 +258,28 @@ function KS_solve_TRDCM!( Ham::PWHamiltonian;
                     end
                     gap0 = D[Nocc+1,ikspin] - D[Nocc,ikspin]
 
+                    @printf("ikspin = %d, gapmax = %f\n", ikspin, gapmax[ikspin])
+                    @printf("ikspin = %d, gap0 = %f\n", ikspin, gap0)
+
                     while (gap0 < 0.9*gapmax[ikspin]) & (numtry < MAXTRY)
                         println("Increase sigma to fix gap0")
-                        if abs(sigma[ikspin]) < SMALL
+                        if abs(sigma[ikspin]) < SMALL # approx for sigma == 0.0
+                            # initial value for sigma
                             sigma[ikspin] = 2*gapmax[ikspin]
                         else
                             sigma[ikspin] = 2*sigma[ikspin]
                         end
-                        D[:,ikspin], G[ikspin] = eigen( A[ikspin] - sigma[ikspin]*C[ikspin], B[ikspin] )
-
-                        if iterdcm == 1
-                            gaps = D[2:2*Nstates,ikspin] - D[1:2*Nstates-1,ikspin]
-                            gapmax[ikspin] = maximum(gaps)
+                        @printf("ikspin = %d, sigma = %f\n", ikspin, sigma[ikspin])
+                        #
+                        if iter > 1
+                            D[:,ikspin], G[ikspin] = eigen( A[ikspin] - sigma[ikspin]*C[ikspin], B[ikspin] )
+                            gaps = D[2:2*Nstates,ikspin] - D[1:2*Nstates-1,ikspin]      
                         else
+                            D[set5,ikspin], G[ikspin][set5,set5] =
+                            eigen( A[ikspin][set5,set5] - sigma[ikspin]*C[ikspin][set5,set5], B[ikspin][set5,set5] )
                             gaps = D[2:3*Nstates] - D[1:3*Nstates-1]
-                            gapmax[ikspin] = maximum(gaps)
                         end
+                        gapmax[ikspin] = maximum(gaps)
                         gap0 = D[Nocc+1,ikspin] - D[Nocc,ikspin]
                     end
                     numtry = numtry + 1
@@ -248,13 +287,21 @@ function KS_solve_TRDCM!( Ham::PWHamiltonian;
 
             end # if Etot > Etot0
 
-            while Etot > Etot0 &
-                  abs(Etot-Etot0) > FUDGE*abs(Etot0) &
-                  numtry < MAXTRY
+            println("sigma = ", sigma)
+
+            while (Etot > Etot0) &
+                  (abs(Etot-Etot0) > FUDGE*abs(Etot0)) &
+                  (numtry < MAXTRY)
                 #
                 # update wavefunction
                 for ikspin = 1:Nkspin
-                    psiks[ikspin] = Y[ikspin]*G[ikspin][:,set1]
+                    if iter > 1
+                        psiks[ikspin] = Y[ikspin]*G[ikspin][:,set1]
+                        ortho_gram_schmidt!(psiks[ikspin])
+                    else
+                        psiks[ikspin] = Y[ikspin][:,set5]*G[ikspin][set5,set1]
+                        ortho_gram_schmidt!(psiks[ikspin])
+                    end
                 end
                 #
                 update!( Ham, Rhoe )    
@@ -265,14 +312,18 @@ function KS_solve_TRDCM!( Ham::PWHamiltonian;
                 if Etot > Etot0
                     println("Increase sigma part 2")
                     for ikspin = 1:Nkspin
-                        if abs(sigma[ikspin]) > SMALL
+                        if abs(sigma[ikspin]) < SMALL
                             sigma[ikspin] = 2*sigma[ikspin]
                         else
                             sigma[ikspin] = 1.2*gapmax[ikspin]
                         end
+                        @printf("ikspin = %d sigma = %f\n", ikspin, sigma[ikspin])
+                        if iter > 1
+                            D[:,ikspin], G[ikspin] = eigen( A[ikspin] - sigma[ikspin]*C[ikspin], B[ikspin] )
+                        else
+                            D[set5,ikspin], G[ikspin][set5,set5] = eigen( A[ikspin][set5,set5] - sigma[ikspin]*C[ikspin][set5,set5], B[ikspin][set5,set5] )
+                        end
                     end
-                    @printf("ikspin = %d sigma = %f", ikspin, sigma[ikspin])
-                    D[:,ikspin], G[ikspin] = eigen( A[ikspin] - sigma[ikspin]*C[ikspin], B[ikspin] )
                 end
                 numtry = numtry + 1  # outside ikspin loop
             end # while

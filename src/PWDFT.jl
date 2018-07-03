@@ -51,7 +51,7 @@ include("XSF_utils.jl")
 export print_matrix
 include("Utilities.jl")
 
-export ortho_gram_schmidt
+export ortho_gram_schmidt, ortho_gram_schmidt!
 include("ortho_gram_schmidt.jl")
 
 export ortho_check
