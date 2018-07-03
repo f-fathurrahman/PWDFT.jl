@@ -1,10 +1,10 @@
 function KS_solve_SCF!( Ham::PWHamiltonian ;
-                       startingwfc=nothing, savewfc=false,
-                       β = 0.5, NiterMax=100, verbose=false,
-                       check_rhoe_after_mix=false,
-                       update_psi="LOBPCG", cheby_degree=8,
-                       mix_method="simple",
-                       ETOT_CONV_THR=1e-6 )
+                        startingwfc=nothing, savewfc=false,
+                        β = 0.5, NiterMax=100, verbose=false,
+                        check_rhoe_after_mix=false,
+                        update_psi="LOBPCG", cheby_degree=8,
+                        mix_method="simple",
+                        ETOT_CONV_THR=1e-6 )
 
     pw = Ham.pw
     Ngw = pw.gvecw.Ngw
@@ -63,13 +63,6 @@ function KS_solve_SCF!( Ham::PWHamiltonian ;
     #
     # For Anderson mixing
     #
-    #=MIXDIM = 4
-    if mix_method == "anderson"
-        df = zeros(Float64,Npoints,MIXDIM,Nspin)
-        dv = zeros(Float64,Npoints,MIXDIM,Nspin)
-    end
-    =#
-
     MIXDIM = 4
     if mix_method == "anderson"
         df = zeros(Float64,Npoints*Nspin,MIXDIM)

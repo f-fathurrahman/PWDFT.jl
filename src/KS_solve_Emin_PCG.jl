@@ -18,7 +18,6 @@ function KS_solve_Emin_PCG!( Ham::PWHamiltonian;
     Nspin = Ham.electrons.Nspin
     Nkspin = Nkpt*Nspin
 
-    println("Nkspin = ", Nkspin)
     psiks = Array{Array{ComplexF64,2},1}(undef,Nkspin)
 
     #

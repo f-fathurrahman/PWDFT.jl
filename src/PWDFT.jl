@@ -178,6 +178,9 @@ include("KS_solve_SCF_smearing.jl")
 export KS_solve_DCM!
 include("KS_solve_DCM.jl")
 
+export KS_solve_TRDCM!
+include("KS_solve_TRDCM.jl")
+
 export chebyfilt
 export get_ub_lb_lanczos
 include("CheFSI.jl")
