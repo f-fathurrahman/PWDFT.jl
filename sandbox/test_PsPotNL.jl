@@ -13,7 +13,7 @@ function test_main()
 
     ecutwfc = 60.0
     LatVecs = gen_lattice_sc(20.0)
-    Ham = PWHamiltonian( atoms, pspfiles, ecutwfc, verbose=true, extra_states=2 )
+    Ham = Hamiltonian( atoms, pspfiles, ecutwfc, verbose=true, extra_states=2 )
 
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     Nspin = Ham.electrons.Nspin

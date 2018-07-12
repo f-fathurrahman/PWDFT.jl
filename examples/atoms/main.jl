@@ -37,7 +37,7 @@ function do_run( psp_filename; ecutwfc_Ry=30.0 )
     # Initialize Hamiltonian
     #
     pspfiles = ["../../pseudopotentials/pade_gth/"*psp_filename]
-    Ham = PWHamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, verbose=true,
+    Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, verbose=true,
                          Nspin=1 )
 
     # calculate E_NN

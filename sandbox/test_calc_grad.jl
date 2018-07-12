@@ -9,7 +9,7 @@ function test_main()
     atoms.LatVecs = gen_lattice_sc(16.0)
     println(atoms)
     #
-    Ham = PWHamiltonian( atoms, 15.0, verbose=true, Nspin=2, extra_states=1 )
+    Ham = Hamiltonian( atoms, 15.0, verbose=true, Nspin=2, extra_states=1 )
     #
     pw = Ham.pw
     Npoints = prod(pw.Ns)

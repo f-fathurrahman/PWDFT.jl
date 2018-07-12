@@ -1,4 +1,4 @@
-function KS_solve_SCF_smearing!( Ham::PWHamiltonian ;
+function KS_solve_SCF_smearing!( Ham::Hamiltonian ;
                        startingwfc=nothing, savewfc=false,
                        β = 0.5, NiterMax=100, verbose=false,
                        check_rhoe_after_mix=false,

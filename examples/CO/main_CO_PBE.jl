@@ -12,7 +12,7 @@ function test_main( ; method="SCF" )
     ecutwfc_Ry = 30.0
     pspfiles = ["../../pseudopotentials/pbe_gth/C-q4.gth",
                 "../../pseudopotentials/pbe_gth/O-q6.gth"]
-    Ham = PWHamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, xcfunc="PBE" )
+    Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, xcfunc="PBE" )
 
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( atoms )

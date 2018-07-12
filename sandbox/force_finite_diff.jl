@@ -13,7 +13,7 @@ function calc_force_finite_diff( atoms::Atoms, pspfiles, ecutwfc )
     for ia = 1:Natoms
     for ii = 1:3
         atoms.positions[ii,ia] = pos_orig[ii,ia] + Δ
-        Ham = PWHamiltonian( atoms, pspfiles, ecutwfc )
+        Ham = Hamiltonian( atoms, pspfiles, ecutwfc )
         Ham.energies.NN = calc_E_NN( atoms )
         #
         KS_solve_SCF!( Ham, mix_method="anderson" )
@@ -21,7 +21,7 @@ function calc_force_finite_diff( atoms::Atoms, pspfiles, ecutwfc )
         println("Etot1 = ", Etot1)
         #
         atoms.positions[ii,ia] = pos_orig[ii,ia] - Δ
-        Ham = PWHamiltonian( atoms, pspfiles, ecutwfc )
+        Ham = Hamiltonian( atoms, pspfiles, ecutwfc )
         Ham.energies.NN = calc_E_NN( atoms )
         #
         KS_solve_SCF!( Ham, mix_method="anderson" )

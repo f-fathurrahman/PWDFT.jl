@@ -1,4 +1,4 @@
-function chebyfilt( Ham::PWHamiltonian, X, degree, lb, ub)
+function chebyfilt( Ham::Hamiltonian, X, degree, lb, ub)
     Ngw_ik  = size(X)[1]
     Nstates = size(X)[2]
     #
@@ -24,7 +24,7 @@ function chebyfilt( Ham::PWHamiltonian, X, degree, lb, ub)
 end
 
 
-function get_ub_lb_lanczos( Ham::PWHamiltonian, nlancz::Int64 )
+function get_ub_lb_lanczos( Ham::Hamiltonian, nlancz::Int64 )
     #
     pw = Ham.pw
     ik = Ham.ik

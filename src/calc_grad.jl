@@ -1,4 +1,4 @@
-function calc_grad( Ham::PWHamiltonian, psi::Array{ComplexF64,2} )
+function calc_grad( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
     
     ik = Ham.ik
     potentials = Ham.potentials

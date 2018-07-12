@@ -122,13 +122,13 @@ include("GGA_PBE.jl")
 
 export Potentials
 export Energies
-export PWHamiltonian
+export Hamiltonian
 export op_H, op_K, op_V_loc, op_V_Ps_loc, op_V_Ps_nloc
 export Poisson_solve
 export update!
 export PsPotNL, calc_betaNL_psi
 export calc_betaNL_psi
-include("PWHamiltonian.jl")
+include("Hamiltonian.jl")
 
 export Kprec
 include("Kprec.jl")

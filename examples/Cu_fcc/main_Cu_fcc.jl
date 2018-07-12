@@ -17,7 +17,7 @@ function test_main()
     # Initialize Hamiltonian
     pspfiles = ["../../pseudopotentials/pade_gth/Cu-q11.gth"]
     ecutwfc_Ry = 30.0
-    Ham = PWHamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5,
+    Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5,
                          meshk=[8,8,8], verbose=true, extra_states=4 )
 
     # calculate E_NN

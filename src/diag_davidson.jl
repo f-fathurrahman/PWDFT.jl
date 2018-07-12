@@ -1,4 +1,4 @@
-function diag_davidson( Ham::PWHamiltonian, X0::Array{ComplexF64,2};
+function diag_davidson( Ham::Hamiltonian, X0::Array{ComplexF64,2};
                         tol=1e-5, tol_avg=1e-7, NiterMax=100, verbose=false,
                         verbose_last=false )
       

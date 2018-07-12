@@ -16,7 +16,7 @@ function test_main( ; method="SCF" )
 
     # Initialize Hamiltonian
     ecutwfc_Ry = 30.0
-    Ham = PWHamiltonian( atoms, ecutwfc_Ry*0.5, extra_states=1 )
+    Ham = Hamiltonian( atoms, ecutwfc_Ry*0.5, extra_states=1 )
     # Set Focc manually
     Ham.electrons.Focc[:,1] = [2.0, 4.0/3, 4.0/3, 4.0/3]
 

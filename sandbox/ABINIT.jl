@@ -117,7 +117,7 @@ function get_abinit_psp( SpeciesSymbols )
     return psp_path
 end
 
-function write_abinit( Ham::PWHamiltonian;
+function write_abinit( Ham::Hamiltonian;
                        abinit_psp=nothing, prefix="../TEMP/", prefix_psp="./" )
 
     f = open( prefix*"FILES", "w" )
@@ -154,7 +154,7 @@ function test_main()
     # initialize atoms and Hamiltonian
     atoms = init_atoms_xyz("../structures/CuSO4.xyz")
     ecutwfc = 15.0
-    Ham = PWHamiltonian( atoms, ecutwfc )
+    Ham = Hamiltonian( atoms, ecutwfc )
 
     write_abinit( Ham )
 end

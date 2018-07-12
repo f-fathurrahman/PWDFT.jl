@@ -4,7 +4,7 @@ include("Potentials.jl")
 
 include("PsPotNL.jl")
 
-mutable struct PWHamiltonian
+mutable struct Hamiltonian
     pw::PWGrid
     potentials::Potentials
     energies::Energies
@@ -19,7 +19,7 @@ mutable struct PWHamiltonian
 end
 
 
-function PWHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
+function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
                         ecutwfc::Float64 ;
                         Nspin = 1,
                         meshk = [1,1,1], shiftk=[0,0,0],
@@ -93,7 +93,7 @@ function PWHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
 
     ik = 1
     ispin = 1
-    return PWHamiltonian( pw, potentials, energies, rhoe,
+    return Hamiltonian( pw, potentials, energies, rhoe,
                           electrons, atoms, Pspots, pspotNL, xcfunc, ik, ispin )
 end
 
@@ -101,7 +101,7 @@ end
 #
 # No pspfiles given. Use Coulomb potential (all electrons)
 #
-function PWHamiltonian( atoms::Atoms, ecutwfc::Float64;
+function Hamiltonian( atoms::Atoms, ecutwfc::Float64;
                         Nspin = 1,
                         meshk = [1,1,1], shiftk=[0,0,0],    
                         xcfunc="VWN", verbose=false, extra_states=0 )
@@ -153,7 +153,7 @@ function PWHamiltonian( atoms::Atoms, ecutwfc::Float64;
     
     ik = 1
     ispin = 1
-    return PWHamiltonian( pw, potentials, energies, rhoe,
+    return Hamiltonian( pw, potentials, energies, rhoe,
                           electrons, atoms, Pspots, pspotNL, xcfunc, ik, ispin )
 end
 
@@ -170,7 +170,7 @@ include("Poisson_solve.jl")
 """
 Given rhoe in real space, update Ham.rhoe, Hartree and XC potentials.
 """
-function update!(Ham::PWHamiltonian, rhoe::Array{Float64,1})
+function update!(Ham::Hamiltonian, rhoe::Array{Float64,1})
     # assumption Nspin = 1
     Ham.rhoe[:,1] = rhoe
     Ham.potentials.Hartree = real( G_to_R( Ham.pw, Poisson_solve(Ham.pw, rhoe) ) )
@@ -182,7 +182,7 @@ function update!(Ham::PWHamiltonian, rhoe::Array{Float64,1})
     return
 end
 
-function update!(Ham::PWHamiltonian, rhoe::Array{Float64,2})
+function update!(Ham::Hamiltonian, rhoe::Array{Float64,2})
     Nspin = size(rhoe)[2]
     if Nspin == 1
         update!(Ham, rhoe[:,1])
@@ -200,7 +200,7 @@ function update!(Ham::PWHamiltonian, rhoe::Array{Float64,2})
 end
 
 
-function update!( Ham::PWHamiltonian, atoms::Atoms,
+function update!( Ham::Hamiltonian, atoms::Atoms,
     strf::Array{ComplexF64,2}, pspfiles::Array{String,1} )
 
     Nspecies = atoms.Nspecies

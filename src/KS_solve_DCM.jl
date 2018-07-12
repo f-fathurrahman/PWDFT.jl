@@ -1,4 +1,4 @@
-function KS_solve_DCM!( Ham::PWHamiltonian;
+function KS_solve_DCM!( Ham::Hamiltonian;
                         NiterMax = 100, startingwfc=nothing,
                         savewfc=false, ETOT_CONV_THR=1e-6 )
 

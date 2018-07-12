@@ -59,7 +59,7 @@ function test_empty_lattice(lattice::String, band_file::String)
 
     pw = PWGrid(15.0, atoms.LatVecs, kpoints=kpoints)
     #
-    # Prepare PWHamiltonian
+    # Prepare Hamiltonian
     #
     pspfiles = ["../pseudopotentials/pade_gth/H-q1.gth"]
     #
@@ -125,7 +125,7 @@ function test_empty_lattice(lattice::String, band_file::String)
     ik = 1
     ispin = 1
     xcfunc = "VWN"
-    Ham = PWHamiltonian( pw, potentials, energies, rhoe,
+    Ham = Hamiltonian( pw, potentials, energies, rhoe,
                          electrons, atoms, Pspots, pspotNL, xcfunc, ik, ispin )
 
     Nkspin = Nkpt*Nspin
@@ -179,7 +179,7 @@ end
 
 #test_empty_lattice("rhombohedral", "TEMP_empty_lattice_rhombohedral.dat")
 
-function save_potential(Ham::PWHamiltonian)
+function save_potential(Ham::Hamiltonian)
     # TO BE IMPLEMENTED
 end
 
@@ -197,7 +197,7 @@ function test_Si_fcc()
     # Initialize Hamiltonian
     pspfiles = ["../pseudopotentials/pade_gth/Si-q4.gth"]
     ecutwfc_Ry = 30.0
-    Ham = PWHamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, meshk=[3,3,3], verbose=true )
+    Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, meshk=[3,3,3], verbose=true )
 
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( atoms )
@@ -287,7 +287,7 @@ function test_Cu_fcc()
     # Initialize Hamiltonian
     pspfiles = ["../pseudopotentials/pade_gth/Cu-q11.gth"]
     ecutwfc_Ry = 30.0
-    Ham = PWHamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5,
+    Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5,
                          meshk=[8,8,8], verbose=true, extra_states=4 )
 
     # calculate E_NN

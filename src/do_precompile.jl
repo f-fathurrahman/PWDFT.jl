@@ -24,7 +24,7 @@ precompile(PWGrid,(Float64,Array{Float64,2},KPoints))
 precompile(PsPot_GTH, (Nothing,))
 precompile(PsPot_GTH, (String,))
 
-precompile(PWHamiltonian, (Atoms,Float64))
-precompile(PWHamiltonian, (Atoms,Array{PsPot_GTH,1},Float64))
+precompile(Hamiltonian, (Atoms,Float64))
+precompile(Hamiltonian, (Atoms,Array{PsPot_GTH,1},Float64))
 
-precompile(KS_solve_Emin_PCG!, (PWHamiltonian,))
+precompile(KS_solve_Emin_PCG!, (Hamiltonian,))

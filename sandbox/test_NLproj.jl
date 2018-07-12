@@ -5,7 +5,7 @@ using PWDFT
 
 #=
 Test for handling of PsPotNL.
-The new implementation in PWHamiltonian is slightly more efficient than this.
+The new implementation in Hamiltonian is slightly more efficient than this.
 =#
 function test_main()
     LatVecs = gen_lattice_sc(20.0)

@@ -2,7 +2,7 @@
 # Ham.potentials.V_Ps_loc should be initialized
 # Ham.energies.NN should be calculated if needed
 #
-function KS_solve_Emin_PCG!( Ham::PWHamiltonian;
+function KS_solve_Emin_PCG!( Ham::Hamiltonian;
                              startingwfc=nothing, savewfc=false,
                              α_t=3e-5, NiterMax=200, verbose=true,
                              I_CG_BETA=2, ETOT_CONV_THR=1e-6 )

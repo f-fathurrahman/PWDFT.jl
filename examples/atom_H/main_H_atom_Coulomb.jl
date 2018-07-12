@@ -14,7 +14,7 @@ function test_main( ; method="SCF" )
 
     # Initialize Hamiltonian
     ecutwfc_Ry = 30.0
-    Ham = PWHamiltonian( atoms, ecutwfc_Ry*0.5 )
+    Ham = Hamiltonian( atoms, ecutwfc_Ry*0.5 )
 
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( atoms )

@@ -1,4 +1,4 @@
-function op_V_Ps_nloc( Ham::PWHamiltonian, psi::Array{ComplexF64,2} )
+function op_V_Ps_nloc( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
 
     ik = Ham.ik
 
