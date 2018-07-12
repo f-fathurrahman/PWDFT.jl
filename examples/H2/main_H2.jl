@@ -25,6 +25,9 @@ function test_main( ; method="SCF" )
     elseif method == "DCM"
         KS_solve_DCM!( Ham, NiterMax=15 )
 
+    elseif method == "TRDCM"
+        KS_solve_TRDCM!( Ham, NiterMax=15 )
+
     else
         println("ERROR: unknow method = ", method)
     end
@@ -42,9 +45,10 @@ function test_main( ; method="SCF" )
 
 end
 
-@time test_main(method="Emin")
-@time test_main(method="SCF")
-@time test_main(method="DCM")
+#@time test_main(method="Emin")
+#@time test_main(method="SCF")
+#@time test_main(method="DCM")
+@time test_main(method="TRDCM")
 
 
 #=
