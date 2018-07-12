@@ -54,6 +54,9 @@ include("Utilities.jl")
 export ortho_gram_schmidt, ortho_gram_schmidt!
 include("ortho_gram_schmidt.jl")
 
+export ortho_sqrt, ortho_sqrt!
+include("ortho_sqrt.jl")
+
 export ortho_check
 include("ortho_check.jl")
 
