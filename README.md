@@ -10,9 +10,9 @@ structure package such as Quantum ESPRESSO, ABINIT, VASP, etc.
 
 ## Requirements
 
-- Julia 0.7, with `FFTW` and `SpecialFunctions` packages installed.
-- LibXC 3.0
-- spglib (included)
+- Julia 0.7: with `FFTW` and `SpecialFunctions` packages installed.
+- LibXC 3.0: which needs to be compiled and and installed separately.
+- spglib: included in this repository and needs to be compiled manually.
 
 ## Installation
 
@@ -39,13 +39,13 @@ atoms = init_atoms_xyz("CH4.xyz")
 atoms.LatVecs = 16.0*eye(3)
 ```
 
-- create `PWHamiltonian` object
+- create `Hamiltonian` object
 
 ```julia
 ecutwfc = 15.0 # in Hartree
 pspfiles = ["../pseudopotentials/pade_gth/C-q4.gth",
             "../pseudopotentials/pade_gth/H-q1.gth"]
-Ham = PWHamiltonian( atoms, pspfiles, ecutwfc )
+Ham = Hamiltonian( atoms, pspfiles, ecutwfc )
 ```
 
 - calculate interaction energy between ions (atomic centers):
@@ -61,6 +61,10 @@ KS_solve_SCF!( Ham, β=0.2 )  # using SCF (self-consistent field) method
 # or
 KS_solve_Emin_PCG!( Ham ) # direct minimization using preconditioned conjugate gradient
 ```
+
+## Implementation notes
+
+Please see [this](docs/ImplementationNotes.md).
 
 ## Some references
 
