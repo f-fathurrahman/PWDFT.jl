@@ -1,7 +1,7 @@
 using Random
 using PWDFT
 
-function test_main()
+function using_gram_schmidt()
     srand(2345)
     psi = rand(1000,4) + im*rand(1000,4)
     #
@@ -13,5 +13,25 @@ function test_main()
     ortho_check(psi)
 end
 
+function using_sqrt()
+    srand(2345)
+    psi = rand(1000,4) + im*rand(1000,4)
+    #
+    println("\nBefore ortho_sqrt:")
+    ortho_check(psi)
+    #
+    psi = ortho_sqrt(psi)
+    println("\nAfter ortho_sqrt:")
+    ortho_check(psi)
+end
 
-test_main()
+function test_ortho_sqrt()
+    psi = rand(ComplexF64,Ngw,Nstates)
+    ortho_sqrt!(psi)
+    ortho_check(psi)
+end
+
+using_gram_schmidt()
+using_sqrt()
+
+test_ortho_sqrt()
