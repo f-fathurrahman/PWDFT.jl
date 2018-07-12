@@ -110,9 +110,6 @@ include("calc_PspCore_ene.jl")
 export calc_E_NN
 include("calc_E_NN.jl")
 
-export calc_rhoe
-include("calc_rhoe.jl")
-
 const LIBXC_SO_PATH = joinpath(dirname(@__DIR__), "src", "extlibs", "libxc_interface.so")
 export calc_epsxc_VWN, calc_Vxc_VWN
 include("LDA_VWN.jl")
@@ -129,6 +126,9 @@ export update!
 export PsPotNL, calc_betaNL_psi
 export calc_betaNL_psi
 include("Hamiltonian.jl")
+
+export calc_rhoe
+include("calc_rhoe.jl")
 
 export Kprec
 include("Kprec.jl")

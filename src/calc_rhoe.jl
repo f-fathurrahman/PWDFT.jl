@@ -31,7 +31,7 @@ function calc_rhoe( pw::PWGrid, Focc::Array{Float64,2},
     end
 
     # Ensure that there is no negative rhoe
-    for ip = 1:Nstates
+    for ip = 1:Npoints
         if rho[ip] < eps()
             rho[ip] = eps()
         end
@@ -76,7 +76,7 @@ function calc_rhoe( ik::Int64, pw::PWGrid, Focc::Array{Float64,2},
     end
 
     # Ensure that there is no negative rhoe
-    for ip = 1:Nstates
+    for ip = 1:Npoints
         if rho[ip] < eps()
             rho[ip] = eps()
         end
@@ -89,4 +89,58 @@ function calc_rhoe( ik::Int64, pw::PWGrid, Focc::Array{Float64,2},
     end
 
     return rho
+end
+
+
+
+# special case of non-spin pol and only 1 kpoint
+function calc_rhoe( Ham::Hamiltonian,
+                    psi::Array{ComplexF64,2}; renormalize=true )
+    
+    @assert( Ham.ik == 1 )
+    @assert( Ham.ispin == 1 )
+
+    ik = 1
+    ispin = 1
+
+    pw = Ham.pw
+    Focc = Ham.electrons.Focc
+
+    Ω  = pw.Ω
+    Ns = pw.Ns
+    Npoints = prod(Ns)
+    Nstates = size(psi)[2]
+
+    # Transform to real space
+    cpsi = zeros( ComplexF64, Npoints, Nstates )
+    idx = pw.gvecw.idx_gw2r[ik]
+    cpsi[idx,:] = psi[:,:]
+    psiR = G_to_R(pw, cpsi)
+
+    # orthonormalization in real space
+    ortho_gram_schmidt!( Nstates, psiR )
+    psiR = sqrt(Npoints/Ω)*psiR
+
+    Rhoe = zeros(Float64,Npoints)
+    for ist = 1:Nstates
+        for ip = 1:Npoints
+            Rhoe[ip] = Rhoe[ip] + Focc[ist,ik]*real( conj(psiR[ip,ist])*psiR[ip,ist] )
+        end
+    end
+
+    # Ensure that there is no negative rhoe
+    for rho in Rhoe
+        if rho < eps()
+            rho = eps()
+        end
+    end
+    
+    # renormalize
+    if renormalize
+        integ_Rhoe = sum(Rhoe)*Ω/Npoints
+        Nelectrons = sum(Focc[:,ik])
+        Rhoe = Nelectrons/integ_Rhoe * Rhoe
+    end
+
+    return Rhoe
 end
