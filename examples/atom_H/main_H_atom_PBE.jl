@@ -1,7 +1,4 @@
-using Printf
-using PWDFT
-
-function test_main( ; method="SCF" )
+function main( ; method="SCF" )
     # Atoms
     atoms = init_atoms_xyz_string(
         """
@@ -13,7 +10,7 @@ function test_main( ; method="SCF" )
     println(atoms)
 
     # Initialize Hamiltonian
-    pspfiles = ["../../pseudopotentials/pbe_gth/H-q1.gth"]
+    pspfiles = ["../pseudopotentials/pbe_gth/H-q1.gth"]
     ecutwfc_Ry = 30.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, xcfunc="PBE" )
 
@@ -33,7 +30,7 @@ function test_main( ; method="SCF" )
         KS_solve_DCM!( Ham )
 
     else
-        println("ERROR: unknow method = ", method)
+        println("ERROR: unknown method = ", method)
     end
 
     Nstates = Ham.electrons.Nstates
@@ -48,7 +45,3 @@ function test_main( ; method="SCF" )
     println(Ham.energies)
 
 end
-
-@time test_main(method="Emin")
-@time test_main(method="SCF")
-#@time test_main(method="DCM")

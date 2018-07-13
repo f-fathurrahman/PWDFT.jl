@@ -1,7 +1,6 @@
-using Printf
-using PWDFT
+const AVAILABLE_METHODS = ("Emin", "SCF", "DCM")
 
-function test_main( ; method="SCF" )
+function main( ; method="SCF" )
     # Atoms
     atoms = init_atoms_xyz_string(
         """
@@ -47,7 +46,3 @@ function test_main( ; method="SCF" )
     println(Ham.energies)
 
 end
-
-@time test_main(method="Emin")
-@time test_main(method="SCF")
-@time test_main(method="DCM")

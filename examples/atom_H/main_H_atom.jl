@@ -1,5 +1,3 @@
-AVAILABLE_METHODS = ("Emin", "SCF", "DCM", "CheFSI")
-
 function main( ; method="SCF" )
     # Atoms
     atoms = init_atoms_xyz_string(

@@ -1,7 +1,12 @@
-using Printf
-using PWDFT
+function main(; method="SCF")
+    do_pos([0.0, 0.0, 0.0], "Emin")
+    do_pos([0.0, 0.0, 0.05], "Emin")
+    do_pos([0.0, 0.0, 0.1], "Emin")
+    do_pos([0.0, 0.0, 0.15], "Emin")
+    do_pos([8.0, 8.0, 8.0], "Emin")
+end
 
-function test_main( newpos ; method="SCF" )
+function do_pos( newpos::Array{Float64,1}, method::String )
     # Atoms
     atoms = init_atoms_xyz_string(
         """
@@ -14,7 +19,7 @@ function test_main( newpos ; method="SCF" )
     println(atoms)
 
     # Initialize Hamiltonian
-    pspfiles = ["../../pseudopotentials/pade_gth/H-q1.gth"]
+    pspfiles = ["../pseudopotentials/pade_gth/H-q1.gth"]
     ecutwfc_Ry = 30.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5 )
 
@@ -52,9 +57,3 @@ function test_main( newpos ; method="SCF" )
     println(Ham.energies)
 
 end
-
-@time test_main([0.0, 0.0, 0.0], method="Emin")
-@time test_main([0.0, 0.0, 0.05], method="Emin")
-@time test_main([0.0, 0.0, 0.1], method="Emin")
-@time test_main([0.0, 0.0, 0.15], method="Emin")
-@time test_main([8.0, 8.0, 8.0], method="Emin")
