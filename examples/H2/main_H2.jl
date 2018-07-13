@@ -28,7 +28,7 @@ function main( ; method="SCF" )
         KS_solve_TRDCM!( Ham, NiterMax=15 )
 
     else
-        println("ERROR: unknow method = ", method)
+        println("ERROR: unknown method = ", method)
     end
 
     Nstates = Ham.electrons.Nstates

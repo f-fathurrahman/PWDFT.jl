@@ -33,7 +33,7 @@ function test_main( ; method="SCF" )
         KS_solve_DCM!( Ham, NiterMax=15 )
 
     else
-        println("ERROR: unknow method = ", method)
+        println("ERROR: unknown method = ", method)
 
     end
 

@@ -31,7 +31,7 @@ function main( ; method="SCF" )
         KS_solve_DCM!( Ham )
 
     else
-        println("ERROR: unknow method = ", method)
+        println("ERROR: unknown method = ", method)
     end
 
     Nstates = Ham.electrons.Nstates

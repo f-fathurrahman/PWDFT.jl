@@ -29,7 +29,7 @@ function test_main( ; method="SCF" )
         println("\nAfter calling KS_solve_Emin_DCM:")
 
     else
-        println("ERROR: unknow method = ", method)
+        println("ERROR: unknown method = ", method)
     end
 
     Nstates = Ham.electrons.Nstates
