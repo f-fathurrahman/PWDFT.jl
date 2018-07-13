@@ -1,17 +1,16 @@
-using Printf
-using PWDFT
+AVAILABLE_METHODS = ("Emin", "SCF", "DCM", "TRDCM")
 
-function test_main( ; method="SCF" )
+function main( ; method="SCF" )
 
     # Atoms
-    atoms = init_atoms_xyz("../../structures/CO.xyz")
-    atoms.LatVecs = gen_lattice_cubic(16.0)
+    atoms = init_atoms_xyz("../structures/CO.xyz")
+    atoms.LatVecs = gen_lattice_sc(16.0)
     println(atoms)
 
     # Initialize Hamiltonian
     ecutwfc_Ry = 30.0
-    pspfiles = ["../../pseudopotentials/pade_gth/C-q4.gth",
-                "../../pseudopotentials/pade_gth/O-q6.gth"]
+    pspfiles = ["../pseudopotentials/pade_gth/C-q4.gth",
+                "../pseudopotentials/pade_gth/O-q6.gth"]
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5 )
 
     # calculate E_NN
@@ -45,11 +44,6 @@ function test_main( ; method="SCF" )
     println(Ham.energies)
 
 end
-
-@time test_main(method="Emin")
-#@time test_main(method="SCF")
-#@time test_main(method="DCM") # diverges
-#@time test_main(method="TRDCM") # diverges
 
 """
     Kinetic energy  =  1.27114662836776E+01
