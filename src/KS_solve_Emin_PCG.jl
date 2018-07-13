@@ -29,7 +29,7 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
         for ik = 1:Nkpt
             ikspin = ik + (ispin-1)*Nkpt
             psi = rand(ComplexF64,Ngw[ik],Nstates)
-            psiks[ikspin] = ortho_gram_schmidt(psi)
+            psiks[ikspin] = ortho_sqrt(psi)
         end
         end
     else
@@ -144,7 +144,7 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
 
             d[ikspin] = -Kg[ikspin] + β[ikspin] * d_old[ikspin]
 
-            psic[ikspin] = ortho_gram_schmidt(psiks[ikspin] + α_t*d[ikspin])
+            psic[ikspin] = ortho_sqrt(psiks[ikspin] + α_t*d[ikspin])
         end # ik
         end # ispin
         #
@@ -173,7 +173,7 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
             psiks[ikspin] = psiks[ikspin] + α[ikspin]*d[ikspin]
 
             # Update potentials
-            psiks[ikspin] = ortho_gram_schmidt(psiks[ikspin])
+            psiks[ikspin] = ortho_sqrt(psiks[ikspin])
         end
         end
 
@@ -217,7 +217,7 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
         Ham.ik = ik
         Ham.ispin = ispin
         ikspin = ik + (ispin - 1)*Nkpt
-        psiks[ikspin] = ortho_gram_schmidt(psiks[ikspin])
+        psiks[ikspin] = ortho_sqrt(psiks[ikspin])
         Hr = psiks[ikspin]' * op_H( Ham, psiks[ikspin] )
         evals, evecs = eigen(Hr)
         evals = real(evals[:])
