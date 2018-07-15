@@ -149,7 +149,8 @@ end
 
 
 
-# DEPRECATED !!! Not extended for general k-dependent wavefunction
+# Special use for Nkpt=1 and Nspin=1
+# !!! Not extended for general k-dependent wavefunction
 #
 # psi is assumed to be already orthonormalized elsewhere
 # `potentials` and `Rhoe` are not updated
@@ -157,35 +158,41 @@ end
 #
 function calc_energies( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
 
+    @assert( Ham.pw.gvecw.kpoints.Nkpt == 1 )
+    @assert( Ham.electrons.Nspin == 1 )
+
     pw = Ham.pw
     potentials = Ham.potentials
     Focc = Ham.electrons.Focc
+
+    ik = 1
+    ispin = 1
 
     Ω = pw.Ω
     Ns = pw.Ns
     Npoints = prod(Ns)
 
-    Ngwx = size(psi)[1]
+    Ngwx = size(psi)[1]  # This should be guaranted by Nkpt = 1
     Nstates = size(psi)[2]
-    #
+
     Kpsi = op_K( Ham, psi )
     E_kin = 0.0
     for ist = 1:Nstates
-        E_kin = E_kin + Focc[ist] * real( dot( psi[:,ist], Kpsi[:,ist] ) )
+        E_kin = E_kin + Focc[ist,1] * real( dot( psi[:,ist], Kpsi[:,ist] ) )
     end
 
-    rhoe = Ham.rhoe
+    Rhoe = Ham.rhoe
 
-    E_Hartree = 0.5*dot( potentials.Hartree, rhoe ) * Ω/Npoints
+    E_Hartree = 0.5*dot( potentials.Hartree, Rhoe ) * Ω/Npoints
 
-    E_Ps_loc = dot( potentials.Ps_loc, rhoe ) * Ω/Npoints
+    E_Ps_loc = dot( potentials.Ps_loc, Rhoe ) * Ω/Npoints
 
     if Ham.xcfunc == "PBE"
-        epsxc = calc_epsxc_PBE( Ham.pw, rhoe )
+        epsxc = calc_epsxc_PBE( Ham.pw, Rhoe )
     else
-        epsxc = calc_epsxc_VWN( rhoe )
+        epsxc = calc_epsxc_VWN( Rhoe )
     end
-    E_xc = dot( epsxc, rhoe ) * Ω/Npoints
+    E_xc = dot( epsxc, Rhoe ) * Ω/Npoints
 
     if Ham.pspotNL.NbetaNL > 0
         E_Ps_nloc = calc_E_Ps_nloc( Ham, psi )
