@@ -17,6 +17,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
     Nelectrons = electrons.Nelectrons
     Focc = electrons.Focc
     Nstates = electrons.Nstates
+    Nstates_occ = electrons.Nstates_occ
     Nspin = electrons.Nspin
     Nkspin = Nkpt*Nspin
 
@@ -70,7 +71,6 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
     end
 
     E_GAP_INFO = false
-    Nstates_occ = electrons.Nstates_occ
     if Nstates_occ < Nstates
         E_GAP_INFO = true
         if Nspin == 2
@@ -148,14 +148,10 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
 
         else
 
-            @printf("Unknown method for update_psi = %s\n", update_psi)
+            @printf("ERROR: Unknown method for update_psi = %s\n", update_psi)
             exit()
 
         end
-
-        #if E_GAP_INFO
-        #    println("E gap = ", evals[idx_LUMO,:] - evals[idx_HOMO,:] )
-        #end
 
         for ispin = 1:Nspin
             idxset = (Nkpt*(ispin-1)+1):(Nkpt*ispin)
