@@ -74,6 +74,63 @@ function calc_E_Ps_nloc( Ham::Hamiltonian, psiks::Array{Array{ComplexF64,2},1} )
 
 end
 
+#
+# Use Nkpt = 1, Nspin = 1
+#
+function calc_E_Ps_nloc( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
+
+    Nstates = Ham.electrons.Nstates
+    Focc = Ham.electrons.Focc
+    Natoms = Ham.atoms.Natoms
+    atm2species = Ham.atoms.atm2species
+    Pspots = Ham.pspots
+    prj2beta = Ham.pspotNL.prj2beta
+    wk = Ham.pw.gvecw.kpoints.wk
+    NbetaNL = Ham.pspotNL.NbetaNL
+
+    ik = 1
+    ispin = 1
+    ikspin = 1
+
+    # calculate E_NL
+    E_ps_NL = 0.0
+
+    betaNL_psi = zeros(ComplexF64,Nstates,NbetaNL)
+
+    betaNL_psi = calc_betaNL_psi( ik, Ham.pspotNL.betaNL, psi )
+    
+    for ist = 1:Nstates
+        
+        enl1 = 0.0
+        
+        for ia = 1:Natoms
+            
+            isp = atm2species[ia]
+            psp = Pspots[isp]
+            
+            for l = 0:psp.lmax
+            for m = -l:l
+            for iprj = 1:psp.Nproj_l[l+1]
+            for jprj = 1:psp.Nproj_l[l+1]
+                ibeta = prj2beta[iprj,ia,l+1,m+psp.lmax+1]
+                jbeta = prj2beta[jprj,ia,l+1,m+psp.lmax+1]
+                hij = psp.h[l+1,iprj,jprj]
+                enl1 = enl1 + hij*real(conj(betaNL_psi[ist,ibeta])*betaNL_psi[ist,jbeta])
+            end
+            end
+            end # m
+            end # l
+        
+        end
+        
+        E_ps_NL = E_ps_NL + wk[ik]*Focc[ist,ikspin]*enl1
+    
+    end
+
+    return E_ps_NL
+
+end
+
 
 #
 # psi is assumed to be already orthonormalized elsewhere
