@@ -1,6 +1,6 @@
 function alt1_KS_solve_SCF!( Ham::Hamiltonian ;
                         startingwfc=nothing,
-                        β = 0.1, NiterMax=100, verbose=false,
+                        β = 0.7, NiterMax=100, verbose=false,
                         check_rhoe_after_mix=true,
                         update_psi="LOBPCG", cheby_degree=8,
                         ETOT_CONV_THR=1e-6 )
@@ -20,9 +20,7 @@ function alt1_KS_solve_SCF!( Ham::Hamiltonian ;
     Nstates = electrons.Nstates
     Nstates_occ = electrons.Nstates_occ
 
-    #
     # Random guess of wave function
-    #
     if startingwfc==nothing
         srand(1234)
         psi = ortho_sqrt( rand(ComplexF64,Ngwx,Nstates) )
@@ -44,9 +42,12 @@ function alt1_KS_solve_SCF!( Ham::Hamiltonian ;
 
     ethr = 0.1
 
-    MIXDIM = 4
+    MIXDIM = 5
     XX = zeros(Float64,Npoints,MIXDIM)
     FF = zeros(Float64,Npoints,MIXDIM)
+
+    x_old = zeros(Float64,Npoints)
+    f_old = zeros(Float64,Npoints)
 
     @printf("\n")
     @printf("Self-consistent iteration begins ...\n")
@@ -56,7 +57,7 @@ function alt1_KS_solve_SCF!( Ham::Hamiltonian ;
 
     CONVERGED = 0
 
-    for iter = 1:40
+    for iter = 1:20
 
         if update_psi == "LOBPCG"
             evals, psi =
@@ -95,7 +96,7 @@ function alt1_KS_solve_SCF!( Ham::Hamiltonian ;
         #Rhoe[:] = β*Rhoe_new + (1-β)*Rhoe
         
         #Rhoe[:,:] = mix_anderson!( Nspin, Rhoe, Rhoe_new, β, df, dv, iter, MIXDIM )
-        Rhoe = mix_rpulay!( Rhoe, Rhoe_new, β, XX, FF, iter, MIXDIM )
+        Rhoe = mix_rpulay!( Rhoe, Rhoe_new, β, XX, FF, iter, MIXDIM, x_old, f_old )
 
         for rho in Rhoe
             if rho < eps()
