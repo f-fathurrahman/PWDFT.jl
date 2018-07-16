@@ -136,9 +136,6 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
                 end
             end
             if β[ikspin] < 0.0
-                if verbose
-                    @printf("β is smaller than 0, setting it to zero\n")
-                end
                 β[ikspin] = 0.0
             end
 
