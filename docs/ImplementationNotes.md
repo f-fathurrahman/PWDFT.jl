@@ -60,3 +60,18 @@ Using `Array{ComplexF64,2}`.
 
 General wavefunction on kpoints
 
+## Potentials
+
+## Energies
+
+## Solving Kohn-Sham problems
+
+## Self-consistent field
+
+## Eigensolver
+
+## Direct energy minimization via nonlinear conjugate gradient method
+
+## Direct constrained minimization method of Yang
+
+## Chebyshev filtered subspace iteration SCF
