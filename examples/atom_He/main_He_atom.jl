@@ -1,15 +1,12 @@
-using Printf
-using PWDFT
-
-function test_main( ; method="SCF" )
+function main( ; method="SCF" )
 
     # Atoms
-    atoms = init_atoms_xyz("../../structures/He.xyz")
+    atoms = init_atoms_xyz("../structures/He.xyz")
     atoms.LatVecs = gen_lattice_sc(16.0)
     println(atoms)
 
     # Initialize Hamiltonian
-    pspfiles = ["../../pseudopotentials/pade_gth/He-q2.gth"]
+    pspfiles = ["../pseudopotentials/pade_gth/He-q2.gth"]
     ecutwfc_Ry = 30.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5 )
 
@@ -45,11 +42,7 @@ function test_main( ; method="SCF" )
 
 end
 
-@time test_main(method="Emin")
-@time test_main(method="DCM")
-@time test_main(method="SCF")
-
-"""
+#=
 ABINIT (result):
     Kinetic energy  =  2.18802875961751E+00
     Hartree energy  =  1.50108932871126E+00
@@ -72,4 +65,4 @@ NN         energy:      -0.3546621849
 -------------------------------------
 Total      energy:      -2.6502204529
 
-"""
+=#

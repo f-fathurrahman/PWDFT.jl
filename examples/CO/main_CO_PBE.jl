@@ -41,11 +41,7 @@ function main( ; method="SCF" )
 
 end
 
-@time test_main(method="Emin")
-@time test_main(method="SCF")
-@time test_main(method="DCM") # diverges
-
-"""
+#=
     Kinetic energy  =  1.27516710648293E+01
     Hartree energy  =  1.88243902547401E+01
     XC energy       = -4.85795922450072E+00
@@ -78,4 +74,4 @@ Electronic energy:     -22.8469798577
 NN         energy:       2.2631029868
 -------------------------------------
 Total      energy:     -20.5838768709
-"""
+=#

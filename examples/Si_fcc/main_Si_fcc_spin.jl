@@ -1,7 +1,4 @@
-using Printf
-using PWDFT
-
-function test_main()
+function main()
     # Atoms
     atoms = init_atoms_xyz_string(
         """
@@ -13,10 +10,9 @@ function test_main()
     atoms.LatVecs = gen_lattice_fcc(10.2631)
     atoms.positions = atoms.LatVecs*atoms.positions
     println(atoms)
-    write_xsf( "TEMP_Si.xsf", atoms )
 
     # Initialize Hamiltonian
-    pspfiles = ["../../pseudopotentials/pade_gth/Si-q4.gth"]
+    pspfiles = ["../pseudopotentials/pade_gth/Si-q4.gth"]
     ecutwfc_Ry = 30.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, xcfunc="VWN",
                          meshk=[3,3,3], verbose=true, Nspin=2, extra_states=0 )
@@ -48,8 +44,6 @@ function test_main()
     println(Ham.energies)
 
 end
-
-@time test_main()
 
 #=
 No smearing:

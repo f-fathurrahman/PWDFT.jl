@@ -1,15 +1,12 @@
-using Printf
-using PWDFT
-
-function test_main( ; method="SCF" )
+function main( ; method="SCF" )
 
     # Atoms
-    atoms = init_atoms_xyz("../../structures/H2.xyz")
+    atoms = init_atoms_xyz("../structures/H2.xyz")
     atoms.LatVecs = gen_lattice_sc(16.0)
     println(atoms)
 
     # Initialize Hamiltonian
-    pspfiles = ["../../pseudopotentials/pade_gth/H-q1.gth"]
+    pspfiles = ["../pseudopotentials/pade_gth/H-q1.gth"]
     ecutwfc_Ry = 30.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5,
                          Nspin=2, verbose=true, extra_states=0 )
@@ -42,11 +39,6 @@ function test_main( ; method="SCF" )
     println(Ham.energies)
 
 end
-
-@time test_main(method="Emin")
-#@time test_main(method="SCF")
-@time test_main(method="DCM")
-
 
 #=
 For 30 Ry

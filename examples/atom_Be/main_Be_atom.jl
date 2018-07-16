@@ -1,17 +1,14 @@
-using Printf
-using PWDFT
-
-function test_main( ; method="SCF" )
+function main( ; method="SCF" )
 
     # Atoms
-    atoms = init_atoms_xyz("../../structures/Be.xyz")
+    atoms = init_atoms_xyz("../structures/Be.xyz")
     atoms.LatVecs = gen_lattice_sc(16.0)
     println(atoms)
 
     #
     # Initialize Hamiltonian
     #
-    pspfiles = ["../../pseudopotentials/pade_gth/Be-q4.gth"]
+    pspfiles = ["../pseudopotentials/pade_gth/Be-q4.gth"]
     ecutwfc_Ry = 30.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5 )
 
@@ -44,11 +41,7 @@ function test_main( ; method="SCF" )
 
 end
 
-@time test_main(method="Emin")
-@time test_main(method="DCM")
-@time test_main(method="SCF")
-
-"""
+#=
 -----------------------------------------------------------
 
 Results from ABINIT 30 Ry with NL pspot (the usual one)
@@ -103,4 +96,4 @@ NN         energy:      -1.4186487397
 -------------------------------------
 Total      energy:     -11.2471828950
 
-"""
+=#

@@ -43,7 +43,7 @@ function main( ; method="SCF" )
 
 end
 
-"""
+#=
     Kinetic energy  =  1.27114662836776E+01
     Hartree energy  =  1.87542476647748E+01
     XC energy       = -4.73571914335774E+00
@@ -63,4 +63,4 @@ Electronic energy:     -22.8031382669
 NN         energy:       2.2631029868
 -------------------------------------
 Total      energy:     -20.5400352801
-"""
+=#

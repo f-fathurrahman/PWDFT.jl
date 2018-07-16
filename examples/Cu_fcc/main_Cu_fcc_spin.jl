@@ -1,7 +1,4 @@
-using Printf
-using PWDFT
-
-function test_main()
+function main()
     # Atoms
     atoms = init_atoms_xyz_string(
         """
@@ -12,10 +9,9 @@ function test_main()
     atoms.LatVecs = gen_lattice_fcc(3.61496*ANG2BOHR)
     atoms.positions = atoms.LatVecs*atoms.positions
     println(atoms)
-    write_xsf( "TEMP_Cu.xsf", atoms )
 
     # Initialize Hamiltonian
-    pspfiles = ["../../pseudopotentials/pade_gth/Cu-q11.gth"]
+    pspfiles = ["../pseudopotentials/pade_gth/Cu-q11.gth"]
     ecutwfc_Ry = 30.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, Nspin=2, xcfunc="VWN",
                          meshk=[3,3,3], verbose=true, extra_states=4 )
@@ -32,7 +28,3 @@ function test_main()
     println(Ham.energies)
 
 end
-
-@time test_main()
-
-

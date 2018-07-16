@@ -1,10 +1,7 @@
-using Printf
-using PWDFT
-
-function test_main( ; method="SCF" )
+function main( ; method="SCF" )
 
     # Atoms
-    atoms = init_atoms_xyz("../../structures/H2.xyz")
+    atoms = init_atoms_xyz("../structures/H2.xyz")
     atoms.LatVecs = gen_lattice_sc(16.0)
     println(atoms)
 
@@ -40,8 +37,3 @@ function test_main( ; method="SCF" )
     println(Ham.energies)
 
 end
-
-@time test_main(method="Emin")
-@time test_main(method="SCF")
-@time test_main(method="DCM")
-

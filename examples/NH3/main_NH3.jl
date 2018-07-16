@@ -1,17 +1,14 @@
-using Printf
-using PWDFT
-
-function test_main( ; method="SCF" )
+function main( ; method="SCF" )
 
     # Atoms
-    atoms = init_atoms_xyz("../../structures/NH3.xyz")
+    atoms = init_atoms_xyz("../structures/NH3.xyz")
     atoms.LatVecs = gen_lattice_cubic(16.0)
     println(atoms)
 
     # Initialize Hamiltonian
     ecutwfc_Ry = 30.0
-    pspfiles = ["../../pseudopotentials/pade_gth/N-q5.gth",
-                "../../pseudopotentials/pade_gth/H-q1.gth"]
+    pspfiles = ["../pseudopotentials/pade_gth/N-q5.gth",
+                "../pseudopotentials/pade_gth/H-q1.gth"]
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5 )
 
     # calculate E_NN
@@ -42,10 +39,6 @@ function test_main( ; method="SCF" )
     println(Ham.energies)
 
 end
-
-@time test_main(method="Emin")
-@time test_main(method="SCF")
-@time test_main(method="DCM")
 
 #=
 ABINIT 30 Ry

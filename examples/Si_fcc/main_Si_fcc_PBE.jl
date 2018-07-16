@@ -1,7 +1,4 @@
-using Printf
-using PWDFT
-
-function test_main( ; method="SCF" )
+function main( ; method="SCF" )
     # Atoms
     atoms = init_atoms_xyz_string(
         """
@@ -13,10 +10,9 @@ function test_main( ; method="SCF" )
     atoms.LatVecs = gen_lattice_fcc(5.431*ANG2BOHR)
     atoms.positions = atoms.LatVecs*atoms.positions
     println(atoms)
-    write_xsf( "TEMP_Si.xsf", atoms )
 
     # Initialize Hamiltonian
-    pspfiles = ["../../pseudopotentials/pbe_gth/Si-q4.gth"]
+    pspfiles = ["../pseudopotentials/pbe_gth/Si-q4.gth"]
     ecutwfc_Ry = 30.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5,
                          xcfunc="PBE", meshk=[3,3,3], verbose=true )
@@ -44,10 +40,6 @@ function test_main( ; method="SCF" )
     println(Ham.energies)
 
 end
-
-@time test_main(method="Emin")
-@time test_main(method="SCF")
-@time test_main(method="DCM")
 
 #=
 Kinetic energy  =  3.19227108452527E+00

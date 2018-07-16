@@ -1,5 +1,3 @@
-AVAILABLE_METHODS = ("Emin", "SCF", "DCM", "TRDCM")
-
 function main( ; method="SCF" )
 
     # Atoms

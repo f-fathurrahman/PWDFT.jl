@@ -1,15 +1,12 @@
-using Printf
-using PWDFT
-
-function test_main( ; method="SCF" )
+function main( ; method="SCF" )
 
     # Atoms
-    atoms = init_atoms_xyz("../../structures/H2.xyz")
+    atoms = init_atoms_xyz("../structures/H2.xyz")
     atoms.LatVecs = gen_lattice_sc(16.0)
     println(atoms)
 
     # Initialize Hamiltonian
-    pspfiles = ["../../pseudopotentials/pbe_gth/H-q1.gth"]
+    pspfiles = ["../pseudopotentials/pbe_gth/H-q1.gth"]
     ecutwfc_Ry = 30.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, xcfunc="PBE" )
 
@@ -41,12 +38,7 @@ function test_main( ; method="SCF" )
     println(Ham.energies)
 end
 
-@time test_main(method="Emin")
-@time test_main(method="SCF")
-@time test_main(method="DCM")
-
-
-"""
+#=
     Kinetic energy  =  1.03846627435554E+00
     Hartree energy  =  9.16452467490984E-01
     XC energy       = -6.66546679987766E-01
@@ -66,5 +58,5 @@ Electronic energy:      -1.4594351588
 NN         energy:       0.3131700523
 -------------------------------------
 Total      energy:      -1.1462651065
-"""
+=#
 

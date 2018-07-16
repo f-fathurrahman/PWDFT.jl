@@ -1,17 +1,14 @@
-using Printf
-using PWDFT
-
-function test_main( ; method="SCF" )
+function main( ; method="SCF" )
 
     # Atoms
-    atoms = init_atoms_xyz("../../structures/CO2.xyz")
+    atoms = init_atoms_xyz("../structures/CO2.xyz")
     atoms.LatVecs = gen_lattice_cubic(16.0)
     println(atoms)
 
     # Initialize Hamiltonian
     ecutwfc_Ry = 30.0
-    pspfiles = ["../../pseudopotentials/pade_gth/C-q4.gth",
-                "../../pseudopotentials/pade_gth/O-q6.gth"]
+    pspfiles = ["../pseudopotentials/pade_gth/C-q4.gth",
+                "../pseudopotentials/pade_gth/O-q6.gth"]
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5 )
 
     # calculate E_NN
@@ -43,11 +40,7 @@ function test_main( ; method="SCF" )
 
 end
 
-@time test_main(method="Emin")
-@time test_main(method="SCF")
-@time test_main(method="DCM") # diverges
-
-"""
+#=
     Kinetic energy  =  2.23593227243830E+01
     Hartree energy  =  3.63151213069911E+01
     XC energy       = -8.05250269608862E+00
@@ -67,4 +60,4 @@ Electronic energy:     -42.9291558307
 NN         energy:       7.3142812924
 -------------------------------------
 Total      energy:     -35.6148745383
-"""
+=#
