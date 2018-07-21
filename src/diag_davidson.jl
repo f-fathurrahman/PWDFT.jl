@@ -56,6 +56,8 @@ function diag_davidson( Ham::Hamiltonian, X0::Array{ComplexF64,2};
 
     evals_old = copy(evals)
 
+    IS_CONVERGED = false
+
     for iter = 1:NiterMax
 
         res_norm[:] .= 1.0
@@ -129,6 +131,7 @@ function diag_davidson( Ham::Hamiltonian, X0::Array{ComplexF64,2};
             @printf("iter %d tol_avg = %18.10e\n", iter, abs(diffSum))
         end
         if diffSum < tol_avg
+            IS_CONVERGED = true
             if verbose || verbose_last
                 @printf("Davidson convergence: tol_avg in iter = %d\n", iter)
             end
@@ -136,6 +139,10 @@ function diag_davidson( Ham::Hamiltonian, X0::Array{ComplexF64,2};
         end
         sum_evals_old = sum_evals
         evals_old = copy(evals)
+    end
+
+    if !IS_CONVERGED
+        @printf("\nWARNING: diag_davidson is not converged after %d iterations\n", NiterMax)
     end
 
     if verbose_last
