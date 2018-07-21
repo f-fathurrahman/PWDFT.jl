@@ -73,7 +73,10 @@ function create_Hamiltonian_O2()
     # Initialize Hamiltonian
     pspfiles = ["../pseudopotentials/pade_gth/O-q6.gth"]
     ecutwfc_Ry = 30.0
-    Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, verbose=true )
+    Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, verbose=true, extra_states=1 )
+    Ham.electrons.Focc[:,1] = [2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0]
+
+    println(Ham.electrons)
 
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( atoms )
