@@ -64,14 +64,51 @@ function create_Hamiltonian_N2()
 end
 
 
+function create_Hamiltonian_O2()
+    # Atoms
+    atoms = init_atoms_xyz("../structures/O2.xyz")
+    atoms.LatVecs = gen_lattice_sc(16.0)
+    println(atoms)
+
+    # Initialize Hamiltonian
+    pspfiles = ["../pseudopotentials/pade_gth/O-q6.gth"]
+    ecutwfc_Ry = 30.0
+    Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, verbose=true )
+
+    # calculate E_NN
+    Ham.energies.NN = calc_E_NN( atoms )
+
+    return Ham
+end
+
+
+function create_Hamiltonian_N2()
+    # Atoms
+    atoms = init_atoms_xyz("../structures/N2.xyz")
+    atoms.LatVecs = gen_lattice_cubic(16.0)
+    println(atoms)
+
+    # Initialize Hamiltonian
+    ecutwfc_Ry = 30.0
+    pspfiles = ["../pseudopotentials/pade_gth/N-q5.gth"]
+    Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5 )
+
+    # calculate E_NN
+    Ham.energies.NN = calc_E_NN( atoms )
+
+    return Ham
+end
+
+
 function test_main()
 
     #Ham = create_Hamiltonian_H_atom()
     #Ham = create_Hamiltonian_H2()
-    Ham = create_Hamiltonian_N2()
+    #Ham = create_Hamiltonian_N2()
+    Ham = create_Hamiltonian_O2()
 
     # Solve the KS problem
-    alt1_KS_solve_SCF!( Ham, ETOT_CONV_THR=1e-6 )
+    @time alt1_KS_solve_SCF!( Ham, ETOT_CONV_THR=1e-6, NiterMax=50, β=0.5, update_psi="davidson" )
     
     Nstates = Ham.electrons.Nstates
     ebands = Ham.electrons.ebands

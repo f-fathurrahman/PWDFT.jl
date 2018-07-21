@@ -52,17 +52,21 @@ function alt1_KS_solve_SCF!( Ham::Hamiltonian ;
     @printf("\n")
     @printf("Self-consistent iteration begins ...\n")
     @printf("\n")
-    @printf("Density mixing with β = %10.5f\n", β)
+    @printf("Density mixing with beta = %10.5f\n", β)
     @printf("\n")
 
     CONVERGED = 0
 
-    for iter = 1:20
+    for iter = 1:NiterMax
 
         if update_psi == "LOBPCG"
             evals, psi =
             diag_lobpcg( Ham, psi, verbose=false, verbose_last=false,
                              Nstates_conv = Nstates_occ )
+
+        elseif update_psi == "davidson"
+            evals, psi =
+            diag_davidson( Ham, psi )
 
         elseif update_psi == "PCG"
             
@@ -106,10 +110,10 @@ function alt1_KS_solve_SCF!( Ham::Hamiltonian ;
 
         if check_rhoe_after_mix
             integRhoe = sum(Rhoe)*dVol
-            @printf("After mixing: integRhoe = %18.10f\n", integRhoe)
+            #@printf("After mixing: integRhoe = %18.10f\n", integRhoe)
             Rhoe = Nelectrons/integRhoe * Rhoe
             integRhoe = sum(Rhoe)*dVol
-            @printf("After renormalize Rhoe: = %18.10f\n", integRhoe)
+            #@printf("After renormalize Rhoe: = %18.10f\n", integRhoe)
         end
 
         update!( Ham, Rhoe )
