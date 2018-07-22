@@ -7,186 +7,189 @@ using LinearAlgebra
 using Random
 using FFTW
 
-export Ry2eV, ANG2BOHR
 # constants
 const Ry2eV = 13.6058         # Ry to eV
 const ANG2BOHR = 1.889725989  # angstrom to bohr
+export Ry2eV, ANG2BOHR
 
-export Atoms
-export init_atoms_xyz
-export init_atoms_xyz_string
-export get_Zatoms
 include("Atoms.jl")
+export Atoms, 
+       init_atoms_xyz,
+       init_atoms_xyz_string,
+       get_Zatoms
 
+include("gen_lattice_pwscf.jl")
 export gen_lattice_fcc, gen_lattice_bcc, gen_lattice_trigonal, gen_lattice_trigonal_v2,
        gen_lattice_cubic, gen_lattice_bcc_v2, gen_lattice_hexagonal,
        gen_lattice_triclinic, gen_lattice_tetragonal_P, gen_lattice_tetragonal_I,
        gen_lattice_orthorhombic, gen_lattice_monoclinic,
        gen_lattice_sc, gen_lattice_rhombohedral
-include("gen_lattice_pwscf.jl")
 
 # FIXME Temporary workout until I found how to work with BinDeps
 const SPGLIB_SO_PATH = joinpath(dirname(@__DIR__), "src", "extlibs", "spglib", "libspglib.so")
-export spg_find_primitive
-export spg_get_ir_reciprocal_mesh
-export reduce_atoms, gen_kgrid_reduced
 include("spglib.jl")
+export spg_find_primitive,
+       spg_get_ir_reciprocal_mesh
+       reduce_atoms, gen_kgrid_reduced
 
-
-export KPoints
-export kpoints_from_file
-export kpath_from_file
-export get_special_kpoints
 include("KPoints.jl")
+export KPoints,
+       kpoints_from_file,
+       kpath_from_file,
+       get_special_kpoints
 
-
-export write_xsf
-export write_xsf_data3d_crystal
 include("XSF_utils.jl")
+export write_xsf,
+       write_xsf_data3d_crystal
 
 
-#
 # General utilities
-#
-export print_matrix
 include("Utilities.jl")
+export print_matrix
 
-export ortho_gram_schmidt, ortho_gram_schmidt!
 include("ortho_gram_schmidt.jl")
+export ortho_gram_schmidt, ortho_gram_schmidt!
 
-export ortho_sqrt, ortho_sqrt!
 include("ortho_sqrt.jl")
+export ortho_sqrt, ortho_sqrt!
 
-export ortho_check
 include("ortho_check.jl")
+export ortho_check
 
-export Ylm_real
 include("Ylm_real.jl")
+export Ylm_real
 
-export Ylm_complex
 include("Ylm_complex.jl")
+export Ylm_complex
 
-export good_fft_order
 include("fft_support.jl")
+export good_fft_order
 
 #
 # Plane wave basis
 #
-export PWGrid
-export GVectors
-export GVectorsW
 include("PWGrid.jl")
+export PWGrid,
+       GVectors,
+       GVectorsW
 
 #
 # FFT
 #
-export c_G_to_R
-export c_R_to_G
-export R_to_G
-export G_to_R
 include("wrappers_fft.jl")
+export c_G_to_R,
+       c_R_to_G,
+       R_to_G,
+       G_to_R
+
 
 #
 # Pseudopotential
 #
-export PsPot_GTH
-export eval_Vloc_G
-export eval_proj_G
 include("PsPot_GTH.jl")
+export PsPot_GTH,
+       eval_Vloc_G,
+       eval_proj_G
 
 #
 # Electronic variables
 #
-export Electrons
-export get_Zvals
 include("Electrons.jl")
+export Electrons,
+       get_Zvals
 
-export calc_strfact
 include("calc_strfact.jl")
+export calc_strfact
 
-export init_V_coulomb_G
 include("init_V_coulomb_G.jl")
+export init_V_coulomb_G
 
-export calc_PspCore_ene
 include("calc_PspCore_ene.jl")
+export calc_PspCore_ene
 
-export calc_E_NN
 include("calc_E_NN.jl")
+export calc_E_NN
 
 const LIBXC_SO_PATH = joinpath(dirname(@__DIR__), "src", "extlibs", "libxc_interface.so")
-export calc_epsxc_VWN, calc_Vxc_VWN
 include("LDA_VWN.jl")
+export calc_epsxc_VWN, calc_Vxc_VWN
 
-export calc_epsxc_PBE, calc_Vxc_PBE
 include("GGA_PBE.jl")
+export calc_epsxc_PBE, calc_Vxc_PBE
 
-export Potentials
-export Energies
-export Hamiltonian
-export op_H, op_K, op_V_loc, op_V_Ps_loc, op_V_Ps_nloc
-export Poisson_solve
-export update!
-export PsPotNL, calc_betaNL_psi
-export calc_betaNL_psi
 include("Hamiltonian.jl")
+export Potentials,
+       Energies,
+       Hamiltonian,
+       op_H, op_K, op_V_loc, op_V_Ps_loc, op_V_Ps_nloc,
+       Poisson_solve,
+       update!,
+       PsPotNL, calc_betaNL_psi,
+       calc_betaNL_psi
 
-export calc_rhoe
 include("calc_rhoe.jl")
+export calc_rhoe
 
-export Kprec
 include("Kprec.jl")
+export Kprec
 
-export calc_energies, calc_E_xc, calc_E_Hartree, calc_E_Ps_nloc
 include("calc_energies.jl")
+export calc_energies,
+       calc_E_xc,
+       calc_E_Hartree,
+       calc_E_Ps_nloc
 
-export smear_FD, calc_Focc, calc_entropy, sum_upto_E_fermi
 include("smear_FD.jl")
 include("calc_Focc.jl")
 include("calc_entropy.jl")
 include("sum_upto_E_fermi.jl")
+export smear_FD,
+       calc_Focc,
+       calc_entropy,
+       sum_upto_E_fermi
 
-export calc_grad
 include("calc_grad_v2.jl")
+export calc_grad
 
 #
 # Diagonalization methods
 #
-export diag_lobpcg
 include("diag_lobpcg.jl")
-
-export diag_Emin_PCG
 include("diag_Emin_PCG.jl")
-
-export diag_davidson
 include("diag_davidson.jl")
+export diag_lobpcg,
+       diag_Emin_PCG,
+       diag_davidson
 
 #
 # Mixing functions
 #
-export mix_anderson!
 include("mix_anderson.jl")
+include("mix_rpulay.jl")
+export mix_anderson!,
+       mix_rpulay!
 
 #
 # KS solvers
 #
-export KS_solve_Emin_PCG!
 include("KS_solve_Emin_PCG.jl")
+export KS_solve_Emin_PCG!
 
-export KS_solve_SCF!
 include("KS_solve_SCF.jl")
+export KS_solve_SCF!
 
-export KS_solve_SCF_smearing!
 include("KS_solve_SCF_smearing.jl")
+export KS_solve_SCF_smearing!
 
-export KS_solve_DCM!
 include("KS_solve_DCM.jl")
+export KS_solve_DCM!
 
-export KS_solve_TRDCM!
 include("KS_solve_TRDCM.jl")
+export KS_solve_TRDCM!
 
-export chebyfilt
-export get_ub_lb_lanczos
 include("CheFSI.jl")
+export chebyfilt,
+       get_ub_lb_lanczos
 
 #include("do_precompile.jl")
 
