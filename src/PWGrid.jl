@@ -20,6 +20,9 @@ struct GVectorsW
     kpoints::KPoints
 end
 
+"""
+A type for described a plane wave basis sets for a given periodic unit cell.
+"""
 struct PWGrid
     ecutwfc::Float64
     ecutrho::Float64
@@ -36,7 +39,15 @@ end
 
 
 """
-LatVecs defines three lattice vectors: v1, v2, and v3 arranged by column.
+Creates an instance of `PWGrid` given the following inputs:
+
+- `ecutwfc`: cutoff energy for wave function
+
+- `LatVecs`: unit cell lattice vectors.
+  Convention used: The three lattice vectors v1, v2, and v3 arranged are
+  arranged **by column**.
+
+- `kpoints`: optional, an instance of `KPoints`.
 """
 function PWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2}; kpoints=nothing )
 
@@ -80,6 +91,9 @@ function PWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2}; kpoints=nothing )
                    planfw, planbw )
 end
 
+"""
+Flip real space indices for FFT.
+"""
 function mm_to_nn(mm::Int64,S::Int64)
     if mm > S/2
         return mm - S
@@ -88,7 +102,10 @@ function mm_to_nn(mm::Int64,S::Int64)
     end
 end
 
-
+"""
+Calculates number of G-vectors satisfying |G|^2 <= 2*ecutrho.
+This function is used by function `init_gvec`.
+"""
 function calc_Ng( Ns, RecVecs, ecutrho )
     ig = 0
     Ng = 0
@@ -115,6 +132,16 @@ function calc_Ng( Ns, RecVecs, ecutrho )
     return Ng
 end
 
+
+"""
+Creates an instance of `GVectors`, given the following inputs:
+
+- `Ns`: sampling points
+
+- `RecVecs`: reciprocal lattice vectors
+
+- `ecutrho`: cutoff energy (in hartree)
+"""
 function init_gvec( Ns, RecVecs, ecutrho )
 
     Ng = calc_Ng( Ns, RecVecs, ecutrho )
@@ -151,8 +178,19 @@ function init_gvec( Ns, RecVecs, ecutrho )
     return GVectors( Ng, G, G2, idx_g2r )
 end
 
+"""
+Creates an instance of `GVectorsW`, given the following inputs
 
-function init_gvecw( ecutwfc, gvec::GVectors, kpoints::KPoints )
+- `ecutwfc`: cutoff for wave function (in hartree)
+
+- `gvec`: an instance of `GVectors`
+
+- `kpoints`: an instance of `KPoints`
+
+This function will loop over all kpoints and determine a set of G+k vectors
+which has magnitude less than 2*ecutwfc.
+"""
+function init_gvecw( ecutwfc::Float64, gvec::GVectors, kpoints::KPoints )
     G = gvec.G
     Ng = gvec.Ng
     idx_g2r = gvec.idx_g2r
@@ -174,15 +212,7 @@ function init_gvecw( ecutwfc, gvec::GVectors, kpoints::KPoints )
         idx_gw2g[ik] = findall( 0.5*Gk2 .<= ecutwfc )
         idx_gw2r[ik] = idx_g2r[idx_gw2g[ik]]
         Ngw[ik] = length(idx_gw2g[ik])
-        #@printf("ik = %8d, k = [%10.5f,%10.5f,%10.5f]\n",
-        #        ik, kpts[1,ik], kpts[2,ik], kpts[3,ik])
-        #@printf("Ngw = %8d\n\n", Ngw[ik])
     end
-
-    # print out memory information
-    #Nelems = sum(Ngw)
-    #memMiB = 2*Nelems*sizeof(Int64)/1024.0/1024.0
-    #@printf("mem = %f MiB\n\n", memMiB)
     
     Ngwx = maximum(Ngw)
 
@@ -190,7 +220,10 @@ function init_gvecw( ecutwfc, gvec::GVectors, kpoints::KPoints )
 
 end
 
-
+"""
+Creates uniform real-space grid points for a given sampling points `Ns`
+and `LatVecs`
+"""
 function init_grid_R( Ns, LatVecs )
     #
     Npoints = prod(Ns)
@@ -201,9 +234,9 @@ function init_grid_R( Ns, LatVecs )
     for j in 0:Ns[2]-1
     for i in 0:Ns[1]-1
         ip = ip + 1
-        @inbounds R[1,ip] = LatVecs[1,1]*i/Ns[1] + LatVecs[1,2]*j/Ns[2] + LatVecs[1,3]*k/Ns[3]
-        @inbounds R[2,ip] = LatVecs[2,1]*i/Ns[1] + LatVecs[2,2]*j/Ns[2] + LatVecs[2,3]*k/Ns[3]
-        @inbounds R[3,ip] = LatVecs[3,1]*i/Ns[1] + LatVecs[3,2]*j/Ns[2] + LatVecs[3,3]*k/Ns[3]
+        R[1,ip] = LatVecs[1,1]*i/Ns[1] + LatVecs[1,2]*j/Ns[2] + LatVecs[1,3]*k/Ns[3]
+        R[2,ip] = LatVecs[2,1]*i/Ns[1] + LatVecs[2,2]*j/Ns[2] + LatVecs[2,3]*k/Ns[3]
+        R[3,ip] = LatVecs[3,1]*i/Ns[1] + LatVecs[3,2]*j/Ns[2] + LatVecs[3,3]*k/Ns[3]
     end
     end
     end
@@ -216,6 +249,10 @@ end
 
 import Base: println
 
+"""
+Display some information about `pw::PWGrid`. This function calls
+`println(gvec::GVectors)` and `println(gvecw::GVectorsW)`.
+"""
 function println( pw::PWGrid )
     @printf("\n")
     @printf("                                     ------\n")
@@ -245,6 +282,9 @@ function println( pw::PWGrid )
     println( pw.gvec, pw.gvecw )
 end
 
+"""
+Display some information about `gvec::GVectors`.
+"""
 function println( gvec::GVectors )
     Ng = gvec.Ng
     G = gvec.G
@@ -268,6 +308,9 @@ function println( gvec::GVectors )
     @printf("Max G2 = %18.10f\n", maximum(G2))
 end
 
+"""
+Display some information about `gvecw::GVectorsW`.
+"""
 function println( gvec::GVectors, gvecw::GVectorsW )
     G = gvec.G
     G2 = gvec.G2
