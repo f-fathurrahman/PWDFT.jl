@@ -20,13 +20,20 @@ end
 
 
 function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
-                        ecutwfc::Float64 ;
-                        Nspin = 1,
-                        meshk = [1,1,1], shiftk=[0,0,0],
-                        xcfunc = "VWN", verbose=false, extra_states=0 )
+                      ecutwfc::Float64 ;
+                      Nspin = 1,
+                      meshk = [1,1,1], shiftk = [0,0,0],
+                      kpoints = nothing,
+                      xcfunc = "VWN",
+                      verbose = false,
+                      extra_states = 0 )
 
     # kpoints
-    kpoints = KPoints( atoms, meshk, shiftk )
+    if kpoints == nothing
+        kpoints = KPoints( atoms, meshk, shiftk )
+    else
+        @assert typeof(kpoints) == KPoints
+    end
 
     # Initialize plane wave grids
     pw = PWGrid( ecutwfc, atoms.LatVecs, kpoints=kpoints )
@@ -157,7 +164,7 @@ function Hamiltonian( atoms::Atoms, ecutwfc::Float64;
                           electrons, atoms, Pspots, pspotNL, xcfunc, ik, ispin )
 end
 
-
+include("free_electron_Hamiltonian.jl")
 
 include("op_K.jl")
 include("op_V_loc.jl")
