@@ -1,5 +1,5 @@
 """
-Bloch wave vector
+The type for describing Bloch wave vector of electronic states.
 """
 mutable struct KPoints
     Nkpt::Int64
@@ -8,56 +8,38 @@ mutable struct KPoints
     RecVecs::Array{Float64,2} # copy of reciprocal vectors
 end
 
-# default
+"""
+Creates a 'dummy' instance of `KPoints` with only one kpoint.
+"""
 function KPoints( atoms::Atoms )
     Nkpt = 1
     k = zeros(3,1)
-    wk = [0.0]
-    RecVecs = 2*pi*invTrans_m3x3(LatVecs)
+    wk = [1.0]
+    RecVecs = 2*pi*invTrans_m3x3(atoms.LatVecs)
     return KPoints( Nkpt, k, wk, RecVecs )
 end
 
 
-import Base: println
-
-function println( kpoints::KPoints )
-
-    @printf("\n")
-    @printf("Total number of kpoints = %d\n", kpoints.Nkpt )
-
-    @printf("\n")
-    @printf("kpoints in Cartesian coordinate (unscaled)\n")
-    @printf("\n")
-    kcart = copy(kpoints.k)
-    for ik = 1:kpoints.Nkpt
-        @printf("%4d [%14.10f %14.10f %14.10f] %14.10f\n",
-                ik, kcart[1,ik], kcart[2,ik], kcart[3,ik], kpoints.wk[ik])
-    end
-
-    RecVecs = kpoints.RecVecs
-    ss = maximum(abs.(RecVecs))
-
-    # This is useful for comparison with pwscf
-    @printf("\n")
-    @printf("kpoints in Cartesian coordinate (scale: %f)\n", ss)
-    @printf("\n")
-    kcart = kcart/ss
-
-    for ik = 1:kpoints.Nkpt
-        @printf("%4d [%14.10f %14.10f %14.10f] %14.10f\n",
-                ik, kcart[1,ik], kcart[2,ik], kcart[3,ik], kpoints.wk[ik])
-    end
-    
-    @printf("\n")
-    @printf("sum wk = %f\n", sum(kpoints.wk))
-end
-
-
 """
-Generate uniform kpoints-grid
-"""
+Generate an instance of `KPoints` with uniform grid-points reduced by symmetry
+(using routines from `spglib`) given the following inputs:
+
+- `atoms`: an instance of `Atoms`
+
+- `mesh`: an array of three integers specifying sampling points in the k-grid
+  for each directions.
+
+- `is_shift`: an array of three integers (0 or 1) specifying whether the grid
+  is shifted or not for each directions.
+  **WARNING**: only `is_shift=[0,0,0]` is tested.
+
+- `time_reversal`: an integer specifying whether time-reversal symmetry should
+  be used for reducing k-points.
+
+- `verbose`: if `true`, additional information will be printed out.
+ """
 function KPoints( atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{Int64,1};
-                  time_reversal=1, verbose=false )
+                  time_reversal=1, verbose::Bool=false )
     
     if verbose
         @printf("\n")
@@ -101,9 +83,11 @@ function KPoints( atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{Int64,1};
     # calculate the weights
     wk = kcount[:]/sum(kcount)
 
-    # need to calculate this here because PWGrid instance is not passed
+    # need to calculate this here because a `PWGrid` instance is
+    # not given in the inputs.
     RecVecs = 2*pi*invTrans_m3x3(atoms.LatVecs)
     
+    # convert to cartesian unit
     kred = RecVecs*kred
 
     return KPoints( Nkpt, kred, wk, RecVecs )
@@ -231,4 +215,43 @@ function get_special_kpoints(lattice::String)
         println("ERROR: unknown lattice = ", lattice)
         exit()
     end
+end
+
+
+
+import Base: println
+
+"""
+Display some information about an instance of `KPoints`.
+"""
+function println( kpoints::KPoints )
+
+    @printf("\n")
+    @printf("Total number of kpoints = %d\n", kpoints.Nkpt )
+
+    @printf("\n")
+    @printf("kpoints in Cartesian coordinate (unscaled)\n")
+    @printf("\n")
+    kcart = copy(kpoints.k)
+    for ik = 1:kpoints.Nkpt
+        @printf("%4d [%14.10f %14.10f %14.10f] %14.10f\n",
+                ik, kcart[1,ik], kcart[2,ik], kcart[3,ik], kpoints.wk[ik])
+    end
+
+    RecVecs = kpoints.RecVecs
+    ss = maximum(abs.(RecVecs))
+
+    # This is useful for comparison with pwscf
+    @printf("\n")
+    @printf("kpoints in Cartesian coordinate (scale: %f)\n", ss)
+    @printf("\n")
+    kcart = kcart/ss
+
+    for ik = 1:kpoints.Nkpt
+        @printf("%4d [%14.10f %14.10f %14.10f] %14.10f\n",
+                ik, kcart[1,ik], kcart[2,ik], kcart[3,ik], kpoints.wk[ik])
+    end
+    
+    @printf("\n")
+    @printf("sum wk = %f\n", sum(kpoints.wk))
 end
