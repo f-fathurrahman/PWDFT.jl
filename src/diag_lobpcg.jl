@@ -36,6 +36,8 @@ function diag_lobpcg( Ham::Hamiltonian, X0::Array{ComplexF64,2};
     sum_evals_old = 0.0
     conv = 0.0
 
+    tfudge = 1e5
+
     IS_CONV = false
     
     for iter = 1:NiterMax
@@ -52,6 +54,13 @@ function diag_lobpcg( Ham::Hamiltonian, X0::Array{ComplexF64,2};
         R = HX - X*S
 
         nconv = length( findall( resnrm .< tol ) )
+        
+        ilock = findall( resnrm .<= tol/tfudge )
+        iact  = findall( resnrm .> tol/tfudge )
+
+        Nlock = length(ilock)
+        Nact = length(iact)
+
         if nconv >= Nstates_conv
             IS_CONV = true
             if verbose
@@ -62,6 +71,7 @@ function diag_lobpcg( Ham::Hamiltonian, X0::Array{ComplexF64,2};
 
         if verbose
             @printf("LOBPCG iter = %8d, nconv=%d, %18.10e\n", iter, nconv, conv)
+            println("Nlock = ", Nlock, " Nact = ", Nact)
         end
         
 
