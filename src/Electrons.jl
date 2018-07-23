@@ -1,3 +1,7 @@
+"""
+The type for describing electronic variables such as number of
+electrons, occupation numbers, and energy levels.
+"""
 mutable struct Electrons
     Nelectrons::Float64
     Nstates::Int64
@@ -7,7 +11,9 @@ mutable struct Electrons
     Nspin::Int64
 end
 
-# dummy Electrons
+"""
+Creates a `dummy` instance of `Electrons` with one electron.
+"""
 function Electrons()
     Nelectrons = 1
     Nstates = 1
@@ -18,7 +24,23 @@ function Electrons()
     return Electrons( Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin )
 end
 
+"""
+Creates an instance of `Electrons` given following inputs:
 
+- `atoms`: an instance of `Atoms`
+
+- `Pspots`: an array of `PsPot_GTH` instance(s)
+
+- `Nspin`: (optional) number of spin. `Nspin=1` means without spin polarization.
+  `Nspin=2` means with spin-polarization.
+
+- `Nkpt`: (optional) number of kpoints
+
+- `Nstates`: (optional) total number of electronic states
+
+- `Nstates_empty`: (optional) number of additional states which will be
+  regarded as empty.
+"""
 function Electrons( atoms::Atoms, Pspots::Array{PsPot_GTH,1};
                     Nspin=1, Nkpt=1,
                     Nstates=nothing, Nstates_empty=0 )
@@ -79,7 +101,24 @@ function Electrons( atoms::Atoms, Pspots::Array{PsPot_GTH,1};
     return Electrons( Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin )
 end
 
+"""
+Creates an instance of `Electrons` given following inputs:
 
+- `atoms`: an instance of `Atoms`
+
+- `Zvals`: an array of `Float64` specifying number of valence electrons
+  for each atomic species.
+
+- `Nspin`: (optional) number of spin. `Nspin=1` means without spin polarization.
+  `Nspin=2` means with spin-polarization.
+
+- `Nkpt`: (optional) number of kpoints
+
+- `Nstates`: (optional) total number of electronic states
+
+- `Nstates_empty`: (optional) number of additional states which will be
+  regarded as empty.
+"""
 function Electrons( atoms::Atoms, Zvals::Array{Float64,1};
                     Nspin=1, Nkpt=1,
                     Nstates=nothing, Nstates_empty=0 )
@@ -144,11 +183,14 @@ function Electrons( atoms::Atoms, Zvals::Array{Float64,1};
     end
 
     return Electrons( Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin )
-
-
 end
 
 
+"""
+Returns number of electrons for a given `atoms::Atoms` and
+`Pspots::Array{PsPot_GTH,1}`. Number of electrons will be
+calculated as sum of valence electrons for each atom.
+"""
 function get_Nelectrons( atoms::Atoms, Pspots::Array{PsPot_GTH,1} )
     Nelectrons = 0.0
     Natoms = atoms.Natoms
@@ -160,7 +202,9 @@ function get_Nelectrons( atoms::Atoms, Pspots::Array{PsPot_GTH,1} )
     return Nelectrons
 end
 
-
+"""
+Returns array `Zvals[1:Nspecies]` from a given `PsPots`.
+"""
 function get_Zvals( PsPots::Array{PsPot_GTH,1} )
     Nspecies = size(PsPots)[1]
     Zvals = zeros(Float64, Nspecies)
@@ -173,7 +217,13 @@ end
 
 import Base: println
 
-function println( electrons::Electrons, all_states=false, all_kpoints=false )
+"""
+Display some information about an instance of `Electrons`.
+Occupation numbers are by default will only displayed for
+several states only, except when `all_states=true`.
+All occupation numbers will be displayed for all kpoints.
+"""
+function println( electrons::Electrons, all_states=false )
 
     Nspin = electrons.Nspin
     Focc = electrons.Focc
