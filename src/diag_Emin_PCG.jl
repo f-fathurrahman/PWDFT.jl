@@ -3,8 +3,8 @@
 # Ham.energies.NN should be calculated if needed
 #
 function diag_Emin_PCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
-                             α_t = 3e-5, NiterMax=200, verbose=false,
-                             I_CG_BETA = 1, TOL_EBANDS=1e-7 )
+                        α_t = 3e-5, NiterMax=200, verbose=false,
+                        I_CG_BETA = 2, TOL_EBANDS=1e-6 )
 
 
     ik = Ham.ik
@@ -16,7 +16,7 @@ function diag_Emin_PCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
     Nstates = size(X0)[2]
     Ngw_ik = pw.gvecw.Ngw[ik]
 
-    psi = ortho_gram_schmidt(X0)
+    psi = copy(X0)  # X0 is assumed to be already orthonormalized
 
     #
     # Variabls for PCG
@@ -30,13 +30,13 @@ function diag_Emin_PCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
     Ebands_old = 0.0
 
     Hr = psi' * op_H( Ham, psi )
-    Ebands = real(sum(eigvals(Hr)))
+    Ebands = sum( eigvals(Hermitian(Hr)) )
 
     @printf("\nInitial Ebands = %18.10f\n", Ebands)
 
     for iter = 1:NiterMax
 
-        g = calc_grad( Ham, psi)
+        g = calc_grad_evals( Ham, psi)
         Kg = Kprec( Ham.ik, pw, g )
 
         if iter != 1
@@ -51,18 +51,18 @@ function diag_Emin_PCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
             end
         end
         if β < 0.0
-            @printf("β is smaller than 0, setting it to zero\n")
             β = 0.0
         end
 
         d = -Kg + β * d_old
 
-        psic = ortho_gram_schmidt( psi + α_t*d )
-        rhoe = calc_rhoe( ik, pw, Focc, psic )
+        psic = ortho_sqrt( psi + α_t*d )
+        
+        #rhoe = calc_rhoe( ik, pw, Focc, psic )
         #
-        update!(Ham, rhoe)
+        #update!(Ham, rhoe)
 
-        gt = calc_grad( Ham, psic )
+        gt = calc_grad_evals( Ham, psic )
 
         denum = real(sum(conj(g-gt).*d))
         if denum != 0.0
@@ -75,10 +75,10 @@ function diag_Emin_PCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
         psi = psi[:,:] + α*d[:,:]
 
         # Update potentials
-        psi = ortho_gram_schmidt(psi)
+        psi = ortho_sqrt(psi)
 
         Hr = psi' * op_H( Ham, psi )
-        Ebands = real(sum(eigvals(Hr)))
+        Ebands = sum( eigvals(Hermitian(Hr)) )
 
         diff = abs(Ebands-Ebands_old)
 
@@ -94,10 +94,12 @@ function diag_Emin_PCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
         Ebands_old = Ebands
     end
 
-    psi = ortho_gram_schmidt(psi)
-    Hr = psi' * op_H( Ham, psi )
+    psi = ortho_sqrt(psi)
+    Hr = Hermitian( psi' * op_H(Ham, psi) )
     evals, evecs = eigen(Hr)
-    psi = psi*evecs
+    # Sort
+    idx_sorted = sortperm(evals)
+    psi = psi*evecs[:,idx_sorted]
 
-    return real(evals), psi
+    return evals[idx_sorted], psi
 end
