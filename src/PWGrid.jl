@@ -1,5 +1,5 @@
 """
-GVectors for density and potentials
+The type for set of G-vectors for describing density and potentials
 """
 struct GVectors
     Ng::Int64
@@ -10,7 +10,7 @@ end
 
 
 """
-GVectors for wave function
+The type for set of G-vectors for describing wave function.
 """
 struct GVectorsW
     Ngwx::Int64          # maximum(Ngk)
@@ -21,7 +21,7 @@ struct GVectorsW
 end
 
 """
-A type for described a plane wave basis sets for a given periodic unit cell.
+The type for describing plane wave basis set for a given periodic unit cell.
 """
 struct PWGrid
     ecutwfc::Float64
