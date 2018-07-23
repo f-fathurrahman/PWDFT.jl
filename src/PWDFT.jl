@@ -120,7 +120,7 @@ export calc_epsxc_PBE, calc_Vxc_PBE
 include("Hamiltonian.jl")
 export Potentials,
        Energies,
-       Hamiltonian,
+       Hamiltonian, free_electron_Hamiltonian,
        op_H, op_K, op_V_loc, op_V_Ps_loc, op_V_Ps_nloc,
        Poisson_solve,
        update!,
