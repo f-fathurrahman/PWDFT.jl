@@ -173,7 +173,7 @@ end
 
 import Base: println
 
-function println( electrons::Electrons, all_states=false )
+function println( electrons::Electrons, all_states=false, all_kpoints=false )
 
     Nspin = electrons.Nspin
     Focc = electrons.Focc
@@ -181,6 +181,7 @@ function println( electrons::Electrons, all_states=false )
     Nstates = electrons.Nstates
     Nstates_occ = electrons.Nstates_occ
     Nkspin = size(Focc)[2]
+    Nkpt = Nkspin/Nspin
 
     @printf("\n")
     @printf("                                     ---------\n")
@@ -188,7 +189,7 @@ function println( electrons::Electrons, all_states=false )
     @printf("                                     ---------\n")
     @printf("\n")
     @printf("Nspin         = %8d\n", Nspin)
-    @printf("Nkpt          = %8d\n", Nkspin/Nspin)
+    @printf("Nkpt          = %8d\n", Nkpt)
     @printf("Nelectrons    =  %18.10f\n", Nelectrons)
     @printf("Nstates       = %8d\n", Nstates)
     @printf("Nstates_occ   = %8d\n", Nstates_occ)
@@ -203,16 +204,20 @@ function println( electrons::Electrons, all_states=false )
     if Nstates < 8
         all_states = true
     end
+
+    Nk_per_line = 8
+
     if all_states
         for ist = 1:Nstates
             @printf("state #%4d = ", ist)
             for iks = 1:Nkspin
                 @printf("%8.5f ", Focc[ist,iks])
-                if (iks % 10) == 0
+                if (iks % Nk_per_line) == 0
                     @printf("\n")
                     @printf("              ")
                 end
             end
+            #
             @printf("\n")
         end
     else
@@ -220,7 +225,7 @@ function println( electrons::Electrons, all_states=false )
             @printf("state #%4d = ", ist)
             for iks = 1:Nkspin
                 @printf("%8.5f ", Focc[ist,iks])
-                if (iks % 10) == 0
+                if (iks % Nk_per_line) == 0
                     @printf("\n")
                     @printf("              ")
                 end
@@ -233,7 +238,7 @@ function println( electrons::Electrons, all_states=false )
             @printf("state #%4d = ", ist)
             for iks = 1:Nkspin
                 @printf("%8.5f ", Focc[ist,iks])
-                if (iks % 10) == 0
+                if (iks % Nk_per_line) == 0
                     @printf("\n")
                     @printf("              ")
                 end
