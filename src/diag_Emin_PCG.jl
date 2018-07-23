@@ -1,9 +1,6 @@
-#
-# Ham.potentials.V_Ps_loc should be initialized
-# Ham.energies.NN should be calculated if needed
-#
 function diag_Emin_PCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
                         α_t = 3e-5, NiterMax=200, verbose=false,
+                        verbose_last = false,
                         I_CG_BETA = 2, TOL_EBANDS=1e-6 )
 
 
@@ -32,8 +29,6 @@ function diag_Emin_PCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
     Hr = psi' * op_H( Ham, psi )
     Ebands = sum( eigvals(Hermitian(Hr)) )
 
-    @printf("\nInitial Ebands = %18.10f\n", Ebands)
-
     for iter = 1:NiterMax
 
         g = calc_grad_evals( Ham, psi)
@@ -57,11 +52,6 @@ function diag_Emin_PCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
         d = -Kg + β * d_old
 
         psic = ortho_sqrt( psi + α_t*d )
-        
-        #rhoe = calc_rhoe( ik, pw, Focc, psic )
-        #
-        #update!(Ham, rhoe)
-
         gt = calc_grad_evals( Ham, psic )
 
         denum = real(sum(conj(g-gt).*d))
@@ -82,9 +72,13 @@ function diag_Emin_PCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
 
         diff = abs(Ebands-Ebands_old)
 
-        @printf("CG step %8d = %18.10f %10.7e\n", iter, Ebands, diff)
+        if verbose
+            @printf("CG step %8d = %18.10f %10.7e\n", iter, Ebands, diff)
+        end
         if diff < TOL_EBANDS
-            @printf("CONVERGENCE ACHIEVED\n")
+            if verbose
+                @printf("CONVERGENCE ACHIEVED\n")
+            end
             break
         end
 
@@ -99,7 +93,14 @@ function diag_Emin_PCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
     evals, evecs = eigen(Hr)
     # Sort
     idx_sorted = sortperm(evals)
+    evals = evals[idx_sorted]
     psi = psi*evecs[:,idx_sorted]
 
-    return evals[idx_sorted], psi
+    if verbose_last
+        for j = 1:Nstates
+            @printf("eigval[%2d] = %18.10f\n", j, evals[j] )
+        end
+    end
+
+    return evals, psi
 end
