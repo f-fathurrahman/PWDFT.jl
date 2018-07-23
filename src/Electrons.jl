@@ -12,7 +12,7 @@ mutable struct Electrons
 end
 
 """
-Creates a `dummy` instance of `Electrons` with one electron.
+Creates a 'dummy' instance of `Electrons` with only one electron.
 """
 function Electrons()
     Nelectrons = 1
