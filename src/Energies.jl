@@ -1,5 +1,4 @@
 mutable struct Energies
-    Total::Float64
     Kinetic::Float64
     Ps_loc::Float64
     Ps_nloc::Float64
@@ -10,10 +9,11 @@ end
 
 # Default: all zeroes
 function Energies()
-    return Energies(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+    return Energies(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
 end
 
-import Base: println
+import Base: println, sum
+
 function println( energies::Energies )
     @printf("\n")
     @printf("Kinetic    energy: %18.10f\n", energies.Kinetic )
@@ -27,5 +27,13 @@ function println( energies::Energies )
     @printf("Electronic energy: %18.10f\n", E_elec)
     @printf("NN         energy: %18.10f\n", energies.NN )
     @printf("-------------------------------------\n")
-    @printf("Total      energy: %18.10f\n", energies.Total )
+    E_total = E_elec + energies.NN
+    @printf("Total      energy: %18.10f\n", E_total )
 end
+
+function sum( energies::Energies )
+    E_total = energies.Kinetic + energies.Ps_loc + energies.Ps_nloc +
+             energies.Hartree + energies.XC + energies.NN
+    return E_total
+end
+
