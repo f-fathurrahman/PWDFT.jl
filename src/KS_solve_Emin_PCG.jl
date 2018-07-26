@@ -82,8 +82,7 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
     # Calculate energy at this psi
     energies = calc_energies(Ham, psiks)
     Ham.energies = energies
-
-    Etot = energies.Total
+    Etot = sum(energies)
 
     CONVERGED = 0
 
@@ -182,7 +181,7 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
         update!(Ham, Rhoe)
 
         Ham.energies = calc_energies( Ham, psiks )
-        Etot = Ham.energies.Total
+        Etot = sum(Ham.energies)
         diff = abs(Etot-Etot_old)
 
         if verbose

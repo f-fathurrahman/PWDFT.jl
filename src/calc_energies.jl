@@ -199,7 +199,6 @@ function calc_energies( Ham::Hamiltonian, psiks::Array{Array{ComplexF64,2},1} )
     energies.Hartree = E_Hartree
     energies.XC      = E_xc
     energies.NN      = Ham.energies.NN
-    energies.Total   = E_kin + E_Ps_loc + E_Ps_nloc + E_Hartree + E_xc + Ham.energies.NN
 
     return energies
 end
@@ -264,7 +263,6 @@ function calc_energies( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
     energies.Hartree = E_Hartree
     energies.XC      = E_xc
     energies.NN      = Ham.energies.NN
-    energies.Total   = E_kin + E_Ps_loc + E_Ps_nloc + E_Hartree + E_xc + Ham.energies.NN
 
     return energies
 end

@@ -59,7 +59,7 @@ function KS_solve_DCM!( Ham::Hamiltonian;
 
     Ham.energies = calc_energies( Ham, psiks )
     
-    Etot_old = Ham.energies.Total
+    Etot_old = sum(Ham.energies)
 
     # subspace
     Y = Array{Array{ComplexF64,2},1}(undef,Nkspin)
@@ -168,7 +168,7 @@ function KS_solve_DCM!( Ham::Hamiltonian;
 
             # Calculate energies once again
             Ham.energies = calc_energies( Ham, psiks )
-            Etot = Ham.energies.Total
+            Etot = sum(Ham.energies)
             diffE = -(Etot - Etot_old)
 
             @printf("innerSCF: %5d %18.10f %18.10e", iterscf, Etot, diffE)
@@ -183,7 +183,7 @@ function KS_solve_DCM!( Ham::Hamiltonian;
 
         # Calculate energies once again
         Ham.energies = calc_energies( Ham, psiks )
-        Etot = Ham.energies.Total
+        Etot = sum(Ham.energies)
         diffE = abs( Etot - Etot_old )
         @printf("DCM: %5d %18.10f %18.10e\n", iter, Etot, diffE)
 

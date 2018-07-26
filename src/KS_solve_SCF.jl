@@ -192,7 +192,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
 
         # Calculate energies
         Ham.energies = calc_energies( Ham, psiks )
-        Etot = Ham.energies.Total
+        Etot = sum(Ham.energies)
         diffE = abs( Etot - Etot_old )
 
         if Nspin == 1

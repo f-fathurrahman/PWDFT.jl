@@ -32,8 +32,7 @@ function println( energies::Energies )
 end
 
 function sum( energies::Energies )
-    E_total = energies.Kinetic + energies.Ps_loc + energies.Ps_nloc +
-             energies.Hartree + energies.XC + energies.NN
-    return E_total
+    return energies.Kinetic + energies.Ps_loc + energies.Ps_nloc +
+           energies.Hartree + energies.XC + energies.NN
 end
 
