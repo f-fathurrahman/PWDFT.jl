@@ -17,7 +17,7 @@ function calc_force_finite_diff( atoms::Atoms, pspfiles, ecutwfc )
         Ham.energies.NN = calc_E_NN( atoms )
         #
         KS_solve_SCF!( Ham, mix_method="anderson" )
-        Etot1 = Ham.energies.Total
+        Etot1 = sum(Ham.energies)
         println("Etot1 = ", Etot1)
         #
         atoms.positions[ii,ia] = pos_orig[ii,ia] - Δ
@@ -25,7 +25,7 @@ function calc_force_finite_diff( atoms::Atoms, pspfiles, ecutwfc )
         Ham.energies.NN = calc_E_NN( atoms )
         #
         KS_solve_SCF!( Ham, mix_method="anderson" )
-        Etot2 = Ham.energies.Total
+        Etot2 = sum(Ham.energies)
         println("Etot2 = ", Etot2)
         #
         force[ii,ia] = (Etot1 - Etot2) / (2Δ)

@@ -120,7 +120,7 @@ function alt1_KS_solve_SCF!( Ham::Hamiltonian ;
 
         # Calculate energies
         Ham.energies = calc_energies( Ham, psi )
-        Etot = Ham.energies.Total
+        Etot = sum(Ham.energies)
         diffE = abs( Etot - Etot_old )
 
         @printf("SCF: %8d %18.10f %18.10e\n", iter, Etot, diffE )
