@@ -9,4 +9,14 @@ function test_main()
     println("test sum: ", sum(energies))
 end
 
+using BenchmarkTools
+
+function test_bench()
+    energies = Energies()
+    @btime Etot = sum($(energies))
+end
+
 test_main()
+test_bench()
+
+
