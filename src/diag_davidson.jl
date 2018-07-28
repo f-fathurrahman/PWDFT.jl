@@ -25,9 +25,12 @@ function diag_davidson( Ham::Hamiltonian, X0::Array{ComplexF64,2};
     R        = zeros(ComplexF64, Nbasis, Nstates)
     Hred     = zeros(ComplexF64, 2*Nstates, 2*Nstates)
     Sred     = zeros(ComplexF64, 2*Nstates, 2*Nstates)
+    λ_red    = zeros(Float64, 2*Nstates)
+    X_red    = zeros(ComplexF64, 2*Nstates, 2*Nstates)
     res      = zeros(Float64, Nstates)
     res_norm = zeros(Float64, Nstates)
-    devals   = zeros(Float64, Nstates)
+    
+    devals    = zeros(Float64, Nstates)
     evals_old = zeros(Float64, Nstates)
 
     HX = op_H( Ham, X )
@@ -58,14 +61,14 @@ function diag_davidson( Ham::Hamiltonian, X0::Array{ComplexF64,2};
 
         res_norm[:] .= 1.0
 
-        for ic = 1:Nstates
-            if EPS < res[ic]
-                res_norm[ic] = 1.0/res[ic]
+        for ist = 1:Nstates
+            if EPS < res[ist]
+                res_norm[ist] = 1.0/res[ist]
             else
                 println("res[ic] is too small")
             end
             for ig = 1:Nbasis
-                R[ig,ic] = res_norm[ic] * R[ig,ic]
+                R[ig,ist] = res_norm[ist] * R[ig,ist]
             end
         end
 
