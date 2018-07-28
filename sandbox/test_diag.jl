@@ -24,7 +24,7 @@ function analytic_free_band( pw::PWGrid, Nstates::Int64, ik=1 )
 end
 
 # Test free_electron_Hamiltonian
-function test_01()
+function test_01( diag_method::String )
 
     atoms = init_atoms_xyz_string(
         """
@@ -34,32 +34,49 @@ function test_01()
         """, in_bohr=true)
     atoms.LatVecs = gen_lattice_fcc(6.0)
     atoms.positions = atoms.LatVecs*atoms.positions
-    println(atoms)
 
     srand(1234)
     kpoints = KPoints(atoms)
+    # create random k-point
     kpoints.k = kpoints.RecVecs*rand( 0.0:0.01:0.5, (3,1) )
-    println(kpoints)
 
     pspfiles = ["../pseudopotentials/pade_gth/H-q1.gth"]
     ecutwfc = 50.0
     Ham = free_electron_Hamiltonian(
-            atoms, pspfiles, ecutwfc, kpoints=kpoints, extra_states=4,
-            verbose=true
+            atoms, pspfiles, ecutwfc, kpoints=kpoints, extra_states=6,
+            verbose=false
           )
 
     Ngwx = Ham.pw.gvecw.Ngwx
     Nstates = Ham.electrons.Nstates
     psi = ortho_sqrt( rand(ComplexF64,Ngwx,Nstates) )
 
-    #evals, psi = diag_LOBPCG(Ham, psi, verbose=true, Nstates_conv=1)
-    #evals, psi = diag_davidson(Ham, psi, verbose=true)
-    evals, psi = diag_Emin_PCG(Ham, psi, verbose=true, NiterMax=400)
+    println("\nusing diag_method = ", diag_method)
+
+    if diag_method == "LOBPCG"
+        @time evals, psi = diag_LOBPCG(
+            Ham, psi, verbose=false, Nstates_conv=4, verbose_last=true
+        )
+    elseif diag_method == "davidson"
+        @time evals, psi = diag_davidson(
+           Ham, psi, verbose=false, Nstates_conv=4, verbose_last=true
+        )
+    elseif diag_method == "PCG"
+        @time evals, psi = diag_Emin_PCG(
+           Ham, psi, verbose=false, Nstates_conv=4, tol_ebands=0.0, NiterMax=20, verbose_last=true
+        )
+    else
+        println("ERROR: unknown diag_method = ", diag_method)
+        error("STOPPED")
+    end
 
     evals_analytic = analytic_free_band( Ham.pw, Nstates )
+    devals = abs.(evals[:] - evals_analytic[:])
 
+    println("\nComparison with analytic results\n")
     for ist = 1:Nstates
-        @printf("%4d %18.10f %18.10f\n", ist, evals[ist], evals_analytic[ist])
+        @printf("%4d %18.10f %18.10f %18.10e\n", ist, evals[ist], evals_analytic[ist],
+                devals[ist] )
     end
 
 end
@@ -92,11 +109,11 @@ function test_02( diag_method::String )
     psi = ortho_sqrt( rand(ComplexF64,Ngwx,Nstates) )
 
     if diag_method == "LOBPCG"
-        evals, psi = diag_LOBPCG(Ham, psi, verbose=true, Nstates_conv=1)
+        evals, psi = diag_LOBPCG(Ham, psi, verbose=false, Nstates_conv=1)
     elseif diag_method == "davidson"
-        evals, psi = diag_davidson(Ham, psi, verbose=true)
+        evals, psi = diag_davidson(Ham, psi, verbose=false, Nstates_conv=1)
     elseif diag_method == "PCG"
-        evals, psi = diag_Emin_PCG(Ham, psi, verbose=true, NiterMax=400)
+        evals, psi = diag_Emin_PCG(Ham, psi, verbose=false, NiterMax=400)
     else
         println("ERROR: unknown diag_method = ", diag_method)
         error("STOPPED")
@@ -108,7 +125,16 @@ function test_02( diag_method::String )
 
 end
 
-#test_01()
-test_02("LOBPCG")
-test_02("davidson")
-test_02("PCG")
+test_01("LOBPCG")
+test_01("LOBPCG")
+
+test_01("davidson")
+test_01("davidson")
+
+test_01("PCG")
+test_01("PCG")
+
+
+#test_02("LOBPCG")
+#test_02("davidson")
+#test_02("PCG")

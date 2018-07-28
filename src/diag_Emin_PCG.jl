@@ -1,8 +1,14 @@
+"""
+Find eigenvalues and eigenvectors of `Ham::Hamiltonian` using `X0`
+as initial guess for eigenvectors using preconditioned CG method.
+    
+**IMPORTANT** `X0` must be orthonormalized before.
+"""
 function diag_Emin_PCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
-                        α_t = 3e-5, NiterMax=200, verbose=false,
-                        verbose_last = false,
-                        I_CG_BETA = 2, TOL_EBANDS=1e-6 )
-
+                        tol=1e-6, NiterMax=200, verbose=false,
+                        verbose_last=false, Nstates_conv=0,
+                        tol_ebands=1e-6,
+                        α_t=3e-5, I_CG_BETA = 2 )
 
     ik = Ham.ik
     pw = Ham.pw
@@ -13,7 +19,11 @@ function diag_Emin_PCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
     Nstates = size(X0)[2]
     Ngw_ik = pw.gvecw.Ngw[ik]
 
-    psi = copy(X0)  # X0 is assumed to be already orthonormalized
+    if Nstates_conv == 0
+        Nstates_conv = Nstates
+    end
+
+    psi = copy(X0)
 
     #
     # Variabls for PCG
@@ -23,11 +33,22 @@ function diag_Emin_PCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
     d_old = zeros(ComplexF64, Ngw_ik, Nstates)
     Kg = zeros(ComplexF64, Ngw_ik, Nstates)
     Kg_old = zeros(ComplexF64, Ngw_ik, Nstates)
-    β        = 0.0
+    psic = zeros(ComplexF64, Ngw_ik, Nstates)
+    gt = zeros(ComplexF64, Ngw_ik, Nstates)
+    
+    β = 0.0
+    
     Ebands_old = 0.0
 
-    Hr = psi' * op_H( Ham, psi )
-    Ebands = sum( eigvals(Hermitian(Hr)) )
+    Hr = Hermitian( psi' * op_H( Ham, psi ) )
+    
+    evals = eigvals(Hr)
+    Ebands = sum(evals)
+    
+    evals_old = copy(evals)
+    devals = ones(Nstates)
+
+    IS_CONVERGED = false
 
     for iter = 1:NiterMax
 
@@ -67,17 +88,36 @@ function diag_Emin_PCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
         # Update potentials
         psi = ortho_sqrt(psi)
 
-        Hr = psi' * op_H( Ham, psi )
-        Ebands = sum( eigvals(Hermitian(Hr)) )
+        Hr = Hermitian( psi' * op_H( Ham, psi ) )
+        
+        evals = eigvals(Hr)
+        Ebands = sum(evals)
+
+        devals = abs.( evals - evals_old )
+        evals_old = copy(evals)
+        
+        nconv = length( findall( devals .< tol ) )
 
         diff = abs(Ebands-Ebands_old)
 
         if verbose
             @printf("CG step %8d = %18.10f %10.7e\n", iter, Ebands, diff)
+            for ist = 1:Nstates
+                @printf("evals[%d] = %18.10f, devals = %18.10e\n", ist, evals[ist], devals[ist] )
+            end
+            @printf("iter %d nconv = %d\n", iter, nconv)
         end
-        if diff < TOL_EBANDS
-            if verbose
-                @printf("CONVERGENCE ACHIEVED\n")
+        if nconv >= Nstates_conv
+            IS_CONVERGED = true
+            if verbose || verbose_last
+                @printf("Convergence is achieved based on nconv\n")
+            end
+            break
+        end
+        if diff <= tol_ebands*Nstates
+            IS_CONVERGED = true
+            if verbose || verbose_last
+                @printf("Convergence is achieved based on tol_ebands*Nstates\n")
             end
             break
         end
@@ -88,6 +128,10 @@ function diag_Emin_PCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
         Ebands_old = Ebands
     end
 
+    if !IS_CONVERGED
+        @printf("\nWARNING: diag_Emin_PCG is not converged after %d iterations\n", NiterMax)
+    end
+
     psi = ortho_sqrt(psi)
     Hr = Hermitian( psi' * op_H(Ham, psi) )
     evals, evecs = eigen(Hr)
@@ -96,9 +140,10 @@ function diag_Emin_PCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
     evals = evals[idx_sorted]
     psi = psi*evecs[:,idx_sorted]
 
-    if verbose_last
-        for j = 1:Nstates
-            @printf("eigval[%2d] = %18.10f\n", j, evals[j] )
+    if verbose_last || verbose
+        @printf("\nEigenvalues from diag_Emin_PCG:\n\n")
+        for ist = 1:Nstates
+            @printf("evals[%d] = %18.10f devals = %18.10e\n", ist, evals[ist], devals[ist] )
         end
     end
 

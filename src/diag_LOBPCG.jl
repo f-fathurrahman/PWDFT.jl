@@ -1,10 +1,10 @@
 """
-Locally-optimal block preconditioned conjugate gradient method for
-finding `Hamiltonian` eigenstates and eigenvalues.
+Find eigenvalues and eigenvectors of `Ham::Hamiltonian` using `X0`
+as initial guess for eigenvectors using
+locally-optimal block preconditioned conjugate gradient method
+of Knyazev.
 
-Based on code by Knyazev.
-
-TODO: Add references
+**IMPORTANT** `X0` must be orthonormalized before.
 """
 function diag_LOBPCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
                       tol=1e-6, NiterMax=200, verbose=false,
@@ -19,8 +19,6 @@ function diag_LOBPCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
         Nstates_conv = Nstates
     end
 
-    # orthonormalize the initial wave functions.
-    #X = ortho_gram_schmidt(X0)  # normalize (again) XXX ?
     X = copy(X0)
 
     HX = op_H( Ham, X )
@@ -32,55 +30,57 @@ function diag_LOBPCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
     P = zeros(ComplexF64,Nbasis,Nstates)
     HP = zeros(ComplexF64,Nbasis,Nstates)
 
-    sum_evals = 0.0
-    sum_evals_old = 0.0
-    conv = 0.0
+    evals = zeros(Float64,Nstates)
+    devals = ones(Float64,Nstates)
+    evals_old = copy(evals)
 
     tfudge = 1e5
 
-    IS_CONV = false
+    IS_CONVERGED = false
     
     for iter = 1:NiterMax
 
         # Rayleigh quotient
-        S = X'*HX
-        lambda = real(eigvals(S))  #
-        #
-        # Check for convergence
-        #
-        sum_evals = sum(lambda)
-        conv = abs(sum_evals - sum_evals_old)/Nstates
-        sum_evals_old = sum_evals
-        R = HX - X*S
+        XHX = Hermitian(X'*HX)
+        evals = eigvals(XHX)
 
-        nconv = length( findall( resnrm .< tol ) )
+        devals = abs.( evals - evals_old )
+        evals_old = copy(evals)
         
-        ilock = findall( resnrm .<= tol/tfudge )
-        iact  = findall( resnrm .> tol/tfudge )
+        # Residuals
+        R = HX - X*XHX
+        for j = 1:Nstates
+            resnrm[j] = norm( R[:,j] )
+        end
+
+        nconv = length( findall( devals .< tol ) )
+        
+        ilock = findall( devals .<= tol/tfudge )
+        iact  = findall( devals .> tol/tfudge )
 
         Nlock = length(ilock)
         Nact = length(iact)
 
+        if verbose
+            @printf("LOBPCG iter = %8d, nconv=%d\n", iter, nconv)
+            for ist = 1:Nstates
+                @printf("evals[%d] = %18.10f, devals = %18.10e\n", ist, evals[ist], devals[ist] )
+            end
+            println("Nlock = ", Nlock, " Nact = ", Nact)
+        end
+
+        # Check for convergence
         if nconv >= Nstates_conv
-            IS_CONV = true
-            if verbose
+            IS_CONVERGED = true
+            if verbose || verbose_last
                 println("LOBPCG convergence: nconv in iter ", iter)
             end
             break
         end
 
-        if verbose
-            @printf("LOBPCG iter = %8d, nconv=%d, %18.10e\n", iter, nconv, conv)
-            println("Nlock = ", Nlock, " Nact = ", Nact)
-        end
-        
-
-        for j = 1:Nstates
-            resnrm[j] = norm( R[:,j] )
-        end
-        #
         # apply preconditioner
         W = Kprec( Ham.ik, pw, R )
+        
         #
         # nlock == 0
         #
@@ -88,9 +88,8 @@ function diag_LOBPCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
         #
         C  = W'*W
         #C = 0.5*( C + C' )
-        C = Hermitian(C)
         #
-        R  = (cholesky(C)).U
+        R  = (cholesky(Hermitian(C))).U
         W  = W/R
         HW = HW/R
         #
@@ -120,8 +119,7 @@ function diag_LOBPCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
             HP = HW*U[set2,:] + HP*U[set3,:]
             C = P'*P
             #C = 0.5*(C + C')
-            C = Hermitian(C)
-            R = (cholesky(C)).U
+            R = (cholesky(Hermitian(C))).U
             P = P/R
             HP = HP/R
         else
@@ -132,19 +130,19 @@ function diag_LOBPCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
         iter = iter + 1
     end
 
-    if !IS_CONV
+    if !IS_CONVERGED
         @printf("\nWARNING: LOBPCG is not converged after %d iterations\n", NiterMax)
     end
 
     S = X'*HX
-    S = (S+S')/2
-    lambda, Q = eigen(S)
+    S = Hermitian(0.5*(S+S'))
+    evals, Q = eigen(S)
     X = X*Q
-    if verbose_last
-        for j = 1:Nstates
-            @printf("eigval[%2d] = %18.10f, resnrm = %18.10e\n", j, lambda[j], resnrm[j] )
+    if verbose_last || verbose
+        @printf("\nEigenvalues from diag_LOBPCG:\n\n")
+        for ist = 1:Nstates
+            @printf("evals[%d] = %18.10f, devals = %18.10e\n", ist, evals[ist], devals[ist] )
         end
     end
-    #@printf("LOBPCG converge: %d iter\n", iter)
-    return lambda, X
+    return evals, X
 end

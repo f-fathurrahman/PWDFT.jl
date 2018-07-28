@@ -1,6 +1,12 @@
+"""
+Find eigenvalues and eigenvectors of `Ham::Hamiltonian` using `X0`
+as initial guess for eigenvectors using blocked Davidson method.
+    
+**IMPORTANT** `X0` must be orthonormalized before.
+"""
 function diag_davidson( Ham::Hamiltonian, X0::Array{ComplexF64,2};
-                        tol=1e-5, tol_avg=1e-7, NiterMax=100, verbose=false,
-                        verbose_last=false )
+                        tol=1e-6, NiterMax=100, verbose=false,
+                        verbose_last=false, Nstates_conv=0 )
       
 
     # get size info
@@ -9,8 +15,10 @@ function diag_davidson( Ham::Hamiltonian, X0::Array{ComplexF64,2};
 
     @assert(Nstates >= 1)
     
-    # orthonormalize the initial wave functions.
-    # X = ortho_gram_schmidt(X0)  # normalize (again)?
+    if Nstates_conv == 0
+        Nstates_conv = Nstates
+    end
+    
     X = copy(X0)
 
     evals    = zeros(Float64, Nstates)
@@ -25,34 +33,22 @@ function diag_davidson( Ham::Hamiltonian, X0::Array{ComplexF64,2};
     HX = op_H( Ham, X )
 
     # Initial eigenvalues
-    for ic = 1:Nstates
-        for ig = 1:Nbasis
-            evals[ic] = real( conj(X[ig,ic]) * HX[ig,ic] )
-        end
+    for ist = 1:Nstates
+        evals[ist] = real( dot( X[:,ist], HX[:,ist] ) )
     end
 
     # Calculate residuals
-    for ic = 1:Nstates
+    for ist = 1:Nstates
         for ig = 1:Nbasis
-            R[ig,ic] = evals[ic]*X[ig,ic] - HX[ig,ic]
+            R[ig,ist] = evals[ist]*X[ig,ist] - HX[ig,ist]
         end
-    end
-
-    for ic = 1:Nstates
-        res[ic] = 0.0
-        for ig = 1:Nbasis
-            res[ic] = res[ic] + real( R[ig,ic] * conj(R[ig,ic]) )
-        end
-        res[ic] = sqrt( res[ic] )
+        res[ist] = sqrt( dot( R[:,ist], R[:,ist] ) )
     end
 
     EPS = eps()
 
     set1 = 1:Nstates
     set2 = Nstates+1:2*Nstates
-
-    sum_evals = sum(evals)
-    sum_evals_old = sum_evals
 
     evals_old = copy(evals)
 
@@ -65,6 +61,8 @@ function diag_davidson( Ham::Hamiltonian, X0::Array{ComplexF64,2};
         for ic = 1:Nstates
             if EPS < res[ic]
                 res_norm[ic] = 1.0/res[ic]
+            else
+                println("res[ic] is too small")
             end
             for ig = 1:Nbasis
                 R[ig,ic] = res_norm[ic] * R[ig,ic]
@@ -101,43 +99,35 @@ function diag_davidson( Ham::Hamiltonian, X0::Array{ComplexF64,2};
 
         evals = λ_red[1:Nstates]
 
-        devals = abs.(evals - evals_old)
+        devals = abs.( evals - evals_old )
+        nconv = length( findall( devals .< tol ) )
 
         X  = X  * X_red[set1,set1] + R  * X_red[set2,set1]
         HX = HX * X_red[set1,set1] + HR * X_red[set2,set1]
 
         # Calculate residuals
-        for ic = 1:Nstates
+        for ist = 1:Nstates
             for ig = 1:Nbasis
-                R[ig,ic] = evals[ic]*X[ig,ic] - HX[ig,ic]
+                R[ig,ist] = evals[ist]*X[ig,ist] - HX[ig,ist]
             end
+            res[ist] = sqrt( dot( R[:,ist], R[:,ist] ) )
         end
-
-        for ic = 1:Nstates
-            res[ic] = 0.0
-            for ig = 1:Nbasis
-                res[ic] = res[ic] + real( R[ig,ic] * conj(R[ig,ic]) )
-            end
-            res[ic] = sqrt( res[ic] )
-        end
-        
-        sum_evals = sum(evals)
-        diffSum = abs(sum_evals - sum_evals_old)/Nstates
+            
         if verbose
             @printf("\n")
-            for j = 1:Nstates
-                @printf("eigval[%2d] = %18.10f, devals = %18.10e\n", j, evals[j], devals[j] )
+            for ist = 1:Nstates
+                @printf("evals[%d] = %18.10f, devals = %18.10e\n", ist, evals[ist], devals[ist] )
             end
-            @printf("iter %d tol_avg = %18.10e\n", iter, abs(diffSum))
+            @printf("iter %d nconv = %d\n", iter, nconv)
         end
-        if diffSum < tol_avg
+        if nconv >= Nstates_conv
             IS_CONVERGED = true
             if verbose || verbose_last
-                @printf("Davidson convergence: tol_avg in iter = %d\n", iter)
+                @printf("Davidson convergence: Nstates_conv in iter = %d\n", iter)
             end
             break
         end
-        sum_evals_old = sum_evals
+
         evals_old = copy(evals)
     end
 
@@ -145,12 +135,12 @@ function diag_davidson( Ham::Hamiltonian, X0::Array{ComplexF64,2};
         @printf("\nWARNING: diag_davidson is not converged after %d iterations\n", NiterMax)
     end
 
-    if verbose_last
-        for j = 1:Nstates
-            @printf("eigval[%2d] = %18.10f, devals = %18.10e\n", j, evals[j], devals[j] )
+    if verbose_last || verbose
+        @printf("\nEigenvalues from diag_davidson:\n\n")
+        for ist = 1:Nstates
+            @printf("evals[%d] = %18.10f, devals = %18.10e\n", ist, evals[ist], devals[ist] )
         end
     end
-
 
     return evals, X
 
