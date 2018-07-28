@@ -59,35 +59,36 @@ function alt1_KS_solve_SCF!( Ham::Hamiltonian ;
 
     for iter = 1:NiterMax
 
+        # determine convergence criteria for diagonalization
+        if iter == 1
+            ethr = 0.1
+        elseif iter == 2
+            ethr = 0.01
+        else
+            ethr = ethr/5.0
+            ethr = max( ethr, ETHR_EVALS_LAST )
+        end
+
         if update_psi == "LOBPCG"
             evals, psi =
-            diag_LOBPCG( Ham, psi, verbose=false, verbose_last=false,
-                             Nstates_conv = Nstates_occ )
+            diag_LOBPCG( Ham, psi, tol=ethr, verbose=false, verbose_last=false,
+                         Nstates_conv = Nstates_occ )
 
         elseif update_psi == "davidson"
             evals, psi =
-            diag_davidson( Ham, psi )
+            diag_davidson( Ham, psi, tol=ethr, verbose=false, verbose_last=false,
+                           Nstates_conv = Nstates_occ )
 
         elseif update_psi == "PCG"
-            
-            # determined convergence criteria for diagonalization
-            if iter == 1
-                ethr = 0.1
-            elseif iter == 2
-                ethr = 0.01
-            else
-                ethr = ethr/5.0
-                ethr = max( ethr, ETHR_EVALS_LAST )
-            end
-
             evals, psi =
-            diag_Emin_PCG( Ham, psi, TOL_EBANDS=ethr, verbose=false )
+            diag_Emin_PCG( Ham, psi, tol=ethr, verbose=false, verbose_last=false,
+                           Nstates_conv = Nstates_occ )
 
         elseif update_psi == "CheFSI"
             
             ub, lb = get_ub_lb_lanczos( Ham, Nstates*2 )
             psi = chebyfilt( Ham, psi, cheby_degree, lb, ub)
-            psi = ortho_gram_schmidt( psi )
+            psi = ortho_sqrt( psi )
 
         else
 
