@@ -6,7 +6,7 @@ Based on code by Knyazev.
 
 TODO: Add references
 """
-function diag_lobpcg( Ham::Hamiltonian, X0::Array{ComplexF64,2};
+function diag_LOBPCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
                       tol=1e-6, NiterMax=200, verbose=false,
                       verbose_last=false, Nstates_conv=0 )
 

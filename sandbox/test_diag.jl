@@ -52,7 +52,7 @@ function test_01()
     Nstates = Ham.electrons.Nstates
     psi = ortho_sqrt( rand(ComplexF64,Ngwx,Nstates) )
 
-    #evals, psi = diag_lobpcg(Ham, psi, verbose=true, Nstates_conv=1)
+    #evals, psi = diag_LOBPCG(Ham, psi, verbose=true, Nstates_conv=1)
     #evals, psi = diag_davidson(Ham, psi, verbose=true)
     evals, psi = diag_Emin_PCG(Ham, psi, verbose=true, NiterMax=400)
 
@@ -92,7 +92,7 @@ function test_02( diag_method::String )
     psi = ortho_sqrt( rand(ComplexF64,Ngwx,Nstates) )
 
     if diag_method == "LOBPCG"
-        evals, psi = diag_lobpcg(Ham, psi, verbose=true, Nstates_conv=1)
+        evals, psi = diag_LOBPCG(Ham, psi, verbose=true, Nstates_conv=1)
     elseif diag_method == "davidson"
         evals, psi = diag_davidson(Ham, psi, verbose=true)
     elseif diag_method == "PCG"

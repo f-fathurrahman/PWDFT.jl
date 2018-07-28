@@ -154,10 +154,10 @@ export calc_grad
 #
 # Diagonalization methods
 #
-include("diag_lobpcg.jl")
+include("diag_LOBPCG.jl")
 include("diag_Emin_PCG.jl")
 include("diag_davidson.jl")
-export diag_lobpcg,
+export diag_LOBPCG,
        diag_Emin_PCG,
        diag_davidson
 

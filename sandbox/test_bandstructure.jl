@@ -94,7 +94,7 @@ function test_empty_lattice(lattice::String, band_file::String)
         @printf("kpts = [%f,%f,%f]\n", k[1,ik], k[2,ik], k[3,ik])
         
         #evals[:,ikspin], psiks[ikspin] =
-        #diag_lobpcg( Ham, psiks[ikspin], verbose_last=true )
+        #diag_LOBPCG( Ham, psiks[ikspin], verbose_last=true )
         
         #evals[:,ikspin], psiks[ikspin] =
         #diag_davidson( Ham, psiks[ikspin], verbose_last=true )
@@ -200,7 +200,7 @@ function test_Si_fcc()
         @printf("\nispin = %d, ik = %d, ikspin=%d, Ngw = %d\n", ispin, ik, ikspin, Ngw[ik])
         @printf("kpts = [%f,%f,%f]\n", k[1,ik], k[2,ik], k[3,ik])
         #evals[:,ikspin], psiks[ikspin] =
-        #diag_lobpcg( Ham, psiks[ikspin], verbose_last=true )
+        #diag_LOBPCG( Ham, psiks[ikspin], verbose_last=true )
         evals[:,ikspin], psiks[ikspin] =
         diag_davidson( Ham, psiks[ikspin], verbose=true )
 
@@ -295,7 +295,7 @@ function test_Cu_fcc()
         @printf("\nispin = %d, ik = %d, ikspin=%d, Ngw = %d\n", ispin, ik, ikspin, Ngw[ik])
         @printf("kpts = [%f,%f,%f]\n", k[1,ik], k[2,ik], k[3,ik])
         evals[:,ikspin], psiks[ikspin] =
-        diag_lobpcg( Ham, psiks[ikspin], verbose_last=true )
+        diag_LOBPCG( Ham, psiks[ikspin], verbose_last=true )
         #evals[:,ikspin], psiks[ikspin] =
         #diag_davidson( Ham, psiks[ikspin], verbose_last=true )
     end

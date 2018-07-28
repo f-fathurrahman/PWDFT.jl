@@ -61,7 +61,7 @@ function alt1_KS_solve_SCF!( Ham::Hamiltonian ;
 
         if update_psi == "LOBPCG"
             evals, psi =
-            diag_lobpcg( Ham, psi, verbose=false, verbose_last=false,
+            diag_LOBPCG( Ham, psi, verbose=false, verbose_last=false,
                              Nstates_conv = Nstates_occ )
 
         elseif update_psi == "davidson"

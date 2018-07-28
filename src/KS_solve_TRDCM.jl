@@ -52,7 +52,7 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
         Ham.ispin = ispin
         ikspin = ik + (ispin - 1)*Nkpt
         evals[:,ikspin], psiks[ikspin] =
-        diag_lobpcg( Ham, psiks[ikspin], verbose_last=false, NiterMax=10 )
+        diag_LOBPCG( Ham, psiks[ikspin], verbose_last=false, NiterMax=10 )
     end
     end
 

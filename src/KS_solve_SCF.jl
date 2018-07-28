@@ -105,7 +105,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
                 ikspin = ik + (ispin - 1)*Nkpt
                 #
                 evals[:,ikspin], psiks[ikspin] =
-                diag_lobpcg( Ham, psiks[ikspin], verbose=false, verbose_last=false,
+                diag_LOBPCG( Ham, psiks[ikspin], verbose=false, verbose_last=false,
                              Nstates_conv = Nstates_occ )
                 #
             end
