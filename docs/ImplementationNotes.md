@@ -51,16 +51,59 @@ two arguments:
 
 ## Plane wave basis
 
-G-vectors
-G-vectorsW
+Plane wave basis is described by type `PWGrid`. This type is defined in file `PWGrid.jl`.
+It has the following fields:
 
-## Wavefunctions
+- `ecutwfc::Float64`: cutoff for wave function expansion
+
+- `ecutrho::Float64`: cutoff for electron density expansion, for norm-converving
+  pseudopotential: `ecutrho = 4*ecutwfc`.
+
+- `Ns::Tuple{Int64,Int64,Int64}`: parameters defining real-space grid points.
+
+- `LatVecs::Array{Float64,2}`: lattice vectors of unit cell
+
+- `RecVecs::Array{Float64,2}`: reciprocal lattice vectors
+
+- `Ω::Float64`: the volume of real-space unit cell
+
+- `r::Array{Float64,2}`: real-space grid points
+
+- `gvec::GVectors`: an instace of `Gvectors`: for potentials and density expansion
+
+- `gvecw::GVectorsW`: an instace of `GvectorsW`, for wave function expansion
+
+- `planfw::FFTW.cFFTWPlan{Complex{Float64},-1,false,3}`: FFTW forward plan
+
+- `planbw::AbstractFFTs.ScaledPlan{Complex{Float64},FFTW.cFFTWPlan{Complex{Float64},1,false,3- Float64}`: FFTW backward plan
+
+The following constructor can be used to create an instance of `PWGrid`:
+```julia
+function PWGrid( ecutwfc::Float64,
+                 LatVecs::Array{Float64,2};
+                 kpoints=nothing )
+```
+
+### G-vectors
+
+G-vectors are described by type `GVectors`. It is defined in file `PWGrid.jl`.
+
+
+
+### G-vectorsW
+
+G-vectors for wave function expansion is described by type `GVectorsW`.
+
+
+## Wave functions
 
 Using `Array{ComplexF64,2}`.
 
 General wavefunction on kpoints
 
 ## Potentials
+
+## Pseudopotentials
 
 ## Energies
 
