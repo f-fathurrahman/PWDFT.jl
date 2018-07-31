@@ -8,9 +8,18 @@ using Random
 using FFTW
 
 # constants
-const Ry2eV = 13.6058         # Ry to eV
-const ANG2BOHR = 1.889725989  # angstrom to bohr
+
+# CODATA: https://physics.nist.gov/cgi-bin/cuu/Value?rydhcev
+const Ry2eV = 13.605693009  # Ry to eV
+
+# CODATA: https://physics.nist.gov/cgi-bin/cuu/Value?bohrrada0
+# 1/bohr
+const ANG2BOHR = 1.8897261254578281  # angstrom to bohr
+
 export Ry2eV, ANG2BOHR
+
+# Last accessed: 31st July 2018
+
 
 include("Atoms.jl")
 export Atoms, 
