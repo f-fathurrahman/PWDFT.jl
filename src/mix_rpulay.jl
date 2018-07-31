@@ -1,3 +1,11 @@
+"""
+An implementation of restarted Pulay mixing as described in
+
+  Phanisri P. Pratapa and Phanish Suryanarayana.
+  Restarted Pulay mixing for efficient and robust acceleration of
+  fixed-point iterations.
+  Chemical Physics Letters 635 (2015) 69–74.
+"""
 function mix_rpulay!( x, gx, beta, X, F, iter, MIXDIM, x_old, f_old )
 
     f = gx - x
@@ -14,7 +22,7 @@ function mix_rpulay!( x, gx, beta, X, F, iter, MIXDIM, x_old, f_old )
 # iter = 3, active_dim = 2
 # iter = 4, active_dim = 3
 # iter = 5, active_dim = 4
-# iter = 6, active_dim = 0, restart ?
+# iter = 6, active_dim = 0, restart
 
     active_dim = mod(iter-1,MIXDIM+1)
 
