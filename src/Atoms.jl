@@ -50,23 +50,36 @@ function println( a::Atoms )
 
 end
 
-# dummy atoms, contains only one atom
-function Atoms()
-    Natoms = 1
-    Nspecies = 1
-    positions = zeros(3,Natoms)
-    atm2species = [1]
-    atsymbs = ["X"]
-    SpeciesSymbols = ["X"]  # unique symbols
-    LatVecs = 10.0*[1.0 0.0 0.0; 0.0 1.0 0.0; 0.0 0.0 1.0]
-    Zvals = zeros(Nspecies)
-    return Atoms( Natoms, Nspecies, positions, atm2species, atsymbs, SpeciesSymbols, LatVecs, Zvals )
+
+function Atoms( ;xyz_file="", xyz_string="",
+    in_bohr=false, LatVecs=10*[1.0 0.0 0.0; 0.0 1.0 0.0; 0.0 0.0 1.0] )
+
+    if xyz_file != ""
+        atoms = init_atoms_xyz(xyz_file, in_bohr=in_bohr)
+        atoms.LatVecs = LatVecs
+        return atoms
+    elseif xyz_string != ""
+        atoms = init_atoms_xyz_string(xyz_string, in_bohr=in_bohr)
+        atoms.LatVecs = LatVecs
+        return atoms
+    else
+        # No arguments are assumed to be provided
+        # dummy `atoms`, contains only one atom is returned
+        Natoms = 1
+        Nspecies = 1
+        positions = zeros(3,Natoms)
+        atm2species = [1]
+        atsymbs = ["X"]
+        SpeciesSymbols = ["X"]  # unique symbols
+        Zvals = zeros(Nspecies)
+        return Atoms( Natoms, Nspecies, positions, atm2species, atsymbs, SpeciesSymbols, LatVecs, Zvals )
+    end
+
 end
 
 
-
 function init_atoms_xyz_ext( filexyz; in_bohr=false, verbose=false )
-
+    # extended XYZ format used in ASE
 end
 
 

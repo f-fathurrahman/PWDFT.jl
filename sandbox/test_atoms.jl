@@ -1,6 +1,6 @@
 using PWDFT
 
-function test_main()
+function test01()
     atoms = init_atoms_xyz("../structures/CuSO4.xyz", verbose=true)
     println(atoms)
     
@@ -8,4 +8,10 @@ function test_main()
     println(dummy_atoms)
 end
 
-test_main()
+function test02()
+    atoms = Atoms(xyz_file="../structures/CuSO4.xyz")
+    println(atoms)
+end
+
+
+test02()
