@@ -5,9 +5,9 @@ as initial guess for eigenvectors using preconditioned CG method.
 **IMPORTANT** `X0` must be orthonormalized before.
 """
 function diag_Emin_PCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
-                        tol=1e-6, NiterMax=200, verbose=false,
+                        tol=1e-5, NiterMax=100, verbose=false,
                         verbose_last=false, Nstates_conv=0,
-                        tol_ebands=1e-6,
+                        tol_ebands=1e-4,
                         α_t=3e-5, I_CG_BETA = 2 )
 
     ik = Ham.ik

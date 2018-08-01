@@ -7,7 +7,7 @@ of Knyazev.
 **IMPORTANT** `X0` must be orthonormalized before.
 """
 function diag_LOBPCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
-                      tol=1e-6, NiterMax=200, verbose=false,
+                      tol=1e-5, NiterMax=100, verbose=false,
                       verbose_last=false, Nstates_conv=0 )
 
     pw = Ham.pw
