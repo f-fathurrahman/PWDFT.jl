@@ -22,7 +22,7 @@ function main( ; method="SCF" )
     # Solve the KS problem
     #
     if method == "SCF"
-        KS_solve_SCF!( Ham, β=0.1, update_psi="LOBPCG", mix_method="anderson" )
+        KS_solve_SCF!( Ham, betamix=0.1, update_psi="LOBPCG", mix_method="anderson" )
 
     elseif method == "Emin"
         KS_solve_Emin_PCG!( Ham, verbose=true )

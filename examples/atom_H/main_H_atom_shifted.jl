@@ -33,7 +33,7 @@ function do_pos( newpos::Array{Float64,1}, method::String )
         KS_solve_SCF!( Ham, mix_method="anderson", ETOT_CONV_THR=1e-6 )
 
     elseif method == "CheFSI"
-        KS_solve_SCF!( Ham, update_psi="CheFSI", β=0.5 )
+        KS_solve_SCF!( Ham, update_psi="CheFSI", betamix=0.5 )
 
     elseif method == "Emin"
         KS_solve_Emin_PCG!( Ham, verbose=true )

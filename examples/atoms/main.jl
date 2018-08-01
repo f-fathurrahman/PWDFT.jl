@@ -43,7 +43,7 @@ function do_run( psp_filename; ecutwfc_Ry=30.0 )
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( atoms )
 
-    #KS_solve_SCF!( Ham, mix_method="simple", β=0.1 )
+    #KS_solve_SCF!( Ham, mix_method="simple", betamix=0.1 )
     KS_solve_Emin_PCG!( Ham, I_CG_BETA=4 )
 
     Nstates = Ham.electrons.Nstates

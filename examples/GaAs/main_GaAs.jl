@@ -29,7 +29,7 @@ function main( ; method="SCF" )
         Ham.electrons = Electrons( atoms, Ham.pspots, Nstates=5,
                                    Nkpt=Ham.pw.gvecw.kpoints.Nkpt, Nstates_empty=1 )
         println(Ham.electrons)
-        KS_solve_SCF!( Ham, mix_method="anderson", β=0.2 )
+        KS_solve_SCF!( Ham, mix_method="anderson", betamix=0.2 )
 
     elseif method == "Emin"
         KS_solve_Emin_PCG!( Ham, verbose=true )

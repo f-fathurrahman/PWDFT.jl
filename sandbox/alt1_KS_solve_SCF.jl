@@ -1,6 +1,6 @@
 function alt1_KS_solve_SCF!( Ham::Hamiltonian ;
                         startingwfc=nothing,
-                        β = 0.7, NiterMax=100, verbose=false,
+                        betamix = 0.7, NiterMax=100, verbose=false,
                         check_rhoe_after_mix=true,
                         update_psi="LOBPCG", cheby_degree=8,
                         ETOT_CONV_THR=1e-6 )
@@ -52,7 +52,7 @@ function alt1_KS_solve_SCF!( Ham::Hamiltonian ;
     @printf("\n")
     @printf("Self-consistent iteration begins ...\n")
     @printf("\n")
-    @printf("Density mixing with beta = %10.5f\n", β)
+    @printf("Density mixing with beta = %10.5f\n", betamix)
     @printf("\n")
 
     CONVERGED = 0
@@ -98,10 +98,10 @@ function alt1_KS_solve_SCF!( Ham::Hamiltonian ;
 
         Rhoe_new = calc_rhoe( Ham, psi )
         
-        #Rhoe[:] = β*Rhoe_new + (1-β)*Rhoe
+        #Rhoe[:] = betamix*Rhoe_new + (1-betamix)*Rhoe
         
-        #Rhoe[:,:] = mix_anderson!( Nspin, Rhoe, Rhoe_new, β, df, dv, iter, MIXDIM )
-        Rhoe = mix_rpulay!( Rhoe, Rhoe_new, β, XX, FF, iter, MIXDIM, x_old, f_old )
+        #Rhoe[:,:] = mix_anderson!( Nspin, Rhoe, Rhoe_new, betamix, df, dv, iter, MIXDIM )
+        Rhoe = mix_rpulay!( Rhoe, Rhoe_new, betamix, XX, FF, iter, MIXDIM, x_old, f_old )
 
         for rho in Rhoe
             if rho < eps()

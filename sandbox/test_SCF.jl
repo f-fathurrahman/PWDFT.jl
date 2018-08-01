@@ -111,7 +111,7 @@ function test_main()
     Ham = create_Hamiltonian_O2()
 
     # Solve the KS problem
-    @time alt1_KS_solve_SCF!( Ham, ETOT_CONV_THR=1e-6, NiterMax=50, β=0.5, update_psi="davidson" )
+    @time alt1_KS_solve_SCF!( Ham, ETOT_CONV_THR=1e-6, NiterMax=50, betamix=0.5, update_psi="davidson" )
     
     Nstates = Ham.electrons.Nstates
     ebands = Ham.electrons.ebands

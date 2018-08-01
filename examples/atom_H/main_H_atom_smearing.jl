@@ -22,7 +22,7 @@ function main()
 
     KS_solve_SCF_smearing!(
         Ham, mix_method="simple", 
-        update_psi="PCG", β=0.1, ETOT_CONV_THR=1e-6
+        update_psi="PCG", betamix=0.1, ETOT_CONV_THR=1e-6
     )
 
     Nstates = Ham.electrons.Nstates

@@ -242,7 +242,7 @@ function test_Cu_fcc()
     #
     # Solve the KS problem
     #
-    KS_solve_SCF_smearing!( Ham, β=0.2, mix_method="anderson" )
+    KS_solve_SCF_smearing!( Ham, betamix=0.2, mix_method="anderson" )
 
 
     #

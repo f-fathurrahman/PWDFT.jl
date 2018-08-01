@@ -22,7 +22,7 @@ function main()
     #
     # Solve the KS problem
     #
-    KS_solve_SCF_smearing!( Ham, β=0.2, mix_method="anderson", NiterMax=50 )
+    KS_solve_SCF_smearing!( Ham, betamix=0.2, mix_method="anderson", NiterMax=50 )
 
     println("\nTotal energy components")
     println(Ham.energies)

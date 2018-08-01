@@ -14,7 +14,7 @@ function main( ; method="SCF" )
     Ham.energies.NN = calc_E_NN( atoms )
 
     if method == "SCF"
-        KS_solve_SCF!( Ham, mix_method="anderson", β=0.2 )
+        KS_solve_SCF!( Ham, mix_method="anderson", betamix=0.2 )
 
     elseif method == "Emin"
         KS_solve_Emin_PCG!( Ham )
