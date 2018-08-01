@@ -57,14 +57,22 @@ Ham.energies.NN = calc_E_NN( atoms )
 - solve Kohn-Sham equations using any of the following methods
 
 ```julia
-KS_solve_SCF!( Ham, β=0.2 )  # using SCF (self-consistent field) method
+KS_solve_SCF!( Ham, betamix=0.2 )  # using SCF (self-consistent field) method
 # or
 KS_solve_Emin_PCG!( Ham ) # direct minimization using preconditioned conjugate gradient
 ```
 
+## Band structure calculations
+
+![Band structure of silicon (fcc)](images/bands_Si_fcc.svg)
+
+Please see [bandstructure_Si_fcc.jl](sandbox/bandstructure_Si_fcc.jl) as
+an example of how this can be obtained.
+
+
 ## Implementation notes
 
-Please see [this](docs/ImplementationNotes.md).
+Please see [this](docs/ImplementationNotes.md) (work in progress).
 
 ## Some references
 
