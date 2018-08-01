@@ -1,3 +1,12 @@
+"""
+Simple preconditioner based on kinetic energy.
+
+- `ik`: index of kpoints
+
+- `pw`: an instance of `PWGrid`
+
+- `psi`: wave function
+"""
 function Kprec( ik::Int64, pw::PWGrid, psi::Array{ComplexF64,2} )
 
     Ngw_ik  = size(psi)[1]
@@ -20,7 +29,9 @@ function Kprec( ik::Int64, pw::PWGrid, psi::Array{ComplexF64,2} )
     return Kpsi
 end
 
-# For comparison with non-preconditioned
+"""
+No instance of `pwgrid` is passed, no preconditioning is used.
+"""
 function Kprec(psi)
     return psi
 end
