@@ -1,6 +1,6 @@
 function KS_solve_SCF_smearing!( Ham::Hamiltonian ;
                        startingwfc=nothing, savewfc=false,
-                       β = 0.5, NiterMax=100, verbose=false,
+                       betamix = 0.5, NiterMax=100, verbose=false,
                        check_rhoe_after_mix=false,
                        update_psi="LOBPCG", cheby_degree=8,
                        mix_method="simple",
@@ -98,7 +98,7 @@ function KS_solve_SCF_smearing!( Ham::Hamiltonian ;
     else
         @printf("Using simple mixing\n")
     end
-    @printf("Density mixing with β = %10.5f\n", β)
+    @printf("Density mixing with betamix = %10.5f\n", betamix)
     @printf("Smearing = %f\n", kT)
     @printf("\n")
 
@@ -177,12 +177,12 @@ function KS_solve_SCF_smearing!( Ham::Hamiltonian ;
 
         if mix_method == "simple"
             for ispin = 1:Nspin
-                Rhoe[:,ispin] = β*Rhoe_new[:,ispin] + (1-β)*Rhoe[:,ispin]
+                Rhoe[:,ispin] = betamix*Rhoe_new[:,ispin] + (1-betamix)*Rhoe[:,ispin]
             end
         elseif mix_method == "anderson"
             # FIXME: df and dv is not modified when we call it by df[:,:] or dv[:,:]
-            #Rhoe[:,:] = andersonmix!( Rhoe, Rhoe_new, β, df, dv, iter, MIXDIM )
-            Rhoe[:,:] = mix_anderson!( Nspin, Rhoe, Rhoe_new, β, df, dv, iter, MIXDIM )
+            #Rhoe[:,:] = andersonmix!( Rhoe, Rhoe_new, betamix, df, dv, iter, MIXDIM )
+            Rhoe[:,:] = mix_anderson!( Nspin, Rhoe, Rhoe_new, betamix, df, dv, iter, MIXDIM )
         else
             @printf("ERROR: Unknown mix_method = %s\n", mix_method)
             exit()
@@ -209,7 +209,7 @@ function KS_solve_SCF_smearing!( Ham::Hamiltonian ;
 
         # Calculate energies
         Ham.energies = calc_energies( Ham, psiks )
-        Etot = Ham.energies.Total + Entropy
+        Etot = sum(Ham.energies) + Entropy
         diffE = abs( Etot - Etot_old )
 
         if Nspin == 1
