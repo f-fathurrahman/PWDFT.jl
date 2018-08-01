@@ -1,3 +1,7 @@
+"""
+The type for representing an atomic-scale structures such as molecules
+and solids.
+"""
 mutable struct Atoms
     Natoms::Int64
     Nspecies::Int64
@@ -9,8 +13,129 @@ mutable struct Atoms
     Zvals::Array{Float64,1}   # unique
 end
 
+function Atoms( ;xyz_file="", xyz_string="",
+    in_bohr=false, LatVecs=10*[1.0 0.0 0.0; 0.0 1.0 0.0; 0.0 0.0 1.0] )
+
+    if xyz_file != ""
+        atoms = init_atoms_xyz(xyz_file, in_bohr=in_bohr)
+        atoms.LatVecs = LatVecs
+        return atoms
+    elseif xyz_string != ""
+        atoms = init_atoms_xyz_string(xyz_string, in_bohr=in_bohr)
+        atoms.LatVecs = LatVecs
+        return atoms
+    else
+        # No arguments are assumed to be provided
+        # dummy `atoms`, contains only one atom is returned
+        Natoms = 1
+        Nspecies = 1
+        positions = zeros(3,Natoms)
+        atm2species = [1]
+        atsymbs = ["X"]
+        SpeciesSymbols = ["X"]  # unique symbols
+        Zvals = zeros(Nspecies)
+        return Atoms( Natoms, Nspecies, positions, atm2species, atsymbs, SpeciesSymbols, LatVecs, Zvals )
+    end
+
+end
+
+
+function init_atoms_xyz_ext( filexyz; in_bohr=false, verbose=false )
+    # extended XYZ format used in ASE
+end
+
+
+"""
+Creates an instance of `Atoms` from a simple xyz file.
+"""
+function init_atoms_xyz(xyz_file; in_bohr=false, verbose=false)
+    f = open(xyz_file, "r")
+    l = readline(f)
+    Natoms = parse(Int64, l)
+    positions = zeros(3,Natoms)
+    atsymbs = Array{String}(undef,Natoms)
+    l = readline(f)
+    for ia = 1:Natoms
+        ll = split( readline(f) )
+        atsymbs[ia] = ll[1]
+        positions[1,ia] = parse( Float64, ll[2] )
+        positions[2,ia] = parse( Float64, ll[3] )
+        positions[3,ia] = parse( Float64, ll[4] )
+    end
+    close(f)
+
+    # convert from angstrom to bohr
+    if !in_bohr
+        if verbose
+            println("Coordinate in xyz file is assumed to be given in angstrom")
+            println("It will be converted to bohr")
+        end
+        positions[:,:] = positions[:,:] * ANG2BOHR
+    else
+        if verbose
+            println("Coordinate in xyz file is assumed to be given in bohr")
+        end
+    end
+
+    SpeciesSymbols = unique(atsymbs)
+    Nspecies = length(SpeciesSymbols)
+
+    # Mapping of atoms to species index
+    atm2species = get_atm2species( atsymbs, SpeciesSymbols )
+
+    LatVecs = 10.0*[1.0 0.0 0.0; 0.0 1.0 0.0; 0.0 0.0 1.0]
+    Zvals = zeros(Nspecies)
+    return Atoms(Natoms, Nspecies, positions, atm2species, atsymbs, SpeciesSymbols, LatVecs, Zvals )
+
+end
+
+"""
+Just like `init_atoms_xyz` but instead of file, the contents (of type String)
+are directly feed to the function.
+"""
+function init_atoms_xyz_string(str::String; in_bohr=false, verbose=false)
+    lines = split(str,"\n")
+    l = lines[1]
+    Natoms = parse(Int64, l)
+    positions = zeros(3,Natoms)
+    atsymbs = Array{String}(undef,Natoms)
+    #
+    for ia = 1:Natoms
+        ll = split( lines[2+ia] )
+        atsymbs[ia] = ll[1]
+        positions[1,ia] = parse( Float64, ll[2] )
+        positions[2,ia] = parse( Float64, ll[3] )
+        positions[3,ia] = parse( Float64, ll[4] )
+    end
+
+    # convert from angstrom to bohr
+    if !in_bohr
+        if verbose
+            println("Coordinate in xyz file is assumed to be given in angstrom")
+            println("It will be converted to bohr")
+        end
+        positions[:,:] = positions[:,:] * ANG2BOHR
+    else
+        if verbose
+            println("Coordinate in xyz file is assumed to be given in bohr")
+        end
+    end
+
+    SpeciesSymbols = unique(atsymbs)
+    Nspecies = length(SpeciesSymbols)
+
+    # Mapping of atoms to species index
+    atm2species = get_atm2species( atsymbs, SpeciesSymbols )
+
+    LatVecs = zeros(3,3)
+    Zvals = zeros(Nspecies)
+    return Atoms(Natoms, Nspecies, positions, atm2species, atsymbs, SpeciesSymbols, LatVecs, Zvals )
+    
+end
+
 # Overload println for Atoms
 import Base: println
+
 function println( a::Atoms )
     @printf("\n")
     @printf("                                     -----\n")
@@ -50,142 +175,10 @@ function println( a::Atoms )
 
 end
 
-
-function Atoms( ;xyz_file="", xyz_string="",
-    in_bohr=false, LatVecs=10*[1.0 0.0 0.0; 0.0 1.0 0.0; 0.0 0.0 1.0] )
-
-    if xyz_file != ""
-        atoms = init_atoms_xyz(xyz_file, in_bohr=in_bohr)
-        atoms.LatVecs = LatVecs
-        return atoms
-    elseif xyz_string != ""
-        atoms = init_atoms_xyz_string(xyz_string, in_bohr=in_bohr)
-        atoms.LatVecs = LatVecs
-        return atoms
-    else
-        # No arguments are assumed to be provided
-        # dummy `atoms`, contains only one atom is returned
-        Natoms = 1
-        Nspecies = 1
-        positions = zeros(3,Natoms)
-        atm2species = [1]
-        atsymbs = ["X"]
-        SpeciesSymbols = ["X"]  # unique symbols
-        Zvals = zeros(Nspecies)
-        return Atoms( Natoms, Nspecies, positions, atm2species, atsymbs, SpeciesSymbols, LatVecs, Zvals )
-    end
-
-end
-
-
-function init_atoms_xyz_ext( filexyz; in_bohr=false, verbose=false )
-    # extended XYZ format used in ASE
-end
-
-
 """
-Initialize from a simple xyz file
+Returns an array of atomic numbers (with size `Nspecies`) given an instance
+of `Atoms`.
 """
-function init_atoms_xyz(filexyz; in_bohr=false, verbose=false)
-    f = open(filexyz, "r")
-    l = readline(f)
-    Natoms = parse(Int64, l)
-    positions = zeros(3,Natoms)
-    atsymbs = Array{String}(undef,Natoms)
-    l = readline(f)
-    for ia = 1:Natoms
-        ll = split( readline(f) )
-        atsymbs[ia] = ll[1]
-        positions[1,ia] = parse( Float64, ll[2] )
-        positions[2,ia] = parse( Float64, ll[3] )
-        positions[3,ia] = parse( Float64, ll[4] )
-    end
-    close(f)
-
-    # convert from angstrom to bohr
-    if !in_bohr
-        if verbose
-            println("Coordinate in xyz file is assumed to be given in angstrom")
-            println("It will be converted to bohr")
-        end
-        positions[:,:] = positions[:,:] * ANG2BOHR
-    else
-        if verbose
-            println("Coordinate in xyz file is assumed to be given in bohr")
-        end
-    end
-
-    # Determine number of species
-	#Nspecies = get_Nspecies( atsymbs )
-
-    # Determine unique species symbols
-	#SpeciesSymbols = get_SpeciesSymbols( Nspecies, atsymbs )
-
-    SpeciesSymbols = unique(atsymbs)
-    Nspecies = length(SpeciesSymbols)
-
-    # Mapping of atoms to species index
-    atm2species = get_atm2species( atsymbs, SpeciesSymbols )
-
-    LatVecs = 10.0*[1.0 0.0 0.0; 0.0 1.0 0.0; 0.0 0.0 1.0]
-    Zvals = zeros(Nspecies)
-    return Atoms(Natoms, Nspecies, positions, atm2species, atsymbs, SpeciesSymbols, LatVecs, Zvals )
-
-    #ALLOCATE( AtomicMasses(Nspecies) )
-    #AtomicMasses(:) = 0.d0 ! FIXME: Use internal database to set this
-
-end
-
-"""
-Just like `init_atoms_xyz` but instead of file, the contents are directly feed
-to the function.
-"""
-function init_atoms_xyz_string(str::String; in_bohr=false, verbose=false)
-    lines = split(str,"\n")
-    l = lines[1]
-    Natoms = parse(Int64, l)
-    positions = zeros(3,Natoms)
-    atsymbs = Array{String}(undef,Natoms)
-    #
-    for ia = 1:Natoms
-        ll = split( lines[2+ia] )
-        atsymbs[ia] = ll[1]
-        positions[1,ia] = parse( Float64, ll[2] )
-        positions[2,ia] = parse( Float64, ll[3] )
-        positions[3,ia] = parse( Float64, ll[4] )
-    end
-
-    # convert from angstrom to bohr
-    if !in_bohr
-        if verbose
-            println("Coordinate in xyz file is assumed to be given in angstrom")
-            println("It will be converted to bohr")
-        end
-        positions[:,:] = positions[:,:] * ANG2BOHR
-    else
-        if verbose
-            println("Coordinate in xyz file is assumed to be given in bohr")
-        end
-    end
-
-    # Determine number of species
-	#Nspecies = get_Nspecies( atsymbs )
-
-    # Determine unique species symbols
-	#SpeciesSymbols = get_SpeciesSymbols( Nspecies, atsymbs )
-
-    SpeciesSymbols = unique(atsymbs)
-    Nspecies = length(SpeciesSymbols)
-
-    # Mapping of atoms to species index
-    atm2species = get_atm2species( atsymbs, SpeciesSymbols )
-
-    LatVecs = zeros(3,3)
-    Zvals = zeros(Nspecies)
-    return Atoms(Natoms, Nspecies, positions, atm2species, atsymbs, SpeciesSymbols, LatVecs, Zvals )
-    
-end
-
 function get_Zatoms( atoms::Atoms )
 
     ZATOMS = Dict(
@@ -223,9 +216,58 @@ function get_Zatoms( atoms::Atoms )
     "Ge" => 32,
     "As" => 33,
     "Se" => 34,
-    "Br" => 34,
-    "Kr" => 36, )
-
+    "Br" => 35,
+    "Kr" => 36,
+    "Rb" => 37,
+    "Sr" => 38,
+    "Y"  => 39,
+    "Zr" => 40,
+    "Nb" => 41,
+    "Mo" => 42,
+    "Tc" => 43,
+    "Ru" => 44,
+    "Rh" => 45,
+    "Pd" => 46,
+    "Ag" => 47,
+    "Cd" => 48,
+    "In" => 49,
+    "Sn" => 50,
+    "Sb" => 51,
+    "Te" => 52,
+    "I"  => 53,
+    "Xe" => 54,
+    "Cs" => 55,
+    "Ba" => 56,
+    "La" => 57,
+    "Ce" => 58,
+    "Pr" => 59,
+    "Nd" => 60,
+    "Pm" => 61,
+    "Sm" => 62,
+    "Eu" => 63,
+    "Gd" => 64,
+    "Tb" => 65,
+    "Dy" => 66,
+    "Ho" => 67,
+    "Er" => 68,
+    "Tm" => 69,
+    "Yb" => 70,
+    "Lu" => 71,
+    "Hf" => 72,
+    "Ta" => 73,
+    "W"  => 74,
+    "Re" => 75,
+    "Os" => 76,
+    "Ir" => 77,
+    "Pt" => 78,
+    "Au" => 79,
+    "Hg" => 80,
+    "Tl" => 81,
+    "Pb" => 82,
+    "Bi" => 83,
+    "Po" => 84,
+    "At" => 85,
+    "Rn" => 86,)
 
     Nspecies = atoms.Nspecies
     SpeciesSymbols = atoms.SpeciesSymbols
