@@ -60,7 +60,7 @@ function do_run( psp_filename; ecutwfc_Ry=30.0 )
     pspcore_ene = calc_PspCore_ene(atoms, Ham.pspots, Ham.pw.Ω)
     
     @printf("\nPspCore ene = %18.10e\n", pspcore_ene)
-    @printf("\nTotEne + PspCore = %18.10e\n", pspcore_ene + Ham.energies.Total)
+    @printf("\nTotEne + PspCore = %18.10e\n", pspcore_ene + sum(Ham.energies))
 
 end
 

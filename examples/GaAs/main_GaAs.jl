@@ -47,7 +47,7 @@ function main( ; method="SCF" )
     pspcore_ene = calc_PspCore_ene(atoms, Ham.pspots, Ham.pw.Ω)
     
     println("\nPspCore ene = ", pspcore_ene)
-    println("\nTotEne + PspCore = ", pspcore_ene + Ham.energies.Total)
+    println("\nTotEne + PspCore = ", pspcore_ene + sum(Ham.energies))
 
 
 end

@@ -42,7 +42,7 @@ function main( ; method="SCF" )
     println("PspCore ene = ", pspcore_ene)
 
     println("")
-    println("TotEne + PspCore = ", pspcore_ene + Ham.energies.Total)
+    println("TotEne + PspCore = ", pspcore_ene + sum(Ham.energies))
 
 end
 
