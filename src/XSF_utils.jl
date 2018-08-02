@@ -42,11 +42,20 @@ function write_xsf( filnam::String, LL::Array{Float64,2}, atpos::Array{Float64,2
     close(f)
 end
 
+function write_xsf_data3d_crystal(
+        filnam::String, atoms::Atoms, Ns::Tuple{Int64,Int64,Int64},
+        data3d::Array{Float64,1}; origin=zeros(3)
+    )
+    #
+    LL = atoms.LatVecs/ANG2BOHR
+    write_xsf_data3d_crystal( filnam, Ns, LL, data3d, origin=origin )
+end
 
 function write_xsf_data3d_crystal(
         filnam::String, Ns::Tuple{Int64,Int64,Int64}, LL::Array{Float64,2},
         data3d::Array{Float64,1};
-        center=zeros(3) )
+        origin=zeros(3)
+    )
     #
     f = open(filnam, "a")  # FIXME: What if filnam is not exist?
     #
@@ -54,7 +63,7 @@ function write_xsf_data3d_crystal(
     @printf(f, "made_by_ffr\n")
     @printf(f, "DATAGRID_3D_UNKNOWN\n")
     @printf(f, "%8d %8d %8d\n", Ns[1]+1, Ns[2]+1, Ns[3]+1 )
-    @printf(f, "%18.10f %18.10f %18.10f\n", center[1], center[2], center[3])
+    @printf(f, "%18.10f %18.10f %18.10f\n", origin[1], origin[2], origin[3])
     v1 = LL[:,1]
     v2 = LL[:,2]
     v3 = LL[:,3]
