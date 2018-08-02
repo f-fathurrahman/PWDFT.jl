@@ -97,6 +97,16 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
 
     for iter = 1:NiterMax
 
+        # determine convergence criteria for diagonalization
+        if iter == 1
+            ethr = 0.1
+        elseif iter == 2
+            ethr = 0.01
+        else
+            ethr = ethr/5.0
+            ethr = max( ethr, ETHR_EVALS_LAST )
+        end
+
         if update_psi == "LOBPCG"
             for ispin = 1:Nspin
             for ik = 1:Nkpt
@@ -111,17 +121,22 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
             end
             end
 
-        elseif update_psi == "PCG"
-            
-            # determined convergence criteria for diagonalization
-            if iter == 1
-                ethr = 0.1
-            elseif iter == 2
-                ethr = 0.01
-            else
-                ethr = ethr/5.0
-                ethr = max( ethr, ETHR_EVALS_LAST )
+
+        elseif update_psi == "davidson"
+            for ispin = 1:Nspin
+            for ik = 1:Nkpt
+                Ham.ik = ik
+                Ham.ispin = ispin
+                ikspin = ik + (ispin - 1)*Nkpt
+                #
+                evals[:,ikspin], psiks[ikspin] =
+                diag_davidson( Ham, psiks[ikspin], verbose=false, verbose_last=false,
+                             Nstates_conv = Nstates_occ )
+                #
             end
+            end
+
+        elseif update_psi == "PCG"
 
             for ispin = 1:Nspin
             for ik = 1:Nkpt
@@ -129,7 +144,8 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
                 Ham.ispin = ispin
                 ikspin = ik + (ispin - 1)*Nkpt
                 evals[:,ikspin], psiks[ikspin] =
-                diag_Emin_PCG( Ham, psiks[ikspin], TOL_EBANDS=ethr, verbose=false )
+                diag_davidson( Ham, psiks[ikspin], verbose=false, verbose_last=false,
+                               Nstates_conv = Nstates_occ )
             end
         end
 
@@ -142,14 +158,14 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
                 ikspin = ik + (ispin - 1)*Nkpt
                 ub, lb = get_ub_lb_lanczos( Ham, Nstates*2 )
                 psiks[ikspin] = chebyfilt( Ham, psiks[ikspin], cheby_degree, lb, ub)
-                psiks[ikspin] = ortho_gram_schmidt( psiks[ik] )
+                psiks[ikspin] = ortho_sqrt( psiks[ik] )
             end
             end
 
         else
 
             @printf("ERROR: Unknown method for update_psi = %s\n", update_psi)
-            exit()
+            error("STOPPED")
 
         end
 
@@ -172,11 +188,9 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
             exit()
         end
 
-        for ispin = 1:Nspin
-            for ip = 1:Npoints
-                if Rhoe[ip,ispin] < 1e-12
-                    Rhoe[ip,ispin] = 1e-12
-                end
+        for rho in Rhoe
+            if rho < eps()
+                rho = 0.0
             end
         end
 
