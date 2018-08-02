@@ -51,13 +51,11 @@ function do_calc()
     psiks = read_wfc(Ham)
 
     psi = psiks[1]
-    write_xsf( "TEMP_atoms.xsf", Ham.atoms )
 
     Nstates = Ham.electrons.Nstates
     Npoints = prod(Ham.pw.Ns)
 
     cpsi = zeros(ComplexF64, Npoints)
-    psiR = zeros(Float64, Npoints)
 
     ik = 1
     ist = 4
@@ -67,10 +65,17 @@ function do_calc()
     # Transform to real space
     idx = pw.gvecw.idx_gw2r[ik]
     cpsi[idx] = psi[:,ist]
-    psiR = real(G_to_R(pw, cpsi))
-    #psiR = sqrt(Npoints/pw.Ω)*psiR # normalize
+    psiR_real = real(G_to_R(pw, cpsi))
+    psiR_imag = imag(G_to_R(pw, cpsi))
     #
-    write_xsf_data3d_crystal( "TEMP_atoms.xsf", Ham.atoms, Ham.pw.Ns, psiR )
+    psiR_real = sqrt(Npoints/pw.Ω)*psiR_real # normalize
+    psiR_imag = sqrt(Npoints/pw.Ω)*psiR_imag # normalize
+    #
+    write_xsf( "TEMP_psi_real.xsf", Ham.atoms )
+    write_xsf_data3d_crystal( "TEMP_psi_real.xsf", Ham.atoms, Ham.pw.Ns, psiR_real )
+    #
+    write_xsf( "TEMP_psi_imag.xsf", Ham.atoms )
+    write_xsf_data3d_crystal( "TEMP_psi_imag.xsf", Ham.atoms, Ham.pw.Ns, psiR_imag )
 
 end
 
