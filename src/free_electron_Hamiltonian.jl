@@ -30,7 +30,7 @@ function free_electron_Hamiltonian(
     end
 
     Npoints = prod(pw.Ns)
-    Ω = pw.Ω
+    CellVolume = pw.CellVolume
     G2 = pw.gvec.G2
     Ng = pw.gvec.Ng
     idx_g2r = pw.gvec.idx_g2r

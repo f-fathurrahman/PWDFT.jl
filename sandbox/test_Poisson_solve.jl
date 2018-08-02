@@ -39,7 +39,7 @@ function test_main( ecutwfc_Ry::Float64 )
     println(pw)
     #
     Npoints = prod(pw.Ns)
-    Ω = pw.Ω
+    CellVolume = pw.CellVolume
     r = pw.r
     Ns = pw.Ns
     #
@@ -58,7 +58,7 @@ function test_main( ecutwfc_Ry::Float64 )
     #
     phiG = Poisson_solve( pw, rho )
     phi = real( G_to_R(pw, phiG) )
-    Ehartree = 0.5*dot( phi, rho ) * Ω/Npoints
+    Ehartree = 0.5*dot( phi, rho ) * CellVolume/Npoints
     #
     Uanal = ( (1/σ1 + 1/σ2)/2 - sqrt(2) / sqrt( σ1^2 + σ2^2 ) ) / sqrt(pi)
     @printf("Num, ana, diff = %18.10f %18.10f %18.10e\n", Ehartree, Uanal, abs(Ehartree-Uanal))
@@ -73,7 +73,7 @@ function test_main( ecutwfc_Ry::Float64 )
     idx_g2r = pw.gvec.idx_g2r
     for ig = 2:Ng
         ip = idx_g2r[ig]
-        EhartreeG = EhartreeG + 0.5*real(phiG[ip]*conj(rhoG[ip]))*Ω/Npoints
+        EhartreeG = EhartreeG + 0.5*real(phiG[ip]*conj(rhoG[ip]))*CellVolume/Npoints
     end
     println("Using G-space summation")
     @printf("Num, ana, diff = %18.10f %18.10f %18.10e\n", EhartreeG, Uanal, abs(EhartreeG-Uanal))

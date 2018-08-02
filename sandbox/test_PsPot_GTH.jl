@@ -21,7 +21,7 @@ function test_main()
     println(pw)
 
     G2 = sort(pw.gvec.G2)
-    Ω = pw.Ω
+    CellVolume = pw.CellVolume
 
     psp = PsPot_GTH("../pseudopotentials/pade_gth/Ni-q18.gth")
     println(psp)

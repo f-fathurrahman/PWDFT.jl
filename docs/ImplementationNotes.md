@@ -65,7 +65,7 @@ It has the following fields:
 
 - `RecVecs::Array{Float64,2}`: reciprocal lattice vectors
 
-- `Ω::Float64`: the volume of real-space unit cell
+- `CellVolume::Float64`: the volume of real-space unit cell
 
 - `r::Array{Float64,2}`: real-space grid points
 

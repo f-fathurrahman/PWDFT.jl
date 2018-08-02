@@ -41,14 +41,14 @@ function test_Nkpt_1()
     # Shortcuts
     pw = Ham.pw
     Focc = Ham.electrons.Focc
-    Ω = pw.Ω
+    CellVolume = pw.CellVolume
     Ns = pw.Ns
     
     srand(4321)
     psi = init_random_psi( Ham )
 
     rhoe = calc_rhoe( Ham, psi )
-    @printf("Integ rhoe = %18.10f\n", sum(rhoe)*Ω/prod(Ns))
+    @printf("Integ rhoe = %18.10f\n", sum(rhoe)*CellVolume/prod(Ns))
 
     println("\nTesting * operator")
 

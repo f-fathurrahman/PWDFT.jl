@@ -50,7 +50,7 @@ function test_GGA_PBE()
 
     srand(1234)
     Ngwx = pw.gvecw.Ngwx
-    dVol = pw.Ω/prod(pw.Ns)
+    dVol = pw.CellVolume/prod(pw.Ns)
     
     Nkpt = 1
     psik = Array{Array{ComplexF64,2},1}(undef,Nkpt)
@@ -84,7 +84,7 @@ function test_GGA_PBE_spinpol()
 
     srand(1234)
     Ngwx = pw.gvecw.Ngwx
-    dVol = pw.Ω/prod(pw.Ns)
+    dVol = pw.CellVolume/prod(pw.Ns)
     
     Nkpt = 2
     psik = Array{Array{ComplexF64,2},1}(undef,Nkpt)
@@ -148,7 +148,7 @@ function test_spinpol( ; xc="VWN", Nspin=1 )
 
     srand(1234)
     Ngw = pw.gvecw.Ngw
-    dVol = pw.Ω/prod(pw.Ns)
+    dVol = pw.CellVolume/prod(pw.Ns)
 
     Nkpt = kpoints.Nkpt
     Nkspin = Nkpt*Nspin

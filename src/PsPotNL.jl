@@ -84,7 +84,7 @@ function PsPotNL( pw::PWGrid, atoms::Atoms, Pspots::Array{PsPot_GTH},
                     GX = atpos[1,ia]*g[1] + atpos[2,ia]*g[2] + atpos[3,ia]*g[3]
                     Sf = cos(GX) - im*sin(GX)
                     betaNL[igk,ibeta,ik] =
-                    (1.0*im)^l * Ylm_real(l,m,g) * eval_proj_G(psp,l,iprj,Gm,pw.Ω) * Sf
+                    (1.0*im)^l * Ylm_real(l,m,g) * eval_proj_G(psp,l,iprj,Gm,pw.CellVolume) * Sf
                 end
             end
             end
@@ -127,9 +127,9 @@ function check_betaNL_norm( pw, betaNL, kpoints::KPoints )
             data3d = real(ctmp)
             data3d_im = imag(ctmp)
             #
-            integ_prj = sum( data3d.^2 ) * pw.Ω / Npoints
-            integ_prj_im = sum( data3d_im.^2 ) * pw.Ω / Npoints
-            integ_prj_abs = sum( (abs.(ctmp)).^2 ) * pw.Ω / Npoints
+            integ_prj = sum( data3d.^2 ) * pw.CellVolume / Npoints
+            integ_prj_im = sum( data3d_im.^2 ) * pw.CellVolume / Npoints
+            integ_prj_abs = sum( (abs.(ctmp)).^2 ) * pw.CellVolume / Npoints
             @printf("ibeta, integ_prj = %3d %18.10f %18.10f %18.10f %18.10f %18.10f\n",
                      ibeta, integ_prj, integ_prj_im, integ_prj_abs, norm_G.re, norm_G.im)
         end

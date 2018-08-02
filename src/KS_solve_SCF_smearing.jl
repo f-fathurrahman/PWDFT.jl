@@ -15,7 +15,7 @@ function KS_solve_SCF_smearing!( Ham::Hamiltonian ;
     #
     Ns = pw.Ns
     Npoints = prod(Ns)
-    dVol = pw.Ω/Npoints
+    dVol = pw.CellVolume/Npoints
     #
     electrons = Ham.electrons
     Nelectrons = electrons.Nelectrons

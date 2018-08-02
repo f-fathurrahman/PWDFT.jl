@@ -183,7 +183,7 @@ function eval_Vloc_R( psp::PsPot_HGH, r::Array{Float64,2} )
 end
 
 
-function eval_Vloc_G( psp::PsPot_HGH, G2::Float64, Ω::Float64 )
+function eval_Vloc_G( psp::PsPot_HGH, G2::Float64, CellVolume::Float64 )
 
     rloc = psp.rloc
     zval = psp.zval
@@ -192,8 +192,8 @@ function eval_Vloc_G( psp::PsPot_HGH, G2::Float64, Ω::Float64 )
     c3 = psp.c[3]
     c4 = psp.c[4]
 
-    pre1 = -4*pi*zval/Ω
-    pre2 = sqrt(8*pi^3)*rloc^3/Ω
+    pre1 = -4*pi*zval/CellVolume
+    pre2 = sqrt(8*pi^3)*rloc^3/CellVolume
     Gr = sqrt(G2)*rloc
     expGr2 = exp(-0.5*Gr^2)
 
@@ -212,7 +212,7 @@ function eval_Vloc_G( psp::PsPot_HGH, G2::Float64, Ω::Float64 )
 end
 
 
-function eval_Vloc_G( psp::PsPot_HGH, G2::Array{Float64,1}, Ω::Float64 )
+function eval_Vloc_G( psp::PsPot_HGH, G2::Array{Float64,1}, CellVolume::Float64 )
 
     Ng = size(G2)[1]
     Vg = zeros(Ng)
@@ -224,8 +224,8 @@ function eval_Vloc_G( psp::PsPot_HGH, G2::Array{Float64,1}, Ω::Float64 )
     c3 = psp.c[3]
     c4 = psp.c[4]
 
-    pre1 = -4*pi*zval/Ω
-    pre2 = sqrt(8*pi^3)*rloc^3/Ω
+    pre1 = -4*pi*zval/CellVolume
+    pre2 = sqrt(8*pi^3)*rloc^3/CellVolume
     #
     for ig=2:Ng
         Gr = sqrt(G2[ig])*rloc
@@ -254,7 +254,7 @@ end
 
 
 
-function eval_proj_G( psp::PsPot_HGH, l, iproj, Gm, Ω )
+function eval_proj_G( psp::PsPot_HGH, l, iproj, Gm, CellVolume )
 
     # NOTICE that Gm is the magnitudes of G-vectors
     Ng = size(Gm)[1]
@@ -325,7 +325,7 @@ function eval_proj_G( psp::PsPot_HGH, l, iproj, Gm, Ω )
 
     end  # if l
 
-    pre =  4 * pi^(5./4.) * sqrt( 2.^(l+1) * rrl^(2*l+3) / Ω )
+    pre =  4 * pi^(5./4.) * sqrt( 2.^(l+1) * rrl^(2*l+3) / CellVolume )
     Vprj[:] = pre * Vprj[:]
     return Vprj
 end

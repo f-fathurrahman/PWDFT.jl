@@ -13,7 +13,7 @@ function alt1_KS_solve_SCF!( Ham::Hamiltonian ;
     Ngwx = pw.gvecw.Ngwx
     Ns = pw.Ns
     Npoints = prod(Ns)
-    dVol = pw.Ω/Npoints
+    dVol = pw.CellVolume/Npoints
     electrons = Ham.electrons
     Nelectrons = electrons.Nelectrons
     Focc = electrons.Focc

@@ -239,7 +239,7 @@ end
 """
 Evaluate GTH projector function in G-space.
 """
-function eval_proj_G( psp::PsPot_GTH, l::Int64, iproj::Int64, Gm::Array{Float64,1}, Ω::Float64 )
+function eval_proj_G( psp::PsPot_GTH, l::Int64, iproj::Int64, Gm::Array{Float64,1}, CellVolume::Float64 )
 
     # NOTICE that Gm is the magnitudes of G-vectors
     Ng = size(Gm)[1]
@@ -310,14 +310,14 @@ function eval_proj_G( psp::PsPot_GTH, l::Int64, iproj::Int64, Gm::Array{Float64,
 
     end  # if l
 
-    pre =  4 * pi^(5.0/4.0) * sqrt( 2.0^(l+1) * rrl^(2*l+3) / Ω )
+    pre =  4 * pi^(5.0/4.0) * sqrt( 2.0^(l+1) * rrl^(2*l+3) / CellVolume )
     Vprj[:] = pre * Vprj[:]
     return Vprj
 end
 
 
 
-function eval_proj_G( psp::PsPot_GTH, l::Int64, iproj::Int64, Gm::Float64, Ω::Float64 )
+function eval_proj_G( psp::PsPot_GTH, l::Int64, iproj::Int64, Gm::Float64, CellVolume::Float64 )
 
     Vprj = 0.0
 
@@ -367,7 +367,7 @@ function eval_proj_G( psp::PsPot_GTH, l::Int64, iproj::Int64, Gm::Float64, Ω::F
 
     end  # if l
 
-    pre =  4.0 * pi^(5.0/4.0) * sqrt( 2.0^(l+1) * rrl^(2*l+3) / Ω )
+    pre =  4.0 * pi^(5.0/4.0) * sqrt( 2.0^(l+1) * rrl^(2*l+3) / CellVolume )
     Vprj = pre * Vprj
     return Vprj
 end

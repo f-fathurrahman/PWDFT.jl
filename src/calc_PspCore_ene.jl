@@ -1,4 +1,4 @@
-function calc_PspCore_ene( atoms::Atoms, PsPots::Array{PsPot_GTH,1}, Ω::Float64 )
+function calc_PspCore_ene( atoms::Atoms, PsPots::Array{PsPot_GTH,1}, CellVolume::Float64 )
 
     Nspecies = atoms.Nspecies
     epsatm = zeros(Nspecies)
@@ -25,7 +25,7 @@ function calc_PspCore_ene( atoms::Atoms, PsPots::Array{PsPot_GTH,1}, Ω::Float64
     end
     println("chg = ", chg)
     #pspcore_ene = Natoms*pspcore_ene # XXX need to test for multispecies case
-    pspcore_ene = chg*pspcore_ene/Ω
+    pspcore_ene = chg*pspcore_ene/CellVolume
 
     return pspcore_ene
 

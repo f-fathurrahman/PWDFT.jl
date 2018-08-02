@@ -7,7 +7,7 @@ function calc_grad( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
     #
     Ngw     = size(psi)[1]
     Nstates = size(psi)[2]
-    Ω = pw.Ω
+    CellVolume = pw.CellVolume
     Ns = pw.Ns
     #
     grad = zeros( ComplexF64, Ngw, Nstates )

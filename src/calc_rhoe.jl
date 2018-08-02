@@ -1,6 +1,6 @@
 function calc_rhoe( pw::PWGrid, Focc::Array{Float64,2},
                     psik::Array{Array{ComplexF64,2},1}; renormalize=true )
-    Ω  = pw.Ω
+    CellVolume  = pw.CellVolume
     Ns = pw.Ns
     Nkpt = pw.gvecw.kpoints.Nkpt
     Ngw = pw.gvecw.Ngw
@@ -21,7 +21,7 @@ function calc_rhoe( pw::PWGrid, Focc::Array{Float64,2},
         psiR = G_to_R(pw, cpsi)
         # orthonormalization in real space
         ortho_gram_schmidt!( Nstates, psiR )
-        psiR = sqrt(Npoints/Ω)*psiR
+        psiR = sqrt(Npoints/CellVolume)*psiR
         #
         for ist = 1:Nstates
             for ip = 1:Npoints
@@ -39,7 +39,7 @@ function calc_rhoe( pw::PWGrid, Focc::Array{Float64,2},
 
     # renormalize
     if renormalize
-        integ_rho = sum(rho)*Ω/Npoints
+        integ_rho = sum(rho)*CellVolume/Npoints
         Nelectrons = sum(Focc)/Nkpt
         rho = Nelectrons/integ_rho * rho
     end
@@ -53,7 +53,7 @@ Calculate electron density from one kpoint.
 """
 function calc_rhoe( ik::Int64, pw::PWGrid, Focc::Array{Float64,2},
                     psi::Array{ComplexF64,2}; renormalize=true )
-    Ω  = pw.Ω
+    CellVolume  = pw.CellVolume
     Ns = pw.Ns
     Npoints = prod(Ns)
     Nstates = size(psi)[2]
@@ -66,7 +66,7 @@ function calc_rhoe( ik::Int64, pw::PWGrid, Focc::Array{Float64,2},
 
     # orthonormalization in real space
     ortho_gram_schmidt!( Nstates, psiR )
-    psiR = sqrt(Npoints/Ω)*psiR
+    psiR = sqrt(Npoints/CellVolume)*psiR
 
     rho = zeros(Float64,Npoints)
     for ist = 1:Nstates
@@ -83,7 +83,7 @@ function calc_rhoe( ik::Int64, pw::PWGrid, Focc::Array{Float64,2},
     end
     # renormalize
     if renormalize
-        integ_rho = sum(rho)*Ω/Npoints
+        integ_rho = sum(rho)*CellVolume/Npoints
         Nelectrons = sum(Focc[:,ik])
         rho = Nelectrons/integ_rho * rho
     end
@@ -106,7 +106,7 @@ function calc_rhoe( Ham::Hamiltonian,
     pw = Ham.pw
     Focc = Ham.electrons.Focc
 
-    Ω  = pw.Ω
+    CellVolume  = pw.CellVolume
     Ns = pw.Ns
     Npoints = prod(Ns)
     Nstates = size(psi)[2]
@@ -119,7 +119,7 @@ function calc_rhoe( Ham::Hamiltonian,
 
     # orthonormalization in real space
     ortho_gram_schmidt!( Nstates, psiR )
-    psiR = sqrt(Npoints/Ω)*psiR
+    psiR = sqrt(Npoints/CellVolume)*psiR
 
     Rhoe = zeros(Float64,Npoints)
     for ist = 1:Nstates
@@ -137,7 +137,7 @@ function calc_rhoe( Ham::Hamiltonian,
     
     # renormalize
     if renormalize
-        integ_Rhoe = sum(Rhoe)*Ω/Npoints
+        integ_Rhoe = sum(Rhoe)*CellVolume/Npoints
         Nelectrons = sum(Focc[:,ik])
         Rhoe = Nelectrons/integ_Rhoe * Rhoe
     end

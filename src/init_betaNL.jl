@@ -22,7 +22,7 @@ function init_betaNL( pw::PWGrid, Pspots::Array{PsPot_GTH,1}, atoms::Atoms, Nbet
                         Gm = norm(g)
                         GX = atpos[1,ia]*g[1] + atpos[2,ia]*g[2] + atpos[3,ia]*g[3]
                         Sf = cos(GX) - im*sin(GX)
-                        betaNL[ig,ibeta] = (1.0*im)^l * Ylm_real(l,m,g) * eval_proj_G( psp, l, iprj, Gm, pw.Ω ) * Sf
+                        betaNL[ig,ibeta] = (1.0*im)^l * Ylm_real(l,m,g) * eval_proj_G( psp, l, iprj, Gm, pw.CellVolume ) * Sf
                     end
                 end
             end

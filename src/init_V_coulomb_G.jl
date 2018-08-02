@@ -19,7 +19,7 @@ function init_V_coulomb_G( pw::PWGrid, strf::Array{ComplexF64,2}, Znucls::Array{
     Nspecies = Nsp1
 
     Npoints = prod(pw.Ns)
-    Ω = pw.Ω
+    CellVolume = pw.CellVolume
     G2 = pw.gvec.G2
     Ng = pw.gvec.Ng
     idx_g2r = pw.gvec.idx_g2r
@@ -28,7 +28,7 @@ function init_V_coulomb_G( pw::PWGrid, strf::Array{ComplexF64,2}, Znucls::Array{
     V  = zeros(Float64, Npoints)
     #
     for isp = 1:Nspecies
-        prefactor = -4*pi*Znucls[isp]/Ω
+        prefactor = -4*pi*Znucls[isp]/CellVolume
         # Note that Vg[1] (for GVector zero) is always zero 0.0
         # To be sure let's put is here anyway.
         Vg[1] = 0.0 + im*0.0

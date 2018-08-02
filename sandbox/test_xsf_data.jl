@@ -68,8 +68,8 @@ function do_calc()
     psiR_real = real(G_to_R(pw, cpsi))
     psiR_imag = imag(G_to_R(pw, cpsi))
     #
-    psiR_real = sqrt(Npoints/pw.Ω)*psiR_real # normalize
-    psiR_imag = sqrt(Npoints/pw.Ω)*psiR_imag # normalize
+    psiR_real = sqrt(Npoints/pw.CellVolume)*psiR_real # normalize
+    psiR_imag = sqrt(Npoints/pw.CellVolume)*psiR_imag # normalize
     #
     write_xsf( "TEMP_psi_real.xsf", Ham.atoms )
     write_xsf_data3d_crystal( "TEMP_psi_real.xsf", Ham.atoms, Ham.pw.Ns, psiR_real )

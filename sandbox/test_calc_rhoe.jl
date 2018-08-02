@@ -26,7 +26,7 @@ function test_main()
     end
 
     rhoe = calc_rhoe( pw, Focc, psik )
-    dVol = pw.Ω/prod(pw.Ns)
+    dVol = pw.CellVolume/prod(pw.Ns)
     @printf("Integrated rhoe = %18.10f\n", sum(rhoe)*dVol)
 
 end

@@ -7,7 +7,7 @@ function KS_solve_DCM!( Ham::Hamiltonian;
     Ngw = pw.gvecw.Ngw
     Ns = pw.Ns
     Npoints = prod(Ns)
-    ΔV = pw.Ω/Npoints
+    ΔV = pw.CellVolume/Npoints
     Focc = Ham.electrons.Focc
     Nstates = Ham.electrons.Nstates
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt

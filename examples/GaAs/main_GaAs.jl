@@ -44,7 +44,7 @@ function main( ; method="SCF" )
     println("\nTotal energy components")
     println(Ham.energies)
 
-    pspcore_ene = calc_PspCore_ene(atoms, Ham.pspots, Ham.pw.Ω)
+    pspcore_ene = calc_PspCore_ene(atoms, Ham.pspots, Ham.pw.CellVolume)
     
     println("\nPspCore ene = ", pspcore_ene)
     println("\nTotEne + PspCore = ", pspcore_ene + sum(Ham.energies))

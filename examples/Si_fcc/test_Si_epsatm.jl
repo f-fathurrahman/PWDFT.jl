@@ -34,7 +34,7 @@ function test_main()
         isp = atoms.atm2species[ia]
         chg = chg + atoms.Zvals[isp]
     end
-    pspcore_ene = epsatm*Natoms*chg/Ham.pw.Ω
+    pspcore_ene = epsatm*Natoms*chg/Ham.pw.CellVolume
 
     println("pspcore_ene = ", pspcore_ene)
 

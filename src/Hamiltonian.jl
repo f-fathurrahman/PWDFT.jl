@@ -49,7 +49,7 @@ function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
     end
 
     Npoints = prod(pw.Ns)
-    Ω = pw.Ω
+    CellVolume = pw.CellVolume
     G2 = pw.gvec.G2
     Ng = pw.gvec.Ng
     idx_g2r = pw.gvec.idx_g2r
@@ -72,7 +72,7 @@ function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
         end
         for ig = 1:Ng
             ip = idx_g2r[ig]
-            Vg[ip] = strf[ig,isp] * eval_Vloc_G( psp, G2[ig] ) / Ω
+            Vg[ip] = strf[ig,isp] * eval_Vloc_G( psp, G2[ig] ) / CellVolume
         end
         #
         V_Ps_loc[:] = V_Ps_loc[:] + real( G_to_R(pw, Vg) ) * Npoints
@@ -219,7 +219,7 @@ function update!( Ham::Hamiltonian, atoms::Atoms,
     pw = Ham.pw
 
     Npoints = prod(pw.Ns)
-    Ω = pw.Ω
+    CellVolume = pw.CellVolume
     G2 = pw.gvec.G2
 
     Vg = zeros(ComplexF64, Npoints)
@@ -230,7 +230,7 @@ function update!( Ham::Hamiltonian, atoms::Atoms,
         psp = PsPot_GTH( pspfiles[isp] )
         println(psp)
         for ig = 1:Npoints
-            Vg[ig] = strf[ig,isp] * eval_Vloc_G( psp, G2[ig], Ω )
+            Vg[ig] = strf[ig,isp] * eval_Vloc_G( psp, G2[ig], CellVolume )
         end
         #
         V_Ps_loc[:] = V_Ps_loc[:] + real( G_to_R(pw, Vg) ) * Npoints

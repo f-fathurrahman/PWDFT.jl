@@ -27,7 +27,7 @@ function test_Nkpt_1()
     end
     #
     rhoe = calc_rhoe( pw, Focc, psik )
-    @printf("Integ rhoe = %18.10f\n", sum(rhoe)*pw.Ω/prod(pw.Ns))
+    @printf("Integ rhoe = %18.10f\n", sum(rhoe)*pw.CellVolume/prod(pw.Ns))
 
     println("\nTesting op_K")
     #for ik = 1:Nkpt
@@ -120,7 +120,7 @@ function test_Si()
     end
     #
     rhoe = calc_rhoe( pw, Focc, psik )
-    @printf("Integ rhoe = %18.10f\n", sum(rhoe)*pw.Ω/prod(pw.Ns))
+    @printf("Integ rhoe = %18.10f\n", sum(rhoe)*pw.CellVolume/prod(pw.Ns))
 
     println("\nTesting op_K")
     for ik = 1:Nkpt
@@ -188,7 +188,7 @@ function test_Ni_fcc(;Nspin=1)
     G = pw.gvec.G
     G2 = pw.gvec.G2
     idx_g2r = pw.gvec.idx_g2r
-    Ω = pw.Ω
+    CellVolume = pw.CellVolume
 
     #
     srand(1234)
@@ -202,7 +202,7 @@ function test_Ni_fcc(;Nspin=1)
     end
 
     Rhoe = zeros(Npoints,Nspin)
-    dVol = pw.Ω/prod(pw.Ns)
+    dVol = pw.CellVolume/prod(pw.Ns)
     for ispin = 1:Nspin
         idxset = (Nkpt*(ispin-1)+1):(Nkpt*ispin)
         Rhoe[:,ispin] = calc_rhoe( pw, Focc[:,idxset], psiks[idxset], renormalize=false )
@@ -274,7 +274,7 @@ function test_Ni_fcc(;Nspin=1)
     EhartreeG = 0.0
     for ig = 2:Ng
         ip = idx_g2r[ig]
-        EhartreeG = EhartreeG + 0.5*real(phiG[ip]*conj(rhoG[ip]))*Ω/Npoints
+        EhartreeG = EhartreeG + 0.5*real(phiG[ip]*conj(rhoG[ip]))*CellVolume/Npoints
     end
     println("EhartreeG = ", EhartreeG)
     println("diff Ehartree = ", abs(EhartreeG - Energies.Hartree))
@@ -284,7 +284,7 @@ function test_Ni_fcc(;Nspin=1)
     ExcG = 0.0
     for ig = 1:Ng  # ig=1 is included
         ip = idx_g2r[ig]
-        ExcG = ExcG + real(epsxcG[ip]*conj(rhoG[ip]))*Ω/Npoints
+        ExcG = ExcG + real(epsxcG[ip]*conj(rhoG[ip]))*CellVolume/Npoints
     end
     println("ExcG = ", ExcG)
     println("diff Exc = ", abs(ExcG - Energies.XC))
@@ -293,7 +293,7 @@ function test_Ni_fcc(;Nspin=1)
     E_ps_loc_G = 0.0
     for ig = 1:Ng  # ig=1 is included
         ip = idx_g2r[ig]
-        E_ps_loc_G = E_ps_loc_G + real(V_ps_loc_G[ip]*conj(rhoG[ip]))*Ω/Npoints
+        E_ps_loc_G = E_ps_loc_G + real(V_ps_loc_G[ip]*conj(rhoG[ip]))*CellVolume/Npoints
     end
     println("E_ps_log_G = ", E_ps_loc_G)
     println("diff E_ps_loc = ", abs(E_ps_loc_G - Energies.Ps_loc))

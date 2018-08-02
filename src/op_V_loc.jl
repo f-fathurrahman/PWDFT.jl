@@ -10,7 +10,7 @@ end
 
 function op_V_loc( ik::Int64, pw::PWGrid, V_loc::Array{Float64,1}, psi::Array{ComplexF64,2} )
     Ns = pw.Ns
-    Ω  = pw.Ω
+    CellVolume  = pw.CellVolume
     Npoints = prod(Ns)
     Nstates = size(psi)[2]
 
@@ -48,7 +48,7 @@ end
 
 function op_V_loc( ik::Int64, pw::PWGrid, V_loc::Array{Float64,1}, psi::Array{ComplexF64,1} )
     Ns = pw.Ns
-    Ω  = pw.Ω
+    CellVolume  = pw.CellVolume
     Npoints = prod(Ns)
 
     ctmp = zeros(ComplexF64, Npoints)

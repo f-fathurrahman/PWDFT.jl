@@ -12,7 +12,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
     Nkpt = kpoints.Nkpt
     Ns = pw.Ns
     Npoints = prod(Ns)
-    dVol = pw.Ω/Npoints
+    dVol = pw.CellVolume/Npoints
     electrons = Ham.electrons
     Nelectrons = electrons.Nelectrons
     Focc = electrons.Focc

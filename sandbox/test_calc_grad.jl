@@ -36,7 +36,7 @@ function test_main()
     end
     update!(Ham, Rhoe)
     #
-    @printf("Integ rhoe = %18.10f\n", sum(Rhoe)*pw.Ω/prod(pw.Ns))
+    @printf("Integ rhoe = %18.10f\n", sum(Rhoe)*pw.CellVolume/prod(pw.Ns))
     #
     update!(Ham, Rhoe)
     #

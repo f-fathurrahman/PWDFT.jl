@@ -1,6 +1,6 @@
 # FIXME: psi is not used
 function calc_E_xc( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
-    Ω = Ham.pw.Ω
+    CellVolume = Ham.pw.CellVolume
     Npoints = prod(Ham.pw.Ns)
     rhoe = Ham.rhoe
     if Ham.xcfunc == "PBE"
@@ -8,17 +8,17 @@ function calc_E_xc( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
     else
         epsxc = calc_epsxc_VWN( rhoe )
     end
-    E_xc = dot( epsxc, rhoe ) * Ω/Npoints
+    E_xc = dot( epsxc, rhoe ) * CellVolume/Npoints
     return E_xc
 end
 
 
 function calc_E_Hartree( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
     potentials = Ham.potentials
-    Ω = Ham.pw.Ω
+    CellVolume = Ham.pw.CellVolume
     Npoints = prod(Ham.pw.Ns)
     rhoe = Ham.rhoe
-    E_Hartree = 0.5*dot( potentials.Hartree, rhoe ) * Ω/Npoints
+    E_Hartree = 0.5*dot( potentials.Hartree, rhoe ) * CellVolume/Npoints
     return E_Hartree
 end
 
@@ -143,10 +143,10 @@ function calc_energies( Ham::Hamiltonian, psiks::Array{Array{ComplexF64,2},1} )
     potentials = Ham.potentials
     Focc = Ham.electrons.Focc
 
-    Ω = pw.Ω
+    CellVolume = pw.CellVolume
     Ns = pw.Ns
     Npoints = prod(Ns)
-    dVol = Ω/Npoints
+    dVol = CellVolume/Npoints
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     Nstates = Ham.electrons.Nstates
     wk = Ham.pw.gvecw.kpoints.wk
@@ -224,7 +224,7 @@ function calc_energies( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
     ik = 1
     ispin = 1
 
-    Ω = pw.Ω
+    CellVolume = pw.CellVolume
     Ns = pw.Ns
     Npoints = prod(Ns)
 
@@ -239,16 +239,16 @@ function calc_energies( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
 
     Rhoe = Ham.rhoe
 
-    E_Hartree = 0.5*dot( potentials.Hartree, Rhoe ) * Ω/Npoints
+    E_Hartree = 0.5*dot( potentials.Hartree, Rhoe ) * CellVolume/Npoints
 
-    E_Ps_loc = dot( potentials.Ps_loc, Rhoe ) * Ω/Npoints
+    E_Ps_loc = dot( potentials.Ps_loc, Rhoe ) * CellVolume/Npoints
 
     if Ham.xcfunc == "PBE"
         epsxc = calc_epsxc_PBE( Ham.pw, Rhoe )
     else
         epsxc = calc_epsxc_VWN( Rhoe )
     end
-    E_xc = dot( epsxc, Rhoe ) * Ω/Npoints
+    E_xc = dot( epsxc, Rhoe ) * CellVolume/Npoints
 
     if Ham.pspotNL.NbetaNL > 0
         E_Ps_nloc = calc_E_Ps_nloc( Ham, psi )

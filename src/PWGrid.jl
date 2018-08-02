@@ -29,7 +29,7 @@ struct PWGrid
     Ns::Tuple{Int64,Int64,Int64}
     LatVecs::Array{Float64,2}
     RecVecs::Array{Float64,2}
-    Ω::Float64
+    CellVolume::Float64
     r::Array{Float64,2}
     gvec::GVectors
     gvecw::GVectorsW
@@ -56,7 +56,7 @@ function PWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2}; kpoints=nothing )
     #RecVecs = 2*pi*inv(LatVecs')
     RecVecs = 2*pi*invTrans_m3x3(LatVecs)
 
-    Ω = det(LatVecs)
+    CellVolume = det(LatVecs)
     #
     LatVecsLen = Array{Float64}(undef,3)
     LatVecsLen[1] = norm(LatVecs[:,1])
@@ -87,7 +87,7 @@ function PWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2}; kpoints=nothing )
     planfw = plan_fft( zeros(Ns) )
     planbw = plan_ifft( zeros(Ns) )
 
-    return PWGrid( ecutwfc, ecutrho, Ns, LatVecs, RecVecs, Ω, r, gvec, gvecw,
+    return PWGrid( ecutwfc, ecutrho, Ns, LatVecs, RecVecs, CellVolume, r, gvec, gvecw,
                    planfw, planbw )
 end
 
@@ -273,7 +273,7 @@ function println( pw::PWGrid )
         @printf("%18.10f %18.10f %18.10f\n", RecVecs[i,1], RecVecs[i,2], RecVecs[i,3])
     end
     @printf("\n")
-    @printf("Direct lattive volume = %18.10f bohr^3\n", pw.Ω )
+    @printf("Direct lattive volume = %18.10f bohr^3\n", pw.CellVolume )
     @printf("ecutwfc               = %18.10f Ha\n", pw.ecutwfc)
     @printf("ecutrho               = %18.10f Ha\n", pw.ecutrho)    
     @printf("Sampling points       = (%5d,%5d,%5d)\n", pw.Ns[1], pw.Ns[2], pw.Ns[3])
