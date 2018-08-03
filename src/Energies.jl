@@ -1,3 +1,7 @@
+"""
+The type for collecting all energy terms: kinetic, local and
+nonlocal pseudopotential, Hartree, XC, and nuclei-nuclei terms.
+"""
 mutable struct Energies
     Kinetic::Float64
     Ps_loc::Float64
@@ -7,7 +11,9 @@ mutable struct Energies
     NN::Float64
 end
 
-# Default: all zeroes
+"""
+Creates an instance of `Energies` with value of zeros for all fields.
+"""
 function Energies()
     return Energies(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
 end
@@ -31,6 +37,9 @@ function println( energies::Energies )
     @printf("Total      energy: %18.10f\n", E_total )
 end
 
+"""
+Get total energy by summing all of its components.
+"""
 function sum( energies::Energies )
     return energies.Kinetic + energies.Ps_loc + energies.Ps_nloc +
            energies.Hartree + energies.XC + energies.NN
