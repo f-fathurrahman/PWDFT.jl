@@ -1,4 +1,5 @@
-# psi can be either single or multicolumn
+# psi can be either Array{ComplexF64,1} (single columns)
+# or Array{ComplexF64,2} (multicolumn)
 # This is handled by individual op_* functions
 function op_H( Ham::Hamiltonian, psi )
     if Ham.pspotNL.NbetaNL > 0
