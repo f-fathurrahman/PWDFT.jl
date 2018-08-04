@@ -13,7 +13,7 @@ function main( ; method="SCF" )
     pspfiles = ["../pseudopotentials/pbe_gth/H-q1.gth"]
     ecutwfc_Ry = 30.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, xcfunc="PBE",
-                         Nspin=2, verbose=true, extra_states=0 )
+                       Nspin=2, verbose=true, extra_states=0 )
 
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( atoms )
@@ -47,6 +47,3 @@ function main( ; method="SCF" )
 
 end
 
-#@time test_main(method="Emin")
-@time test_main(method="SCF")
-#@time test_main(method="DCM")
