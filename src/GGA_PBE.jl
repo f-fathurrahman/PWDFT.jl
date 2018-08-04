@@ -11,8 +11,7 @@ function calc_Vxc_PBE( pw::PWGrid, Rhoe::Array{Float64,1} )
     gRhoe = op_nabla( pw, Rhoe ) # gRhoe = ∇⋅Rhoe
     gRhoe2 = zeros( Float64, Npoints )
     for ip = 1:Npoints
-        gRhoe2[ip] = gRhoe[1,ip]*gRhoe[1,ip] + gRhoe[2,ip]*gRhoe[2,ip] +
-                     gRhoe[3,ip]*gRhoe[3,ip]
+        gRhoe2[ip] = dot( gRhoe[:,ip], gRhoe[:,ip] )
     end
 
     Vxc = zeros( Float64, Npoints )
@@ -54,8 +53,7 @@ function calc_epsxc_PBE( pw::PWGrid, Rhoe::Array{Float64,1} )
     gRhoe = op_nabla( pw, Rhoe )
     gRhoe2 = zeros( Float64, Npoints )
     for ip = 1:Npoints
-        gRhoe2[ip] = gRhoe[1,ip]*gRhoe[1,ip] + gRhoe[2,ip]*gRhoe[2,ip] +
-                     gRhoe[3,ip]*gRhoe[3,ip]
+        gRhoe2[ip] = dot( gRhoe[:,ip], gRhoe[:,ip] )
     end
     #
     ccall( (:calc_epsxc_PBE, LIBXC_SO_PATH), Nothing,
@@ -84,15 +82,9 @@ function calc_epsxc_PBE( pw::PWGrid, Rhoe::Array{Float64,2} )
     gRhoe_dn = op_nabla( pw, Rhoe[:,2] )
     gRhoe2 = zeros( Float64, 3, Npoints )
     for ip = 1:Npoints
-        gRhoe2[1,ip] = gRhoe_up[1,ip]*gRhoe_up[1,ip] + gRhoe_up[2,ip]*gRhoe_up[2,ip] +
-                       gRhoe_up[3,ip]*gRhoe_up[3,ip]
-        gRhoe2[2,ip] = gRhoe_up[1,ip]*gRhoe_dn[1,ip] + gRhoe_up[2,ip]*gRhoe_dn[2,ip] +
-                       gRhoe_up[3,ip]*gRhoe_dn[3,ip]
-        gRhoe2[3,ip] = gRhoe_dn[1,ip]*gRhoe_dn[1,ip] + gRhoe_dn[2,ip]*gRhoe_dn[2,ip] +
-                       gRhoe_dn[3,ip]*gRhoe_dn[3,ip]                       
-        #gRhoe2[1,ip] = dot( gRhoe_up[:,ip], gRhoe_up[:,ip] )
-        #gRhoe2[2,ip] = dot( gRhoe_up[:,ip], gRhoe_dn[:,ip] )
-        #gRhoe2[3,ip] = dot( gRhoe_dn[:,ip], gRhoe_dn[:,ip] )
+        gRhoe2[1,ip] = dot( gRhoe_up[:,ip], gRhoe_up[:,ip] )
+        gRhoe2[2,ip] = dot( gRhoe_up[:,ip], gRhoe_dn[:,ip] )
+        gRhoe2[3,ip] = dot( gRhoe_dn[:,ip], gRhoe_dn[:,ip] )
     end
 
     Rhoe_tmp = zeros(2,Npoints)
@@ -230,7 +222,7 @@ function op_nabla_dot( pw::PWGrid, h::Array{Float64,2} )
     
     for ig = 1:Ng
         ip = idx_g2r[ig]
-        divhG_full[ip] = im*( G[1,ig]*hG[ig] + G[2,ig]*hG[ig] + G[3,ig]*hG[ig] )
+        divhG_full[ip] = im*( G[1,ig]*hG[1,ig] + G[2,ig]*hG[2,ig] + G[3,ig]*hG[3,ig] )
     end
 
     divh = real( G_to_R( pw, divhG_full ) )
