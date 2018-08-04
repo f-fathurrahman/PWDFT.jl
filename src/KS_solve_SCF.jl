@@ -27,7 +27,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
     # Random guess of wave function
     #
     if startingwfc==nothing
-        Base.seed!(1234)
+        Random.seed!(1234)
         for ispin = 1:Nspin
         for ik = 1:Nkpt
             ikspin = ik + (ispin - 1)*Nkpt
