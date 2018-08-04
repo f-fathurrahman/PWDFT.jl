@@ -21,20 +21,11 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
     Nspin = electrons.Nspin
     Nkspin = Nkpt*Nspin
 
-    psiks = Array{Array{ComplexF64,2},1}(undef,Nkspin)
-
     #
     # Random guess of wave function
     #
     if startingwfc==nothing
-        Random.seed!(1234)
-        for ispin = 1:Nspin
-        for ik = 1:Nkpt
-            ikspin = ik + (ispin - 1)*Nkpt
-            psi = rand(Ngw[ik],Nstates) + im*rand(Ngw[ik],Nstates)
-            psiks[ikspin] = ortho_gram_schmidt(psi)
-        end
-        end
+        psiks = gen_rand_wavefun(pw, electrons)
     else
         psiks = startingwfc
     end
@@ -185,7 +176,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
             Rhoe[:,:] = mix_anderson!( Nspin, Rhoe, Rhoe_new, betamix, df, dv, iter, MIXDIM )
         else
             @printf("ERROR: Unknown mix_method = %s\n", mix_method)
-            exit()
+            error("STOPPED")
         end
 
         for rho in Rhoe

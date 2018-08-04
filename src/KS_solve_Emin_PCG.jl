@@ -8,30 +8,30 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
                              I_CG_BETA=2, ETOT_CONV_THR=1e-6 )
 
     pw = Ham.pw
-    Focc = Ham.electrons.Focc
-    Nstates = Ham.electrons.Nstates
+    electrons = Ham.electrons
+    Focc = electrons.Focc
+    Nstates = electrons.Nstates
     Ns = pw.Ns
     Npoints = prod(Ns)
     Ngw = pw.gvecw.Ngw
     Ngwx = pw.gvecw.Ngwx
     Nkpt = pw.gvecw.kpoints.Nkpt
-    Nspin = Ham.electrons.Nspin
+    Nspin = electrons.Nspin
     Nkspin = Nkpt*Nspin
-
-    psiks = Array{Array{ComplexF64,2},1}(undef,Nkspin)
 
     #
     # Initial wave function
     #
     if startingwfc == nothing
-        Random.seed!(1234)
-        for ispin = 1:Nspin
-        for ik = 1:Nkpt
-            ikspin = ik + (ispin-1)*Nkpt
-            psi = rand(ComplexF64,Ngw[ik],Nstates)
-            psiks[ikspin] = ortho_sqrt(psi)
-        end
-        end
+        #Random.seed!(1234)
+        #for ispin = 1:Nspin
+        #for ik = 1:Nkpt
+        #    ikspin = ik + (ispin-1)*Nkpt
+        #    psi = rand(ComplexF64,Ngw[ik],Nstates)
+        #    psiks[ikspin] = ortho_sqrt(psi)
+        #end
+        #end
+        psiks = gen_rand_wavefun(pw, electrons)
     else
         psiks = startingwfc
     end

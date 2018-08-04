@@ -3,19 +3,23 @@
 function gen_rand_wavefun( pw::PWGrid, electrons::Electrons; seed=1234 )
 
     Nkpt = pw.gvecw.kpoints.Nkpt
+    Nspin = electrons.Nspin
+    Nkspin = Nspin*Nkpt
     Ngw = pw.gvecw.Ngw
     Nstates = electrons.Nstates
 
-    psik = Array{Array{ComplexF64,2},1}(Nkpt)
+    psiks = Array{Array{ComplexF64,2},1}(undef,Nkspin)
 
     Random.seed!(seed)
 
+    for ispin = 1:Nspin
     for ik = 1:Nkpt
-        psik[ik] = rand(Ngw[ik],Nstates) + im*rand(Ngw[ik],Nstates)
-        psik[ik] = ortho_gram_schmidt( psik[ik] )
+        ikspin = ik + (ispin-1)*Nkpt
+        psiks[ikspin] = ortho_sqrt(rand(ComplexF64,Ngw[ik],Nstates))
+    end
     end
 
-	return psik
+	return psiks
 
 end
 
