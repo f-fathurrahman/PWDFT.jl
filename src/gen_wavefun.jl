@@ -8,7 +8,7 @@ function gen_rand_wavefun( pw::PWGrid, electrons::Electrons; seed=1234 )
 
     psik = Array{Array{ComplexF64,2},1}(Nkpt)
 
-    srand(seed)
+    Base.seed!(seed)
 
     for ik = 1:Nkpt
         psik[ik] = rand(Ngw[ik],Nstates) + im*rand(Ngw[ik],Nstates)

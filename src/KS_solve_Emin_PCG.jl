@@ -24,7 +24,7 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
     # Initial wave function
     #
     if startingwfc == nothing
-        srand(1234)
+        Base.seed!(1234)
         for ispin = 1:Nspin
         for ik = 1:Nkpt
             ikspin = ik + (ispin-1)*Nkpt
