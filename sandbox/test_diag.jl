@@ -35,7 +35,7 @@ function test_01( diag_method::String )
     atoms.LatVecs = gen_lattice_fcc(6.0)
     atoms.positions = atoms.LatVecs*atoms.positions
 
-    srand(1234)
+    Random.seed!(1234)
     kpoints = KPoints(atoms)
     # create random k-point
     kpoints.k = kpoints.RecVecs*rand( 0.0:0.01:0.5, (3,1) )
@@ -94,7 +94,7 @@ function test_02( diag_method::String )
     atoms.LatVecs = gen_lattice_fcc(6.0)
     atoms.positions = atoms.LatVecs*atoms.positions
 
-    srand(1234)
+    Random.seed!(1234)
     kpoints = KPoints(atoms)
     kpoints.k = kpoints.RecVecs*rand( 0.0:0.01:0.5, (3,1) )
 

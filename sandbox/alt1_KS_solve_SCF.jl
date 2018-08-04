@@ -22,7 +22,7 @@ function alt1_KS_solve_SCF!( Ham::Hamiltonian ;
 
     # Random guess of wave function
     if startingwfc==nothing
-        srand(1234)
+        Random.seed!(1234)
         psi = ortho_sqrt( rand(ComplexF64,Ngwx,Nstates) )
     else
         psi = startingwfc

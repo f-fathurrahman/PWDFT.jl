@@ -114,7 +114,7 @@ function test_main()
 
     Nstates = 4
     Focc = 2.0*ones(Nstates)
-    srand(1234)
+    Random.seed!(1234)
     psi = rand(ComplexF64,Ngwx,Nstates)
     psi = ortho_gram_schmidt(psi)
 

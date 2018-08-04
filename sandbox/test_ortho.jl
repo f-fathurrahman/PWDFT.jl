@@ -2,7 +2,7 @@ using Random
 using PWDFT
 
 function using_gram_schmidt()
-    srand(2345)
+    Random.seed!(2345)
     psi = rand(1000,4) + im*rand(1000,4)
     #
     println("\nBefore ortho_gram_schmidt:")
@@ -14,7 +14,7 @@ function using_gram_schmidt()
 end
 
 function using_sqrt()
-    srand(2345)
+    Random.seed!(2345)
     psi = rand(1000,4) + im*rand(1000,4)
     #
     println("\nBefore ortho_sqrt:")

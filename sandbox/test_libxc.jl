@@ -48,7 +48,7 @@ function test_GGA_PBE()
     LatVecs = gen_lattice_sc(16.0)
     pw = PWGrid( ecutwfc_Ry*0.5, LatVecs )
 
-    srand(1234)
+    Random.seed!(1234)
     Ngwx = pw.gvecw.Ngwx
     dVol = pw.CellVolume/prod(pw.Ns)
     
@@ -82,7 +82,7 @@ function test_GGA_PBE_spinpol()
     LatVecs = gen_lattice_sc(16.0)
     pw = PWGrid( ecutwfc_Ry*0.5, LatVecs )
 
-    srand(1234)
+    Random.seed!(1234)
     Ngwx = pw.gvecw.Ngwx
     dVol = pw.CellVolume/prod(pw.Ns)
     
@@ -146,7 +146,7 @@ function test_spinpol( ; xc="VWN", Nspin=1 )
     LatVecs = gen_lattice_sc(16.0)
     pw = PWGrid( ecutwfc_Ry*0.5, LatVecs, kpoints=kpoints )
 
-    srand(1234)
+    Random.seed!(1234)
     Ngw = pw.gvecw.Ngw
     dVol = pw.CellVolume/prod(pw.Ns)
 

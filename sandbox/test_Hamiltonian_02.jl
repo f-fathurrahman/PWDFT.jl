@@ -44,7 +44,7 @@ function test_Nkpt_1()
     CellVolume = pw.CellVolume
     Ns = pw.Ns
     
-    srand(4321)
+    Random.seed!(4321)
     psi = init_random_psi( Ham )
 
     rhoe = calc_rhoe( Ham, psi )

@@ -74,7 +74,7 @@ function test_empty_lattice(lattice::String, band_file::String)
     psiks = Array{Array{ComplexF64,2},1}(undef,Nkspin)
     evals = zeros(Float64,Nstates,Nkspin)
 
-    srand(1234)
+    Random.seed!(1234)
     for ispin = 1:Nspin
     for ik = 1:Nkpt
         ikspin = ik + (ispin - 1)*Nkpt

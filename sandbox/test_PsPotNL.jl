@@ -20,7 +20,7 @@ function test_main()
     Nkspin = Nkpt*Nspin
     Nstates = Ham.electrons.Nstates
     Ngw = Ham.pw.gvecw.Ngw
-    srand(1234)
+    Random.seed!(1234)
     psiks = Array{Array{ComplexF64,2},1}(undef,Nkspin)
     #
     for ispin = 1:Nspin

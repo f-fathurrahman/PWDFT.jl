@@ -19,7 +19,7 @@ function test_Nkpt_1()
     Nkpt = pw.gvecw.kpoints.Nkpt
     Ngw = pw.gvecw.Ngw
     #
-    srand(1234)
+    Random.seed!(1234)
     psik = Array{Array{ComplexF64,2},1}(undef,Nkpt)
     for ik = 1:Nkpt
         psi = rand(Ngw[ik],Nstates) + im*rand(Ngw[ik],Nstates)
@@ -112,7 +112,7 @@ function test_Si()
     Nkpt = pw.gvecw.kpoints.Nkpt
     Ngw = pw.gvecw.Ngw
     #
-    srand(1234)
+    Random.seed!(1234)
     psik = Array{Array{ComplexF64,2},1}(undef,Nkpt)
     for ik = 1:Nkpt
         psi = rand(Ngw[ik],Nstates) + im*rand(Ngw[ik],Nstates)
@@ -191,7 +191,7 @@ function test_Ni_fcc(;Nspin=1)
     CellVolume = pw.CellVolume
 
     #
-    srand(1234)
+    Random.seed!(1234)
     psiks = Array{Array{ComplexF64,2},1}(undef,Nkspin)
     for ispin = 1:Nspin
     for ik = 1:Nkpt
