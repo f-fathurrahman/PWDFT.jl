@@ -65,7 +65,7 @@ function diag_LOBPCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
         if verbose
             @printf("LOBPCG iter = %8d, nconv=%d\n", iter, nconv)
             for ist = 1:Nstates
-                @printf("evals[%d] = %18.10f, devals = %18.10e\n", ist, evals[ist], devals[ist] )
+                @printf("evals[%3d] = %18.10f, devals = %18.10e\n", ist, evals[ist], devals[ist] )
             end
             println("Nlock = ", Nlock, " Nact = ", Nact)
         end
@@ -178,7 +178,7 @@ function diag_LOBPCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
     if verbose_last || verbose
         @printf("\nEigenvalues from diag_LOBPCG:\n\n")
         for ist = 1:Nstates
-            @printf("evals[%d] = %18.10f, devals = %18.10e\n", ist, evals[ist], devals[ist] )
+            @printf("evals[%3d] = %18.10f, devals = %18.10e\n", ist, evals[ist], devals[ist] )
         end
     end
     return evals, X

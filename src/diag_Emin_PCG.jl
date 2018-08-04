@@ -103,7 +103,7 @@ function diag_Emin_PCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
         if verbose
             @printf("CG step %8d = %18.10f %10.7e\n", iter, Ebands, diff)
             for ist = 1:Nstates
-                @printf("evals[%d] = %18.10f, devals = %18.10e\n", ist, evals[ist], devals[ist] )
+                @printf("evals[%3d] = %18.10f, devals = %18.10e\n", ist, evals[ist], devals[ist] )
             end
             @printf("iter %d nconv = %d\n", iter, nconv)
         end
@@ -143,7 +143,7 @@ function diag_Emin_PCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
     if verbose_last || verbose
         @printf("\nEigenvalues from diag_Emin_PCG:\n\n")
         for ist = 1:Nstates
-            @printf("evals[%d] = %18.10f devals = %18.10e\n", ist, evals[ist], devals[ist] )
+            @printf("evals[%3d] = %18.10f devals = %18.10e\n", ist, evals[ist], devals[ist] )
         end
     end
 

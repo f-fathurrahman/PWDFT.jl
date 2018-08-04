@@ -119,7 +119,7 @@ function diag_davidson( Ham::Hamiltonian, X0::Array{ComplexF64,2};
         if verbose
             @printf("\n")
             for ist = 1:Nstates
-                @printf("evals[%d] = %18.10f, devals = %18.10e\n", ist, evals[ist], devals[ist] )
+                @printf("evals[%3d] = %18.10f, devals = %18.10e\n", ist, evals[ist], devals[ist] )
             end
             @printf("iter %d nconv = %d\n", iter, nconv)
         end
@@ -141,7 +141,7 @@ function diag_davidson( Ham::Hamiltonian, X0::Array{ComplexF64,2};
     if verbose_last || verbose
         @printf("\nEigenvalues from diag_davidson:\n\n")
         for ist = 1:Nstates
-            @printf("evals[%d] = %18.10f, devals = %18.10e\n", ist, evals[ist], devals[ist] )
+            @printf("evals[%3d] = %18.10f, devals = %18.10e\n", ist, evals[ist], devals[ist] )
         end
     end
 
