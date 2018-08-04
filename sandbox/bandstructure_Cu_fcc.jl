@@ -69,7 +69,7 @@ function test_Cu_fcc()
     for ispin = 1:Nspin
     for ik = 1:Nkpt
         ikspin = ik + (ispin - 1)*Nkpt
-        psiks[ikspin] = ortho_gram_schmidt(rand(ComplexF64,Ngw[ik],Nstates))
+        psiks[ikspin] = ortho_sqrt(rand(ComplexF64,Ngw[ik],Nstates))
     end
     end
 

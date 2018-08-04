@@ -32,18 +32,20 @@ function test_01( diag_method::String )
 
         H  0.0   0.0   0.0
         """, in_bohr=true)
-    atoms.LatVecs = gen_lattice_fcc(6.0)
+    #atoms.LatVecs = gen_lattice_fcc(6.0)
+    atoms.LatVecs = gen_lattice_tetragonal_P(6.0,7.0)
     atoms.positions = atoms.LatVecs*atoms.positions
 
-    Random.seed!(1234)
+    Random.seed!(4321)
     kpoints = KPoints(atoms)
     # create random k-point
     kpoints.k = kpoints.RecVecs*rand( 0.0:0.01:0.5, (3,1) )
 
     pspfiles = ["../pseudopotentials/pade_gth/H-q1.gth"]
-    ecutwfc = 50.0
+    ecutwfc = 15.0
+    Nextra = 20
     Ham = free_electron_Hamiltonian(
-            atoms, pspfiles, ecutwfc, kpoints=kpoints, extra_states=6,
+            atoms, pspfiles, ecutwfc, kpoints=kpoints, extra_states=Nextra,
             verbose=false
           )
 
@@ -55,15 +57,15 @@ function test_01( diag_method::String )
 
     if diag_method == "LOBPCG"
         @time evals, psi = diag_LOBPCG(
-            Ham, psi, verbose=false, Nstates_conv=4, verbose_last=true
+            Ham, psi, verbose=false, Nstates_conv=Nextra+1, verbose_last=true
         )
     elseif diag_method == "davidson"
         @time evals, psi = diag_davidson(
-           Ham, psi, verbose=false, Nstates_conv=4, verbose_last=true
+           Ham, psi, verbose=false, Nstates_conv=Nextra+1, verbose_last=true
         )
     elseif diag_method == "PCG"
         @time evals, psi = diag_Emin_PCG(
-           Ham, psi, verbose=false, Nstates_conv=4, tol_ebands=0.0, NiterMax=20, verbose_last=true
+           Ham, psi, verbose=false, Nstates_conv=Nextra+1, verbose_last=true
         )
     else
         println("ERROR: unknown diag_method = ", diag_method)
@@ -101,7 +103,7 @@ function test_02( diag_method::String )
     pspfiles = ["../pseudopotentials/pade_gth/H-q1.gth"]
     ecutwfc = 50.0
     Ham = Hamiltonian(
-            atoms, pspfiles, ecutwfc, kpoints=kpoints, extra_states=4,
+            atoms, pspfiles, ecutwfc, kpoints=kpoints, extra_states=20,
           )
 
     Ngwx = Ham.pw.gvecw.Ngwx
@@ -109,7 +111,7 @@ function test_02( diag_method::String )
     psi = ortho_sqrt( rand(ComplexF64,Ngwx,Nstates) )
 
     if diag_method == "LOBPCG"
-        evals, psi = diag_LOBPCG(Ham, psi, verbose=false, Nstates_conv=1)
+        evals, psi = diag_LOBPCG(Ham, psi, verbose=true, Nstates_conv=0, tol=1e-6)
     elseif diag_method == "davidson"
         evals, psi = diag_davidson(Ham, psi, verbose=false, Nstates_conv=1)
     elseif diag_method == "PCG"
@@ -126,14 +128,13 @@ function test_02( diag_method::String )
 end
 
 test_01("LOBPCG")
-test_01("LOBPCG")
+#test_01("LOBPCG")
 
 test_01("davidson")
-test_01("davidson")
+#test_01("davidson")
 
 test_01("PCG")
-test_01("PCG")
-
+#test_01("PCG")
 
 #test_02("LOBPCG")
 #test_02("davidson")

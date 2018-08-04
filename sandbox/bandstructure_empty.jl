@@ -59,7 +59,7 @@ function test_empty_lattice(lattice::String, band_file::String)
     ecutwfc = 15.0
     pspfiles = ["../pseudopotentials/pade_gth/H-q1.gth"]
     Ham = free_electron_Hamiltonian(
-            atoms, pspfiles, 15.0, kpoints=kpoints, extra_states=3,
+            atoms, pspfiles, ecutwfc, kpoints=kpoints, extra_states=20,
             verbose=true
           )
 
@@ -92,24 +92,20 @@ function test_empty_lattice(lattice::String, band_file::String)
         @printf("\nispin = %d, ik = %d, ikspin=%d, Ngw = %d\n", ispin, ik, ikspin, Ngw[ik])
         @printf("kpts = [%f,%f,%f]\n", k[1,ik], k[2,ik], k[3,ik])
         
-        #evals[:,ikspin], psiks[ikspin] =
-        #diag_LOBPCG( Ham, psiks[ikspin], verbose_last=true )
+        evals[:,ikspin], psiks[ikspin] =
+        diag_LOBPCG( Ham, psiks[ikspin], verbose_last=true )
         
         #evals[:,ikspin], psiks[ikspin] =
         #diag_davidson( Ham, psiks[ikspin], verbose_last=true )
 
-        evals[:,ikspin], psiks[ikspin] =
-        diag_Emin_PCG( Ham, psiks[ikspin], verbose_last=true )
+        #evals[:,ikspin], psiks[ikspin] =
+        #diag_Emin_PCG( Ham, psiks[ikspin], verbose_last=true )
 
     end
     end
 
     dump_bandstructure( evals, kpoints.k, kpt_spec, kpt_spec_labels, filename=band_file )
 
-end
-
-function save_potential(Ham::Hamiltonian)
-    # TO BE IMPLEMENTED
 end
 
 #test_empty_lattice("sc", "TEMP_empty_lattice_sc.dat")
