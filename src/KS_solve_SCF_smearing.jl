@@ -38,7 +38,7 @@ function KS_solve_SCF_smearing!( Ham::Hamiltonian ;
         for ik = 1:Nkpt
             ikspin = ik + (ispin - 1)*Nkpt
             psi = rand(Ngw[ik],Nstates) + im*rand(Ngw[ik],Nstates)
-            psiks[ikspin] = ortho_gram_schmidt(psi)
+            psiks[ikspin] = ortho_sqrt(psi)
         end
         end
     else
@@ -188,11 +188,9 @@ function KS_solve_SCF_smearing!( Ham::Hamiltonian ;
             exit()
         end
 
-        for ispin = 1:Nspin
-            for ip = 1:Npoints
-                if Rhoe[ip,ispin] < 1e-12
-                    Rhoe[ip,ispin] = 1e-12
-                end
+        for rho in Rhoe
+            if rho < eps()
+                rho = 0.0
             end
         end
 
