@@ -8,10 +8,12 @@ function KS_solve_DCM!( Ham::Hamiltonian;
     Ns = pw.Ns
     Npoints = prod(Ns)
     ΔV = pw.CellVolume/Npoints
-    Focc = Ham.electrons.Focc
-    Nstates = Ham.electrons.Nstates
+    electrons = Ham.electrons
+    Focc = electrons.Focc
+    Nocc = electrons.Nstates_occ
+    Nstates = electrons.Nstates
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
-    Nspin = Ham.electrons.Nspin
+    Nspin = electrons.Nspin
 
     Nkspin = Nkpt*Nspin
 
@@ -21,13 +23,7 @@ function KS_solve_DCM!( Ham::Hamiltonian;
     # Initial wave function
     #
     if startingwfc == nothing
-        Random.seed!(1234)
-        for ispin = 1:Nspin
-        for ik = 1:Nkpt
-            ikspin = ik + (ispin - 1)*Nkpt
-            psiks[ikspin] = ortho_gram_schmidt( rand(ComplexF64,Ngw[ik],Nstates) )
-        end
-        end
+        psiks = gen_rand_wavefun(pw, electrons)
     else
         psiks = startingwfc
     end
@@ -68,6 +64,8 @@ function KS_solve_DCM!( Ham::Hamiltonian;
     G = Array{Array{ComplexF64,2},1}(undef,Nkspin)
     T = Array{Array{Float64,2},1}(undef,Nkspin)
     B = Array{Array{Float64,2},1}(undef,Nkspin)
+    A = Array{Array{Float64,2},1}(undef,Nkspin)
+    C = Array{Array{Float64,2},1}(undef,Nkspin)
     for ispin = 1:Nspin
     for ik = 1:Nkpt
         ikspin = ik + (ispin - 1)*Nkpt
@@ -77,13 +75,18 @@ function KS_solve_DCM!( Ham::Hamiltonian;
         G[ikspin] = zeros( ComplexF64, 3*Nstates, 3*Nstates )
         T[ikspin] = zeros( Float64, 3*Nstates, 3*Nstates )
         B[ikspin] = zeros( Float64, 3*Nstates, 3*Nstates )
+        A[ikspin] = zeros( Float64, 3*Nstates, 3*Nstates )
+        C[ikspin] = zeros( Float64, 3*Nstates, 3*Nstates )        
     end
     end
+
+    D = zeros(Float64,3*Nstates,Nkspin)  # array for saving eigenvalues of subspace problem
 
     set1 = 1:Nstates
     set2 = Nstates+1:2*Nstates
     set3 = 2*Nstates+1:3*Nstates
     set4 = Nstates+1:3*Nstates
+    set5 = 1:2*Nstates
 
     MaxInnerSCF = 3
 
@@ -113,11 +116,18 @@ function KS_solve_DCM!( Ham::Hamiltonian;
             #
             # Project kinetic and ionic potential
             #
-            KY = op_K( Ham, Y[ikspin] ) + op_V_Ps_loc( Ham, Y[ikspin] )
-            #
-            T[ikspin] = real( Y[ikspin]'*KY )
-            B[ikspin] = real( Y[ikspin]'*Y[ikspin] )
-            B[ikspin] = 0.5*( B[ikspin] + B[ikspin]' )
+            if iter > 1
+                KY = op_K( Ham, Y[ikspin] ) + op_V_Ps_loc( Ham, Y[ikspin] )
+                T[ikspin] = real(Y[ikspin]'*KY)
+                B[ikspin] = real(Y[ikspin]'*Y[ikspin])
+                B[ikspin] = 0.5*( B[ikspin] + B[ikspin]' )
+            else
+                # only set5=1:2*Nstates is active for iter=1
+                KY = op_K( Ham, Y[ikspin][:,set5] ) + op_V_Ps_loc( Ham, Y[ikspin][:,set5] )
+                T[ikspin][set5,set5] = real(Y[ikspin][:,set5]'*KY)
+                bb = real(Y[ikspin][set5,set5]'*Y[ikspin][set5,set5])
+                B[ikspin][set5,set5] = 0.5*( bb + bb' )
+            end
 
             if iter > 1
                 G[ikspin] = Matrix(1.0I, 3*Nstates, 3*Nstates) #eye(3*Nstates)
@@ -140,23 +150,53 @@ function KS_solve_DCM!( Ham::Hamiltonian;
                 #
                 V_loc = Ham.potentials.Hartree + Ham.potentials.XC[:,ispin]
                 #
-                if Ham.pspotNL.NbetaNL > 0
-                    VY = op_V_Ps_nloc( Ham, Y[ikspin] ) + op_V_loc( ik, pw, V_loc, Y[ikspin] )
+                if iter > 1
+                    yy = Y[ikspin]
                 else
-                    VY = op_V_loc( ik, pw, V_loc, Y[ikspin] )
+                    yy = Y[ikspin][:,set5]
                 end
                 #
-                A = real( T[ikspin] + Y[ikspin]'VY )
-                A = 0.5*( A + A' )
+                if Ham.pspotNL.NbetaNL > 0
+                    VY = op_V_Ps_nloc( Ham, yy ) + op_V_loc( ik, pw, V_loc, yy )
+                else
+                    VY = op_V_loc( ik, pw, V_loc, yy )
+                end
                 #
-                D, G[ikspin] = eigen( A, B[ikspin] )
-                evals[:,ikspin] = D[1:Nstates]
+                if iter > 1
+                    A[ikspin] = real( T[ikspin] + yy'*VY )
+                    A[ikspin] = 0.5*( A[ikspin] + A[ikspin]' )
+                else
+                    aa = real( T[ikspin][set5,set5] + yy'*VY )
+                    A[ikspin] = 0.5*( aa + aa' )
+                end
                 #
-                # update
-                psiks[ikspin] = Y[ikspin]*G[ikspin][:,set1]
+                if iter > 1
+                    BG = B[ikspin]*G[ikspin][:,1:Nocc]
+                    C[ikspin] = real( BG*BG' )
+                    C[ikspin] = 0.5*( C[ikspin] + C[ikspin]' )
+                else
+                    BG = B[ikspin][set5,set5]*G[ikspin][set5,1:Nocc]
+                    cc = real( BG*BG' )
+                    C[ikspin][set5,set5] = 0.5*( cc + cc' )
+                end
+                #
+                if iter > 1
+                    D[:,ikspin], G[ikspin] = eigen( A[ikspin], B[ikspin] )
+                else
+                    D[set5,ikspin], G[ikspin][set5,set5] =
+                    eigen( A[ikspin][set5,set5], B[ikspin][set5,set5] )
+                end
+                #
+                # update wavefunction
+                if iter > 1
+                    psiks[ikspin] = Y[ikspin]*G[ikspin][:,set1]
+                    ortho_sqrt!(psiks[ikspin])  # is this necessary ?
+                else
+                    psiks[ikspin] = Y[ikspin][:,set5]*G[ikspin][set5,set1]
+                    ortho_sqrt!(psiks[ikspin])
+                end
             end
-            end
-            
+            end 
 
             for ispin = 1:Nspin
                 idxset = (Nkpt*(ispin-1)+1):(Nkpt*ispin)

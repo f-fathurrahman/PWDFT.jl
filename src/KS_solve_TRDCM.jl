@@ -8,11 +8,12 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
     Ns = pw.Ns
     Npoints = prod(Ns)
     ΔV = pw.CellVolume/Npoints
-    Focc = Ham.electrons.Focc
-    Nstates = Ham.electrons.Nstates
-    Nocc = Ham.electrons.Nstates_occ
+    electrons = Ham.electrons
+    Focc = electrons.Focc
+    Nstates = electrons.Nstates
+    Nocc = electrons.Nstates_occ
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
-    Nspin = Ham.electrons.Nspin
+    Nspin = electrons.Nspin
 
     Nkspin = Nkpt*Nspin
 
@@ -22,13 +23,7 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
     # Initial wave function
     #
     if startingwfc == nothing
-        Random.seed!(1234)
-        for ispin = 1:Nspin
-        for ik = 1:Nkpt
-            ikspin = ik + (ispin - 1)*Nkpt
-            psiks[ikspin] = ortho_gram_schmidt( rand(ComplexF64,Ngw[ik],Nstates) )
-        end
-        end
+        psiks = gen_rand_wavefun(pw, electrons)
     else
         psiks = startingwfc
     end
@@ -52,13 +47,12 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
         Ham.ispin = ispin
         ikspin = ik + (ispin - 1)*Nkpt
         evals[:,ikspin], psiks[ikspin] =
-        diag_LOBPCG( Ham, psiks[ikspin], verbose_last=false, NiterMax=10 )
+        diag_LOBPCG( Ham, psiks[ikspin], verbose_last=true, NiterMax=100 )
     end
     end
 
     Ham.energies = calc_energies( Ham, psiks )
-    
-    Etot = Ham.energies.Total
+    Etot = sum(Ham.energies)
     Etot_old = Etot
 
     # subspace
@@ -95,7 +89,7 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
     set5 = 1:2*Nstates
 
     MaxInnerSCF = 3
-    MAXTRY = 10
+    MAXTRY = 5
     FUDGE = 1e-12
     SMALL = 1e-12
 
@@ -149,11 +143,11 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
         end
         end
         
-        @printf("DCM iter: %3d\n", iter)
+        @printf("TRDCM iter: %3d\n", iter)
 
         sigma[:] .= 0.0  # reset sigma to zero at the beginning of inner SCF iteration
         numtry = 0
-        Etot0 = Ham.energies.Total
+        Etot0 = sum(Ham.energies)
 
         println("Etot0 = ", Etot0)
 
@@ -217,15 +211,15 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
                     end
                 end
                 #
-                evals[:,ikspin] = D[1:Nstates,ikspin]  # XXX Not needed ?
+                evals[:,ikspin] = D[1:Nstates,ikspin] + sigma[ikspin]
                 #
                 # update wavefunction
                 if iter > 1
                     psiks[ikspin] = Y[ikspin]*G[ikspin][:,set1]
-                    ortho_gram_schmidt!(psiks[ikspin])  # is this necessary ?
+                    ortho_sqrt!(psiks[ikspin])  # is this necessary ?
                 else
                     psiks[ikspin] = Y[ikspin][:,set5]*G[ikspin][set5,set1]
-                    ortho_gram_schmidt!(psiks[ikspin])
+                    ortho_sqrt!(psiks[ikspin])
                 end
             end
             end
@@ -238,11 +232,13 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
 
             # Calculate energies once again
             Ham.energies = calc_energies( Ham, psiks )
-            Etot = Ham.energies.Total
+            Etot = sum(Ham.energies)
 
             println("Etot = ", Etot)
 
             if Etot > Etot0
+
+                @printf("TRDCM: %f > %f: Trust region will be imposed\n", Etot, Etot0)
 
                 # Total energy is increased, impose trust region
                 # Do this for all kspin
@@ -260,9 +256,13 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
 
                     @printf("ikspin = %d, gapmax = %f\n", ikspin, gapmax[ikspin])
                     @printf("ikspin = %d, gap0 = %f\n", ikspin, gap0)
+                    
+                    println("D = ", D)
+                    println("gaps = ", gaps)
 
                     while (gap0 < 0.9*gapmax[ikspin]) & (numtry < MAXTRY)
-                        println("Increase sigma to fix gap0")
+                        println("Increase sigma to fix gap0:")
+                        @printf("gap0 : %f < %f\n", gap0, 0.9*gapmax[ikspin])
                         if abs(sigma[ikspin]) < SMALL # approx for sigma == 0.0
                             # initial value for sigma
                             sigma[ikspin] = 2*gapmax[ikspin]
@@ -292,8 +292,10 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
             while (Etot > Etot0) &
                   (abs(Etot-Etot0) > FUDGE*abs(Etot0)) &
                   (numtry < MAXTRY)
+                @printf("Increase sigma part 2: %f > %f ?\n", Etot, Etot0)
                 #
                 # update wavefunction
+                #
                 for ikspin = 1:Nkspin
                     if iter > 1
                         psiks[ikspin] = Y[ikspin]*G[ikspin][:,set1]
@@ -304,15 +306,20 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
                     end
                 end
                 #
+                for ispin = 1:Nspin
+                    idxset = (Nkpt*(ispin-1)+1):(Nkpt*ispin)
+                    Rhoe[:,ispin] = calc_rhoe( pw, Focc[:,idxset], psiks[idxset] )
+                end
+                #
                 update!( Ham, Rhoe )    
                 # Calculate energies once again
                 Ham.energies = calc_energies( Ham, psiks )
-                Etot = Ham.energies.Total
+                Etot = sum(Ham.energies)
                 #
                 if Etot > Etot0
                     println("Increase sigma part 2")
                     for ikspin = 1:Nkspin
-                        if abs(sigma[ikspin]) < SMALL
+                        if abs(sigma[ikspin]) > SMALL # sigma is not 0
                             sigma[ikspin] = 2*sigma[ikspin]
                         else
                             sigma[ikspin] = 1.2*gapmax[ikspin]
@@ -334,7 +341,7 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
 
         # Calculate energies once again
         Ham.energies = calc_energies( Ham, psiks )
-        Etot = Ham.energies.Total
+        Etot = sum(Ham.energies)
         diffE = abs( Etot - Etot_old )
         @printf("DCM: %5d %18.10f %18.10e\n", iter, Etot, diffE)
 

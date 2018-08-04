@@ -23,6 +23,9 @@ function main( ; method="SCF" )
     elseif method == "DCM"
         KS_solve_DCM!( Ham, NiterMax=15 )
 
+    elseif method == "TRDCM"
+        KS_solve_TRDCM!( Ham, NiterMax=15 )
+
     else
         println("ERROR: unknown method = ", method)
     end
