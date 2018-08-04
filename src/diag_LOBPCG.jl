@@ -34,7 +34,8 @@ function diag_LOBPCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
     devals = ones(Float64,Nstates)
     evals_old = copy(evals)
 
-    tfudge = 1e5
+    #tfudge = 1e5
+    SMALL = 10.0*eps()
 
     IS_CONVERGED = false
     
@@ -55,8 +56,8 @@ function diag_LOBPCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
 
         nconv = length( findall( devals .< tol ) )
         
-        ilock = findall( devals .<= tol/tfudge )
-        iact  = findall( devals .> tol/tfudge )
+        ilock = findall( devals .<= SMALL )
+        iact  = findall( devals .> SMALL )
 
         Nlock = length(ilock)
         Nact = length(iact)
@@ -73,59 +74,95 @@ function diag_LOBPCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
         if nconv >= Nstates_conv
             IS_CONVERGED = true
             if verbose || verbose_last
-                println("LOBPCG convergence: nconv in iter ", iter)
+                @printf("LOBPCG convergence: nconv = %d in %d iterations\n", nconv, iter)
             end
             break
         end
 
         # apply preconditioner
         W = Kprec( Ham.ik, pw, R )
-        
-        #
-        # nlock == 0
-        #
-        HW = op_H( Ham, W )
-        #
-        C  = W'*W
-        #C = 0.5*( C + C' )
-        #
-        R  = (cholesky(Hermitian(C))).U
-        W  = W/R
-        HW = HW/R
-        #
-        Q  = [X W]
-        HQ = [HX HW]
-        if iter > 1
-            Q  = [Q P]
-            HQ = [HQ HP]
-        end
 
-        T = Q'*(HQ)
-        #T = 0.5*(T+T')
-        T = Hermitian(T)
-        
-        G = Q'*Q
-        #G = 0.5*(G+G')
-        G = Hermitian(G)
+        if Nlock > 0
+            Xlock = X[:,ilock]
+            Ylock = Kprec( Ham.ik, pw, Xlock )
+            Slock = Xlock'*Xlock
+            for j = 1:Nact
+                W[:,iact[j]] = W[:,iact[j]] - Ylock*( Slock\( Xlock'*W[:,iact[j]] ) )
+             end
+             #
+             X[:,iact] = X[:,iact] - Xlock*(Xlock'*X[:,iact])
+             W[:,iact] = W[:,iact] - Xlock*(Xlock'*W[:,iact])
+             #
+             HX[:,iact] = op_H( Ham, X[:,iact] )
+             HW = op_H( Ham, W[:,iact] )
+             #
+             HX[:,iact] = HX[:,iact] - Xlock*( Xlock'*HX[:,iact] )
+             HW = HW - Xlock*(Xlock'*HW)
+             #
+             C = W[:,iact]'*W[:,iact] #C = (C+C')/2;
+             R = (cholesky(Hermitian(C))).U
+             W[:,iact] = W[:,iact]/R
+             HW = HW/R
+             #
+             Q  = [X[:,iact] W[:,iact]]
+             HQ = [HX[:,iact] HW]
 
-        sd, S = eigen( T, G ) # evals, evecs
-        U = S[:,1:Nstates]
-        X = Q*U
-        HX = HQ*U
-        if iter > 1
-            set2 = Nstates+1:2*Nstates
-            set3 = 2*Nstates+1:3*Nstates
-            P  = W*U[set2,:] + P*U[set3,:]
-            HP = HW*U[set2,:] + HP*U[set3,:]
-            C = P'*P
-            #C = 0.5*(C + C')
-            R = (cholesky(Hermitian(C))).U
-            P = P/R
-            HP = HP/R
+             T = Hermitian(Q'*(HQ))
+             G = Hermitian(Q'*Q)
+             sd, S = eigen( T, G ) # evals, evecs
+
+             U = S[:,1:Nact]
+             Xact = Q*U;
+             X = [Xlock Xact]
+             T = Hermitian( X'*op_H(Ham,X) ) #; T = (T+T')/2;
+             evalT, evecsT = eigen(T);
+
+             X = X*evecsT
+             HX = op_H(Ham, X)
+
         else
-            P  = copy(W)
-            HP = copy(HW)
-        end
+            # nlock == 0
+            HW = op_H( Ham, W )
+            #
+            C  = W'*W
+            #C = 0.5*( C + C' )
+            #
+            R  = (cholesky(Hermitian(C))).U
+            W  = W/R
+            HW = HW/R
+            #
+            Q  = [X W]
+            HQ = [HX HW]
+            if iter > 1
+                Q  = [Q P]
+                HQ = [HQ HP]
+            end
+
+            T = Hermitian(Q'*(HQ))
+            G = Hermitian(Q'*Q)
+            sd, S = eigen(T, G) # evals, evecs
+            #
+            U = S[:,1:Nstates]
+            X = Q*U
+            HX = HQ*U
+            if iter > 1
+                set2 = Nstates+1:2*Nstates
+                set3 = 2*Nstates+1:3*Nstates
+                P  = W*U[set2,:] + P*U[set3,:]
+                HP = HW*U[set2,:] + HP*U[set3,:]
+                C = P'*P
+                #C = 0.5*(C + C')
+                R = (cholesky(Hermitian(C))).U
+                P = P/R
+                HP = HP/R
+            else
+                P  = copy(W)
+                HP = copy(HW)
+            end
+
+        end  # if nlock 
+
+
 
         iter = iter + 1
     end
