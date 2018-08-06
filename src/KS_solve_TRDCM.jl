@@ -96,6 +96,8 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
     sigma = zeros(Float64,Nkspin)
     gapmax = zeros(Float64,Nkspin)
 
+    CONVERGED = 0
+
     for iter = 1:NiterMax
         
         for ispin = 1:Nspin
@@ -284,7 +286,7 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
             println("sigma = ", sigma)
 
             while (Etot > Etot0) &
-                  (abs(Etot-Etot0) > FUDGE*abs(Etot0)) &
+                  #(abs(Etot-Etot0) > FUDGE*abs(Etot0)) &
                   (numtry < MAXTRY)
                 @printf("Increase sigma part 2: %f > %f ?\n", Etot, Etot0)
                 #
@@ -337,10 +339,16 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
         Ham.energies = calc_energies( Ham, psiks )
         Etot = sum(Ham.energies)
         diffE = abs( Etot - Etot_old )
-        @printf("DCM: %5d %18.10f %18.10e\n", iter, Etot, diffE)
+        @printf("TRDCM: %5d %18.10f %18.10e\n", iter, Etot, diffE)
 
-        if abs(diffE) < ETOT_CONV_THR
-            @printf("DCM is converged: iter: %d , diffE = %10.7e\n", iter, diffE)
+        if diffE < ETOT_CONV_THR
+            CONVERGED = CONVERGED + 1
+        else  # reset CONVERGED
+            CONVERGED = 0
+        end
+
+        if CONVERGED >= 2
+            @printf("TRDCM is converged: iter: %d , diffE = %10.7e\n", iter, diffE)
             break
         end
 
