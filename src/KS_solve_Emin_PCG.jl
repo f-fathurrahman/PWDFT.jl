@@ -1,7 +1,7 @@
-#
-# Ham.potentials.V_Ps_loc should be initialized
-# Ham.energies.NN should be calculated if needed
-#
+"""
+Solves Kohn-Sham problem using direct energy minimization as described
+by Ismail-Beigi and Arias.
+"""
 function KS_solve_Emin_PCG!( Ham::Hamiltonian;
                              startingwfc=nothing, savewfc=false,
                              α_t=3e-5, NiterMax=200, verbose=true,
@@ -23,15 +23,7 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
     # Initial wave function
     #
     if startingwfc == nothing
-        #Random.seed!(1234)
-        #for ispin = 1:Nspin
-        #for ik = 1:Nkpt
-        #    ikspin = ik + (ispin-1)*Nkpt
-        #    psi = rand(ComplexF64,Ngw[ik],Nstates)
-        #    psiks[ikspin] = ortho_sqrt(psi)
-        #end
-        #end
-        psiks = gen_rand_wavefun(pw, electrons)
+        psiks = gen_rand_wavefunc(pw, electrons)
     else
         psiks = startingwfc
     end

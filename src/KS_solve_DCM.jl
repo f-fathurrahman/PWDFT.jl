@@ -1,3 +1,7 @@
+"""
+Solves Kohn-Sham problem using direct constrined minimization (DCM) as described
+by Yang.
+"""
 function KS_solve_DCM!( Ham::Hamiltonian;
                         NiterMax = 100, startingwfc=nothing,
                         savewfc=false, ETOT_CONV_THR=1e-6 )
@@ -23,7 +27,7 @@ function KS_solve_DCM!( Ham::Hamiltonian;
     # Initial wave function
     #
     if startingwfc == nothing
-        psiks = gen_rand_wavefun(pw, electrons)
+        psiks = gen_rand_wavefunc(pw, electrons)
     else
         psiks = startingwfc
     end

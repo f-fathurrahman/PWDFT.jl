@@ -1,3 +1,7 @@
+"""
+Solves Kohn-Sham problem using traditional self-consistent field (SCF)
+iterations with density mixing.
+"""
 function KS_solve_SCF!( Ham::Hamiltonian ;
                         startingwfc=nothing, savewfc=false,
                         betamix = 0.5, NiterMax=100, verbose=false,
@@ -25,7 +29,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
     # Random guess of wave function
     #
     if startingwfc==nothing
-        psiks = gen_rand_wavefun(pw, electrons)
+        psiks = gen_rand_wavefunc(pw, electrons)
     else
         psiks = startingwfc
     end
@@ -172,7 +176,6 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
             end
         elseif mix_method == "anderson"
             # FIXME: df and dv is not modified when we call it by df[:,:] or dv[:,:]
-            #Rhoe[:,:] = andersonmix!( Rhoe, Rhoe_new, betamix, df, dv, iter, MIXDIM )
             Rhoe[:,:] = mix_anderson!( Nspin, Rhoe, Rhoe_new, betamix, df, dv, iter, MIXDIM )
         else
             @printf("ERROR: Unknown mix_method = %s\n", mix_method)

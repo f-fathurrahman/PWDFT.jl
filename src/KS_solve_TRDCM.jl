@@ -23,7 +23,7 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
     # Initial wave function
     #
     if startingwfc == nothing
-        psiks = gen_rand_wavefun(pw, electrons)
+        psiks = gen_rand_wavefunc(pw, electrons)
     else
         psiks = startingwfc
     end

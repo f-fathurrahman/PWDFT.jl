@@ -1,6 +1,6 @@
 
 # XXX Need to be updated for spin-polarized case
-function gen_rand_wavefun( pw::PWGrid, electrons::Electrons; seed=1234 )
+function gen_rand_wavefunc( pw::PWGrid, electrons::Electrons; seed=1234 )
 
     Nkpt = pw.gvecw.kpoints.Nkpt
     Nspin = electrons.Nspin
