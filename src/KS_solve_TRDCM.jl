@@ -89,7 +89,7 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
     set5 = 1:2*Nstates
 
     MaxInnerSCF = 3
-    MAXTRY = 5
+    MAXTRY = 10
     FUDGE = 1e-12
     SMALL = 1e-12
 
@@ -254,12 +254,6 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
                     end
                     gap0 = D[Nocc+1,ikspin] - D[Nocc,ikspin]
 
-                    @printf("ikspin = %d, gapmax = %f\n", ikspin, gapmax[ikspin])
-                    @printf("ikspin = %d, gap0 = %f\n", ikspin, gap0)
-                    
-                    println("D = ", D)
-                    println("gaps = ", gaps)
-
                     while (gap0 < 0.9*gapmax[ikspin]) & (numtry < MAXTRY)
                         println("Increase sigma to fix gap0:")
                         @printf("gap0 : %f < %f\n", gap0, 0.9*gapmax[ikspin])
@@ -269,7 +263,7 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
                         else
                             sigma[ikspin] = 2*sigma[ikspin]
                         end
-                        @printf("ikspin = %d, sigma = %f\n", ikspin, sigma[ikspin])
+                        @printf("fix gap0: ikspin = %d, sigma = %f\n", ikspin, sigma[ikspin])
                         #
                         if iter > 1
                             D[:,ikspin], G[ikspin] = eigen( A[ikspin] - sigma[ikspin]*C[ikspin], B[ikspin] )
