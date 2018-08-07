@@ -71,6 +71,9 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
 
     Etot_old = 0.0
 
+    # calculate E_NN
+    Ham.energies.NN = calc_E_NN( Ham.atoms )
+
     # Calculate energy at this psi
     energies = calc_energies(Ham, psiks)
     Ham.energies = energies

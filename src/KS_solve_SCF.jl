@@ -88,6 +88,9 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
     @printf("Density mixing with betamix = %10.5f\n", betamix)
     @printf("\n")
 
+    # calculate E_NN
+    Ham.energies.NN = calc_E_NN( Ham.atoms )
+
     CONVERGED = 0
 
     for iter = 1:NiterMax

@@ -102,6 +102,9 @@ function KS_solve_SCF_smearing!( Ham::Hamiltonian ;
     @printf("Smearing = %f\n", kT)
     @printf("\n")
 
+    # calculate E_NN
+    Ham.energies.NN = calc_E_NN( Ham.atoms )
+
     CONVERGED = 0
 
     for iter = 1:NiterMax

@@ -51,6 +51,9 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
     end
     end
 
+    # calculate E_NN
+    Ham.energies.NN = calc_E_NN( Ham.atoms )
+    #
     Ham.energies = calc_energies( Ham, psiks )
     Etot = sum(Ham.energies)
     Etot_old = Etot

@@ -45,6 +45,9 @@ function KS_solve_DCM!( Ham::Hamiltonian;
     Rhoe_old = copy(Rhoe)
 
     evals = zeros(Float64,Nstates,Nkspin)
+
+    # calculate E_NN
+    Ham.energies.NN = calc_E_NN( Ham.atoms )
     
     # Starting eigenvalues and psi
     for ispin = 1:Nspin
