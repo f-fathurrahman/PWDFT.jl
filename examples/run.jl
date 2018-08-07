@@ -39,7 +39,14 @@ function driver()
     end
     
     println("str_prg = ", str_prg)
+    
+    # Run the main function two times
+    # Set random seed to a same state before calling the main function
+
+    Random.seed!(1234)
     eval( Meta.parse(str_prg) )
+    
+    Random.seed!(1234)
     eval( Meta.parse(str_prg) )
 
     t2 = time_stamp("\nrun.jl ends")
