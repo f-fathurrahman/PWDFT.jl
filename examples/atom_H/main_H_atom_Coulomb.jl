@@ -15,9 +15,6 @@ function main( ; method="SCF" )
     ecutwfc_Ry = 30.0
     Ham = Hamiltonian( atoms, ecutwfc_Ry*0.5 )
 
-    # calculate E_NN
-    Ham.energies.NN = calc_E_NN( atoms )
-
     #
     # Solve the KS problem
     #

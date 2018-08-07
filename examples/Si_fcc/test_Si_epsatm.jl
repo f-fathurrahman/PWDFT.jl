@@ -13,7 +13,6 @@ function test_main()
     atoms.LatVecs = gen_lattice_fcc(10.2631)
     atoms.positions = atoms.LatVecs*atoms.positions
     println(atoms)
-    write_xsf( "TEMP_Si.xsf", atoms )
 
     # Initialize Hamiltonian
     pspfiles = ["../../pseudopotentials/pade_gth/Si-q4.gth"]

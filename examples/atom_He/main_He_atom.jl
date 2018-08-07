@@ -10,20 +10,14 @@ function main( ; method="SCF" )
     ecutwfc_Ry = 30.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5 )
 
-    # calculate E_NN
-    Ham.energies.NN = calc_E_NN( atoms )
-
     if method == "SCF"
         KS_solve_SCF!( Ham )
-        println("\nAfter calling KS_solve_SCF:")
 
     elseif method == "Emin"
         KS_solve_Emin_PCG!( Ham )
-        println("\nAfter calling KS_solve_Emin_PCG:")
 
     elseif method == "DCM"
         KS_solve_DCM!( Ham, NiterMax=15 )
-        println("\nAfter calling KS_solve_Emin_DCM:")
 
     else
         println("ERROR: unknown method = ", method)

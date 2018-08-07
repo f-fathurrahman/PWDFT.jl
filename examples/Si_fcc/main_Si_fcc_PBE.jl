@@ -17,9 +17,6 @@ function main( ; method="SCF" )
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5,
                          xcfunc="PBE", meshk=[3,3,3], verbose=true )
 
-    # calculate E_NN
-    Ham.energies.NN = calc_E_NN( atoms )
-
     #
     # Solve the KS problem
     #

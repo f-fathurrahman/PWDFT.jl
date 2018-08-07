@@ -10,16 +10,12 @@ function main( ; method="SCF" )
     atoms.LatVecs = gen_lattice_fcc(5.6537*ANG2BOHR)
     atoms.positions = atoms.LatVecs*atoms.positions
     println(atoms)
-    write_xsf( "TEMP_GaAs.xsf", atoms )
 
     # Initialize Hamiltonian
     pspfiles = ["../pseudopotentials/pade_gth/Ga-q3.gth",
                 "../pseudopotentials/pade_gth/As-q5.gth"]
     ecutwfc_Ry = 30.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, meshk=[4,4,4], verbose=true )
-
-    # calculate E_NN
-    Ham.energies.NN = calc_E_NN( atoms )
 
     #
     # Solve the KS problem

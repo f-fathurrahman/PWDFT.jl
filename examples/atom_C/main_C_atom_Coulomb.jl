@@ -17,9 +17,6 @@ function main( ; method="SCF" )
     # Set Focc manually
     Ham.electrons.Focc[:,1] = [2.0, 4.0/3, 4.0/3, 4.0/3]
 
-    # calculate E_NN
-    Ham.energies.NN = calc_E_NN( atoms )
-
     if method == "SCF"
         KS_solve_SCF!( Ham, mix_method="anderson", betamix=0.5 )
 

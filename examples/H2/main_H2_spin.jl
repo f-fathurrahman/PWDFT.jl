@@ -11,9 +11,6 @@ function main( ; method="SCF" )
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5,
                          Nspin=2, verbose=true, extra_states=0 )
 
-    # calculate E_NN
-    Ham.energies.NN = calc_E_NN( atoms )
-
     if method == "SCF"
         KS_solve_SCF!( Ham, mix_method="anderson" )
 

@@ -10,9 +10,6 @@ function main( ; method="SCF" )
     pspfiles = ["../pseudopotentials/pade_gth/O-q6.gth"]
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5 )
 
-    # calculate E_NN
-    Ham.energies.NN = calc_E_NN( atoms )
-
     if method == "SCF"
         KS_solve_SCF!( Ham, mix_method="anderson", betamix=0.2 )
 
