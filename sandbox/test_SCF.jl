@@ -115,16 +115,14 @@ function create_Hamiltonian_Co_atom()
     ecutwfc_Ry = 30.0
     pspfiles = ["../pseudopotentials/pade_gth/Co-q9.gth"]
     Ham = Hamiltonian(
-        atoms, pspfiles, ecutwfc_Ry*0.5, verbose=true, Nspin=2, extra_states=1
+        atoms, pspfiles, ecutwfc_Ry*0.5, verbose=true, Nspin=2, extra_states=3
         )
-    Ham.electrons.Focc[:,1] = [1.0, 1.0, 1.0, 1.0, 1.0, 0.0]
-    Ham.electrons.Focc[:,2] = [1.0, 1.0, 1.0, 1.0, 0.0, 0.0]
 
-    println("\nFocc is set manually\n")
-    println(Ham.electrons)
-
-    # calculate E_NN
-    Ham.energies.NN = calc_E_NN( atoms )
+    # set manually
+    #Ham.electrons.Focc[:,1] = [1.0, 1.0, 1.0, 1.0, 0.5, 0.0]
+    #Ham.electrons.Focc[:,2] = [1.0, 1.0, 1.0, 1.0, 0.5, 0.0]
+    #println("\nFocc is set manually\n")
+    #println(Ham.electrons)
 
     return Ham
 end
@@ -143,14 +141,14 @@ function test_main()
     #    Ham, ETOT_CONV_THR=1e-6, NiterMax=50, betamix=0.5, update_psi="LOBPCG"
     #)
     @time alt1_KS_solve_SCF_spinpol!(
-        Ham, ETOT_CONV_THR=1e-6, NiterMax=10, betamix=0.1, update_psi="LOBPCG"
+        Ham, ETOT_CONV_THR=1e-6, NiterMax=100, betamix=0.1, update_psi="LOBPCG",
+        use_smearing=true, kT=1e-3
     )
 
     #@time KS_solve_SCF_spin!(
     #    Ham, ETOT_CONV_THR=1e-6, NiterMax=50, betamix=0.5, update_psi="LOBPCG"
     #)
 
-    
     Nstates = Ham.electrons.Nstates
     ebands = Ham.electrons.ebands
     

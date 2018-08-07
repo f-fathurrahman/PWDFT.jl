@@ -3,7 +3,9 @@ function alt1_KS_solve_SCF_spinpol!( Ham::Hamiltonian ;
                              betamix = 0.7, NiterMax=100, verbose=false,
                              check_rhoe_after_mix=true,
                              update_psi="LOBPCG", cheby_degree=8,
-                             ETOT_CONV_THR=1e-6 )
+                             ETOT_CONV_THR=1e-6,
+                             use_smearing=false,
+                             kT=0.01 )
     
     @assert( Ham.pw.gvecw.kpoints.Nkpt == 1 )
     @assert( Ham.electrons.Nspin == 2 )
@@ -16,12 +18,14 @@ function alt1_KS_solve_SCF_spinpol!( Ham::Hamiltonian ;
     dVol = pw.CellVolume/Npoints
     electrons = Ham.electrons
     Nelectrons = electrons.Nelectrons
-    Focc = electrons.Focc
+    Focc = copy(electrons.Focc)
     Nstates = electrons.Nstates
     Nstates_occ = electrons.Nstates_occ
 
     Nspin = 2  # HARDCODED !!
     Nkpt = 1 # HARDCODED
+
+    wk = [1.0] # HARDCODED
 
     # Random guess of wave function
     if startingwfc==nothing
@@ -45,7 +49,12 @@ function alt1_KS_solve_SCF_spinpol!( Ham::Hamiltonian ;
 
     Rhoe_new = zeros(Float64,Npoints,Nspin)
 
+    Rhoe_tot = Rhoe[:,1] + Rhoe[:,2]
     magn_den = Rhoe[:,1] - Rhoe[:,2]
+
+    # Rhoe_tot + magn_den = 2*Rhoe[:,1]
+    # Rhoe_tot - magn_den = 2*Rhoe[:,2]
+
 
     println("integ total Rhoe = ", sum(Rhoe)*dVol)
     println("integ magn_den   = ", sum(magn_den)*dVol)
@@ -114,6 +123,11 @@ function alt1_KS_solve_SCF_spinpol!( Ham::Hamiltonian ;
             exit()
         end
 
+        if use_smearing
+            Focc, E_fermi = calc_Focc( evals, wk, Nelectrons, kT, Nspin=Nspin )
+            Entropy = calc_entropy( Focc, wk, kT, Nspin=Nspin )
+        end
+
         for ispin = 1:Nspin
             idxset = (Nkpt*(ispin-1)+1):(Nkpt*ispin)
             Rhoe_new[:,ispin] = calc_rhoe( pw, Focc[:,idxset], psiks[idxset] )
@@ -123,8 +137,19 @@ function alt1_KS_solve_SCF_spinpol!( Ham::Hamiltonian ;
             reshape(Rhoe,(Npoints*Nspin)),
             reshape(Rhoe_new,(Npoints*Nspin)), betamix, XX, FF, iter, MIXDIM, x_old, f_old
             ), (Npoints,Nspin) )
-        
+
         magn_den = Rhoe[:,1] - Rhoe[:,2]
+
+        # Nspin = 2
+        #Rhoe_tot_new = Rhoe_new[:,1] + Rhoe_new[:,2]
+        #magn_den_new = Rhoe_new[:,1] - Rhoe_new[:,2]
+#
+        #Rhoe_tot = betamix*Rhoe_tot_new + (1-betamix)*Rhoe_tot
+        #magn_den = betamix*magn_den_new + (1-betamix)*magn_den
+#
+        #Rhoe[:,1] = 0.5*(Rhoe_tot + magn_den)
+        #Rhoe[:,2] = 0.5*(Rhoe_tot - magn_den)
+
         println("integ total Rhoe = ", sum(Rhoe)*dVol)
         println("integ magn_den   = ", sum(magn_den)*dVol)
 
@@ -146,10 +171,21 @@ function alt1_KS_solve_SCF_spinpol!( Ham::Hamiltonian ;
 
         # Calculate energies
         Ham.energies = calc_energies( Ham, psiks )
-        Etot = sum(Ham.energies)
+
+        if use_smearing
+            Etot = sum(Ham.energies) + Entropy
+        else
+            Etot = sum(Ham.energies)
+        end
         diffE = abs( Etot - Etot_old )
 
-        @printf("SCF: %8d %18.10f %18.10e\n", iter, Etot, diffE )
+        if use_smearing
+            @printf("SCF: %8d FreeE=%18.10f, -TS=%18.10f diffE=%18.10e\n",
+                    iter, Etot, Entropy, diffE )
+            @printf("E_fermi = %18.10f\n", E_fermi)
+        else
+            @printf("SCF: %8d %18.10f %18.10e\n", iter, Etot, diffE )
+        end
 
         if diffE < ETOT_CONV_THR
             CONVERGED = CONVERGED + 1
@@ -173,6 +209,11 @@ function alt1_KS_solve_SCF_spinpol!( Ham::Hamiltonian ;
     #    evals = real(eigvals(Hr))
     #end
 
+    if use_smearing
+        Ham.electrons.Focc = copy(Focc)
+        println("\nAt the end of SCF\n")
+        println(Ham.electrons)
+    end
     Ham.electrons.ebands[:,:] = evals
 
     return
