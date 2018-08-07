@@ -33,14 +33,7 @@ function KS_solve_SCF_smearing!( Ham::Hamiltonian ;
     # Random guess of wave function
     #
     if startingwfc==nothing
-        Random.seed!(1234)
-        for ispin = 1:Nspin
-        for ik = 1:Nkpt
-            ikspin = ik + (ispin - 1)*Nkpt
-            psi = rand(Ngw[ik],Nstates) + im*rand(Ngw[ik],Nstates)
-            psiks[ikspin] = ortho_sqrt(psi)
-        end
-        end
+        psiks = rand_BlochWavefunc(pw, electrons)
     else
         psiks = startingwfc
     end

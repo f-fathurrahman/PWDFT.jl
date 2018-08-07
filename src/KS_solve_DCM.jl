@@ -27,7 +27,7 @@ function KS_solve_DCM!( Ham::Hamiltonian;
     # Initial wave function
     #
     if startingwfc == nothing
-        psiks = gen_rand_wavefunc(pw, electrons)
+        psiks = rand_BlochWavefunc(pw, electrons)
     else
         psiks = startingwfc
     end

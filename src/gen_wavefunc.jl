@@ -1,6 +1,8 @@
+function rand_Wavefunc( Nbasis, Nstates )
+    return ortho_sqrt( rand(ComplexF64,Nbasis,Nstates) )
+end
 
-# XXX Need to be updated for spin-polarized case
-function gen_rand_wavefunc( pw::PWGrid, electrons::Electrons; seed=1234 )
+function rand_BlochWavefunc( pw::PWGrid, electrons::Electrons )
 
     Nkpt = pw.gvecw.kpoints.Nkpt
     Nspin = electrons.Nspin
@@ -10,12 +12,10 @@ function gen_rand_wavefunc( pw::PWGrid, electrons::Electrons; seed=1234 )
 
     psiks = Array{Array{ComplexF64,2},1}(undef,Nkspin)
 
-    Random.seed!(seed)
-
     for ispin = 1:Nspin
     for ik = 1:Nkpt
         ikspin = ik + (ispin-1)*Nkpt
-        psiks[ikspin] = ortho_sqrt(rand(ComplexF64,Ngw[ik],Nstates))
+        psiks[ikspin] = rand_Wavefunc(Ngw[ik],Nstates)
     end
     end
 

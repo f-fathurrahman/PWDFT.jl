@@ -177,7 +177,7 @@ export mix_anderson!,
        mix_rpulay!
 
 include("gen_wavefunc.jl")
-export gen_rand_wavefunc
+export rand_Wavefunc, rand_BlochWavefunc
 
 #
 # KS solvers

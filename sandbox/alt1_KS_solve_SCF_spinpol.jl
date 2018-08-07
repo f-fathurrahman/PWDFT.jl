@@ -25,7 +25,7 @@ function alt1_KS_solve_SCF_spinpol!( Ham::Hamiltonian ;
 
     # Random guess of wave function
     if startingwfc==nothing
-        psiks = gen_rand_wavefunc(pw, electrons)
+        psiks = rand_BlochWavefunc(pw, electrons)
     else
         psiks = startingwfc
     end
