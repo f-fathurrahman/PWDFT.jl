@@ -137,6 +137,7 @@ end
 # `potentials` and `Rhoe` are not updated
 # Ham is assumed to be already updated at input psi
 #
+# Ham.energies.NN should be calculated outside this function
 function calc_energies( Ham::Hamiltonian, psiks::Array{Array{ComplexF64,2},1} )
 
     pw = Ham.pw
