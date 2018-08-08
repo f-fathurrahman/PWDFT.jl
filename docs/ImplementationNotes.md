@@ -1,5 +1,7 @@
 # Implementation Notes
 
+This is a work in progress.
+
 ## About Julia programming language
 
 Even though Julia is a dynamic language, I tried to always use type annotations

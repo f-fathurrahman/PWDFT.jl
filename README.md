@@ -48,12 +48,6 @@ pspfiles = ["../pseudopotentials/pade_gth/C-q4.gth",
 Ham = Hamiltonian( atoms, pspfiles, ecutwfc )
 ```
 
-- calculate interaction energy between ions (atomic centers):
-
-```julia
-Ham.energies.NN = calc_E_NN( atoms )
-```
-
 - solve Kohn-Sham equations using any of the following methods
 
 ```julia
@@ -72,7 +66,7 @@ an example of how this can be obtained.
 
 ## Implementation notes
 
-Please see [this](docs/ImplementationNotes.md) (work in progress).
+Please see [this](docs/ImplementationNotes.md).
 
 ## Some references
 
