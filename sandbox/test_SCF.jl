@@ -127,6 +127,32 @@ function create_Hamiltonian_Co_atom()
     return Ham
 end
 
+function create_Hamiltonian_Ni_atom()
+    atoms = Atoms(xyz_string="""
+    1
+
+    Ni   0.0   0.0   0.0
+    """, LatVecs=gen_lattice_sc(16.0))
+    println(atoms)
+
+    # Initialize Hamiltonian
+    ecutwfc_Ry = 30.0
+    pspfiles = ["../pseudopotentials/pade_gth/Ni-q10.gth"]
+    Ham = Hamiltonian(
+        atoms, pspfiles, ecutwfc_Ry*0.5, verbose=true, Nspin=2, extra_states=3
+        )
+
+    # set manually
+    Ham.electrons.Focc[:,1] = [1.0, 1.0, 1.0, 1.0, 1.0,
+                               0.0, 0.0, 0.0]
+    Ham.electrons.Focc[:,2] = [1.0, 1.0, 1.0, 1.0, 0.5,
+                               0.5, 0.0, 0.0]
+    println("\nFocc is set manually\n")
+    println(Ham.electrons)
+
+    return Ham
+end
+
 
 function test_main()
 
@@ -134,7 +160,8 @@ function test_main()
     #Ham = create_Hamiltonian_H2()
     #Ham = create_Hamiltonian_N2()
     #Ham = create_Hamiltonian_O2()
-    Ham = create_Hamiltonian_Co_atom()
+    #Ham = create_Hamiltonian_Co_atom()
+    Ham = create_Hamiltonian_Ni_atom()
 
     # Solve the KS problem
     #@time alt1_KS_solve_SCF!(

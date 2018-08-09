@@ -133,22 +133,22 @@ function alt1_KS_solve_SCF_spinpol!( Ham::Hamiltonian ;
             Rhoe_new[:,ispin] = calc_rhoe( pw, Focc[:,idxset], psiks[idxset] )
         end
 
-        Rhoe = reshape( mix_rpulay!(
-            reshape(Rhoe,(Npoints*Nspin)),
-            reshape(Rhoe_new,(Npoints*Nspin)), betamix, XX, FF, iter, MIXDIM, x_old, f_old
-            ), (Npoints,Nspin) )
+        #Rhoe = reshape( mix_rpulay!(
+        #    reshape(Rhoe,(Npoints*Nspin)),
+        #    reshape(Rhoe_new,(Npoints*Nspin)), betamix, XX, FF, iter, MIXDIM, x_old, f_old
+        #    ), (Npoints,Nspin) )
 
-        magn_den = Rhoe[:,1] - Rhoe[:,2]
+        #magn_den = Rhoe[:,1] - Rhoe[:,2]
 
         # Nspin = 2
-        #Rhoe_tot_new = Rhoe_new[:,1] + Rhoe_new[:,2]
-        #magn_den_new = Rhoe_new[:,1] - Rhoe_new[:,2]
-#
-        #Rhoe_tot = betamix*Rhoe_tot_new + (1-betamix)*Rhoe_tot
-        #magn_den = betamix*magn_den_new + (1-betamix)*magn_den
-#
-        #Rhoe[:,1] = 0.5*(Rhoe_tot + magn_den)
-        #Rhoe[:,2] = 0.5*(Rhoe_tot - magn_den)
+        Rhoe_tot_new = Rhoe_new[:,1] + Rhoe_new[:,2]
+        magn_den_new = Rhoe_new[:,1] - Rhoe_new[:,2]
+
+        Rhoe_tot = betamix*Rhoe_tot_new + (1-betamix)*Rhoe_tot
+        magn_den = 0.9*magn_den_new + 0.1*magn_den  # larger betamix for magn_den
+
+        Rhoe[:,1] = 0.5*(Rhoe_tot + magn_den)
+        Rhoe[:,2] = 0.5*(Rhoe_tot - magn_den)
 
         println("integ total Rhoe = ", sum(Rhoe)*dVol)
         println("integ magn_den   = ", sum(magn_den)*dVol)
