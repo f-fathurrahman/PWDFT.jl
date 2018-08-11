@@ -14,7 +14,16 @@ function main()
     pspfiles = ["../pseudopotentials/pade_gth/Ni-q18.gth"]
     ecutwfc_Ry = 30.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, xcfunc="LDA",
-                         Nspin=2, meshk=[3,3,3], verbose=true, extra_states=1 )
+                       Nspin=2, meshk=[3,3,3], verbose=true, extra_states=4 )
+    #Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+    #Ham.electrons.Focc[:,1:Nkpt] .= [1.0, 1.0, 1.0, 1.0, 1.0,
+    #                                 1.0, 1.0, 1.0, 1.0, 1.0,
+    #                                 0.0, 0.0, 0.0]
+    #Ham.electrons.Focc[:,Nkpt+1:2*Nkpt] .= [1.0, 1.0, 1.0, 1.0, 1.0,
+    #                                        1.0, 1.0, 1.0, 0.0, 0.0,
+    #                                        0.0, 0.0, 0.0]
+
+
 
     #
     # Solve the KS problem
