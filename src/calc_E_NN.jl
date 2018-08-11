@@ -33,6 +33,8 @@ calculate electronic energy components.
 
 The code inspired from Prof. Natalie Holzwarth:
 http://users.wfu.edu/natalie/s18phy712/computerprograms/ewaldsum.f90
+
+The original code is written in Rydberg unit.
 """
 function calc_E_NN( LatVecs::Array{Float64,2}, atoms::Atoms, Zvals::Array{Float64,1} )
 
@@ -155,8 +157,5 @@ function calc_E_NN( LatVecs::Array{Float64,2}, atoms::Atoms, Zvals::Array{Float6
     end
     end
 
-    @printf("\n")
-    @printf("Ewald energy %18.10f Ha\n", ewald*0.5)
-
-    return ewald*0.5
+    return ewald*0.5 # Convert to Hartree
 end
