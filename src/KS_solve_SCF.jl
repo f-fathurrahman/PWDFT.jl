@@ -106,46 +106,22 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
         end
 
         if update_psi == "LOBPCG"
-            for ispin = 1:Nspin
-            for ik = 1:Nkpt
-                Ham.ik = ik
-                Ham.ispin = ispin
-                ikspin = ik + (ispin - 1)*Nkpt
-                #
-                evals[:,ikspin], psiks[ikspin] =
-                diag_LOBPCG( Ham, psiks[ikspin], verbose=false, verbose_last=false,
-                             Nstates_conv = Nstates_occ )
-                #
-            end
-            end
 
+            evals, psiks =
+            diag_LOBPCG( Ham, psiks, verbose=false, verbose_last=false,
+                         Nstates_conv=Nstates_occ )
 
         elseif update_psi == "davidson"
-            for ispin = 1:Nspin
-            for ik = 1:Nkpt
-                Ham.ik = ik
-                Ham.ispin = ispin
-                ikspin = ik + (ispin - 1)*Nkpt
-                #
-                evals[:,ikspin], psiks[ikspin] =
-                diag_davidson( Ham, psiks[ikspin], verbose=false, verbose_last=false,
-                             Nstates_conv = Nstates_occ )
-                #
-            end
-            end
+
+            evals, psiks =
+            diag_davidson( Ham, psiks, verbose=false, verbose_last=false,
+                           Nstates_conv=Nstates_occ )
 
         elseif update_psi == "PCG"
 
-            for ispin = 1:Nspin
-            for ik = 1:Nkpt
-                Ham.ik = ik
-                Ham.ispin = ispin
-                ikspin = ik + (ispin - 1)*Nkpt
-                evals[:,ikspin], psiks[ikspin] =
-                diag_davidson( Ham, psiks[ikspin], verbose=false, verbose_last=false,
-                               Nstates_conv = Nstates_occ )
-            end
-        end
+            evals, psiks =
+            diag_Emin_PCG( Ham, psiks, verbose=false, verbose_last=false,
+                           Nstates_conv=Nstates_occ )
 
         elseif update_psi == "CheFSI"
             

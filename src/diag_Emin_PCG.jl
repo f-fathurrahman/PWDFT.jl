@@ -1,3 +1,39 @@
+function diag_Emin_PCG( Ham::Hamiltonian, psiks0::Array{Array{ComplexF64,2},1};
+                        tol=1e-5, NiterMax=100, verbose=false,
+                        verbose_last=false, Nstates_conv=0,
+                        tol_ebands=1e-4,
+                        α_t=3e-5, I_CG_BETA = 2 )
+    
+    pw = Ham.pw
+    electrons = Ham.electrons
+    Nkpt = pw.gvecw.kpoints.Nkpt
+    Nspin = electrons.Nspin
+    Nkspin = Nspin*Nkpt
+    Ngw = pw.gvecw.Ngw
+    Nstates = electrons.Nstates
+
+    psiks = copy(psiks0)
+    evals = zeros(Float64,Nstates,Nkspin)
+
+    for ispin = 1:Nspin
+    for ik = 1:Nkpt
+        Ham.ik = ik
+        Ham.ispin = ispin
+        ikspin = ik + (ispin - 1)*Nkpt
+        #
+        evals[:,ikspin], psiks[ikspin] =
+        diag_Emin_PCG( Ham, psiks[ikspin], tol=tol, NiterMax=NiterMax, verbose=verbose,
+                       verbose_last=verbose_last, Nstates_conv=Nstates_conv,
+                       tol_ebands=tol_ebands,
+                       α_t=α_t, I_CG_BETA = I_CG_BETA )
+        #
+    end
+    end
+
+    return evals, psiks
+
+end
+
 """
 Find eigenvalues and eigenvectors of `Ham::Hamiltonian` using `X0`
 as initial guess for eigenvectors using preconditioned CG method.
