@@ -18,7 +18,7 @@ function main( ; method="SCF" )
     # Solve the KS problem
     #
     if method == "SCF"
-        KS_solve_SCF!( Ham, mix_method="anderson", ETOT_CONV_THR=1e-6 )
+        KS_solve_SCF!( Ham, mix_method="anderson", update_psi="LOBPCG" )
 
     elseif method == "CheFSI"
         KS_solve_SCF!( Ham, update_psi="CheFSI", betamix=0.5 )
