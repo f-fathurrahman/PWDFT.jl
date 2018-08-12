@@ -6,24 +6,31 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
                         startingwfc=nothing, savewfc=false,
                         betamix = 0.5, NiterMax=100, verbose=false,
                         check_rhoe_after_mix=false,
+                        use_smearing = false, kT=1e-3,
                         update_psi="LOBPCG", cheby_degree=8,
                         mix_method="simple",
                         ETOT_CONV_THR=1e-6 )
 
     pw = Ham.pw
     Ngw = pw.gvecw.Ngw
+    wk = Ham.pw.gvecw.kpoints.wk
+    #
     kpoints = pw.gvecw.kpoints
     Nkpt = kpoints.Nkpt
+    #
     Ns = pw.Ns
     Npoints = prod(Ns)
     dVol = pw.CellVolume/Npoints
+    #
     electrons = Ham.electrons
     Nelectrons = electrons.Nelectrons
-    Focc = electrons.Focc
+    Focc = copy(electrons.Focc) # make sure to use the copy
     Nstates = electrons.Nstates
-    Nstates_occ = electrons.Nstates_occ
     Nspin = electrons.Nspin
+    #
     Nkspin = Nkpt*Nspin
+
+    Nstates_occ = electrons.Nstates_occ
 
     #
     # Random guess of wave function
@@ -42,6 +49,11 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
         idxset = (Nkpt*(ispin-1)+1):(Nkpt*ispin)
         Rhoe[:,ispin] = calc_rhoe( pw, Focc[:,idxset], psiks[idxset] )
     end
+
+    if Nspin == 2
+        @printf("\nInitial integ magn_den = %18.10f\n", sum(Rhoe[:,1] - Rhoe[:,2])*dVol)
+    end
+
     update!(Ham, Rhoe)
 
     Etot_old = 0.0
@@ -56,9 +68,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
 
     ethr = 0.1
 
-    #
     # For Anderson mixing
-    #
     MIXDIM = 4
     if mix_method == "anderson"
         df = zeros(Float64,Npoints*Nspin,MIXDIM)
@@ -66,6 +76,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
     end
 
     E_GAP_INFO = false
+    Nstates_occ = electrons.Nstates_occ
     if Nstates_occ < Nstates
         E_GAP_INFO = true
         if Nspin == 2
@@ -86,7 +97,9 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
         @printf("Using simple mixing\n")
     end
     @printf("Density mixing with betamix = %10.5f\n", betamix)
-    @printf("\n")
+    if use_smearing
+        @printf("Smearing = %f\n\n", kT)
+    end
 
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( Ham.atoms )
@@ -95,7 +108,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
 
     for iter = 1:NiterMax
 
-        # determine convergence criteria for diagonalization
+        # determined convergence criteria for diagonalization
         if iter == 1
             ethr = 0.1
         elseif iter == 2
@@ -115,7 +128,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
 
             evals, psiks =
             diag_davidson( Ham, psiks, verbose=false, verbose_last=false,
-                           Nstates_conv=Nstates_occ )
+                           Nstates_conv=Nstates_occ )                
 
         elseif update_psi == "PCG"
 
@@ -125,22 +138,22 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
 
         elseif update_psi == "CheFSI"
             
-            for ispin = 1:Nspin
-            for ik = 1:Nkpt
-                Ham.ik = ik
-                Ham.ispin = ispin
-                ikspin = ik + (ispin - 1)*Nkpt
-                ub, lb = get_ub_lb_lanczos( Ham, Nstates*2 )
-                psiks[ikspin] = chebyfilt( Ham, psiks[ikspin], cheby_degree, lb, ub)
-                psiks[ikspin] = ortho_sqrt( psiks[ik] )
-            end
-            end
+            diag_CheFSI!( Ham, psiks, cheby_degree )
 
         else
 
             @printf("ERROR: Unknown method for update_psi = %s\n", update_psi)
             error("STOPPED")
+    
+        end
 
+        if E_GAP_INFO
+            println("E gap = ", minimum(evals[idx_LUMO,:] - evals[idx_HOMO,:]))
+        end
+
+        if use_smearing
+            Focc, E_fermi = calc_Focc( evals, wk, Nelectrons, kT, Nspin=Nspin )
+            Entropy = calc_entropy( Focc, wk, kT, Nspin=Nspin )
         end
 
         for ispin = 1:Nspin
@@ -155,6 +168,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
             end
         elseif mix_method == "anderson"
             # FIXME: df and dv is not modified when we call it by df[:,:] or dv[:,:]
+            #Rhoe[:,:] = andersonmix!( Rhoe, Rhoe_new, betamix, df, dv, iter, MIXDIM )
             Rhoe[:,:] = mix_anderson!( Nspin, Rhoe, Rhoe_new, betamix, df, dv, iter, MIXDIM )
         else
             @printf("ERROR: Unknown mix_method = %s\n", mix_method)
@@ -167,6 +181,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
             end
         end
 
+        # renormalize
         if check_rhoe_after_mix
             integRhoe = sum(Rhoe)*dVol
             @printf("After mixing: integRhoe = %18.10f\n", integRhoe)
@@ -179,7 +194,11 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
 
         # Calculate energies
         Ham.energies = calc_energies( Ham, psiks )
-        Etot = sum(Ham.energies)
+        if use_smearing
+            Etot = sum(Ham.energies) + Entropy
+        else
+            Etot = sum(Ham.energies)
+        end
         diffE = abs( Etot - Etot_old )
 
         if Nspin == 1
@@ -188,6 +207,12 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
         else
             @printf("SCF: %8d %18.10f %18.10e %18.10e %18.10e\n",
                     iter, Etot, diffE, diffRhoe[1], diffRhoe[2] )
+            magn_den = Rhoe[:,1] - Rhoe[:,2]
+            @printf("integ magn_den = %18.10f\n", sum(magn_den)*dVol)                
+        end
+    
+        if use_smearing
+            @printf("Entropy (-TS) = %18.10f\n", Entropy)
         end
 
         if diffE < ETOT_CONV_THR
@@ -200,7 +225,6 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
             @printf("SCF is converged: iter: %d , diffE = %10.7e\n", iter, diffE)
             break
         end
-
         #
         Etot_old = Etot
     end
@@ -214,12 +238,15 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
             Ham.ispin = ispin
             ikspin = ik + (ispin - 1)*Nkpt
             Hr = psiks[ikspin]' * op_H( Ham, psiks[ikspin] )
-            evals[:,ikspin] = real(eigvals(Hr))
+            evals[:,ikspin] = eigvals(Hermitian(Hr))
         end
         end
     end
 
     Ham.electrons.ebands = evals
+
+    println("At the end of SCF:")
+    println(Ham.electrons, all_states=true)
 
     if savewfc
         for ikspin = 1:Nkpt*Nspin

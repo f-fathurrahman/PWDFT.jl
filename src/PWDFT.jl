@@ -18,6 +18,9 @@ export Ry2eV, ANG2BOHR
 
 # Last accessed: 31st July 2018
 
+BlochWavefunc = Array{Array{ComplexF64,2},1}
+Wavefunc = Array{ComplexF64,2}
+export BlochWavefunc, Wavefunc
 
 include("Atoms.jl")
 export Atoms, 
@@ -187,9 +190,6 @@ export KS_solve_Emin_PCG!
 
 include("KS_solve_SCF.jl")
 export KS_solve_SCF!
-
-include("KS_solve_SCF_smearing.jl")
-export KS_solve_SCF_smearing!
 
 include("KS_solve_DCM.jl")
 export KS_solve_DCM!

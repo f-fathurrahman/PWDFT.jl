@@ -1,3 +1,21 @@
+function diag_CheFSI!( Ham::Hamiltonian, psiks::BlochWavefunc, cheby_degree::Int64)
+    Nspin = Ham.electrons.Nspin
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+    Nstates = Ham.electrons.Nstates
+
+    for ispin = 1:Nspin
+    for ik = 1:Nkpt
+        Ham.ik = ik
+        Ham.ispin = ispin
+        ikspin = ik + (ispin - 1)*Nkpt
+        ub, lb = get_ub_lb_lanczos( Ham, Nstates*2 )
+        psiks[ikspin] = chebyfilt( Ham, psiks[ikspin], cheby_degree, lb, ub)
+        psiks[ikspin] = ortho_sqrt( psiks[ik] )
+    end
+    end
+end
+
+
 function chebyfilt( Ham::Hamiltonian, X, degree, lb, ub)
     Ngw_ik  = size(X)[1]
     Nstates = size(X)[2]
