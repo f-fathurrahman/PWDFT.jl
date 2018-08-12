@@ -17,9 +17,9 @@ function main()
         Nspin=2, extra_states=4
     )
 
-    KS_solve_SCF_smearing!(
-        Ham, mix_method="simple", 
-        update_psi="PCG", betamix=0.1, ETOT_CONV_THR=1e-6
+    KS_solve_SCF!(
+        Ham, mix_method="simple", use_smearing=true, kT=0.01,
+        update_psi="PCG", betamix=0.1
     )
 
     Nstates = Ham.electrons.Nstates
@@ -34,6 +34,3 @@ function main()
     println(Ham.energies)
 
 end
-
-@time test_main()
-

@@ -19,7 +19,7 @@ function main()
     #
     # Solve the KS problem
     #
-    KS_solve_SCF_smearing!( Ham )
+    KS_solve_SCF!( Ham, use_smearing=true )
 
     println("\nTotal energy components")
     println(Ham.energies)
