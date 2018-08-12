@@ -79,8 +79,27 @@ function create_Hamiltonian_O2()
 
     println(Ham.electrons)
 
-    # calculate E_NN
-    Ham.energies.NN = calc_E_NN( atoms )
+    return Ham
+end
+
+function create_Hamiltonian_O2_spinpol()
+    # Atoms
+    atoms = init_atoms_xyz("../structures/O2.xyz")
+    atoms.LatVecs = gen_lattice_sc(16.0)
+    println(atoms)
+
+    # Initialize Hamiltonian
+    pspfiles = ["../pseudopotentials/pade_gth/O-q6.gth"]
+    ecutwfc_Ry = 30.0
+    Ham = Hamiltonian(
+        atoms, pspfiles, ecutwfc_Ry*0.5, verbose=true, extra_states=4, Nspin=2
+    )
+    Ham.electrons.Focc[:,1] = [1.0, 1.0, 1.0, 1.0, 1.0,
+                               1.0, 1.0, 0.0, 0.0, 0.0]
+    Ham.electrons.Focc[:,2] = [1.0, 1.0, 1.0, 1.0, 1.0,
+                               0.0, 0.0, 0.0, 0.0, 0.0]                               
+
+    println(Ham.electrons)
 
     return Ham
 end
@@ -161,27 +180,30 @@ function test_main()
     #Ham = create_Hamiltonian_N2()
     #Ham = create_Hamiltonian_O2()
     #Ham = create_Hamiltonian_Co_atom()
-    Ham = create_Hamiltonian_Ni_atom()
+    #Ham = create_Hamiltonian_Ni_atom()
+    Ham = create_Hamiltonian_O2_spinpol()
 
     # Solve the KS problem
     #@time alt1_KS_solve_SCF!(
     #    Ham, ETOT_CONV_THR=1e-6, NiterMax=50, betamix=0.5, update_psi="LOBPCG"
     #)
     @time alt1_KS_solve_SCF_spinpol!(
-        Ham, ETOT_CONV_THR=1e-6, NiterMax=100, betamix=0.1, update_psi="LOBPCG",
+        Ham, ETOT_CONV_THR=1e-6, NiterMax=100, betamix=0.5, update_psi="LOBPCG",
         use_smearing=true, kT=1e-3
     )
-
-    #@time KS_solve_SCF_spin!(
-    #    Ham, ETOT_CONV_THR=1e-6, NiterMax=50, betamix=0.5, update_psi="LOBPCG"
-    #)
 
     Nstates = Ham.electrons.Nstates
     ebands = Ham.electrons.ebands
     
     println("\nBand energies:")
-    for ist = 1:Nstates
-        @printf("%8d  %18.10f = %18.10f eV\n", ist, ebands[ist], ebands[ist]*Ry2eV*2)
+    if Ham.electrons.Nspin == 2
+        for ist = 1:Nstates
+            @printf("%8d : %18.10f = %18.10f eV -- %18.10f = %18.10f eV\n", ist, ebands[ist,1], ebands[ist,1]*Ry2eV*2, ebands[ist,2], ebands[ist,2]*Ry2eV*2)
+        end
+    else
+        for ist = 1:Nstates
+            @printf("%8d  %18.10f = %18.10f eV\n", ist, ebands[ist,1], ebands[ist,1]*Ry2eV*2)
+        end
     end
     
     println("\nTotal energy components")
