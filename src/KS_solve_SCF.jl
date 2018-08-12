@@ -120,21 +120,21 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
 
         if update_psi == "LOBPCG"
 
-            evals, psiks =
-            diag_LOBPCG( Ham, psiks, verbose=false, verbose_last=false,
-                         Nstates_conv=Nstates_occ )
+            evals =
+            diag_LOBPCG!( Ham, psiks, verbose=false, verbose_last=false,
+                          Nstates_conv=Nstates_occ )
 
         elseif update_psi == "davidson"
 
-            evals, psiks =
-            diag_davidson( Ham, psiks, verbose=false, verbose_last=false,
-                           Nstates_conv=Nstates_occ )                
+            evals =
+            diag_davidson!( Ham, psiks, verbose=false, verbose_last=false,
+                            Nstates_conv=Nstates_occ )                
 
         elseif update_psi == "PCG"
 
-            evals, psiks =
-            diag_Emin_PCG( Ham, psiks, verbose=false, verbose_last=false,
-                           Nstates_conv=Nstates_occ )
+            evals =
+            diag_Emin_PCG!( Ham, psiks, verbose=false, verbose_last=false,
+                            Nstates_conv=Nstates_occ )
 
         elseif update_psi == "CheFSI"
             

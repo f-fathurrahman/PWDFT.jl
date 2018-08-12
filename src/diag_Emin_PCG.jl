@@ -1,8 +1,23 @@
-function diag_Emin_PCG( Ham::Hamiltonian, psiks0::Array{Array{ComplexF64,2},1};
+function diag_Emin_PCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
                         tol=1e-5, NiterMax=100, verbose=false,
                         verbose_last=false, Nstates_conv=0,
                         tol_ebands=1e-4,
                         α_t=3e-5, I_CG_BETA = 2 )
+
+    X = copy(X0)
+    evals = diag_Emin_PCG!( Ham, X, tol=tol, NiterMax=NiterMax, verbose=verbose,
+                            verbose_last=verbose_last, Nstates_conv=Nstates_conv,
+                            tol_ebands=tol_ebands,
+                            α_t=α_t, I_CG_BETA = I_CG_BETA )                          
+    return evals, X
+end
+
+
+function diag_Emin_PCG!( Ham::Hamiltonian, psiks::Array{Array{ComplexF64,2},1};
+                         tol=1e-5, NiterMax=100, verbose=false,
+                         verbose_last=false, Nstates_conv=0,
+                         tol_ebands=1e-4,
+                         α_t=3e-5, I_CG_BETA = 2 )
     
     pw = Ham.pw
     electrons = Ham.electrons
@@ -12,7 +27,6 @@ function diag_Emin_PCG( Ham::Hamiltonian, psiks0::Array{Array{ComplexF64,2},1};
     Ngw = pw.gvecw.Ngw
     Nstates = electrons.Nstates
 
-    psiks = copy(psiks0)
     evals = zeros(Float64,Nstates,Nkspin)
 
     for ispin = 1:Nspin
@@ -21,8 +35,8 @@ function diag_Emin_PCG( Ham::Hamiltonian, psiks0::Array{Array{ComplexF64,2},1};
         Ham.ispin = ispin
         ikspin = ik + (ispin - 1)*Nkpt
         #
-        evals[:,ikspin], psiks[ikspin] =
-        diag_Emin_PCG( Ham, psiks[ikspin], tol=tol, NiterMax=NiterMax, verbose=verbose,
+        evals[:,ikspin] =
+        diag_Emin_PCG!( Ham, psiks[ikspin], tol=tol, NiterMax=NiterMax, verbose=verbose,
                        verbose_last=verbose_last, Nstates_conv=Nstates_conv,
                        tol_ebands=tol_ebands,
                        α_t=α_t, I_CG_BETA = I_CG_BETA )
@@ -30,21 +44,23 @@ function diag_Emin_PCG( Ham::Hamiltonian, psiks0::Array{Array{ComplexF64,2},1};
     end
     end
 
-    return evals, psiks
+    return evals
 
 end
 
 """
-Find eigenvalues and eigenvectors of `Ham::Hamiltonian` using `X0`
-as initial guess for eigenvectors using preconditioned CG method.
-    
-**IMPORTANT** `X0` must be orthonormalized before.
+Returns eigenvalues of `Ham::Hamiltonian` using `X`
+as initial guess for eigenvectors using all-states
+preconditioned conjugate gradient method (minimizing band energy).
+On return, X will be rewritten as the corresponding eigenvectors.
+
+**IMPORTANT** `X` must be orthonormalized before.
 """
-function diag_Emin_PCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
-                        tol=1e-5, NiterMax=100, verbose=false,
-                        verbose_last=false, Nstates_conv=0,
-                        tol_ebands=1e-4,
-                        α_t=3e-5, I_CG_BETA = 2 )
+function diag_Emin_PCG!( Ham::Hamiltonian, X::Array{ComplexF64,2};
+                         tol=1e-5, NiterMax=100, verbose=false,
+                         verbose_last=false, Nstates_conv=0,
+                         tol_ebands=1e-4,
+                         α_t=3e-5, I_CG_BETA = 2 )
 
     ik = Ham.ik
     pw = Ham.pw
@@ -52,14 +68,12 @@ function diag_Emin_PCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
 
     Ns = pw.Ns
     Npoints = prod(Ns)
-    Nstates = size(X0)[2]
+    Nstates = size(X)[2]
     Ngw_ik = pw.gvecw.Ngw[ik]
 
     if Nstates_conv == 0
         Nstates_conv = Nstates
     end
-
-    psi = copy(X0)
 
     #
     # Variabls for PCG
@@ -69,14 +83,14 @@ function diag_Emin_PCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
     d_old = zeros(ComplexF64, Ngw_ik, Nstates)
     Kg = zeros(ComplexF64, Ngw_ik, Nstates)
     Kg_old = zeros(ComplexF64, Ngw_ik, Nstates)
-    psic = zeros(ComplexF64, Ngw_ik, Nstates)
+    Xc = zeros(ComplexF64, Ngw_ik, Nstates)
     gt = zeros(ComplexF64, Ngw_ik, Nstates)
     
     β = 0.0
     
     Ebands_old = 0.0
 
-    Hr = Hermitian( psi' * op_H( Ham, psi ) )
+    Hr = Hermitian( X' * op_H( Ham, X ) )
     
     evals = eigvals(Hr)
     Ebands = sum(evals)
@@ -88,7 +102,7 @@ function diag_Emin_PCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
 
     for iter = 1:NiterMax
 
-        g = calc_grad_evals( Ham, psi)
+        g = calc_grad_evals( Ham, X)
         Kg = Kprec( Ham.ik, pw, g )
 
         if iter != 1
@@ -108,8 +122,8 @@ function diag_Emin_PCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
 
         d = -Kg + β * d_old
 
-        psic = ortho_sqrt( psi + α_t*d )
-        gt = calc_grad_evals( Ham, psic )
+        Xc = ortho_sqrt( X + α_t*d )
+        gt = calc_grad_evals( Ham, Xc )
 
         denum = real(sum(conj(g-gt).*d))
         if denum != 0.0
@@ -119,12 +133,9 @@ function diag_Emin_PCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
         end
 
         # Update wavefunction
-        psi = psi[:,:] + α*d[:,:]
+        X[:,:] = ortho_sqrt(X + α*d)
 
-        # Update potentials
-        psi = ortho_sqrt(psi)
-
-        Hr = Hermitian( psi' * op_H( Ham, psi ) )
+        Hr = Hermitian( X' * op_H( Ham, X ) )
         
         evals = eigvals(Hr)
         Ebands = sum(evals)
@@ -168,13 +179,13 @@ function diag_Emin_PCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
         @printf("\nWARNING: diag_Emin_PCG is not converged after %d iterations\n", NiterMax)
     end
 
-    psi = ortho_sqrt(psi)
-    Hr = Hermitian( psi' * op_H(Ham, psi) )
+    ortho_sqrt!(X)
+    Hr = Hermitian( X' * op_H(Ham, X) )
     evals, evecs = eigen(Hr)
     # Sort
     idx_sorted = sortperm(evals)
     evals = evals[idx_sorted]
-    psi = psi*evecs[:,idx_sorted]
+    X[:,:] = X*evecs[:,idx_sorted]
 
     if verbose_last || verbose
         @printf("\nEigenvalues from diag_Emin_PCG:\n\n")
@@ -183,5 +194,5 @@ function diag_Emin_PCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
         end
     end
 
-    return evals, psi
+    return evals
 end

@@ -1,6 +1,6 @@
-function diag_LOBPCG( Ham::Hamiltonian, psiks0::Array{Array{ComplexF64,2},1};
-    tol=1e-5, NiterMax=100, verbose=false,
-    verbose_last=false, Nstates_conv=0 )
+function diag_LOBPCG!( Ham::Hamiltonian, psiks::Array{Array{ComplexF64,2},1};
+                       tol=1e-5, NiterMax=100, verbose=false,
+                       verbose_last=false, Nstates_conv=0 )
     
     pw = Ham.pw
     electrons = Ham.electrons
@@ -10,7 +10,6 @@ function diag_LOBPCG( Ham::Hamiltonian, psiks0::Array{Array{ComplexF64,2},1};
     Ngw = pw.gvecw.Ngw
     Nstates = electrons.Nstates
 
-    psiks = copy(psiks0)
     evals = zeros(Float64,Nstates,Nkspin)
 
     for ispin = 1:Nspin
@@ -19,40 +18,49 @@ function diag_LOBPCG( Ham::Hamiltonian, psiks0::Array{Array{ComplexF64,2},1};
         Ham.ispin = ispin
         ikspin = ik + (ispin - 1)*Nkpt
         #
-        evals[:,ikspin], psiks[ikspin] =
-        diag_LOBPCG( Ham, psiks[ikspin], tol=tol, NiterMax=NiterMax, verbose=verbose,
-        verbose_last=verbose_last, Nstates_conv=Nstates_conv )
+        evals[:,ikspin] =
+        diag_LOBPCG!( Ham, psiks[ikspin], tol=tol, NiterMax=NiterMax, verbose=verbose,
+                      verbose_last=verbose_last, Nstates_conv=Nstates_conv )
         #
     end
     end
 
-    return evals, psiks
+    return evals
 
 end
 
 
-"""
-Find eigenvalues and eigenvectors of `Ham::Hamiltonian` using `X0`
-as initial guess for eigenvectors using
-locally-optimal block preconditioned conjugate gradient method
-of Knyazev.
-
-**IMPORTANT** `X0` must be orthonormalized before.
-"""
 function diag_LOBPCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
                       tol=1e-5, NiterMax=100, verbose=false,
                       verbose_last=false, Nstates_conv=0 )
 
+    X = copy(X0)
+    evals = diag_LOBPCG!( Ham, X, tol=tol, NiterMax=NiterMax, verbose=verbose,
+                          verbose_last=verbose_last, Nstates_conv=Nstates_conv )
+    return evals, X
+end
+
+
+"""
+Returns eigenvalues of `Ham::Hamiltonian` using `X`
+as initial guess for eigenvectors using locally-optimal block
+preconditioned conjugate gradient method (LOBPCG) proposed by Knyazev.
+On return, X will be rewritten as the corresponding eigenvectors.
+
+**IMPORTANT** `X` must be orthonormalized before.
+"""
+function diag_LOBPCG!( Ham::Hamiltonian, X::Array{ComplexF64,2};
+                       tol=1e-5, NiterMax=100, verbose=false,
+                       verbose_last=false, Nstates_conv=0 )
+
     pw = Ham.pw
     # get size info
-    Nbasis = size(X0)[1]
-    Nstates = size(X0)[2]
+    Nbasis = size(X)[1]
+    Nstates = size(X)[2]
 
     if Nstates_conv == 0
         Nstates_conv = Nstates
     end
-
-    X = copy(X0)
 
     HX = op_H( Ham, X )
 
@@ -146,11 +154,11 @@ function diag_LOBPCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
 
              U = S[:,1:Nact]
              Xact = Q*U;
-             X = [Xlock Xact]
+             X[:,:] = [Xlock Xact]
              T = Hermitian( X'*op_H(Ham,X) ) #; T = (T+T')/2;
              evalT, evecsT = eigen(T);
 
-             X = X*evecsT
+             X[:,:] = X*evecsT
              HX = op_H(Ham, X)
 
         else
@@ -176,7 +184,7 @@ function diag_LOBPCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
             sd, S = eigen(T, G) # evals, evecs
             #
             U = S[:,1:Nstates]
-            X = Q*U
+            X[:,:] = Q*U
             HX = HQ*U
             if iter > 1
                 set2 = Nstates+1:2*Nstates
@@ -195,8 +203,6 @@ function diag_LOBPCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
 
         end  # if nlock 
 
-
-
         iter = iter + 1
     end
 
@@ -207,12 +213,12 @@ function diag_LOBPCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
     S = X'*HX
     S = Hermitian(0.5*(S+S'))
     evals, Q = eigen(S)
-    X = X*Q
+    X[:,:] = X[:,:]*Q
     if verbose_last || verbose
         @printf("\nEigenvalues from diag_LOBPCG:\n\n")
         for ist = 1:Nstates
             @printf("evals[%3d] = %18.10f, devals = %18.10e\n", ist, evals[ist], devals[ist] )
         end
     end
-    return evals, X
+    return evals
 end

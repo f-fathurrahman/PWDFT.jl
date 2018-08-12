@@ -165,9 +165,9 @@ export calc_grad
 include("diag_LOBPCG.jl")
 include("diag_Emin_PCG.jl")
 include("diag_davidson.jl")
-export diag_LOBPCG,
-       diag_Emin_PCG,
-       diag_davidson
+export diag_LOBPCG, diag_LOBPCG!,
+       diag_Emin_PCG, diag_Emin_PCG!,
+       diag_davidson, diag_davidson!
 
 #
 # Mixing functions

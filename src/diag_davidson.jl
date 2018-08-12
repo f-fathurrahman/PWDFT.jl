@@ -1,6 +1,17 @@
-function diag_davidson( Ham::Hamiltonian, psiks0::Array{Array{ComplexF64,2},1};
-    tol=1e-5, NiterMax=100, verbose=false,
-    verbose_last=false, Nstates_conv=0 )
+function diag_davidson( Ham::Hamiltonian, X0::Array{ComplexF64,2};
+                        tol=1e-5, NiterMax=100, verbose=false,
+                        verbose_last=false, Nstates_conv=0 )
+
+    X = copy(X0)
+    evals = diag_davidson!( Ham, X, tol=tol, NiterMax=NiterMax, verbose=verbose,
+                            verbose_last=verbose_last, Nstates_conv=Nstates_conv )
+    return evals, X
+end
+
+
+function diag_davidson!( Ham::Hamiltonian, psiks::Array{Array{ComplexF64,2},1};
+                         tol=1e-5, NiterMax=100, verbose=false,
+                         verbose_last=false, Nstates_conv=0 )
     
     pw = Ham.pw
     electrons = Ham.electrons
@@ -10,7 +21,6 @@ function diag_davidson( Ham::Hamiltonian, psiks0::Array{Array{ComplexF64,2},1};
     Ngw = pw.gvecw.Ngw
     Nstates = electrons.Nstates
 
-    psiks = copy(psiks0)
     evals = zeros(Float64,Nstates,Nkspin)
 
     for ispin = 1:Nspin
@@ -19,40 +29,40 @@ function diag_davidson( Ham::Hamiltonian, psiks0::Array{Array{ComplexF64,2},1};
         Ham.ispin = ispin
         ikspin = ik + (ispin - 1)*Nkpt
         #
-        evals[:,ikspin], psiks[ikspin] =
-        diag_davidson( Ham, psiks[ikspin], tol=tol, NiterMax=NiterMax, verbose=verbose,
-        verbose_last=verbose_last, Nstates_conv=Nstates_conv )
+        evals[:,ikspin] =
+        diag_davidson!( Ham, psiks[ikspin], tol=tol, NiterMax=NiterMax, verbose=verbose,
+                        verbose_last=verbose_last, Nstates_conv=Nstates_conv )
         #
     end
     end
 
-    return evals, psiks
+    return evals
 
 end
 
 
 """
-Find eigenvalues and eigenvectors of `Ham::Hamiltonian` using `X0`
-as initial guess for eigenvectors using blocked Davidson method.
-    
-**IMPORTANT** `X0` must be orthonormalized before.
+Returns eigenvalues of `Ham::Hamiltonian` using `X`
+as initial guess for eigenvectors using
+blocked Davidson method method
+On return, X will be rewritten as the corresponding eigenvectors.
+
+**IMPORTANT** `X` must be orthonormalized before.
 """
-function diag_davidson( Ham::Hamiltonian, X0::Array{ComplexF64,2};
-                        tol=1e-5, NiterMax=100, verbose=false,
-                        verbose_last=false, Nstates_conv=0 )
+function diag_davidson!( Ham::Hamiltonian, X::Array{ComplexF64,2};
+                         tol=1e-5, NiterMax=100, verbose=false,
+                         verbose_last=false, Nstates_conv=0 )
       
 
     # get size info
-    Nstates = size(X0)[2]
-    Nbasis  = size(X0)[1]
+    Nstates = size(X)[2]
+    Nbasis  = size(X)[1]
 
     @assert(Nstates >= 1)
     
     if Nstates_conv == 0
         Nstates_conv = Nstates
     end
-    
-    X = copy(X0)
 
     evals    = zeros(Float64, Nstates)
     R        = zeros(ComplexF64, Nbasis, Nstates)
@@ -138,7 +148,7 @@ function diag_davidson( Ham::Hamiltonian, X0::Array{ComplexF64,2};
         devals = abs.( evals - evals_old )
         nconv = length( findall( devals .< tol ) )
 
-        X  = X  * X_red[set1,set1] + R  * X_red[set2,set1]
+        X[:,:]  = X  * X_red[set1,set1] + R  * X_red[set2,set1]
         HX = HX * X_red[set1,set1] + HR * X_red[set2,set1]
 
         # Calculate residuals
@@ -178,6 +188,6 @@ function diag_davidson( Ham::Hamiltonian, X0::Array{ComplexF64,2};
         end
     end
 
-    return evals, X
+    return evals
 
 end
