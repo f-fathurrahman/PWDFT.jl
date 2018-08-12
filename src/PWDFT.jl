@@ -87,9 +87,7 @@ export PWGrid,
 # FFT
 #
 include("wrappers_fft.jl")
-export c_G_to_R,
-       c_R_to_G,
-       R_to_G,
+export R_to_G,
        G_to_R
 
 
