@@ -90,6 +90,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
 
     @printf("\n")
     @printf("Self-consistent iteration begins ...\n")
+    @printf("update_psi = %s\n", update_psi)
     @printf("\n")
     if mix_method == "anderson"
         @printf("Using Anderson mixing\n")
@@ -98,8 +99,9 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
     end
     @printf("Density mixing with betamix = %10.5f\n", betamix)
     if use_smearing
-        @printf("Smearing = %f\n\n", kT)
+        @printf("Smearing = %f\n", kT)
     end
+    println("") # blank line before SCF iteration info
 
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( Ham.atoms )
@@ -137,7 +139,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
                             Nstates_conv=Nstates_occ )
 
         elseif update_psi == "CheFSI"
-            
+            # evals will be calculated later
             diag_CheFSI!( Ham, psiks, cheby_degree )
 
         else
