@@ -50,7 +50,7 @@ function diff_norm1_gauss(dr, sigma, i::Int64)
 end
 
 function test_op_nabla()
-    ecutwfc_Ry = 40.0
+    ecutwfc_Ry = 1.0
     LatVecs = gen_lattice_sc(16.0)
     pw = PWGrid( ecutwfc_Ry*0.5, LatVecs )
 
@@ -77,6 +77,9 @@ function test_op_nabla()
 
     grad_f = op_nabla(pw, f)
     println("size grad_f = ", size(grad_f))
+
+    println("integ grad_f = ", sum(grad_f)*dVol)
+    println("integ f_x = ", sum(f_x)*dVol)
 
     println("diff x = ", sum(grad_f[1,:] - f_x[:]) )
     println("diff y = ", sum(grad_f[2,:] - f_y[:]) )
@@ -130,9 +133,9 @@ function test_op_nabla_dot()
 end
 
 
-#test_op_nabla()
+test_op_nabla()
 
-test_op_nabla_dot()
+#test_op_nabla_dot()
 
 #@time test_GGA_PBE()
 #@time test_GGA_PBE()

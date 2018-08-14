@@ -35,8 +35,12 @@ function main( ; method="SCF" )
     ebands = Ham.electrons.ebands
     
     println("\nBand energies:")
-    for ist = 1:Nstates
-        @printf("%8d  %18.10f = %18.10f eV\n", ist, ebands[ist], ebands[ist]*Ry2eV*2)
+    Nspin = 2
+    for ispin = 1:Nspin
+        @printf("\nSpin: %d\n", ispin)
+        for ist = 1:Nstates
+            @printf("%8d  %18.10f = %18.10f eV\n", ist, ebands[ist,ispin], ebands[ist,ispin]*Ry2eV*2)
+        end
     end
     
     println("\nTotal energy components")

@@ -145,9 +145,9 @@ function calc_Vxc_PBE( pw::PWGrid, Rhoe::Array{Float64,2} )
     # spin up
     #
     for ip = 1:Npoints
-        h[1,ip] = Vgxc[ip] * gRhoe_up[1,ip]
-        h[2,ip] = Vgxc[ip] * gRhoe_up[2,ip]
-        h[3,ip] = Vgxc[ip] * gRhoe_up[3,ip]
+        h[1,ip] = Vgxc[1,ip] * gRhoe_up[1,ip]
+        h[2,ip] = Vgxc[2,ip] * gRhoe_up[2,ip]
+        h[3,ip] = Vgxc[3,ip] * gRhoe_up[3,ip]
     end
     #
     divh = op_nabla_dot( pw, h )
@@ -160,9 +160,9 @@ function calc_Vxc_PBE( pw::PWGrid, Rhoe::Array{Float64,2} )
     # Spin down
     #
     for ip = 1:Npoints
-        h[1,ip] = Vgxc[ip] * gRhoe_dn[1,ip]
-        h[2,ip] = Vgxc[ip] * gRhoe_dn[2,ip]
-        h[3,ip] = Vgxc[ip] * gRhoe_dn[3,ip]
+        h[1,ip] = Vgxc[1,ip] * gRhoe_dn[1,ip]
+        h[2,ip] = Vgxc[2,ip] * gRhoe_dn[2,ip]
+        h[3,ip] = Vgxc[3,ip] * gRhoe_dn[3,ip]
     end
     #
     divh = op_nabla_dot( pw, h )
