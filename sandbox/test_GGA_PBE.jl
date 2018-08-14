@@ -75,7 +75,7 @@ function test_op_nabla()
     integ_f = sum(f)*dVol
     println("integ_f = ", integ_f)
 
-    grad_f = PWDFT.op_nabla(pw, f)
+    grad_f = op_nabla(pw, f)
     println("size grad_f = ", size(grad_f))
 
     println("diff x = ", sum(grad_f[1,:] - f_x[:]) )
@@ -123,7 +123,7 @@ function test_op_nabla_dot()
     integ_f_z = sum(ff[3,:])*dVol
     println("integ_f_z = ", integ_f_z)
 
-    div_ff = PWDFT.op_nabla_dot(pw, ff)
+    div_ff = op_nabla_dot(pw, ff)
     println("size div_ff = ", size(div_ff))
 
     println("diff = ", sum(div_ff - div_ff_analytic))
