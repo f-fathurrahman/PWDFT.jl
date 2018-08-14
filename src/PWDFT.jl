@@ -119,7 +119,9 @@ export calc_PspCore_ene
 include("calc_E_NN.jl")
 export calc_E_NN
 
-const LIBXC_SO_PATH = joinpath(dirname(@__DIR__), "src", "extlibs", "libxc_interface.so")
+mutable struct XCFuncType
+end
+
 include("LDA_VWN.jl")
 export calc_epsxc_VWN, calc_Vxc_VWN
 
