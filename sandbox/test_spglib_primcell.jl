@@ -20,6 +20,7 @@ function test_BCC()
     #println("\nNatoms_prim = ", Natoms_prim)
 
     red_atoms = reduce_atoms( atoms )
+    println("\nReduced atoms")
     println( red_atoms )
     write_xsf( "TEMP_bcc_reduced.xsf", red_atoms )
 
@@ -50,6 +51,7 @@ function test_Si()
     #println( "\nNatoms_prim = ", Natoms_prim )
 
     red_atoms = reduce_atoms( atoms )
+    println("\nReduced atoms")
     println( red_atoms )
     write_xsf( "TEMP_Si_reduced.xsf", red_atoms )
 end
@@ -73,6 +75,7 @@ function test_corundum()
     #println( "\nNatoms_prim = ", Natoms_prim )
 
     red_atoms = reduce_atoms( atoms )
+    println("\nReduced atoms")
     println( red_atoms )
     write_xsf( "TEMP_corundum_reduced.xsf", red_atoms )
 

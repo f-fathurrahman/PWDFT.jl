@@ -5,6 +5,8 @@ using LinearAlgebra
 using Random
 using FFTW
 
+include("../deps/deps.jl") # Load library dependencies
+
 # constants
 
 # CODATA: https://physics.nist.gov/cgi-bin/cuu/Value?rydhcev
@@ -35,11 +37,9 @@ export gen_lattice_fcc, gen_lattice_bcc, gen_lattice_trigonal, gen_lattice_trigo
        gen_lattice_orthorhombic, gen_lattice_monoclinic,
        gen_lattice_sc, gen_lattice_rhombohedral
 
-# FIXME Temporary workout until I found how to work with BinDeps
-const SPGLIB_SO_PATH = joinpath(dirname(@__DIR__), "src", "extlibs", "spglib", "libspglib.so")
 include("spglib.jl")
 export spg_find_primitive,
-       spg_get_ir_reciprocal_mesh
+       spg_get_ir_reciprocal_mesh,
        reduce_atoms, gen_kgrid_reduced
 
 include("KPoints.jl")

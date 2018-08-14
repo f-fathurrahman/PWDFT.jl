@@ -67,7 +67,7 @@ function reduce_atoms( atoms::Atoms; symprec=1e-5 )
     types = Base.cconvert(Array{Int32,1}, atoms.atm2species)
 
     num_primitive_atom =
-    ccall( (:spg_find_primitive,SPGLIB_SO_PATH), Int32,
+    ccall( (:spg_find_primitive,LIBSYMSPG), Int32,
            ( Ptr{Float64}, Ptr{Float64}, Ptr{Int32}, Int32, Float64 ),
            lattice, positions, types, num_atom, symprec )
 
@@ -104,7 +104,7 @@ function spg_find_primitive( atoms::Atoms; symprec=1e-5)
     types = Base.cconvert(Array{Int32,1}, atoms.atm2species)
 
     num_primitive_atom =
-    ccall( (:spg_find_primitive,SPGLIB_SO_PATH), Int32,
+    ccall( (:spg_find_primitive,LIBSYMSPG), Int32,
            ( Ptr{Float64}, Ptr{Float64}, Ptr{Int32}, Int32, Float64 ),
            lattice, positions, types, num_atom, symprec )
 
@@ -134,7 +134,7 @@ function spg_get_ir_reciprocal_mesh(
     mapping = zeros(Int32,Nkpts)
 
     num_ir =
-    ccall((:spg_get_ir_reciprocal_mesh, SPGLIB_SO_PATH), Int32,
+    ccall((:spg_get_ir_reciprocal_mesh, LIBSYMSPG), Int32,
           (Ptr{Int32}, Ptr{Int32}, Ptr{Int32},
            Ptr{Int32}, Int32, Ptr{Float64}, Ptr{Float64}, 
            Ptr{Int32}, Int32, Float64),
