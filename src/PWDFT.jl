@@ -81,7 +81,8 @@ export good_fft_order
 include("PWGrid.jl")
 export PWGrid,
        GVectors,
-       GVectorsW
+       GVectorsW,
+       op_nabla, op_nabla_dot
 
 #
 # FFT
