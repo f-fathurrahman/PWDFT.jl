@@ -5,7 +5,7 @@ using LinearAlgebra
 using Random
 using FFTW
 
-include("../deps/deps.jl") # Load library dependencies
+include("../extlibs/extlibs.jl") # Load library dependencies
 
 # constants
 
