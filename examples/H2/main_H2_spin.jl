@@ -9,7 +9,7 @@ function main( ; method="SCF" )
     pspfiles = ["../pseudopotentials/pade_gth/H-q1.gth"]
     ecutwfc_Ry = 30.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5,
-                         Nspin=2, verbose=true, extra_states=0 )
+                         Nspin=2, extra_states=0 )
 
     if method == "SCF"
         KS_solve_SCF!( Ham, mix_method="anderson" )

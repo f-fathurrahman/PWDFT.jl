@@ -39,14 +39,7 @@ Generate an instance of `KPoints` with uniform grid-points reduced by symmetry
 - `verbose`: if `true`, additional information will be printed out.
  """
 function KPoints( atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{Int64,1};
-                  time_reversal=1, verbose::Bool=false )
-    
-    if verbose
-        @printf("\n")
-        @printf("Generating kpoints:\n")
-        @printf("mesh     = (%d,%d,%d)\n", mesh[1], mesh[2], mesh[3])
-        @printf("is_shift = (%d,%d,%d)\n", is_shift[1], is_shift[2], is_shift[3])
-    end
+                  time_reversal=1 )
 
     Nkpt, kgrid, mapping =
     spg_get_ir_reciprocal_mesh( atoms, mesh, is_shift, is_time_reversal=time_reversal )

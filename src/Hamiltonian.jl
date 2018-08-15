@@ -25,7 +25,6 @@ function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
                       meshk = [1,1,1], shiftk = [0,0,0],
                       kpoints = nothing,
                       xcfunc = "VWN",
-                      verbose = false,
                       extra_states = 0 )
 
     # kpoints
@@ -37,10 +36,6 @@ function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
 
     # Initialize plane wave grids
     pw = PWGrid( ecutwfc, atoms.LatVecs, kpoints=kpoints )
-    if verbose
-        println(pw)
-        println(kpoints)
-    end
 
     Nspecies = atoms.Nspecies
     if Nspecies != size(pspfiles)[1]
@@ -67,9 +62,6 @@ function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
     for isp = 1:Nspecies
         Pspots[isp] = PsPot_GTH( pspfiles[isp] )
         psp = Pspots[isp]
-        if verbose
-            println(psp)
-        end
         for ig = 1:Ng
             ip = idx_g2r[ig]
             Vg[ip] = strf[ig,isp] * eval_Vloc_G( psp, G2[ig] ) / CellVolume
@@ -89,9 +81,6 @@ function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
 
     electrons = Electrons( atoms, Pspots, Nspin=Nspin, Nkpt=kpoints.Nkpt,
                            Nstates_empty=extra_states )
-    if verbose
-        println(electrons)
-    end
 
     # NL pseudopotentials
     pspotNL = PsPotNL( pw, atoms, Pspots, kpoints, check_norm=false )
@@ -109,18 +98,15 @@ end
 # No pspfiles given. Use Coulomb potential (all electrons)
 #
 function Hamiltonian( atoms::Atoms, ecutwfc::Float64;
-                        Nspin = 1,
-                        meshk = [1,1,1], shiftk=[0,0,0],    
-                        xcfunc="VWN", verbose=false, extra_states=0 )
+                      Nspin = 1,
+                      meshk = [1,1,1], shiftk=[0,0,0],    
+                      xcfunc="VWN", extra_states=0 )
     
     # kpoints
     kpoints = KPoints( atoms, meshk, shiftk )
 
     # Initialize plane wave grids
     pw = PWGrid( ecutwfc, atoms.LatVecs, kpoints=kpoints )
-    if verbose
-        println(pw)
-    end
 
     Nspecies = atoms.Nspecies
 
@@ -150,9 +136,6 @@ function Hamiltonian( atoms::Atoms, ecutwfc::Float64;
     # use Zatoms as Zvals
     electrons = Electrons( atoms, Zatoms, Nspin=Nspin, Nkpt=kpoints.Nkpt,
                            Nstates_empty=extra_states )
-    if verbose
-        println(electrons)
-    end
 
     rhoe = zeros(Float64,Npoints,Nspin)
 

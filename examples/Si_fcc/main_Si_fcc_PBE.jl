@@ -15,7 +15,7 @@ function main( ; method="SCF" )
     pspfiles = ["../pseudopotentials/pbe_gth/Si-q4.gth"]
     ecutwfc_Ry = 30.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5,
-                         xcfunc="PBE", meshk=[3,3,3], verbose=true )
+                         xcfunc="PBE", meshk=[3,3,3] )
 
     #
     # Solve the KS problem
