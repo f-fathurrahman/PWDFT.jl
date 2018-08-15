@@ -10,16 +10,36 @@ structure package such as Quantum ESPRESSO, ABINIT, VASP, etc.
 
 ## Requirements
 
-- Julia 0.7: with `FFTW` and `SpecialFunctions` packages installed.
+- Julia 0.7 or higher with `FFTW` and `SpecialFunctions` packages installed.
 - LibXC 3.0: which needs to be compiled and and installed separately.
 - spglib: included in this repository and needs to be compiled manually.
 
 ## Installation
 
-Currently, this package is not yet registered. You can install this package by
-cloning this repository under `.julia/dev` directory.
-To make sure the package is installed correctly, you can load the package
-and verify that there are no error messages after the loading.
+- Compile and install LibXC and spglib.
+
+- Install Julia package `FFTW` and `SpecialFunctions`. The following
+  command can be run under Julia console.
+
+```Julia
+Pkg.add("FFTW")
+Pkg.add("SpecialFunctions")
+```
+
+- Currently, this package is not yet registered. You can use this package by
+  cloning this repository under the `$HOME/.julia/dev` directory.
+
+- Create symlink under `$HOME/.julia/dev` to point to `PWDFT.jl`
+
+```bash
+ln -fs PWDFT.jl PWDFT
+```
+
+- Open the file `extlibs/extlibs.jl` using text editor. Edit the
+  `LIBXC` and `LIBSYMSPG` according to your LibXC and spglib installations.
+
+- To make sure the package is installed correctly, you can load the package
+  and verify that there are no error messages after the loading.
 
 ```julia
 using PWDFT
@@ -27,19 +47,18 @@ using PWDFT
 
 ## Units
 
-`PWDFT.jl` internally uses Hartree atomic units
+`PWDFT.jl` internally uses Hartree atomic units,
 (energy in Hartree and length in bohr).
 
 ## Quick start
 
-- create `Atoms` object
+- create an instance of `Atoms`:
 
 ```julia
-atoms = init_atoms_xyz("CH4.xyz")
-atoms.LatVecs = 16.0*eye(3)
+atoms = Atoms(filexyz="CH4.xyz", LatVecs=gen_lattice_sc(16.0))
 ```
 
-- create `Hamiltonian` object
+- create an instance of `Hamiltonian`:
 
 ```julia
 ecutwfc = 15.0 # in Hartree
@@ -48,7 +67,7 @@ pspfiles = ["../pseudopotentials/pade_gth/C-q4.gth",
 Ham = Hamiltonian( atoms, pspfiles, ecutwfc )
 ```
 
-- solve Kohn-Sham equations using any of the following methods
+- solve the Kohn-Sham problem
 
 ```julia
 KS_solve_SCF!( Ham, betamix=0.2 )  # using SCF (self-consistent field) method
