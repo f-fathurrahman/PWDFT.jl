@@ -60,7 +60,6 @@ function test_empty_lattice(lattice::String, band_file::String)
     pspfiles = ["../pseudopotentials/pade_gth/H-q1.gth"]
     Ham = free_electron_Hamiltonian(
             atoms, pspfiles, ecutwfc, kpoints=kpoints, extra_states=20,
-            verbose=true
           )
 
     pw = Ham.pw

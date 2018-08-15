@@ -15,7 +15,7 @@ function test_main()
     println(atoms)
 
     ecutwfc_Ry = 30.0
-    kpoints = KPoints( atoms, [4,4,4], [0,0,0], verbose=true )
+    kpoints = KPoints( atoms, [4,4,4], [0,0,0] )
     pw = PWGrid( ecutwfc_Ry*0.5, atoms.LatVecs, kpoints=kpoints )
     println(pw)
 end

@@ -11,7 +11,7 @@ function test_main()
     atoms.LatVecs = gen_lattice_cubic(16.0)
     
     ecutwfc_Ry = 30.0
-    kpoints = KPoints( atoms, [2,2,2], [0,0,0], verbose=true )
+    kpoints = KPoints( atoms, [2,2,2], [0,0,0] )
     pw = PWGrid( ecutwfc_Ry*0.5, atoms.LatVecs, kpoints=kpoints )
     Ngw = pw.gvecw.Ngw
     Nkpt = pw.gvecw.kpoints.Nkpt

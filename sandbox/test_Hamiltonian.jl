@@ -10,7 +10,7 @@ function test_Nkpt_1()
     println(atoms)
     #
     ecutwfc = 15.0
-    Ham = Hamiltonian( atoms, ecutwfc, verbose=true )
+    Ham = Hamiltonian( atoms, ecutwfc )
     #
     pw = Ham.pw
     Ngwx = pw.gvecw.Ngwx
@@ -103,7 +103,7 @@ function test_Si()
     #
     pspfiles = ["../pseudopotentials/pade_gth/Si-q4.gth"]
     ecutwfc = 25.0
-    Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3], verbose=true )
+    Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3] )
     #
     pw = Ham.pw
     Ngwx = pw.gvecw.Ngwx
@@ -173,7 +173,7 @@ function test_Ni_fcc(;Nspin=1)
     #
     pspfiles = ["../pseudopotentials/pade_gth/Ni-q10.gth"]
     ecutwfc = 25.0
-    Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3], Nspin=Nspin, verbose=true )
+    Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3], Nspin=Nspin )
 
     #
     pw = Ham.pw

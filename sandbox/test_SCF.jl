@@ -22,7 +22,7 @@ function create_Hamiltonian_H_atom()
     # Initialize Hamiltonian
     pspfiles = ["../pseudopotentials/pade_gth/H-q1.gth"]
     ecutwfc_Ry = 30.0
-    Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, verbose=true )
+    Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5 )
 
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( atoms )
@@ -39,7 +39,7 @@ function create_Hamiltonian_H2()
     # Initialize Hamiltonian
     pspfiles = ["../pseudopotentials/pade_gth/H-q1.gth"]
     ecutwfc_Ry = 30.0
-    Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, verbose=true )
+    Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5 )
 
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( atoms )
@@ -74,7 +74,7 @@ function create_Hamiltonian_O2()
     # Initialize Hamiltonian
     pspfiles = ["../pseudopotentials/pade_gth/O-q6.gth"]
     ecutwfc_Ry = 30.0
-    Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, verbose=true, extra_states=1 )
+    Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, extra_states=1 )
     Ham.electrons.Focc[:,1] = [2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0]
 
     println(Ham.electrons)
@@ -92,7 +92,7 @@ function create_Hamiltonian_O2_spinpol()
     pspfiles = ["../pseudopotentials/pade_gth/O-q6.gth"]
     ecutwfc_Ry = 30.0
     Ham = Hamiltonian(
-        atoms, pspfiles, ecutwfc_Ry*0.5, verbose=true, extra_states=4, Nspin=2
+        atoms, pspfiles, ecutwfc_Ry*0.5, extra_states=4, Nspin=2
     )
     Ham.electrons.Focc[:,1] = [1.0, 1.0, 1.0, 1.0, 1.0,
                                1.0, 1.0, 0.0, 0.0, 0.0]
@@ -114,7 +114,7 @@ function create_Hamiltonian_N2()
     # Initialize Hamiltonian
     ecutwfc_Ry = 30.0
     pspfiles = ["../pseudopotentials/pade_gth/N-q5.gth"]
-    Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, extra_states=1, verbose=true )
+    Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, extra_states=1 )
 
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( atoms )
@@ -134,7 +134,7 @@ function create_Hamiltonian_Co_atom()
     ecutwfc_Ry = 30.0
     pspfiles = ["../pseudopotentials/pade_gth/Co-q9.gth"]
     Ham = Hamiltonian(
-        atoms, pspfiles, ecutwfc_Ry*0.5, verbose=true, Nspin=2, extra_states=3
+        atoms, pspfiles, ecutwfc_Ry*0.5, Nspin=2, extra_states=3
         )
 
     # set manually
@@ -158,7 +158,7 @@ function create_Hamiltonian_Ni_atom()
     ecutwfc_Ry = 30.0
     pspfiles = ["../pseudopotentials/pade_gth/Ni-q10.gth"]
     Ham = Hamiltonian(
-        atoms, pspfiles, ecutwfc_Ry*0.5, verbose=true, Nspin=2, extra_states=3
+        atoms, pspfiles, ecutwfc_Ry*0.5, Nspin=2, extra_states=3
         )
 
     # set manually

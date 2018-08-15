@@ -14,7 +14,7 @@ function test_Si_diamond()
     atoms.positions = atoms.LatVecs*atoms.positions
     println(atoms)
 
-    kpoints = KPoints( atoms, [3,3,3], [0,0,0], verbose=true )
+    kpoints = KPoints( atoms, [3,3,3], [0,0,0] )
     println(kpoints)
 end
 
@@ -30,7 +30,7 @@ function test_Fe_bcc()
     atoms.positions = atoms.LatVecs*atoms.positions
     println(atoms)
 
-    kpoints = KPoints( atoms, [3,3,3], [0,0,0], verbose=true )
+    kpoints = KPoints( atoms, [3,3,3], [0,0,0] )
     println(kpoints)
 end
 
