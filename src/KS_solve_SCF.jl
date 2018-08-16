@@ -73,11 +73,11 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
     if mix_method == "anderson"
         df = zeros(Float64,Npoints*Nspin,MIXDIM)
         dv = zeros(Float64,Npoints*Nspin,MIXDIM)
-    #elseif mix_method == "rpulay"
-    #    XX = zeros(Float64,Npoints*Nspin,MIXDIM)
-    #    FF = zeros(Float64,Npoints*Nspin,MIXDIM)
-    #    x_old = zeros(Float64,Npoints*Nspin)
-    #    f_old = zeros(Float64,Npoints*Nspin)
+    elseif mix_method == "rpulay"
+        XX = zeros(Float64,Npoints*Nspin,MIXDIM)
+        FF = zeros(Float64,Npoints*Nspin,MIXDIM)
+        x_old = zeros(Float64,Npoints*Nspin)
+        f_old = zeros(Float64,Npoints*Nspin)
     end
 
 
@@ -103,7 +103,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
         @printf("MIXDIM = %d\n", MIXDIM)
     elseif mix_method == "rpulay"
         @printf("Using restarted Pulay mixing\n")
-        @printf("MIXDIM = %d", MIXDIM)
+        @printf("MIXDIM = %d\n", MIXDIM)
     else
         @printf("Using simple mixing\n")
     end
@@ -187,7 +187,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
                 reshape(Rhoe_new,(Npoints*Nspin)), betamix, XX, FF, iter, MIXDIM, x_old, f_old
                 ), (Npoints,Nspin) )
             
-            if Nspin == 1
+            if Nspin == 2
                 magn_den = Rhoe[:,1] - Rhoe[:,2]
             end
         
@@ -274,9 +274,9 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
     Ham.electrons.ebands = evals
 
     if verbose
-        println("----------------------------")
+        println("\n----------------------------")
         println("Final Kohn-Sham eigenvalues:")
-        println("----------------------------")
+        println("----------------------------\n")
         print_ebands(Ham.electrons)
     end
 
