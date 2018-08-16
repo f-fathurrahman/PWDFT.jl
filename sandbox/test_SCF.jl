@@ -17,7 +17,6 @@ function create_Hamiltonian_H_atom()
         H  0.0  0.0  0.0
         """)
     atoms.LatVecs = gen_lattice_sc(16.0)
-    println(atoms)
 
     # Initialize Hamiltonian
     pspfiles = ["../pseudopotentials/pade_gth/H-q1.gth"]
@@ -34,15 +33,11 @@ function create_Hamiltonian_H2()
     # Atoms
     atoms = init_atoms_xyz("../structures/H2.xyz")
     atoms.LatVecs = gen_lattice_sc(16.0)
-    println(atoms)
 
     # Initialize Hamiltonian
     pspfiles = ["../pseudopotentials/pade_gth/H-q1.gth"]
     ecutwfc_Ry = 30.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5 )
-
-    # calculate E_NN
-    Ham.energies.NN = calc_E_NN( atoms )
 
     return Ham
 end
@@ -51,15 +46,11 @@ function create_Hamiltonian_N2()
     # Atoms
     atoms = init_atoms_xyz("../structures/N2.xyz")
     atoms.LatVecs = gen_lattice_cubic(16.0)
-    println(atoms)
 
     # Initialize Hamiltonian
     ecutwfc_Ry = 30.0
     pspfiles = ["../pseudopotentials/pade_gth/N-q5.gth"]
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5 )
-
-    # calculate E_NN
-    Ham.energies.NN = calc_E_NN( atoms )
 
     return Ham
 end
@@ -77,7 +68,7 @@ function create_Hamiltonian_O2()
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, extra_states=1 )
     Ham.electrons.Focc[:,1] = [2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0]
 
-    println(Ham.electrons)
+    println(Ham)
 
     return Ham
 end
@@ -86,7 +77,6 @@ function create_Hamiltonian_O2_spinpol()
     # Atoms
     atoms = init_atoms_xyz("../structures/O2.xyz")
     atoms.LatVecs = gen_lattice_sc(16.0)
-    println(atoms)
 
     # Initialize Hamiltonian
     pspfiles = ["../pseudopotentials/pade_gth/O-q6.gth"]
@@ -99,7 +89,7 @@ function create_Hamiltonian_O2_spinpol()
     Ham.electrons.Focc[:,2] = [1.0, 1.0, 1.0, 1.0, 1.0,
                                0.0, 0.0, 0.0, 0.0, 0.0]                               
 
-    println(Ham.electrons)
+    println(Ham)
 
     return Ham
 end
@@ -109,15 +99,11 @@ function create_Hamiltonian_N2()
     # Atoms
     atoms = init_atoms_xyz("../structures/N2.xyz")
     atoms.LatVecs = gen_lattice_sc(16.0)
-    println(atoms)
 
     # Initialize Hamiltonian
     ecutwfc_Ry = 30.0
     pspfiles = ["../pseudopotentials/pade_gth/N-q5.gth"]
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, extra_states=1 )
-
-    # calculate E_NN
-    Ham.energies.NN = calc_E_NN( atoms )
 
     return Ham
 end
@@ -128,7 +114,6 @@ function create_Hamiltonian_Co_atom()
 
     Co   0.0   0.0   0.0
     """, LatVecs=gen_lattice_sc(16.0))
-    println(atoms)
 
     # Initialize Hamiltonian
     ecutwfc_Ry = 30.0
@@ -152,7 +137,6 @@ function create_Hamiltonian_Ni_atom()
 
     Ni   0.0   0.0   0.0
     """, LatVecs=gen_lattice_sc(16.0))
-    println(atoms)
 
     # Initialize Hamiltonian
     ecutwfc_Ry = 30.0
@@ -166,8 +150,8 @@ function create_Hamiltonian_Ni_atom()
                                0.0, 0.0, 0.0]
     Ham.electrons.Focc[:,2] = [1.0, 1.0, 1.0, 1.0, 0.5,
                                0.5, 0.0, 0.0]
-    println("\nFocc is set manually\n")
-    println(Ham.electrons)
+
+    println(Ham)
 
     return Ham
 end
