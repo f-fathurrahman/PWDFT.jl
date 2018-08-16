@@ -4,7 +4,7 @@ iterations with density mixing.
 """
 function KS_solve_SCF!( Ham::Hamiltonian ;
                         startingwfc=nothing, savewfc=false,
-                        betamix = 0.5, NiterMax=100, verbose=false,
+                        betamix = 0.5, NiterMax=100, verbose=true,
                         check_rhoe_after_mix=false,
                         use_smearing = false, kT=1e-3,
                         update_psi="LOBPCG", cheby_degree=8,
@@ -73,7 +73,13 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
     if mix_method == "anderson"
         df = zeros(Float64,Npoints*Nspin,MIXDIM)
         dv = zeros(Float64,Npoints*Nspin,MIXDIM)
+    #elseif mix_method == "rpulay"
+    #    XX = zeros(Float64,Npoints*Nspin,MIXDIM)
+    #    FF = zeros(Float64,Npoints*Nspin,MIXDIM)
+    #    x_old = zeros(Float64,Npoints*Nspin)
+    #    f_old = zeros(Float64,Npoints*Nspin)
     end
+
 
     E_GAP_INFO = false
     Nstates_occ = electrons.Nstates_occ
@@ -94,6 +100,10 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
     @printf("\n")
     if mix_method == "anderson"
         @printf("Using Anderson mixing\n")
+        @printf("MIXDIM = %d\n", MIXDIM)
+    elseif mix_method == "rpulay"
+        @printf("Using restarted Pulay mixing\n")
+        @printf("MIXDIM = %d", MIXDIM)
     else
         @printf("Using simple mixing\n")
     end
@@ -149,13 +159,14 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
     
         end
 
-        if E_GAP_INFO
+        if E_GAP_INFO && verbose
             println("E gap = ", minimum(evals[idx_LUMO,:] - evals[idx_HOMO,:]))
         end
 
         if use_smearing
             Focc, E_fermi = calc_Focc( evals, wk, Nelectrons, kT, Nspin=Nspin )
             Entropy = calc_entropy( Focc, wk, kT, Nspin=Nspin )
+            Ham.electrons.Focc = copy(Focc)
         end
 
         for ispin = 1:Nspin
@@ -168,10 +179,21 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
             for ispin = 1:Nspin
                 Rhoe[:,ispin] = betamix*Rhoe_new[:,ispin] + (1-betamix)*Rhoe[:,ispin]
             end
+
+        elseif mix_method == "rpulay"
+        
+            Rhoe = reshape( mix_rpulay!(
+                reshape(Rhoe,(Npoints*Nspin)),
+                reshape(Rhoe_new,(Npoints*Nspin)), betamix, XX, FF, iter, MIXDIM, x_old, f_old
+                ), (Npoints,Nspin) )
+            
+            if Nspin == 1
+                magn_den = Rhoe[:,1] - Rhoe[:,2]
+            end
+        
         elseif mix_method == "anderson"
-            # FIXME: df and dv is not modified when we call it by df[:,:] or dv[:,:]
-            #Rhoe[:,:] = andersonmix!( Rhoe, Rhoe_new, betamix, df, dv, iter, MIXDIM )
             Rhoe[:,:] = mix_anderson!( Nspin, Rhoe, Rhoe_new, betamix, df, dv, iter, MIXDIM )
+        
         else
             @printf("ERROR: Unknown mix_method = %s\n", mix_method)
             error("STOPPED")
@@ -203,18 +225,20 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
         end
         diffE = abs( Etot - Etot_old )
 
-        if Nspin == 1
-            @printf("SCF: %8d %18.10f %18.10e %18.10e\n",
-                    iter, Etot, diffE, diffRhoe[1] )
-        else
-            @printf("SCF: %8d %18.10f %18.10e %18.10e %18.10e\n",
-                    iter, Etot, diffE, diffRhoe[1], diffRhoe[2] )
-            magn_den = Rhoe[:,1] - Rhoe[:,2]
-            @printf("integ magn_den = %18.10f\n", sum(magn_den)*dVol)                
-        end
-    
-        if use_smearing
-            @printf("Entropy (-TS) = %18.10f\n", Entropy)
+        if verbose
+            if Nspin == 1
+                @printf("SCF: %8d %18.10f %18.10e %18.10e\n",
+                        iter, Etot, diffE, diffRhoe[1] )
+            else
+                @printf("SCF: %8d %18.10f %18.10e %18.10e %18.10e\n",
+                        iter, Etot, diffE, diffRhoe[1], diffRhoe[2] )
+                magn_den = Rhoe[:,1] - Rhoe[:,2]
+                @printf("integ magn_den = %18.10f\n", sum(magn_den)*dVol)                
+            end
+        
+            if use_smearing
+                @printf("Entropy (-TS) = %18.10f\n", Entropy)
+            end
         end
 
         if diffE < ETOT_CONV_THR
@@ -224,7 +248,9 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
         end
 
         if CONVERGED >= 2
-            @printf("SCF is converged: iter: %d , diffE = %10.7e\n", iter, diffE)
+            if verbose
+                @printf("SCF is converged: iter: %d , diffE = %10.7e\n", iter, diffE)
+            end
             break
         end
         #
@@ -247,8 +273,12 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
 
     Ham.electrons.ebands = evals
 
-    println("At the end of SCF:")
-    println(Ham.electrons, all_states=true)
+    if verbose
+        println("----------------------------")
+        println("Final Kohn-Sham eigenvalues:")
+        println("----------------------------")
+        print_ebands(Ham.electrons)
+    end
 
     if savewfc
         for ikspin = 1:Nkpt*Nspin
