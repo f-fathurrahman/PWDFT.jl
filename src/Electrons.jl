@@ -316,12 +316,12 @@ function print_ebands( electrons::Electrons; unit="hartree" )
         println("ik = ", ik)
         if electrons.Nspin == 2
             for ist = 1:Nstates
-                @printf("%8d %13.10f %18.10f -- %13.10f %18.10f = \n", ist,
+                @printf("%8d %13.10f %18.10f -- %13.10f %18.10f\n", ist,
                         Focc[ist,ik], ebands[ist,ik], Focc[ist,ik+Nkpt], ebands[ist,ik+Nkpt])
             end
         else
             for ist = 1:Nstates
-                @printf("%8d %13.10f %18.10f = \n", ist,
+                @printf("%8d %13.10f %18.10f\n", ist,
                         Focc[ist,ik], ebands[ist,ik])
             end
         end
