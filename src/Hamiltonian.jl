@@ -18,6 +18,15 @@ mutable struct Hamiltonian
     ispin::Int64 # current spin index
 end
 
+import Base: println
+function println( Ham::Hamiltonian )
+    println(Ham.atoms)
+    println(Ham.pw)
+    println(Ham.electrons)
+    for isp = 1:Ham.atoms.Nspecies
+        println(Ham.pspots[isp])
+    end
+end
 
 function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
                       ecutwfc::Float64 ;
