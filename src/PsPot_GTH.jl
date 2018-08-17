@@ -110,7 +110,7 @@ end
 
 # Display information about GTH pseudopotential
 import Base: println
-function println( psp::PsPot_GTH )
+function println( psp::PsPot_GTH; header=true )
 
     ANGMOM = ["s", "p", "d", "f"]
 
@@ -120,11 +120,13 @@ function println( psp::PsPot_GTH )
     rc = psp.rc
     h = psp.h
 
-    @printf("\n")
-    @printf("                                   ---------\n")
-    @printf("                                   PsPot_GTH\n")
-    @printf("                                   ---------\n")
-    @printf("\n")
+    if header
+        @printf("\n")
+        @printf("                                   ---------\n")
+        @printf("                                   PsPot_GTH\n")
+        @printf("                                   ---------\n")
+        @printf("\n")
+    end
     @printf("Species: %s\n\n", psp.atsymb)
     @printf("zval: %d\n", psp.zval)
     @printf("File: %s\n", psp.pspfile)

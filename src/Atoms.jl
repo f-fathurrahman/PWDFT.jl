@@ -212,12 +212,14 @@ end
 # Overload println for Atoms
 import Base: println
 
-function println( a::Atoms )
-    @printf("\n")
-    @printf("                                     -----\n")
-    @printf("                                     Atoms\n")
-    @printf("                                     -----\n")
-    @printf("\n")
+function println( a::Atoms; header=true )
+    if header
+        @printf("\n")
+        @printf("                                     -----\n")
+        @printf("                                     Atoms\n")
+        @printf("                                     -----\n")
+        @printf("\n")
+    end
     @printf("Natoms   = %5d\n", a.Natoms)
     @printf("Nspecies = %5d\n", a.Nspecies)
     @printf("\n")

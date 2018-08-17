@@ -253,14 +253,16 @@ import Base: println
 Display some information about `pw::PWGrid`. This function calls
 `println(gvec::GVectors)` and `println(gvecw::GVectorsW)`.
 """
-function println( pw::PWGrid )
-    @printf("\n")
-    @printf("                                     ------\n")
-    @printf("                                     PWGrid\n")
-    @printf("                                     ------\n")
+function println( pw::PWGrid; header=true )
+    if header
+        @printf("\n")
+        @printf("                                     ------\n")
+        @printf("                                     PWGrid\n")
+        @printf("                                     ------\n")
+        @printf("\n")
+    end
     LatVecs = pw.LatVecs
     RecVecs = pw.RecVecs
-    @printf("\n")
     @printf("Direct lattice vectors:\n")
     @printf("\n")
     for i = 1:3

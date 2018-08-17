@@ -223,7 +223,7 @@ Occupation numbers are by default will only displayed for
 several states only, except when `all_states=true`.
 All occupation numbers will be displayed for all kpoints.
 """
-function println( electrons::Electrons; all_states=false )
+function println( electrons::Electrons; header=true, all_states=false )
 
     Nspin = electrons.Nspin
     Focc = electrons.Focc
@@ -233,11 +233,13 @@ function println( electrons::Electrons; all_states=false )
     Nkspin = size(Focc)[2]
     Nkpt = Nkspin/Nspin
 
-    @printf("\n")
-    @printf("                                     ---------\n")
-    @printf("                                     Electrons\n")
-    @printf("                                     ---------\n")
-    @printf("\n")
+    if header
+        @printf("\n")
+        @printf("                                     ---------\n")
+        @printf("                                     Electrons\n")
+        @printf("                                     ---------\n")
+        @printf("\n")
+    end
     @printf("Nspin         = %8d\n", Nspin)
     @printf("Nkpt          = %8d\n", Nkpt)
     @printf("Nelectrons    =  %18.10f\n", Nelectrons)
