@@ -21,7 +21,6 @@ end
 import Base: println, sum
 
 function println( energies::Energies )
-    @printf("\n")
     @printf("Kinetic    energy: %18.10f\n", energies.Kinetic )
     @printf("Ps_loc     energy: %18.10f\n", energies.Ps_loc )
     @printf("Ps_nloc    energy: %18.10f\n", energies.Ps_nloc )

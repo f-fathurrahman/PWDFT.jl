@@ -5,6 +5,8 @@ iterations with density mixing.
 function KS_solve_SCF!( Ham::Hamiltonian ;
                         startingwfc=nothing, savewfc=false,
                         betamix = 0.5, NiterMax=100, verbose=true,
+                        print_final_ebands=true,
+                        print_final_energies=true,
                         check_rhoe_after_mix=false,
                         use_smearing = false, kT=1e-3,
                         update_psi="LOBPCG", cheby_degree=8,
@@ -273,11 +275,22 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
 
     Ham.electrons.ebands = evals
 
-    if verbose
-        println("\n----------------------------")
-        println("Final Kohn-Sham eigenvalues:")
-        println("----------------------------\n")
-        print_ebands(Ham.electrons)
+    if verbose && print_final_ebands
+        @printf("\n")
+        @printf("----------------------------\n")
+        @printf("Final Kohn-Sham eigenvalues:\n")
+        @printf("----------------------------\n")
+        @printf("\n")
+        print_ebands(Ham.electrons, Ham.pw.gvecw.kpoints)
+    end
+
+    if verbose && print_final_energies
+        @printf("\n")
+        @printf("-------------------------\n")
+        @printf("Final Kohn-Sham energies:\n")
+        @printf("-------------------------\n")
+        @printf("\n")
+        println(Ham.energies)
     end
 
     if savewfc

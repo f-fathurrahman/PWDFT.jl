@@ -301,7 +301,7 @@ function println( electrons::Electrons; header=true, all_states=false )
 end
 
 
-function print_ebands( electrons::Electrons; unit="hartree" )
+function print_ebands( electrons::Electrons, kpoints::KPoints; unit="hartree" )
     if unit == "eV"
         ebands = electrons.ebands*2*Ry2eV
     else
@@ -311,11 +311,12 @@ function print_ebands( electrons::Electrons; unit="hartree" )
     Nspin = electrons.Nspin
     Focc = electrons.Focc
     Nkspin = size(Focc)[2]
-    Nkpt = round(Int64,Nkspin/Nspin)
+    Nkpt = kpoints.Nkpt
     Nstates = electrons.Nstates
 
     for ik = 1:Nkpt
-        println("ik = ", ik)
+        @printf("\nik = %5d, k = (%18.10f,%18.10f,%18.10f)\n\n",
+                ik, kpoints.k[1,ik], kpoints.k[2,ik], kpoints.k[3,ik])
         if electrons.Nspin == 2
             for ist = 1:Nstates
                 @printf("%8d %13.10f %18.10f -- %13.10f %18.10f\n", ist,
