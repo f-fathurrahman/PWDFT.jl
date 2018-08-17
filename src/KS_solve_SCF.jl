@@ -10,7 +10,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
                         check_rhoe_after_mix=false,
                         use_smearing = false, kT=1e-3,
                         update_psi="LOBPCG", cheby_degree=8,
-                        mix_method="simple",
+                        mix_method="simple", MIXDIM=4,
                         ETOT_CONV_THR=1e-6 )
 
     pw = Ham.pw
@@ -69,13 +69,12 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
     ETHR_EVALS_LAST = 1e-6
 
     ethr = 0.1
-
-    # For Anderson mixing
-    MIXDIM = 4
+    
     if mix_method == "anderson"
         df = zeros(Float64,Npoints*Nspin,MIXDIM)
         dv = zeros(Float64,Npoints*Nspin,MIXDIM)
-    elseif mix_method == "rpulay"
+    
+    elseif mix_method in ("rpulay", "rpulay_kerker")
         XX = zeros(Float64,Npoints*Nspin,MIXDIM)
         FF = zeros(Float64,Npoints*Nspin,MIXDIM)
         x_old = zeros(Float64,Npoints*Nspin)
@@ -100,14 +99,9 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
     @printf("Self-consistent iteration begins ...\n")
     @printf("update_psi = %s\n", update_psi)
     @printf("\n")
-    if mix_method == "anderson"
-        @printf("Using Anderson mixing\n")
+    @printf("mix_method = %s\n", mix_method)
+    if mix_method in ("rpulay", "rpulay_kerker", "anderson")
         @printf("MIXDIM = %d\n", MIXDIM)
-    elseif mix_method == "rpulay"
-        @printf("Using restarted Pulay mixing\n")
-        @printf("MIXDIM = %d\n", MIXDIM)
-    else
-        @printf("Using simple mixing\n")
     end
     @printf("Density mixing with betamix = %10.5f\n", betamix)
     if use_smearing
@@ -182,9 +176,25 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
                 Rhoe[:,ispin] = betamix*Rhoe_new[:,ispin] + (1-betamix)*Rhoe[:,ispin]
             end
 
+        elseif mix_method == "simple_kerker"
+            for ispin = 1:Nspin
+                Rhoe[:,ispin] = Rhoe[:,ispin] + betamix*precKerker(pw, Rhoe_new[:,ispin] - Rhoe[:,ispin])
+            end
+
         elseif mix_method == "rpulay"
         
             Rhoe = reshape( mix_rpulay!(
+                reshape(Rhoe,(Npoints*Nspin)),
+                reshape(Rhoe_new,(Npoints*Nspin)), betamix, XX, FF, iter, MIXDIM, x_old, f_old
+                ), (Npoints,Nspin) )
+            
+            if Nspin == 2
+                magn_den = Rhoe[:,1] - Rhoe[:,2]
+            end
+
+        elseif mix_method == "rpulay_kerker"
+        
+            Rhoe = reshape( mix_rpulay_kerker!( pw,
                 reshape(Rhoe,(Npoints*Nspin)),
                 reshape(Rhoe_new,(Npoints*Nspin)), betamix, XX, FF, iter, MIXDIM, x_old, f_old
                 ), (Npoints,Nspin) )
@@ -257,6 +267,8 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
         end
         #
         Etot_old = Etot
+
+        flush(stdout)
     end
 
     # Eigenvalues are not calculated if using CheFSI.
