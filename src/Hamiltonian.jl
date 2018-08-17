@@ -19,7 +19,16 @@ mutable struct Hamiltonian
 end
 
 import Base: println
-function println( Ham::Hamiltonian )
+function println( Ham::Hamiltonian; header=true )
+    if header
+        @printf("\n")
+        @printf("                                  -----------\n")
+        @printf("                                  Hamiltonian\n")
+        @printf("                                  -----------\n")
+        @printf("\n")
+    end
+    println("xcfunc = ", Ham.xcfunc)
+    println("")
     println(Ham.atoms)
     println(Ham.pw)
     println(Ham.electrons)
