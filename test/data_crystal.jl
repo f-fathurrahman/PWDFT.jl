@@ -1,8 +1,7 @@
 # Data are taken from https://www.webelements.com
 # Last accessed: 16 August 2018
 
-
-FCC_DATA = Dict(
+const FCC_DATA = Dict(
     "Ni" => 3.524,
     "Cu" => 3.6149,
     "Rh" => 3.8034,
@@ -13,7 +12,7 @@ FCC_DATA = Dict(
     "Au" => 4.0782,
 )
 
-BCC_DATA = Dict(
+const BCC_DATA = Dict(
     "V"  => 3.03,
     "Cr" => 2.91,
     "Fe" => 2.8665,
@@ -24,7 +23,7 @@ BCC_DATA = Dict(
 )
 
 # lattice params: a, c (in angstroms)
-HCP_DATA = Dict(
+const HCP_DATA = Dict(
     "Sc" => (3.309, 0.52733),
     "Ti" => (2.9508, 4.6855),
     "Co" => (2.5071, 4.0695),
