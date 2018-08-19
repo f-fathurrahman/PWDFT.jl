@@ -217,7 +217,15 @@ import Base: println
 """
 Display some information about an instance of `KPoints`.
 """
-function println( kpoints::KPoints )
+function println( kpoints::KPoints; header=true )
+
+    if header
+        @printf("\n")
+        @printf("                                     -------\n")
+        @printf("                                     KPoints\n")
+        @printf("                                     -------\n")
+        @printf("\n")
+    end
 
     @printf("\n")
     @printf("Total number of kpoints = %d\n", kpoints.Nkpt )

@@ -31,6 +31,7 @@ function println( Ham::Hamiltonian; header=true )
     println("")
     println(Ham.atoms)
     println(Ham.pw)
+    println(Ham.pw.gvecw.kpoints)
     println(Ham.electrons)
     for isp = 1:Ham.atoms.Nspecies
         println(Ham.pspots[isp])
