@@ -1,5 +1,3 @@
-
-# spin-unpolarized version
 function calc_Focc( evals::Array{Float64,2}, wk::Array{Float64,1},
                     Nelectrons::Float64, kT::Float64;
                     Nspin=1, verbose=false )
