@@ -252,6 +252,8 @@ function KS_solve_DCM!( Ham::Hamiltonian;
             end
         end
         end
+
+        flush(stdout)
     end  # end of DCM iteration
     
     Ham.electrons.ebands = evals[:,:]

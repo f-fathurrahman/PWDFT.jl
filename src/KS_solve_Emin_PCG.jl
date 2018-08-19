@@ -200,6 +200,8 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
         d_old = copy(d)
         Kg_old = copy(Kg)
         Etot_old = Etot
+
+        flush(stdout)
     end
 
     # Calculate eigenvalues

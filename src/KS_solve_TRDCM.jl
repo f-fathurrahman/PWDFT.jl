@@ -203,7 +203,8 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
                 if abs(sigma[ikspin]) > SMALL # sigma is not zero
                     println("Trust region is imposed")
                     if iter > 1
-                        D[:,ikspin], G[ikspin] = eigen( A[ikspin] - sigma[ikspin]*C[ikspin], B[ikspin] )
+                        D[:,ikspin], G[ikspin] =
+                        eigen( A[ikspin] - sigma[ikspin]*C[ikspin], B[ikspin] )
                     else
                         D[set5,ikspin], G[ikspin][set5,set5] =
                         eigen( A[ikspin][set5,set5] - sigma[ikspin]*C[ikspin][set5,set5], B[ikspin][set5,set5] )
@@ -216,7 +217,7 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
                     end
                 end
                 #
-                evals[:,ikspin] = D[1:Nstates,ikspin] + sigma[ikspin]
+                evals[:,ikspin] = D[1:Nstates,ikspin] .+ sigma[ikspin]
                 #
                 # update wavefunction
                 if iter > 1
@@ -368,6 +369,8 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
             end
         end
         end
+
+        flush(stdout)
     end  # end of DCM iteration
     
     Ham.electrons.ebands = evals[:,:]

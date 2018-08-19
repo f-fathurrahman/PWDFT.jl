@@ -116,7 +116,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
 
     for iter = 1:NiterMax
 
-        # determined convergence criteria for diagonalization
+        # determine convergence criteria for diagonalization
         if iter == 1
             ethr = 0.1
         elseif iter == 2
