@@ -309,13 +309,24 @@ function print_ebands( electrons::Electrons, kpoints::KPoints; unit="hartree" )
     end
 
     Nspin = electrons.Nspin
-    Focc = electrons.Focc
+    Focc = copy(electrons.Focc)
     Nkspin = size(Focc)[2]
     Nkpt = kpoints.Nkpt
+    wk = kpoints.wk
+    
+    for ik = 1:Nkpt
+        Focc[:,ik] = wk[ik]*Focc[:,ik]
+    end
+    if Nspin == 2
+        for ik = 1:Nkpt
+            Focc[:,ik+Nkpt] = wk[ik]*Focc[:,ik+Nkpt]
+        end
+    end
+        
     Nstates = electrons.Nstates
 
     for ik = 1:Nkpt
-        @printf("\nik = %5d, k = (%18.10f,%18.10f,%18.10f)\n\n",
+        @printf("ik = %5d, k = (%18.10f,%18.10f,%18.10f)\n\n",
                 ik, kpoints.k[1,ik], kpoints.k[2,ik], kpoints.k[3,ik])
         if electrons.Nspin == 2
             for ist = 1:Nstates
@@ -328,6 +339,7 @@ function print_ebands( electrons::Electrons, kpoints::KPoints; unit="hartree" )
                         Focc[ist,ik], ebands[ist,ik])
             end
         end
+        @printf("\n")
     end
-
+    @printf("sum(weighted Focc) = %18.10f\n", sum(Focc))
 end
