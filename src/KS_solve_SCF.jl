@@ -231,10 +231,9 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
         # Calculate energies
         Ham.energies = calc_energies( Ham, psiks )
         if use_smearing
-            Etot = sum(Ham.energies) + Entropy
-        else
-            Etot = sum(Ham.energies)
+            Ham.energies.mTS = Entropy
         end
+        Etot = sum(Ham.energies)
         diffE = abs( Etot - Etot_old )
 
         if verbose
@@ -248,9 +247,6 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
                 @printf("integ magn_den = %18.10f\n", sum(magn_den)*dVol)                
             end
         
-            if use_smearing
-                @printf("Entropy (-TS) = %18.10f\n", Entropy)
-            end
         end
 
         if diffE < ETOT_CONV_THR
@@ -302,7 +298,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
         @printf("Final Kohn-Sham energies:\n")
         @printf("-------------------------\n")
         @printf("\n")
-        println(Ham.energies)
+        println(Ham.energies, use_smearing=use_smearing)
     end
 
     if savewfc
