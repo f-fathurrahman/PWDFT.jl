@@ -1,4 +1,4 @@
-ALL_PBE_PSP = Dict(
+const ALL_PBE_PSP = Dict(
     "Ag" => ("Ag-q19.gth", "Ag-q11.gth",),
     "Al" => ("Al-q3.gth",),
     "Ar" => ("Ar-q8.gth",),
@@ -86,3 +86,4 @@ ALL_PBE_PSP = Dict(
     "Zn" => ("Zn-q20.gth", "Zn-q12.gth",),
     "Zr" => ("Zr-q12.gth", "Zr-q4.gth",),
 )
+

@@ -235,9 +235,9 @@ function println( electrons::Electrons; header=true, all_states=false )
 
     if header
         @printf("\n")
-        @printf("                                     ---------\n")
-        @printf("                                     Electrons\n")
-        @printf("                                     ---------\n")
+        @printf("                                    ---------\n")
+        @printf("                                    Electrons\n")
+        @printf("                                    ---------\n")
         @printf("\n")
     end
     @printf("Nspin         = %8d\n", Nspin)
