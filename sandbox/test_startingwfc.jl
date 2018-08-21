@@ -9,8 +9,6 @@ function test_main()
     ecutwfc_Ry = 30.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5 )
 
-    Ham.energies.NN = calc_E_NN( Ham.pw, atoms, [1.0] )
-
     KS_solve_Emin_PCG!( Ham, NiterMax=5, verbose=true, savewfc=true )
 
     Nstates = Ham.electrons.Nstates

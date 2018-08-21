@@ -20,9 +20,6 @@ function test_Si_fcc()
     ecutwfc_Ry = 30.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, meshk=[3,3,3] )
 
-    # calculate E_NN
-    Ham.energies.NN = calc_E_NN( atoms )
-
     KS_solve_Emin_PCG!( Ham, verbose=true )
     
     println("\nTotal energy components")

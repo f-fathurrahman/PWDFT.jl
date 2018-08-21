@@ -24,9 +24,6 @@ function test_Ge_fcc()
              xcfunc="PBE"
           )
 
-    # calculate E_NN
-    Ham.energies.NN = calc_E_NN( atoms )
-
     KS_solve_Emin_PCG!( Ham, verbose=true )
     
     println("\nTotal energy components")

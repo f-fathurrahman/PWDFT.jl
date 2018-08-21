@@ -19,9 +19,6 @@ function create_Hamiltonian_CH4()
                 "../pseudopotentials/pade_gth/H-q1.gth"]
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, extra_states=2 )
 
-    # calculate E_NN
-    Ham.energies.NN = calc_E_NN( atoms )
-
     return Ham
 end
 
