@@ -4,6 +4,7 @@ using Random
 using PWDFT
 
 include("dump_bandstructure.jl")
+include("gen_kpath.jl")
 
 function test_graphene()
 
@@ -26,7 +27,7 @@ function test_graphene()
     pspfiles = ["../pseudopotentials/pade_gth/C-q4.gth"]
     ecutwfc = 15.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc,
-                       meshk=[4,4,4], extra_states=1 )
+                       meshk=[4,4,1], extra_states=1 )
     println(Ham)
 
     KS_solve_SCF!( Ham )
@@ -34,7 +35,8 @@ function test_graphene()
     #
     # Band structure calculation
     #
-    kpoints, kpt_spec, kpt_spec_labels = kpath_from_file(atoms, "KPATH_GRAPHENE_40")
+    #kpoints, kpt_spec, kpt_spec_labels = kpath_from_file(atoms, "KPATH_GRAPHENE_40")
+    kpoints, kpt_spec, kpt_spec_labels = gen_kpath(atoms, "GMKG", "hexagonal")
 
     # New pw, ecutwfc should be the same as SCF calc
     Ham.pw = PWGrid(ecutwfc, atoms.LatVecs, kpoints=kpoints)
@@ -78,8 +80,6 @@ function test_graphene()
         @printf("kpts = [%f,%f,%f]\n", k[1,ik], k[2,ik], k[3,ik])
         evals[:,ikspin], psiks[ikspin] =
         diag_LOBPCG( Ham, psiks[ikspin], verbose_last=true )
-        #evals[:,ikspin], psiks[ikspin] =
-        #diag_davidson( Ham, psiks[ikspin], verbose_last=true )
     end
     end
 

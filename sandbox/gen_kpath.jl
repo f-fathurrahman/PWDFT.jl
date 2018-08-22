@@ -48,6 +48,6 @@ function gen_kpath( atoms::Atoms, path_str::String, lattice::String; Δk = 0.02 
     #
     wk = ones(Nkpt_on_path) # not used for non-scf calculations
     #
-    return KPoints(Nkpt_on_path, kpt, wk, RecVecs), kpt_spec, kpt_spec_labels
+    return KPoints(Nkpt_on_path, kpt_cart, wk, RecVecs), kpt_spec_cart, kpt_spec_labels
 
 end

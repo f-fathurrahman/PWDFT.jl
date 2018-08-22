@@ -44,8 +44,8 @@ plt.clf()
 
 fig = plt.gcf()
 scal = 1.2
-#fig.set_size_inches(6*scal,8*scal)
-fig.set_size_inches(8*scal,6*scal)  # use landscape
+fig.set_size_inches(6*scal,8*scal)
+#fig.set_size_inches(8*scal,6*scal)  # use landscape
 
 x = dat[:,0]
 for ist in range(1,Nstates+1):
