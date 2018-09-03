@@ -1,9 +1,3 @@
-include("Energies.jl")
-
-include("Potentials.jl")
-
-include("PsPotNL.jl")
-
 mutable struct Hamiltonian
     pw::PWGrid
     potentials::Potentials
@@ -165,15 +159,6 @@ function Hamiltonian( atoms::Atoms, ecutwfc::Float64;
     return Hamiltonian( pw, potentials, energies, rhoe,
                           electrons, atoms, Pspots, pspotNL, xcfunc, ik, ispin )
 end
-
-include("free_electron_Hamiltonian.jl")
-
-include("op_K.jl")
-include("op_V_loc.jl")
-include("op_V_Ps_nloc.jl")
-include("op_H.jl")
-
-include("Poisson_solve.jl")
 
 
 """

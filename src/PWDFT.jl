@@ -20,8 +20,8 @@ export Ry2eV, ANG2BOHR
 
 # Last accessed: 31st July 2018
 
-BlochWavefunc = Array{Array{ComplexF64,2},1}
-Wavefunc = Array{ComplexF64,2}
+const BlochWavefunc = Array{Array{ComplexF64,2},1}
+const Wavefunc = Array{ComplexF64,2}
 export BlochWavefunc, Wavefunc
 
 include("Atoms.jl")
@@ -128,21 +128,38 @@ export calc_epsxc_VWN, calc_Vxc_VWN
 include("GGA_PBE.jl")
 export calc_epsxc_PBE, calc_Vxc_PBE
 
+include("Energies.jl")
+export Energies
+
+include("Potentials.jl")
+export Energies
+
+include("PsPotNL.jl")
+export PsPotNL, calc_betaNL_psi
+
+include("free_electron_Hamiltonian.jl")
+export free_electron_Hamiltonian
+
 include("Hamiltonian.jl")
-export Potentials,
-       Energies,
-       Hamiltonian, free_electron_Hamiltonian,
-       op_H, op_K, op_V_loc, op_V_Ps_loc, op_V_Ps_nloc,
-       Poisson_solve,
-       update!,
-       PsPotNL, calc_betaNL_psi,
-       calc_betaNL_psi
+export Hamiltonian, update!
+
+include("op_K.jl")
+include("op_V_loc.jl")
+include("op_V_Ps_nloc.jl")
+include("op_H.jl")
+export op_H, op_K, op_V_loc, op_V_Ps_loc, op_V_Ps_nloc
+
+include("Poisson_solve.jl")
+export Poisson_solve
 
 include("calc_rhoe.jl")
 export calc_rhoe
 
 include("Kprec.jl")
 export Kprec
+
+include("precKerker.jl")
+export precKerker
 
 include("calc_energies.jl")
 export calc_energies,
