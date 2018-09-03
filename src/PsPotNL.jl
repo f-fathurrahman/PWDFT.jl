@@ -114,7 +114,6 @@ function check_betaNL_norm( pw, betaNL, kpoints::KPoints )
     # Check normalization in real space and reciprocal space
     #
     ctmp = zeros( ComplexF64, Npoints )
-    @inbounds begin
     for ik = 1:Nkpt
         #
         idx_gw2r = pw.gvecw.idx_gw2r[ik]
@@ -134,7 +133,6 @@ function check_betaNL_norm( pw, betaNL, kpoints::KPoints )
                      ibeta, integ_prj, integ_prj_im, integ_prj_abs, norm_G.re, norm_G.im)
         end
     end
-    end # @inbounds
 
 end
 
