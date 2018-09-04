@@ -7,7 +7,7 @@ function main( ; method="SCF" )
         Ga  0.0   0.0   0.0
         As  0.25  0.25  0.25
         """, in_bohr=true)
-    atoms.LatVecs = gen_lattice_fcc(5.6537*ANG2BOHR)
+    atoms.LatVecs = gen_lattice_fcc(10.6839444516)
     atoms.positions = atoms.LatVecs*atoms.positions
     println(atoms)
 
@@ -15,7 +15,7 @@ function main( ; method="SCF" )
     pspfiles = ["../pseudopotentials/pade_gth/Ga-q3.gth",
                 "../pseudopotentials/pade_gth/As-q5.gth"]
     ecutwfc_Ry = 30.0
-    Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, meshk=[4,4,4] )
+    Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, meshk=[3,3,3] )
 
     #
     # Solve the KS problem
@@ -39,12 +39,6 @@ function main( ; method="SCF" )
 
     println("\nTotal energy components")
     println(Ham.energies)
-
-    pspcore_ene = calc_PspCore_ene(atoms, Ham.pspots, Ham.pw.CellVolume)
-    
-    println("\nPspCore ene = ", pspcore_ene)
-    println("\nTotEne + PspCore = ", pspcore_ene + sum(Ham.energies))
-
 
 end
 
