@@ -22,7 +22,8 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
     #
     Ns = pw.Ns
     Npoints = prod(Ns)
-    dVol = pw.CellVolume/Npoints
+    CellVolume = pw.CellVolume
+    dVol = CellVolume/Npoints
     #
     electrons = Ham.electrons
     Nelectrons = electrons.Nelectrons
@@ -111,6 +112,9 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
 
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( Ham.atoms )
+
+    # calculate PspCore energy
+    Ham.energies.PspCore = calc_PspCore_ene( Ham.atoms, Ham.pspots, CellVolume )
 
     CONVERGED = 0
 

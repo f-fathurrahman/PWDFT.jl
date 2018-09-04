@@ -23,10 +23,8 @@ function calc_PspCore_ene( atoms::Atoms, PsPots::Array{PsPot_GTH,1}, CellVolume:
         chg = chg + atoms.Zvals[isp]
         pspcore_ene = pspcore_ene + epsatm[isp]
     end
-    println("chg = ", chg)
-    #pspcore_ene = Natoms*pspcore_ene # XXX need to test for multispecies case
+    
     pspcore_ene = chg*pspcore_ene/CellVolume
-
     return pspcore_ene
 
 end

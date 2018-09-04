@@ -11,7 +11,8 @@ function KS_solve_DCM!( Ham::Hamiltonian;
     Ngw = pw.gvecw.Ngw
     Ns = pw.Ns
     Npoints = prod(Ns)
-    ΔV = pw.CellVolume/Npoints
+    CellVolume = pw.CellVolume
+    ΔV = CellVolume/Npoints
     electrons = Ham.electrons
     Focc = electrons.Focc
     Nocc = electrons.Nstates_occ
@@ -48,6 +49,9 @@ function KS_solve_DCM!( Ham::Hamiltonian;
 
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( Ham.atoms )
+
+    # calculate PspCore energy
+    Ham.energies.PspCore = calc_PspCore_ene( Ham.atoms, Ham.pspots, CellVolume)
     
     # Starting eigenvalues and psi
     for ispin = 1:Nspin

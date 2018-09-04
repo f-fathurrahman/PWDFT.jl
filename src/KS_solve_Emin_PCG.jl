@@ -13,6 +13,7 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
     Nstates = electrons.Nstates
     Ns = pw.Ns
     Npoints = prod(Ns)
+    CellVolume = pw.CellVolume
     Ngw = pw.gvecw.Ngw
     Ngwx = pw.gvecw.Ngwx
     Nkpt = pw.gvecw.kpoints.Nkpt
@@ -73,6 +74,9 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
 
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( Ham.atoms )
+
+    # calculate PspCore energy
+    Ham.energies.PspCore = calc_PspCore_ene( Ham.atoms, Ham.pspots, CellVolume )
 
     # Calculate energy at this psi
     energies = calc_energies(Ham, psiks)

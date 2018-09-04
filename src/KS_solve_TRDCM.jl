@@ -7,7 +7,8 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
     Ngw = pw.gvecw.Ngw
     Ns = pw.Ns
     Npoints = prod(Ns)
-    ΔV = pw.CellVolume/Npoints
+    CellVolume = pw.CellVolume
+    ΔV = CellVolume/Npoints
     electrons = Ham.electrons
     Focc = electrons.Focc
     Nstates = electrons.Nstates
@@ -53,6 +54,10 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
 
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( Ham.atoms )
+
+    # calculate PspCore energy
+    Ham.energies.PspCore = calc_PspCore_ene( Ham.atoms, Ham.pspots, CellVolume )
+
     #
     Ham.energies = calc_energies( Ham, psiks )
     Etot = sum(Ham.energies)

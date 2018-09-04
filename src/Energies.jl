@@ -10,6 +10,7 @@ mutable struct Energies
     Hartree::Float64
     XC::Float64
     NN::Float64
+    PspCore::Float64
     mTS::Float64
 end
 
@@ -17,7 +18,7 @@ end
 Creates an instance of `Energies` with value of zeros for all fields.
 """
 function Energies()
-    return Energies(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+    return Energies(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
 end
 
 import Base: println, sum
@@ -29,12 +30,13 @@ function println( energies::Energies; use_smearing=false )
     @printf("Ps_nloc    energy: %18.10f\n", energies.Ps_nloc )
     @printf("Hartree    energy: %18.10f\n", energies.Hartree )
     @printf("XC         energy: %18.10f\n", energies.XC )
+    @printf("PspCore    energy: %18.10f\n", energies.PspCore )
     if use_smearing
         @printf("-TS              : %18.10f\n", energies.mTS)
     end
     @printf("-------------------------------------\n")
     E_elec = energies.Kinetic + energies.Ps_loc + energies.Ps_nloc +
-             energies.Hartree + energies.XC + energies.mTS
+             energies.Hartree + energies.XC + energies.PspCore + energies.mTS
     @printf("Electronic energy: %18.10f\n", E_elec)
     @printf("NN         energy: %18.10f\n", energies.NN )
     @printf("-------------------------------------\n")
@@ -53,7 +55,7 @@ Get total energy by summing all of its components.
 """
 function sum( energies::Energies )
     # irrespective of whether we are using smearing or not
-    return energies.Kinetic + energies.Ps_loc + energies.Ps_nloc +
+    return energies.Kinetic + energies.Ps_loc + energies.Ps_nloc + energies.PspCore +
            energies.Hartree + energies.XC + energies.NN + energies.mTS
 end
 
