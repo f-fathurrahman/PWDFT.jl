@@ -24,7 +24,8 @@ function gen_Rhoe_aux(
         end
     end
     #return -eta^3/((2*pi)^1.5)*Rhoe_aux
-    return -(2*eta)^3/((2*pi)^1.5)*Rhoe_aux
+    #return -(2*eta)^3/((2*pi)^1.5)*Rhoe_aux
+    return -2*sqrt(2)*eta^3/(pi^1.5)*Rhoe_aux
     #return -eta^3/(pi^1.5)*Rhoe_aux*4/sqrt(2)
     #return Rhoe_aux*(-eta^3/((2*pi)^1.5))*(2^3)
     #return Rhoe_aux
@@ -133,5 +134,5 @@ function test_Si()
     println("G space: integ Rhoe_aux = ", sum(Rhoe_aux)*dVol)
 end
 
-#test_H()
-test_Si()
+test_H()
+#test_Si()
