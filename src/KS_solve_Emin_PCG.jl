@@ -181,13 +181,13 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
 
         Ham.energies = calc_energies( Ham, psiks )
         Etot = sum(Ham.energies)
-        diff = abs(Etot-Etot_old)
+        diffE = abs(Etot-Etot_old)
 
         if verbose
-            @printf("CG step %8d = %18.10f %10.7e\n", iter, Etot, diff)
+            @printf("CG step %8d = %18.10f %10.7e\n", iter, Etot, diffE)
         end
         
-        if diff < ETOT_CONV_THR
+        if diffE < ETOT_CONV_THR
             CONVERGED = CONVERGED + 1
         else
             CONVERGED = 0

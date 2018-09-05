@@ -145,10 +145,10 @@ function diag_Emin_PCG!( Ham::Hamiltonian, X::Array{ComplexF64,2};
         
         nconv = length( findall( devals .< tol ) )
 
-        diff = abs(Ebands-Ebands_old)
+        diffE = abs(Ebands-Ebands_old)
 
         if verbose
-            @printf("CG step %8d = %18.10f %10.7e\n", iter, Ebands, diff)
+            @printf("CG step %8d = %18.10f %10.7e\n", iter, Ebands, diffE)
             for ist = 1:Nstates
                 @printf("evals[%3d] = %18.10f, devals = %18.10e\n", ist, evals[ist], devals[ist] )
             end
@@ -161,7 +161,7 @@ function diag_Emin_PCG!( Ham::Hamiltonian, X::Array{ComplexF64,2};
             end
             break
         end
-        if diff <= tol_ebands*Nstates
+        if diffE <= tol_ebands*Nstates
             IS_CONVERGED = true
             if verbose || verbose_last
                 @printf("Convergence is achieved based on tol_ebands*Nstates\n")
