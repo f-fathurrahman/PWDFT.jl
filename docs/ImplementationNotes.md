@@ -4,8 +4,7 @@ This is a work in progress.
 
 ## About Julia programming language
 
-Even though Julia is a dynamic language, I tried to always use type annotations
-whenever possible.
+Even though it is not strictly required, I tried to always use type annotations.
 
 ## Atoms
 
@@ -103,20 +102,80 @@ Using `Array{ComplexF64,2}`.
 
 General wavefunction on kpoints
 
-## Potentials
+## Total energy components
+
+Total energy components are stored in the type `Energies`. Currently its
+fields are as follows.
+
+- `Kinetic`: kinetic energy
+- `Ps_loc`: local pseudopotential energy
+- `Ps_nloc`: nonlocal pseudopotential energy
+- `Hartree`: classical electrostatic energy
+- `XC`: exchange correlation energy
+- `NN`: nuclear-nuclear (repulsive) interaction energy
+- `PspCore`: core (screened) pseudopotential energy
+- `mTS`: electronic entropy contribution (with minus sign). This is
+  used for calculation with partial occupations such as metals.
+
+
+## Local potentials
+
+Various local potentials are stored in the type `Potentials`. Currently
+its fields are as follows.
+
+- `Ps_loc`: local pseudopotential components. Its shape is `(Npoints,)`.
+- `Hartree`: classical electrostatic potential. Its shape is `(Npoints,)`.
+- `XC`: exchange-correlation potential. This potential can be spin
+  dependent so its shape is `(Npoints,Nspin)`.
+
+All of these potentials are in the real space representation.
 
 ## Pseudopotentials
 
-## Energies
+Currently, only GTH pseudopotentials with no core-correction are supported.
+The type for handling GTH pseudopotential for a species is `PsPot_GTH`.
+It is declared as follows.
+
+```julia
+struct PsPot_GTH
+    pspfile::String
+    atsymb::String
+    zval::Int64
+    rlocal::Float64
+    rc::Array{Float64,1}
+    c::Array{Float64,1}
+    h::Array{Float64,3}
+    lmax::Int64
+    Nproj_l::Array{Int64,1}
+    rcut_NL::Array{Float64,1}
+end
+```
+
 
 ## Solving Kohn-Sham problems
 
+Two main algorithms: SCF and direct minimization
+
+Function names: `KS_solve_*`
+
 ## Self-consistent field
+
+KS_solve_SCF
 
 ## Eigensolver
 
+Davidson, LOBPCG, and PCG
+
 ## Direct energy minimization via nonlinear conjugate gradient method
+
+KS_solve_Emin_PCG
+
+This method is described by IsmailBeigi-Arias
 
 ## Direct constrained minimization method of Yang
 
+KS_solve_DCM
+
 ## Chebyshev filtered subspace iteration SCF
+
+update_psi="CheFSI"

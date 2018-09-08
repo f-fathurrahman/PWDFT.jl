@@ -1,3 +1,5 @@
+# PWDFT.jl
+
 `PWDFT.jl` is a package to solve
 [electronic structure problems](https://en.wikipedia.org/wiki/Electronic_structure)
 based on [density functional theory](https://en.wikipedia.org/wiki/Density_functional_theory)
@@ -10,9 +12,13 @@ structure package such as Quantum ESPRESSO, ABINIT, VASP, etc.
 
 ## Requirements
 
-- Julia 0.7 or higher with `FFTW` and `SpecialFunctions` packages installed.
-- LibXC 3.0: which needs to be compiled and and installed separately.
-- spglib: included in this repository and needs to be compiled manually.
+- [Julia](https://julialang.org/downloads) version > 0.7:
+  with `FFTW` and `SpecialFunctions` packages installed.
+- [LibXC](https://gitlab.com/libxc/libxc) version > 3.0:
+  which needs to be compiled and and installed separately.
+- [spglib](https://github.com/atztogo/spglib): which needs to be compiled and installed
+  separately.
+- A working C compiler to compile LibXC and spglib.
 
 ## Installation
 
@@ -55,7 +61,7 @@ using PWDFT
 - create an instance of `Atoms`:
 
 ```julia
-atoms = Atoms(filexyz="CH4.xyz", LatVecs=gen_lattice_sc(16.0))
+atoms = Atoms(xyz_file="CH4.xyz", LatVecs=gen_lattice_sc(16.0))
 ```
 
 - create an instance of `Hamiltonian`:
