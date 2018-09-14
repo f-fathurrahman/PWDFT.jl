@@ -1,15 +1,16 @@
 function main( ; method="SCF" )
 
     # Atoms
-    atoms = init_atoms_xyz("../structures/LiH.xyz")
-    atoms.LatVecs = gen_lattice_cubic(16.0)
-    println(atoms)
+    atoms = Atoms( xyz_file="../structures/LiH.xyz",
+                   LatVecs=gen_lattice_cubic(16.0) )
 
     # Initialize Hamiltonian
     ecutwfc_Ry = 30.0
     pspfiles = ["../pseudopotentials/pade_gth/Li-q3.gth",
                 "../pseudopotentials/pade_gth/H-q1.gth"]
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5 )
+
+    println(Ham)
 
     if method == "SCF"
         KS_solve_SCF!( Ham, mix_method="anderson" )
@@ -87,4 +88,3 @@ Total      energy:      -7.0003164593
 ----------------------------------------------------------
 
 =#
-

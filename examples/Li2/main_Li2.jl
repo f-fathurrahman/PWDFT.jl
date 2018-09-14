@@ -1,9 +1,8 @@
 function main( ; method="SCF" )
 
     # Atoms
-    atoms = init_atoms_xyz("../structures/Li2.xyz")
-    atoms.LatVecs = gen_lattice_cubic(16.0)
-    println(atoms)
+    atoms = Atoms( xyz_file="../structures/Li2.xyz",
+                   LatVecs=gen_lattice_sc(16.0) )
 
     # Initialize Hamiltonian
     ecutwfc_Ry = 30.0
