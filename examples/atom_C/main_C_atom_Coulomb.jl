@@ -1,24 +1,18 @@
 function main( ; method="SCF" )
 
     # Atoms
-    atoms = init_atoms_xyz_string(
-        """
-        1
-
-        C  0.0  0.0  0.0
-        """
-    )
-    atoms.LatVecs = gen_lattice_sc(16.0)
-    println(atoms)
+    atoms = Atoms(xyz_string="""
+            1
+    
+            C  0.0  0.0  0.0
+            """, LatVecs=gen_lattice_sc(16.0))
 
     # Initialize Hamiltonian
     ecutwfc_Ry = 30.0
-    Ham = Hamiltonian( atoms, ecutwfc_Ry*0.5, extra_states=1 )
-    # Set Focc manually
-    Ham.electrons.Focc[:,1] = [2.0, 4.0/3, 4.0/3, 4.0/3]
+    Ham = Hamiltonian( atoms, ecutwfc_Ry*0.5, extra_states=3 )
 
     if method == "SCF"
-        KS_solve_SCF!( Ham, mix_method="anderson", betamix=0.5 )
+        KS_solve_SCF!( Ham, mix_method="rpulay", betamix=0.1, use_smearing=true )
 
     elseif method == "Emin"
         KS_solve_Emin_PCG!( Ham )
