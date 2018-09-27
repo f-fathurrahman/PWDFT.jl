@@ -88,11 +88,6 @@ KS_solve_Emin_PCG!( Ham ) # direct minimization using preconditioned conjugate g
 Please see [bandstructure_Si_fcc.jl](sandbox/bandstructure_Si_fcc.jl) as
 an example of how this can be obtained.
 
-
-## Implementation notes
-
-Please see [this](docs/ImplementationNotes.md).
-
 ## Some references
 
 Articles:
