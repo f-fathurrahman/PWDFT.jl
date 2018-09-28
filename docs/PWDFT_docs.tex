@@ -97,7 +97,7 @@ It has the following fields:
   Its shape is \jlcode{(Natoms,)}.
 %
 \item \jlcode{SpeciesSymbols::Array{String,1}}: An array containing unique symbols
-  for each atomic species present in the system. Its shape is `(Nspecies,)`.
+  for each atomic species present in the system. Its shape is \jlcode{(Nspecies,)}.
 %
 \item \jlcode{LatVecs::Array{Float64,2}}: A 3 by 3 matrix describing lattice vectors for unit
   cell of the system.
@@ -166,8 +166,8 @@ application or multiplication of Hamiltonian to wave function:
 Hpsi = op_H(H, psi)
 \end{juliacode}
 %
-or, (by overloading \jlcode{*} operator\footnote{The operator * is actually implemented as
-a function in Julia})
+or, (by overloading the \jlcode{*} operator
+\footnote{The operator * is actually implemented as function in Julia})
 %
 \begin{juliacode}
 Hpsi = H*psi
@@ -193,9 +193,11 @@ This type is defined in the file \jlcode{PWGrid.jl}. It has the following fields
 %
 \item \jlcode{CellVolume::Float64}: the volume of real-space unit cell
 %
-\item \jlcode{r::Array{Float64,2}}: real-space grid points. Its shape is \jlcode{(3,Npoints)}
+\item \jlcode{r::Array{Float64,2}}: real-space grid points.
+  Its shape is \jlcode{(3,Npoints)}
 %
-\item \jlcode{gvec::GVectors}: an instace of \jlcode{GVectors}: for potentials and density expansion
+\item \jlcode{gvec::GVectors}: an instace of \jlcode{GVectors}:
+  for potentials and density expansion
 %
 \item \jlcode{gvecw::GVectorsW}: an instace of \jlcode{GVectorsW}, for wave function expansion
 %
@@ -214,7 +216,8 @@ function PWGrid( ecutwfc::Float64,
                  kpoints=nothing )
 \end{juliacode}
 
-G-vectors
+
+\subsection{$\mathbf{G}$-vectors for potentials and densities expansion}
 
 $\mathbf{G}$-vectors are described by type `GVectors`. It is defined in file `PWGrid.jl`.
 It has the following fields:
@@ -252,39 +255,60 @@ This function takes the following arguments
   it is 4 times `ecutwfc`.
 \end{itemize}
 
-G-vectorsW
+
+\subsection{G-vectorsW}
 
 The $\mathbf{G}$-vectors for wave function expansion is described by
-the type `GVectorsW`.
-They are a subset of `GVectors`. It has the following fields:
+the type \jlcode{GVectorsW}.
+They are a subset of \jlcode{GVectors}. It has the following fields:
+\begin{itemize}
+%
+\item \jlcode{Ngwx::Int64}: maximum number of $\mathbf{G}$-vectors for all kpoints.
+%
+\item \jlcode{Ngw::Array{Int64,1}}: number of $\mathbf{G}$-vectors for each kpoints
+%
+\item \jlcode{idx_gw2g::Array{Array{Int64,1},1}}: mapping between indices of
+  \jlcode{GVectorsW} to indices of \jlcode{GVectors}.
+%
+\item \jlcode{idx_gw2r::Array{Array{Int64,1},1}}: mapping between indices of `GVectorsW`
+  to indices of real space grid points \jlcode{PWGrid.r}
+%
+\item \jlcode{kpoints::KPoints}: an instance of \jlcode{KPoints}
+%
+\end{itemize}
 
-- `Ngwx::Int64`: maximum number of $\mathbf{G}$-vectors for all kpoints.
 
-- `Ngw::Array{Int64,1}`: number of $\mathbf{G}$-vectors for each kpoints
+Constructor: TODO
 
-- \jlcode{idx_gw2g::Array{Array{Int64,1},1}}: mapping between indices of `GVectorsW`
-  to indices of `GVectors`.
+\subsection{Bloch wave vector}
 
-- \jlcode{idx_gw2r::Array{Array{Int64,1},1}}: mapping between indices of `GVectorsW`
-  to indices of real space grid points `PWGrid.r`
+The type describing Bloch wave vectors, or commonly referred
+to as k-points, is \jlcode{KPoints}. It is defined in the file
+\jlcode{KPoints.jl}. It has the following fields
+%
+\begin{itemize}
+%
+\item \jlcode{Nkpt::Int64}: total number of k-points.
+%
+\item \jlcode{k::Array{Float64,2}}: the actual k-points.
+  Its shape is \jlcode{(3,Nkpt)}.
+%
+\item \jlcode{wk::Array{Float64,1}}: the weight of each k-points needed
+  for integration over Brillouin zone
+%
+\item \jlcode{RecVecs::Array{Float64,2}}: a copy of \jlcode{PWGrid.RecVecs}.
+\end{itemize}
 
-- `kpoints::KPoints`: an instance of `KPoints`
+Monkhorst-Pack grid points:
+%
+\begin{equation}
+k_{i} = \frac{2n_i -N_i - 1}{2N_i} \mathbf{b}_i.\hspace{1em}
+i = 1,2,3
+\end{equation}
+%
+where $n_i=1,2,...,N_{i}$
+size = \((N_1, N_2, N_3)\) and the \(\mathbf{b}_i\)'s are reciprocal lattice vectors.
 
-Constructor: ...
-
-k-points (Bloch wave vector)
-
-The type describing Bloch wave vector is `KPoints`. It is defined in file
-`KPoints.jl`. It has the following fields
-
-- `Nkpt::Int64`: total number of k-points
-
-- `k::Array{Float64,2}`: the actual k-points. Its shape is `(3,Nkpt)`.
-
-- `wk::Array{Float64,1}`: the weight of each k-points needed for integration
-  over Brillouin zone
-
-- `RecVecs::Array{Float64,2}`: a copy of `PWGrid.RecVecs`.
 
 Constructor:
 
@@ -295,41 +319,62 @@ function KPoints( atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{Int64,1};
 
 SPGLIB is used internally to generate reduce number of k-points.
 
-Wave functions
 
-Using `Array{ComplexF64,2}`.
+
+\section{Wave functions}
+
+Using `\jlcode{Array{ComplexF64,2}}.
 
 General wavefunction on kpoints
 
-Total energy components
 
-Total energy components are stored in the type `Energies`. Currently its
+\section{Total energy components}
+
+Total energy components are stored in the type \jlcode{Energies}. Currently its
 fields are as follows.
-
-- `Kinetic`: kinetic energy
-- \jlcode{Ps_loc}: local pseudopotential energy
-- \jlcode{Ps_nloc}: nonlocal pseudopotential energy
-- `Hartree`: classical electrostatic energy
-- `XC`: exchange correlation energy
-- `NN`: nuclear-nuclear (repulsive) interaction energy
-- `PspCore`: core (screened) pseudopotential energy
-- `mTS`: electronic entropy contribution (with minus sign). This is
+\begin{itemize}
+%
+\item `Kinetic`: kinetic energy
+%
+\item \jlcode{Ps_loc}: local pseudopotential energy
+%
+\item \jlcode{Ps_nloc}: nonlocal pseudopotential energy
+%
+\item \jlcode{Hartree}: classical electrostatic energy
+%
+\item \jlcode{XC}: exchange correlation energy
+%
+\item \jlcode{NN}: nuclear-nuclear (repulsive) interaction energy
+%
+\item \jlcode{PspCore}: core (screened) pseudopotential energy
+%
+\item \jlcode{mTS}: electronic entropy contribution (with minus sign). This is
   used for calculation with partial occupations such as metals.
+%
+\end{itemize}
 
 
-Local potentials
+\section{Local potentials}
 
-Various local potentials are stored in the type `Potentials`. Currently
+Various local potentials are stored in the type \jlcode{Potentials}. Currently
 its fields are as follows.
-
-- \jlcode{Ps_loc} local pseudopotential components. Its shape is `(Npoints,)`.
-- \jlcode{Hartree}: classical electrostatic potential. Its shape is `(Npoints,)`.
-- `XC`: exchange-correlation potential. This potential can be spin
-  dependent so its shape is `(Npoints,Nspin)`.
+\begin{itemize}
+%
+\item \jlcode{Ps_loc} local pseudopotential components.
+  Its shape is \jlcode{(Npoints,)}.
+%
+\item \jlcode{Hartree}: classical electrostatic potential.
+  Its shape is \jlcode{(Npoints,)}.
+%
+\item \jlcode{XC}: exchange-correlation potential. This potential can be spin
+  dependent so its shape is \jlcode{(Npoints,Nspin)}.
+%
+\end{itemize}
 
 All of these potentials are in the real space representation.
 
-Pseudopotentials
+
+\section{Pseudopotentials}
 
 Currently, only GTH pseudopotentials with no core-correction are supported.
 The type for handling GTH pseudopotential for a species is \jlcode{PsPot_GTH}.
@@ -351,27 +396,27 @@ end
 \end{juliacode}
 
 
-Solving Kohn-Sham problems
+\section{Solving Kohn-Sham problems}
 
 Two main algorithms: SCF and direct minimization
 
 Function names: \jlcode{KS_solve_*}
 
-Self-consistent field
+\subsection{Self-consistent field}
 
 \jlcode{KS_solve_SCF}
 
-Eigensolver
+\subsection{Eigensolver}
 
 Davidson, LOBPCG, and PCG
 
-Direct energy minimization via nonlinear conjugate gradient method
+\subsection{Direct energy minimization via nonlinear conjugate gradient method}
 
 \jlcode{KS_solve_Emin_PCG}
 
 This method is described by IsmailBeigi-Arias
 
-Direct constrained minimization method of Yang
+\subsection{Direct constrained minimization method of Yang}
 
 \jlcode{KS_solve_DCM}
 
@@ -379,18 +424,5 @@ Chebyshev filtered subspace iteration SCF
 
 \jlcode{update_psi="CheFSI"}
 
-
-
-\section{k-points (Bloch wave vectors)}
-
-Monkhorst-Pack grid (used for Brillouin-zone integration)
-\begin{equation}
-\sum_{i=1,2,3} \frac{2n_i -N_i - 1}{2N_i} \mathbf{b}_i
-\end{equation}
-
-where $n_i=1,2,...,N_{i}$
-size = \((N_1, N_2, N_3)\) and the \(\mathbf{b}_i\)'s are reciprocal lattice vectors.
-
-Please see file \texttt{kpoint\_grid.f90} in \verb|PW/src|.
 
 \end{document}
