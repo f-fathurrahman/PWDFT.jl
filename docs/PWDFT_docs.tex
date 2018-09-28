@@ -1,0 +1,396 @@
+\documentclass[a4paper,10pt]{paper}
+
+\usepackage[a4paper]{geometry}
+%\geometry{verbose,tmargin=1.5cm,bmargin=1.5cm,lmargin=1.5cm,rmargin=1.5cm}
+
+\setlength{\parskip}{\smallskipamount}
+\setlength{\parindent}{0pt}
+
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{xcolor}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{braket}
+
+\usepackage{minted}
+\newminted{julia}{breaklines}
+\newminted{text}{breaklines}
+
+\newcommand{\jlcode}[1]{\mintinline{julia}{#1}}
+
+\newenvironment{markdown}%
+    {\VerbatimEnvironment\begin{VerbatimOut}{tmp.markdown}}%
+    {\end{VerbatimOut}%
+        \immediate\write18{pandoc tmp.markdown -t latex -o tmp.tex}%
+        \input{tmp}}
+
+\begin{document}
+
+\title{\textsf{PWDFT.jl} Documentation}
+\author{Fadjar Fathurrahman}
+\maketitle
+
+\tableofcontents
+
+\part{User Guide}
+
+\section{Overview}
+
+\textsf{PWDFT.jl} uses Hartree atomic units.
+
+\section{Status}
+
+\textbf{28 May 2018} The following features are working now:
+\begin{itemize}
+\item LDA and GGA, spin-paired and spin polarized calculations
+\item Calculation with k-points (for periodic solids).
+  \textsf{SPGLIB} is used to reduce the Monkhorst-Pack grid points
+  for integration over Brillouin zone.
+\end{itemize}
+
+Band structure calculation is possible in principle as this can be
+done by simply solving
+Schrodinger equation with converged Kohn-Sham potentials, however there
+is currently no tidy script or function to do that.
+
+Total energy result for isolated systems (atoms and molecules) agrees quite
+well with ABINIT and PWSCF results.
+
+Total energy result for periodic solid is quite different from ABINIT and PWSCF.
+I suspect that this is related to treatment of electrostatic terms in periodic system.
+
+SCF is rather shaky for several systems, however it is working in quite well in nonmetallic
+system.
+
+\part{Implementation Notes}
+
+In this note, I will describe several user-defined types that are
+used throughout \textsf{PWDFT.jl}. Beginners are not expected to know them
+all, however they are needed to know the internal of \textsf{PWDFT.jl}.
+
+When referring to a file, I always meant to the file contained in
+the \texttt{src/} directory.
+
+Even though it is not strictly required in Julia, I tried to always use type annotations.
+
+\section{Atoms}
+
+\texttt{Atoms} can be used to represent molecular or crystalline structures.
+This type is implemented in the file \texttt{src/Atoms.jl}.
+
+It has the following fields:
+\begin{itemize}
+%
+\item \jlcode{Natoms::Int64}: number of atoms present in the system
+%
+\item \jlcode{Nspecies::Int64}: number of atomic species present in the system
+%
+\item \jlcode{positions::Array{Float64,2}}: An array containing coordinates of atoms
+  in bohr units. Its shape is \jlcode{(3,Natoms)}
+%
+\item \jlcode{atm2species::Array{Int64,1}}: An array containing mapping between atom index
+  to species index. Its shape is \jlcode{(Natoms,)}
+%
+\item \jlcode{atsymbs::Array{String,1}}: An array containing atomic symbols for each atoms.
+  Its shape is \jlcode{(Natoms,)}.
+%
+\item \jlcode{SpeciesSymbols::Array{String,1}}: An array containing unique symbols
+  for each atomic species present in the system. Its shape is `(Nspecies,)`.
+%
+\item \jlcode{LatVecs::Array{Float64,2}}: A 3 by 3 matrix describing lattice vectors for unit
+  cell of the system.
+%
+\item \jlcode{Zvals::Array{Float64,1}}: An array containing number of (valence)
+  electrons of each atomic species. Its shape is \verb|(Nspecies,)|.
+\end{itemize}
+
+An instance of \jlcode{Atoms} can be initialized using any of the following ways:
+
+\begin{itemize}
+\item Using \jlcode{Atoms} constructor, which has the following signature
+%
+\begin{juliacode}
+function Atoms( ;xyz_file="", xyz_string="", xyz_string_frac="",
+                in_bohr=false,
+                LatVecs=10*[1.0 0.0 0.0; 0.0 1.0 0.0; 0.0 0.0 1.0] )
+\end{juliacode}
+%
+\item The above mentioned \jlcode{Atoms} constructor is actually a wrapper for the functions
+  \jlcode{init_atoms_xyz} and \jlcode{init_atoms_xyz_string} which takes either
+  a string containing path to xyz file or the content of the xyz file
+  itself. When using this function, one must set \jlcode{LatVecs}.
+  field manually.
+\end{itemize}
+
+A note about \jlcode{Zvals}: Both \jlcode{Atoms} and \jlcode{init_atoms_*} function set
+\jlcode{Zvals} to \jlcode{zeros(Nspecies)}. After passed to \jlcode{Hamiltonian} constructor
+\jlcode{Zvals} will be set according to the pseudopotentials used.
+
+TODO: examples
+
+\section{Hamiltonian}
+
+An instance \jlcode{Hamiltonian} is a central object in \textsf{PWDFT.jl}.
+It is used to store various instances of other important types
+such as atoms, plane wave grids, pseudopotentials, etc.
+It is implemented in the file \texttt{src/Hamiltonian.jl}.
+
+To create an instance of \jlcode{Hamiltonian}, we normaly need to provide at least
+three arguments to the \jlcode{Hamiltonian} constructor:
+%
+\begin{itemize}
+%
+\item \jlcode{atoms::Atoms}: an instance of \jlcode{Atoms}
+%
+\item \jlcode{pspfiles::Array{String,1}}: a list of strings specifying the
+  locations of pseudopotentials used in the
+  calculations. Note that, the order should be the same as species ordering
+  of \jlcode{atoms}, i.e. \jlcode{pspfiles[isp]} is the path of
+  pseudopotentials of species with symbols \jlcode{atoms.SpeciesSymbols[isp]}.
+%
+\item \jlcode{ecutwfc::Float64}: cutoff energy for wave function
+  expansion using plane wave basis set.
+\end{itemize}
+
+A simplified version of \jlcode{Hamiltonian} constructor only needs two arguments:
+\jlcode{atoms::Atoms} and \jlcode{ecutwfc::Float64}. In this case, full Coulomb potential
+will be used. We usually need very large cutoff energy in this case (probably
+in the order or $10^2$ Hartree to obtain good convergence).
+
+The structure of \jlcode{Hamiltonian} is designed such that we can perform
+application or multiplication of Hamiltonian to wave function:
+%
+\begin{juliacode}
+Hpsi = op_H(H, psi)
+\end{juliacode}
+%
+or, (by overloading \jlcode{*} operator\footnote{The operator * is actually implemented as
+a function in Julia})
+%
+\begin{juliacode}
+Hpsi = H*psi
+\end{juliacode}
+
+
+\section{Plane wave basis}
+
+The plane wave basis is described by the type \jlcode{PWGrid}.
+This type is defined in the file \jlcode{PWGrid.jl}. It has the following fields:
+\begin{itemize}
+%
+\item \jlcode{ecutwfc::Float64}: cutoff for wave function expansion
+%
+\item \jlcode{ecutrho::Float64}: cutoff for electron density expansion, for norm-converving
+  pseudopotential: \jlcode{ecutrho = 4*ecutwfc}.
+%
+\item \jlcode{Ns::Tuple{Int64,Int64,Int64}}: parameters defining real-space grid points.
+%
+\item \jlcode{LatVecs::Array{Float64,2}}: lattice vectors of unit cell ($3\times3$ matrix)
+%
+\item \jlcode{RecVecs::Array{Float64,2}}: reciprocal lattice vectors ($3\times3$ matrix)
+%
+\item \jlcode{CellVolume::Float64}: the volume of real-space unit cell
+%
+\item \jlcode{r::Array{Float64,2}}: real-space grid points. Its shape is \jlcode{(3,Npoints)}
+%
+\item \jlcode{gvec::GVectors}: an instace of \jlcode{GVectors}: for potentials and density expansion
+%
+\item \jlcode{gvecw::GVectorsW}: an instace of \jlcode{GVectorsW}, for wave function expansion
+%
+\item \jlcode{planfw::FFTW.cFFTWPlan{Complex{Float64},-1,false,3}}: FFTW forward plan
+%
+\item \jlcode{planbw::AbstractFFTs.}\\
+      \jlcode{ScaledPlan{ComplexF64,FFTW.cFFTWPlan{ComplexF64,1,false,3- Float64}}}: FFTW backward plan
+%
+\end{itemize}
+
+The following constructor can be used to create an instance of `PWGrid`:
+
+\begin{juliacode}
+function PWGrid( ecutwfc::Float64,
+                 LatVecs::Array{Float64,2};
+                 kpoints=nothing )
+\end{juliacode}
+
+G-vectors
+
+$\mathbf{G}$-vectors are described by type `GVectors`. It is defined in file `PWGrid.jl`.
+It has the following fields:
+\begin{itemize}
+%
+\item \jlcode{Ng::Int64}: total number of $\mathbf{G}$-vectors
+%
+\item \jlcode{G::Array{Float64,2}} The array containing the actual $\mathbf{G}$-vectors.
+   Its shape is \jlcode{(3,Ng)}.
+%
+\item \jlcode{G2::Array{Float64,1}}: The array containing magnitude of $\mathbf{G}$-vectors.
+  Its shape is \jlcode{(Ng,)}.
+%
+\item \jlcode{idx_g2r::Array{Int64,1}} The array containing mapping between $\mathbf{G}$-vectors
+  to real space grid points. Its shape is \jlcode{(Ng,)}.
+%
+\end{itemize}
+
+The following function is used as the constructor:
+
+\begin{juliacode}
+function init_gvec( Ns, RecVecs, ecutrho )
+\end{juliacode}
+%
+This function takes the following arguments
+%
+\begin{itemize}
+%
+\item \jlcode{Ns}: a tuple of three \jlcode{Int64}'s specifying sampling points
+  along the 1st, 2nd, and 3rd lattice vector directions.
+%
+\item \jlcode{RecVecs}: 3 by 3 matrix describing reciprocal lattice vectors
+%
+\item \jlcode{ecutrho}: cutoff energy (in Hartree). For norm-conserving PP,
+  it is 4 times `ecutwfc`.
+\end{itemize}
+
+G-vectorsW
+
+The $\mathbf{G}$-vectors for wave function expansion is described by
+the type `GVectorsW`.
+They are a subset of `GVectors`. It has the following fields:
+
+- `Ngwx::Int64`: maximum number of $\mathbf{G}$-vectors for all kpoints.
+
+- `Ngw::Array{Int64,1}`: number of $\mathbf{G}$-vectors for each kpoints
+
+- \jlcode{idx_gw2g::Array{Array{Int64,1},1}}: mapping between indices of `GVectorsW`
+  to indices of `GVectors`.
+
+- \jlcode{idx_gw2r::Array{Array{Int64,1},1}}: mapping between indices of `GVectorsW`
+  to indices of real space grid points `PWGrid.r`
+
+- `kpoints::KPoints`: an instance of `KPoints`
+
+Constructor: ...
+
+k-points (Bloch wave vector)
+
+The type describing Bloch wave vector is `KPoints`. It is defined in file
+`KPoints.jl`. It has the following fields
+
+- `Nkpt::Int64`: total number of k-points
+
+- `k::Array{Float64,2}`: the actual k-points. Its shape is `(3,Nkpt)`.
+
+- `wk::Array{Float64,1}`: the weight of each k-points needed for integration
+  over Brillouin zone
+
+- `RecVecs::Array{Float64,2}`: a copy of `PWGrid.RecVecs`.
+
+Constructor:
+
+\begin{juliacode}
+function KPoints( atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{Int64,1};
+                  time_reversal=1 )
+\end{juliacode}
+
+SPGLIB is used internally to generate reduce number of k-points.
+
+Wave functions
+
+Using `Array{ComplexF64,2}`.
+
+General wavefunction on kpoints
+
+Total energy components
+
+Total energy components are stored in the type `Energies`. Currently its
+fields are as follows.
+
+- `Kinetic`: kinetic energy
+- \jlcode{Ps_loc}: local pseudopotential energy
+- \jlcode{Ps_nloc}: nonlocal pseudopotential energy
+- `Hartree`: classical electrostatic energy
+- `XC`: exchange correlation energy
+- `NN`: nuclear-nuclear (repulsive) interaction energy
+- `PspCore`: core (screened) pseudopotential energy
+- `mTS`: electronic entropy contribution (with minus sign). This is
+  used for calculation with partial occupations such as metals.
+
+
+Local potentials
+
+Various local potentials are stored in the type `Potentials`. Currently
+its fields are as follows.
+
+- \jlcode{Ps_loc} local pseudopotential components. Its shape is `(Npoints,)`.
+- \jlcode{Hartree}: classical electrostatic potential. Its shape is `(Npoints,)`.
+- `XC`: exchange-correlation potential. This potential can be spin
+  dependent so its shape is `(Npoints,Nspin)`.
+
+All of these potentials are in the real space representation.
+
+Pseudopotentials
+
+Currently, only GTH pseudopotentials with no core-correction are supported.
+The type for handling GTH pseudopotential for a species is \jlcode{PsPot_GTH}.
+It is declared as follows.
+
+\begin{juliacode}
+struct PsPot_GTH
+    pspfile::String
+    atsymb::String
+    zval::Int64
+    rlocal::Float64
+    rc::Array{Float64,1}
+    c::Array{Float64,1}
+    h::Array{Float64,3}
+    lmax::Int64
+    Nproj_l::Array{Int64,1}
+    rcut_NL::Array{Float64,1}
+end
+\end{juliacode}
+
+
+Solving Kohn-Sham problems
+
+Two main algorithms: SCF and direct minimization
+
+Function names: \jlcode{KS_solve_*}
+
+Self-consistent field
+
+\jlcode{KS_solve_SCF}
+
+Eigensolver
+
+Davidson, LOBPCG, and PCG
+
+Direct energy minimization via nonlinear conjugate gradient method
+
+\jlcode{KS_solve_Emin_PCG}
+
+This method is described by IsmailBeigi-Arias
+
+Direct constrained minimization method of Yang
+
+\jlcode{KS_solve_DCM}
+
+Chebyshev filtered subspace iteration SCF
+
+\jlcode{update_psi="CheFSI"}
+
+
+
+\section{k-points (Bloch wave vectors)}
+
+Monkhorst-Pack grid (used for Brillouin-zone integration)
+\begin{equation}
+\sum_{i=1,2,3} \frac{2n_i -N_i - 1}{2N_i} \mathbf{b}_i
+\end{equation}
+
+where $n_i=1,2,...,N_{i}$
+size = \((N_1, N_2, N_3)\) and the \(\mathbf{b}_i\)'s are reciprocal lattice vectors.
+
+Please see file \texttt{kpoint\_grid.f90} in \verb|PW/src|.
+
+\end{document}
