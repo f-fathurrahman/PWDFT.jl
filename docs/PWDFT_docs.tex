@@ -38,7 +38,45 @@
 
 \section{Overview}
 
-\textsf{PWDFT.jl} uses Hartree atomic units.
+\textsf{PWDFT.jl} is a Julia package to carry out (electronic)
+density functional theory calculations on materials.
+It uses plane wave basis sets to discretize Kohn-Sham equations.
+It also uses pseudopotentials to replace strong Coulombic nuclei-electron
+interactions \footnote{You can carry out the calculation with
+full potential, however this will requires a lot of plane waves (large
+cutoff energy)}.
+
+I assumes that the readers already have some experience with similar electronic
+structure programs such as Quantum Espresso, ABINIT, VASP, and others.
+
+\textsf{PWDFT.jl} uses Hartree atomic units internally.
+
+\section{Installation}
+
+You need the following to use \texttt{PWDFT.jl}:
+\begin{itemize}
+\item Julia version 0.7 or higher
+\item LibXC
+\item SPGLIB
+\item C compiler to compiler LibXC and SPGLIB
+\end{itemize}
+
+\textsf{PWDFT.jl} is a Julia package, so you need to copy (or clone)
+under Julia's package depot so that it can be used within Julia.
+Presently, it is not yet a registered package. There are at least
+two ways of doing this.
+
+The first way is using Julia's package manager. The following command
+can be issued at the Julia's console.
+\begin{juliacode}
+Pkg.add(PackageSpec(url="https://github.com/f-fathurrahman/PWDFT.jl"))
+\end{juliacode}
+
+The second way is to use Julia's development directory located at
+\texttt{\$HOME/.julia/dev}.
+I usually do this by sym-linking my original \textsf{PWDFT.jl} directory
+to \texttt{\$HOME/.julia/dev}.
+
 
 \section{Status}
 
