@@ -1,7 +1,7 @@
 \documentclass[a4paper,10pt]{paper}
 
 \usepackage[a4paper]{geometry}
-%\geometry{verbose,tmargin=1.5cm,bmargin=1.5cm,lmargin=1.5cm,rmargin=1.5cm}
+\geometry{verbose,tmargin=1.5cm,bmargin=1.5cm,lmargin=1.5cm,rmargin=1.5cm}
 
 \setlength{\parskip}{\smallskipamount}
 \setlength{\parindent}{0pt}
@@ -444,6 +444,10 @@ Function names: \jlcode{KS_solve_*}
 
 \jlcode{KS_solve_SCF}
 
+\inputminted[breaklines]{julia}{../src/KS_solve_SCF.jl}
+
+
+
 \subsection{Eigensolver}
 
 Davidson, LOBPCG, and PCG
@@ -454,13 +458,23 @@ Davidson, LOBPCG, and PCG
 
 This method is described by IsmailBeigi-Arias
 
+\inputminted[breaklines]{julia}{../src/KS_solve_Emin_PCG.jl}
+
+
 \subsection{Direct constrained minimization method of Yang}
 
 \jlcode{KS_solve_DCM}
 
-Chebyshev filtered subspace iteration SCF
+\inputminted[breaklines]{julia}{../src/KS_solve_DCM.jl}
+
+
+\inputminted[breaklines]{julia}{../src/KS_solve_TRDCM.jl}
+
+
+\subsection{Chebyshev filtered subspace iteration SCF}
 
 \jlcode{update_psi="CheFSI"}
 
+\inputminted[breaklines]{julia}{../src/CheFSI.jl}
 
 \end{document}
