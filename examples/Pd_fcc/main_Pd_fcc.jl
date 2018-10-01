@@ -11,7 +11,7 @@ function main()
 
     # Initialize Hamiltonian
     pspfiles = ["../pseudopotentials/pade_gth/Pd-q10.gth"]
-    ecutwfc = 30.0
+    ecutwfc = 40.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc,
                         meshk=[3,3,3], extra_states=4 )
 

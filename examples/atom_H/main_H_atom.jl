@@ -1,18 +1,18 @@
 function main( ; method="SCF" )
     # Atoms
-    atoms = init_atoms_xyz_string(
+    atoms = Atoms(xyz_string=
         """
         1
 
         H  0.0  0.0  0.0
-        """)
-    atoms.LatVecs = gen_lattice_sc(16.0)
-    println(atoms)
+        """, LatVecs=gen_lattice_sc(16.0))
 
     # Initialize Hamiltonian
     pspfiles = ["../pseudopotentials/pade_gth/H-q1.gth"]
     ecutwfc_Ry = 30.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5 )
+
+    println(Ham)
 
     #
     # Solve the KS problem

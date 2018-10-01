@@ -1,9 +1,8 @@
 function main( ; method="SCF" )
 
     # Atoms
-    atoms = init_atoms_xyz("../structures/He.xyz")
-    atoms.LatVecs = gen_lattice_sc(16.0)
-    println(atoms)
+    atoms = Atoms(xyz_file="../structures/He.xyz",
+                  LatVecs=gen_lattice_sc(16.0))
 
     # Initialize Hamiltonian
     pspfiles = ["../pseudopotentials/pade_gth/He-q2.gth"]

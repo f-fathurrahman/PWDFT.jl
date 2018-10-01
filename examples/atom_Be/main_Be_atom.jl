@@ -1,10 +1,8 @@
 function main( ; method="SCF" )
 
     # Atoms
-    atoms = init_atoms_xyz("../structures/Be.xyz")
-    atoms.LatVecs = gen_lattice_sc(16.0)
-    println(atoms)
-
+    atoms = Atoms(xyz_file="../structures/Be.xyz",
+                  LatVecs=gen_lattice_sc(16.0))
     #
     # Initialize Hamiltonian
     #
