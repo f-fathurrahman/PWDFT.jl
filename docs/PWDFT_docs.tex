@@ -77,6 +77,34 @@ The second way is to use Julia's development directory located at
 I usually do this by sym-linking my original \textsf{PWDFT.jl} directory
 to \texttt{\$HOME/.julia/dev}.
 
+To test the installation, you can run the following:
+\begin{juliacode}
+using PWDFT
+\end{juliacode}
+at the Julia's console.
+If there are no error messages then the installation is OK.
+\footnote{This does not check the LibXC or SPGLIB installation.}
+
+\section{Getting started}
+
+We need to prepare several things before using \textsf{PWDFT.jl}:
+\begin{itemize}
+\item Atomic structures: coordinates and unit cell
+\item Pseudopotentials
+\end{itemize}
+
+This code will initialize a hydrogen molecule (H2) inside a box of
+$16\times16\times16$ bohr.
+\begin{juliacode}
+atoms = Atoms(xyz_string="""
+              2
+              
+              H      3.83653478       4.23341768       4.23341768
+              H      4.63030059       4.23341768       4.23341768
+              """,
+              LatVecs=gen_lattice_sc(16.0))
+\end{juliacode}
+
 
 \section{Status}
 
