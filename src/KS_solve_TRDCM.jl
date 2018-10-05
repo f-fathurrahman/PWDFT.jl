@@ -1,5 +1,7 @@
 function KS_solve_TRDCM!( Ham::Hamiltonian;
                           NiterMax = 100, startingwfc=nothing,
+                          verbose=true,
+                          print_final_ebands=true, print_final_energies=true,
                           savewfc=false, ETOT_CONV_THR=1e-6 )
 
 
@@ -378,7 +380,26 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
         flush(stdout)
     end  # end of DCM iteration
     
-    Ham.electrons.ebands = evals[:,:]
+    Ham.electrons.ebands = evals
+
+    if verbose && print_final_ebands
+        @printf("\n")
+        @printf("----------------------------\n")
+        @printf("Final Kohn-Sham eigenvalues:\n")
+        @printf("----------------------------\n")
+        @printf("\n")
+        print_ebands(Ham.electrons, Ham.pw.gvecw.kpoints)
+    end
+
+    if verbose && print_final_energies
+        @printf("\n")
+        @printf("-------------------------\n")
+        @printf("Final Kohn-Sham energies:\n")
+        @printf("-------------------------\n")
+        @printf("\n")
+        println(Ham.energies)
+    end
+
 
     if savewfc
         for ikspin = 1:Nkpt*Nspin

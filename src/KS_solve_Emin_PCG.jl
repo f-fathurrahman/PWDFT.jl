@@ -5,6 +5,7 @@ by Ismail-Beigi and Arias.
 function KS_solve_Emin_PCG!( Ham::Hamiltonian;
                              startingwfc=nothing, savewfc=false,
                              α_t=3e-5, NiterMax=200, verbose=true,
+                             print_final_ebands=true, print_final_energies=true,
                              I_CG_BETA=2, ETOT_CONV_THR=1e-6 )
 
     pw = Ham.pw
@@ -223,6 +224,24 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
         Ham.electrons.ebands[:,ikspin] = evals[idx_sorted]
         psiks[ikspin] = psiks[ikspin]*evecs[:,idx_sorted]
     end
+    end
+
+    if verbose && print_final_ebands
+        @printf("\n")
+        @printf("----------------------------\n")
+        @printf("Final Kohn-Sham eigenvalues:\n")
+        @printf("----------------------------\n")
+        @printf("\n")
+        print_ebands(Ham.electrons, Ham.pw.gvecw.kpoints)
+    end
+
+    if verbose && print_final_energies
+        @printf("\n")
+        @printf("-------------------------\n")
+        @printf("Final Kohn-Sham energies:\n")
+        @printf("-------------------------\n")
+        @printf("\n")
+        println(Ham.energies)
     end
 
     if savewfc
