@@ -122,6 +122,8 @@ export calc_E_NN
 mutable struct XCFuncType
 end
 
+export XCFuncType
+
 include("LDA_VWN.jl")
 export calc_epsxc_VWN, calc_Vxc_VWN
 
