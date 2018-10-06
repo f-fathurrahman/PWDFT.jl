@@ -24,23 +24,16 @@ function main( ; method="SCF" )
         KS_solve_SCF!( Ham, update_psi="CheFSI", betamix=0.5 )
 
     elseif method == "Emin"
-        KS_solve_Emin_PCG!( Ham, verbose=true )
+        KS_solve_Emin_PCG!( Ham )
 
     elseif method == "DCM"
-        KS_solve_DCM!( Ham )
+        KS_solve_DCM!( Ham, NiterMax=15 )
+
+    elseif method == "TRDCM"
+        KS_solve_TRDCM!( Ham, NiterMax=50 )
 
     else
-        println("ERROR: unknown method = ", method)
+        error( @sprintf("Unknown method %s", method) )
     end
 
-    Nstates = Ham.electrons.Nstates
-    ebands = Ham.electrons.ebands
-    
-    println("\nBand energies:")
-    for ist = 1:Nstates
-        @printf("%8d  %18.10f = %18.10f eV\n", ist, ebands[ist], ebands[ist]*Ry2eV*2)
-    end
-    
-    println("\nTotal energy components")
-    println(Ham.energies)
 end

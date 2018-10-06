@@ -1,20 +1,18 @@
 function main( ; method="SCF" )
     # Atoms
-    atoms = init_atoms_xyz_string(
+    atoms = Atoms(xyz_string_frac=
         """
         2
 
         Si  0.0  0.0  0.0
         Si  0.25  0.25  0.25
-        """, in_bohr=true)
-    atoms.LatVecs = gen_lattice_fcc(10.2631)
-    atoms.positions = atoms.LatVecs*atoms.positions
-    println(atoms)
+        """, LatVecs=gen_lattice_fcc(10.2631))
 
     # Initialize Hamiltonian
     pspfiles = ["../pseudopotentials/pade_gth/Si-q4.gth"]
     ecutwfc_Ry = 30.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, meshk=[3,3,3] )
+    println(Ham)
 
     #
     # Solve the KS problem
@@ -28,13 +26,13 @@ function main( ; method="SCF" )
     elseif method == "DCM"
         KS_solve_DCM!( Ham, NiterMax=15 )
 
+    elseif method == "TRDCM"
+        KS_solve_TRDCM!( Ham, NiterMax=50 )
+
     else
-        println("ERROR: unknown method = ", method)
+        error( @sprintf("Unknown method %s", method) )
     end
     
-    println("\nTotal energy components")
-    println(Ham.energies)
-
 end
 
 #=

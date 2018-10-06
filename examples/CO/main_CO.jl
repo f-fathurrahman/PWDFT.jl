@@ -35,9 +35,6 @@ function main( ; method="SCF" )
         @printf("%8d  %18.10f = %18.10f eV\n", ist, ebands[ist], ebands[ist]*Ry2eV*2)
     end
 
-    println("\nTotal energy components")
-    println(Ham.energies)
-
 end
 
 #=

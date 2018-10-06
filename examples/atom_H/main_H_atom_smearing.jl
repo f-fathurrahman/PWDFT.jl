@@ -1,13 +1,11 @@
 function main()
     # Atoms
-    atoms = init_atoms_xyz_string(
+    atoms = Atoms( xyz_string=
         """
         1
 
         H  0.0  0.0  0.0
-        """)
-    atoms.LatVecs = gen_lattice_sc(16.0)
-    println(atoms)
+        """, LatVecs = gen_lattice_sc(16.0))
 
     # Initialize Hamiltonian
     pspfiles = ["../pseudopotentials/pbe_gth/H-q1.gth"]
@@ -16,21 +14,11 @@ function main()
         atoms, pspfiles, ecutwfc_Ry*0.5, xcfunc="PBE",
         Nspin=2, extra_states=4
     )
+    println(Ham)
 
     KS_solve_SCF!(
         Ham, mix_method="simple", use_smearing=true, kT=0.01,
-        update_psi="PCG", betamix=0.1
+        update_psi="LOBPCG", betamix=0.1
     )
-
-    Nstates = Ham.electrons.Nstates
-    ebands = Ham.electrons.ebands
-    
-    println("\nBand energies:")
-    for ist = 1:Nstates
-        @printf("%8d  %18.10f = %18.10f eV\n", ist, ebands[ist], ebands[ist]*Ry2eV*2)
-    end
-    
-    println("\nTotal energy components")
-    println(Ham.energies)
 
 end
