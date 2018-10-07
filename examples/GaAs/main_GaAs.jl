@@ -1,30 +1,34 @@
 function main( ; method="SCF" )
     # Atoms
-    atoms = init_atoms_xyz_string(
+    
+    LATCONST = 10.6839444516
+    LatVecs = zeros(3,3)
+    LatVecs[:,1] = [0.0, 0.5, 0.5]
+    LatVecs[:,2] = [0.5, 0.0, 0.5]
+    LatVecs[:,3] = [0.5, 0.5, 0.0]
+    LatVecs = LATCONST*LatVecs
+
+    atoms = Atoms( xyz_string_frac=
         """
         2
 
         Ga  0.0   0.0   0.0
         As  0.25  0.25  0.25
-        """, in_bohr=true)
-    atoms.LatVecs = gen_lattice_fcc(10.6839444516)
-    atoms.positions = atoms.LatVecs*atoms.positions
-    println(atoms)
+        """, LatVecs = LatVecs )
+
+    write_xsf( "TEMP_GaAs.xsf", atoms )
 
     # Initialize Hamiltonian
     pspfiles = ["../pseudopotentials/pade_gth/Ga-q3.gth",
                 "../pseudopotentials/pade_gth/As-q5.gth"]
     ecutwfc_Ry = 30.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, meshk=[3,3,3] )
+    println(Ham)
 
     #
     # Solve the KS problem
     #
     if method == "SCF"
-        # FIXME: need a more effective ways to deal with this
-        Ham.electrons = Electrons( atoms, Ham.pspots, Nstates=5,
-                                   Nkpt=Ham.pw.gvecw.kpoints.Nkpt, Nstates_empty=1 )
-        println(Ham.electrons)
         KS_solve_SCF!( Ham, mix_method="anderson", betamix=0.2 )
 
     elseif method == "Emin"
@@ -34,11 +38,8 @@ function main( ; method="SCF" )
         KS_solve_DCM!( Ham, NiterMax=15 )
 
     else
-        println("ERROR: unknown method = ", method)
+        error( @sprintf("ERROR: unknown method = %s", method) )
     end
-
-    println("\nTotal energy components")
-    println(Ham.energies)
 
 end
 
