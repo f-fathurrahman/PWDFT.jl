@@ -11,6 +11,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
                         use_smearing = false, kT=1e-3,
                         update_psi="LOBPCG", cheby_degree=8,
                         mix_method="simple", MIXDIM=4,
+                        print_e_gap=false,
                         ETOT_CONV_THR=1e-6 )
 
     pw = Ham.pw
@@ -53,9 +54,9 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
         Rhoe[:,ispin] = calc_rhoe( pw, Focc[:,idxset], psiks[idxset] )
     end
 
-    if Nspin == 2
-        @printf("\nInitial integ magn_den = %18.10f\n", sum(Rhoe[:,1] - Rhoe[:,2])*dVol)
-    end
+    #if Nspin == 2
+    #    @printf("\nInitial integ magn_den = %18.10f\n", sum(Rhoe[:,1] - Rhoe[:,2])*dVol)
+    #end
 
     update!(Ham, Rhoe)
 
@@ -153,14 +154,11 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
             diag_CheFSI!( Ham, psiks, cheby_degree )
 
         else
-
-            @printf("ERROR: Unknown method for update_psi = %s\n", update_psi)
-            error("STOPPED")
-    
+            error( @sprintf("Unknown method for update_psi = %s\n", update_psi) )
         end
 
-        if E_GAP_INFO && verbose
-            println("E gap = ", minimum(evals[idx_LUMO,:] - evals[idx_HOMO,:]))
+        if E_GAP_INFO && verbose && print_e_gap
+            @printf("E gap = %18.10f\n", minimum(evals[idx_LUMO,:] - evals[idx_HOMO,:]))
         end
 
         if use_smearing
@@ -248,7 +246,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
                 @printf("SCF: %8d %18.10f %18.10e %18.10e %18.10e\n",
                         iter, Etot, diffE, diffRhoe[1], diffRhoe[2] )
                 magn_den = Rhoe[:,1] - Rhoe[:,2]
-                @printf("integ magn_den = %18.10f\n", sum(magn_den)*dVol)                
+                #@printf("integ magn_den = %18.10f\n", sum(magn_den)*dVol)                
             end
         
         end
