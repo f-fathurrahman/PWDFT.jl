@@ -1,15 +1,15 @@
 function main( ; method="SCF" )
 
     # Atoms
-    atoms = init_atoms_xyz("../structures/CO.xyz")
-    atoms.LatVecs = gen_lattice_sc(16.0)
-    println(atoms)
+    atoms = Atoms( xyz_file="../structures/CO.xyz",
+                   LatVecs = gen_lattice_sc(16.0) )
 
     # Initialize Hamiltonian
     ecutwfc_Ry = 30.0
     pspfiles = ["../pseudopotentials/pade_gth/C-q4.gth",
                 "../pseudopotentials/pade_gth/O-q6.gth"]
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5 )
+    println(Ham)
 
     if method == "SCF"
         KS_solve_SCF!( Ham, mix_method="anderson" )
@@ -24,28 +24,20 @@ function main( ; method="SCF" )
         KS_solve_TRDCM!( Ham, NiterMax=15 )
 
     else
-        println("ERROR: unknown method = ", method)
-    end
-
-    Nstates = Ham.electrons.Nstates
-    ebands = Ham.electrons.ebands
-
-    println("\nBand energies:")
-    for ist = 1:Nstates
-        @printf("%8d  %18.10f = %18.10f eV\n", ist, ebands[ist], ebands[ist]*Ry2eV*2)
+        error( @sprintf("ERROR: unknown method = %s", method) )
     end
 
 end
 
 #=
-    Kinetic energy  =  1.27114662836776E+01
-    Hartree energy  =  1.87542476647748E+01
-    XC energy       = -4.73571914335774E+00
+    Kinetic energy  =  1.27126195273501E+01
+    Hartree energy  =  1.87563651375840E+01
+    XC energy       = -4.74110355787942E+00
     Ewald energy    =  2.26310215311565E+00
     PspCore energy  = -2.54693990241102E-04
-    Loc. psp. energy= -5.21197227228070E+01
-    NL   psp  energy=  2.59183669792393E+00
-    >>>>>>>>> Etotal= -2.05350437606631E+01
+    Loc. psp. energy= -5.21226082214705E+01
+    NL   psp  energy=  2.59183822442630E+00
+    >>>>>>>>> Etotal= -2.05400414308641E+01
 
 Kinetic    energy:      12.7122820382
 Ps_loc     energy:     -52.1220967254
