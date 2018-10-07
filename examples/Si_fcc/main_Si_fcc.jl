@@ -6,7 +6,7 @@ function main( ; method="SCF" )
 
         Si  0.0  0.0  0.0
         Si  0.25  0.25  0.25
-        """, LatVecs=gen_lattice_fcc(10.2631))
+        """, in_bohr=true, LatVecs=gen_lattice_fcc(10.2631))
 
     # Initialize Hamiltonian
     pspfiles = ["../pseudopotentials/pade_gth/Si-q4.gth"]

@@ -1,6 +1,6 @@
 function main( ; method="SCF" )
     # Atoms
-    atoms = init_atoms_xyz_string(
+    atoms = Atoms( xyz_string_frac=
         """
         4
 
@@ -8,16 +8,15 @@ function main( ; method="SCF" )
         Zn      0.6666667   0.3333333   0.5000000
         O       0.3333333   0.6666667   0.3450000
         O       0.6666667   0.3333333   0.8450000
-        """, in_bohr=true)
-    atoms.LatVecs = gen_lattice_hexagonal( 3.2495*ANG2BOHR, 5.2069*ANG2BOHR )
-    atoms.positions = atoms.LatVecs*atoms.positions
-    println(atoms)
+        """, in_bohr=true,
+        LatVecs = gen_lattice_hexagonal( 3.2495*ANG2BOHR, 5.2069*ANG2BOHR ) )
 
     # Initialize Hamiltonian
     pspfiles = ["../pseudopotentials/pade_gth/Zn-q2.gth",
                 "../pseudopotentials/pade_gth/O-q6.gth"]
     ecutwfc_Ry = 30.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, meshk=[3,3,3] )
+    println(Ham)
 
     #
     # Solve the KS problem
@@ -32,11 +31,8 @@ function main( ; method="SCF" )
         KS_solve_DCM!( Ham, NiterMax=15 )
 
     else
-        println("ERROR: unknown method = ", method)
+        error( @sprintf("ERROR: unknown method = %s", method) )
     end
-
-    println("\nTotal energy components")
-    println(Ham.energies)
 
 end
 

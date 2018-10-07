@@ -1,14 +1,11 @@
 function main()
     # Atoms
-    atoms = init_atoms_xyz_string(
+    atoms = Atoms( xyz_string_frac=
         """
         1
 
         Cu  0.0  0.0  0.0
-        """, in_bohr=true)
-    atoms.LatVecs = gen_lattice_fcc(3.61496*ANG2BOHR)
-    atoms.positions = atoms.LatVecs*atoms.positions
-    println(atoms)
+        """, LatVecs = gen_lattice_fcc(3.61496*ANG2BOHR) )
 
     # Initialize Hamiltonian
     pspfiles = ["../pseudopotentials/pade_gth/Cu-q11.gth"]
@@ -20,8 +17,5 @@ function main()
     # Solve the KS problem
     #
     KS_solve_SCF!( Ham, betamix=0.5, mix_method="anderson", use_smearing=true )
-
-    println("\nTotal energy components")
-    println(Ham.energies)
 
 end

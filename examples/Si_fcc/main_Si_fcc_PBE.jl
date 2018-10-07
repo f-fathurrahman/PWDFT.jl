@@ -1,21 +1,20 @@
 function main( ; method="SCF" )
     # Atoms
-    atoms = init_atoms_xyz_string(
+    atoms = Atoms( xyz_string_frac=
         """
         2
 
         Si  0.0  0.0  0.0
         Si  0.25  0.25  0.25
-        """, in_bohr=true)
-    atoms.LatVecs = gen_lattice_fcc(5.431*ANG2BOHR)
-    atoms.positions = atoms.LatVecs*atoms.positions
-    println(atoms)
+        """, in_bohr=true,
+        LatVecs = gen_lattice_fcc(5.431*ANG2BOHR) )
 
     # Initialize Hamiltonian
     pspfiles = ["../pseudopotentials/pbe_gth/Si-q4.gth"]
     ecutwfc_Ry = 30.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5,
-                         xcfunc="PBE", meshk=[3,3,3] )
+                       xcfunc="PBE", meshk=[3,3,3] )
+    print(Ham)
 
     #
     # Solve the KS problem
@@ -30,11 +29,8 @@ function main( ; method="SCF" )
         KS_solve_DCM!( Ham, NiterMax=15 )
 
     else
-        println("ERROR: unknown method = ", method)
+        error( @sprintf("ERROR: unknown method = %s", method) )
     end
-
-    println("\nTotal energy components")
-    println(Ham.energies)
 
 end
 

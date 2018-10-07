@@ -1,42 +1,25 @@
 function main()
     # Atoms
-    atoms = init_atoms_xyz_string(
+    atoms = Atoms( xyz_string_frac=
         """
         2
 
         Si  0.0  0.0  0.0
         Si  0.25  0.25  0.25
-        """, in_bohr=true)
-    atoms.LatVecs = gen_lattice_fcc(10.2631)
-    atoms.positions = atoms.LatVecs*atoms.positions
-    println(atoms)
+        """, in_bohr=true,
+        LatVecs = gen_lattice_fcc(10.2631) )
 
     # Initialize Hamiltonian
     pspfiles = ["../pseudopotentials/pade_gth/Si-q4.gth"]
     ecutwfc_Ry = 30.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, xcfunc="VWN",
                        meshk=[3,3,3], Nspin=2, extra_states=0 )
+    println(Ham)
 
     #
     # Solve the KS problem
     #
     KS_solve_SCF!( Ham, mix_method="anderson" )
-
-    Nstates = Ham.electrons.Nstates
-    ebands = Ham.electrons.ebands
-    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
-    k = Ham.pw.gvecw.kpoints.k
-    
-    println("\nBand energies:")
-    for ik = 1:Nkpt
-        @printf("%d k = [%f,%f,%f]\n", ik, k[1,ik], k[2,ik], k[3,ik])
-        for ist = 1:Nstates
-            @printf("%8d  %18.10f = %18.10f eV\n", ist, ebands[ist,ik], ebands[ist,ik]*Ry2eV*2)
-        end
-    end
-    
-    println("\nTotal energy components")
-    println(Ham.energies)
 
 end
 

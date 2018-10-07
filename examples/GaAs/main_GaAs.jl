@@ -1,22 +1,12 @@
 function main( ; method="SCF" )
     # Atoms
-    
-    LATCONST = 10.6839444516
-    LatVecs = zeros(3,3)
-    LatVecs[:,1] = [0.0, 0.5, 0.5]
-    LatVecs[:,2] = [0.5, 0.0, 0.5]
-    LatVecs[:,3] = [0.5, 0.5, 0.0]
-    LatVecs = LATCONST*LatVecs
-
     atoms = Atoms( xyz_string_frac=
         """
         2
 
         Ga  0.0   0.0   0.0
         As  0.25  0.25  0.25
-        """, LatVecs = LatVecs )
-
-    write_xsf( "TEMP_GaAs.xsf", atoms )
+        """, in_bohr=true, LatVecs = gen_lattice_fcc(10.6839444516) )
 
     # Initialize Hamiltonian
     pspfiles = ["../pseudopotentials/pade_gth/Ga-q3.gth",
