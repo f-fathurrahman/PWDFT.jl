@@ -13,7 +13,7 @@ end
 
 
 @checked_lib LIBXC "/home/efefer/mysoftwares/libxc-3.0.0/lib/libxc.so"
-@checked_lib LIBSYMSPG "/home/efefer/mysoftwares/spglib/lib/libsymspg.so"
+@checked_lib LIBSYMSPG "/home/efefer/mysoftwares/spglib-1.10.4/lib/libsymspg.so"
 
 
 
