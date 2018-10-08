@@ -21,10 +21,8 @@ using PWDFT
 const LIBXC = PWDFT.LIBXC
 
 struct XCFunctional
-    x_func_ptr::Ptr{XCFuncType}
-    c_func_ptr::Ptr{XCFuncType}
-    exc_eval::String
-    Vxc_eval::String
+    x_func_id::Int64
+    c_func_id::Int64
 end
 
 function XCFunctional( ;
@@ -35,24 +33,14 @@ function XCFunctional( ;
         if xc_name == "LDA_VWN"
             x_func_id = 1
             c_func_id = 7
-            exc_eval = "xc_lda_exc"
-            Vxc_eval = "xc_lda_vxc"
         else
-            error( @sprintf("xcname is not valid and func_id is not set") )
+            error( @sprintf("xc_name is not valid and func_id is not set") )
         end
     end
 
-    x_func_ptr = ccall( (:xc_func_alloc, LIBXC), Ptr{XCFuncType}, () )
-    ccall( (:xc_func_init, LIBXC), Cvoid,
-           (Ptr{XCFuncType}, Cint, Cint),
-            x_func_ptr, x_func_id, Nspin)
+    #ccall( (:xc_family_from_id,LIBXC), Cint, (Cint,), x_func_id )
 
-    c_func_ptr = ccall( (:xc_func_alloc, LIBXC), Ptr{XCFuncType}, () )
-    ccall( (:xc_func_init, LIBXC), Cvoid,
-           (Ptr{XCFuncType}, Cint, Cint),
-            c_func_ptr, c_func_id, Nspin)
-
-    return XCFunctional( x_func_ptr, c_func_ptr, exc_eval, Vxc_eval )
+    return XCFunctional( x_func_id, c_func_id )
 end
 
 
@@ -63,17 +51,40 @@ function calc_epsxc( xc_func::XCFunctional, Rhoe::Array{Float64,1} )
     eps_x = zeros(Float64,Npoints)
     eps_c = zeros(Float64,Npoints)
 
-    x_func_ptr = xc_func.x_func_ptr
-    c_func_ptr = xc_func.c_func_ptr
+    x_func_id = xc_func.x_func_id
+    c_func_id = xc_func.c_func_id
 
-    ccall( (:xc_lda_exc, LIBXC), Cvoid,
-           (Ptr{XCFuncType}, Cint, Ptr{Float64}, Ptr{Float64}),
-           x_func_ptr, Npoints, Rhoe, eps_x )
+    ptr = ccall( (:xc_func_alloc, LIBXC), Ptr{XCFuncType}, () )
+
+    #
+    # exchange part 
+    #
+    ccall( (:xc_func_init, LIBXC), Cvoid,
+           (Ptr{XCFuncType}, Cint, Cint),
+            ptr, x_func_id, Nspin)
     
     ccall( (:xc_lda_exc, LIBXC), Cvoid,
            (Ptr{XCFuncType}, Cint, Ptr{Float64}, Ptr{Float64}),
-           c_func_ptr, Npoints, Rhoe, eps_c )
+           ptr, Npoints, Rhoe, eps_x )
     
+    ccall( (:xc_func_end, LIBXC), Cvoid, (Ptr{XCFuncType},), ptr )
+
+    #
+    # correlation part 
+    #
+    ccall( (:xc_func_init, LIBXC), Cvoid,
+            ( Ptr{XCFuncType}, Cint, Cint),
+            ptr, c_func_id, Nspin)
+    
+    ccall( (:xc_lda_exc, LIBXC), Cvoid,
+           (Ptr{XCFuncType}, Cint, Ptr{Float64}, Ptr{Float64}),
+           ptr, Npoints, Rhoe, eps_c )
+    
+    ccall( (:xc_func_end, LIBXC), Cvoid, (Ptr{XCFuncType},), ptr )
+
+    #
+    ccall( (:xc_func_free, LIBXC), Cvoid, (Ref{XCFuncType},), ptr )
+
     return eps_x + eps_c
 
 end
@@ -126,10 +137,11 @@ function test_constructor()
     println(xc_func)
 end
 
-#test_constructor()
+test_constructor()
 
-#test_small()
+test_small()
 
-#bench_small()
+bench_small()
+
 bench_large()
 
