@@ -338,7 +338,7 @@ function println( gvec::GVectors, gvecw::GVectorsW )
             Gw[:,igk] = G[:,ig] + k[:,ik]
             Gw2[igk] = Gw[1,igk]^2 + Gw[2,igk]^2 + Gw[3,igk]^2
         end
-        @printf("Max Gw2[%3d] = %18.10f\n", ik, maximum(Gw2))    
+        @printf("Ngw = %8d, Max Gw2 = %18.10f\n", Ngw[ik], maximum(Gw2))
     end
 end
 
