@@ -1,4 +1,3 @@
-
 # f_n = \left( 1 + \exp\left[ \epsilon_{n} - \mu \right]/kT \right)^{-1}
 # kT = smearing width
 function smear_FD( ev::Array{Float64,1}, efermi::Float64, kT::Float64; Nspin=1 )
@@ -19,7 +18,7 @@ function smear_FD( ev::Array{Float64,1}, efermi::Float64, kT::Float64; Nspin=1 )
     return f
 end
 
-
+# Useful for plotting
 function smear_FD( ev::Float64, efermi::Float64, kT::Float64; Nspin=1 )
     x = (ev - efermi)/kT
     if Nspin == 2
