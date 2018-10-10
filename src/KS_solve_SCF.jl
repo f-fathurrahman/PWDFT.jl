@@ -119,6 +119,8 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
 
     CONVERGED = 0
 
+    E_fermiSpin = zeros(Nspin)
+
     for iter = 1:NiterMax
 
         # determine convergence criteria for diagonalization
@@ -163,7 +165,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
 
         if use_smearing
             Focc, E_fermi = calc_Focc( evals, wk, Nelectrons, kT, Nspin=Nspin )
-            Entropy = calc_entropy( Focc, wk, kT, Nspin=Nspin )
+            Entropy = calc_entropy( Focc, wk, kT, evals, E_fermi, Nspin=Nspin )
             Ham.electrons.Focc = copy(Focc)
         end
 
@@ -246,7 +248,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
                 @printf("SCF: %8d %18.10f %18.10e %18.10e %18.10e\n",
                         iter, Etot, diffE, diffRhoe[1], diffRhoe[2] )
                 magn_den = Rhoe[:,1] - Rhoe[:,2]
-                #@printf("integ magn_den = %18.10f\n", sum(magn_den)*dVol)                
+                #@printf("integ magn_den = %18.10f\n", sum(magn_den)*dVol) 
             end
         
         end
