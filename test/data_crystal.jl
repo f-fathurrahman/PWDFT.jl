@@ -2,6 +2,7 @@
 # Last accessed: 16 August 2018
 
 const FCC_DATA = Dict(
+    "Al" => 4.0495,
     "Ni" => 3.524,
     "Cu" => 3.6149,
     "Rh" => 3.8034,
