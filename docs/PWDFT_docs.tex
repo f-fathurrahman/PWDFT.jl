@@ -85,6 +85,26 @@ at the Julia's console.
 If there are no error messages then the installation is OK.
 \footnote{This does not check the LibXC or SPGLIB installation.}
 
+\subsection{LibXC}
+
+\begin{textcode}
+./configure --prefix=/home/user/softwares/libxc
+make
+make install
+\end{textcode}
+
+\subsection{SPGLIB}
+
+\begin{textcode}
+cd spglib-master
+mkdir build
+cd build
+cmake -D CMAKE_INSTALL_PREFIX=/home/user/softwares/spglib
+make
+make install
+\end{textcode}
+
+
 \section{Getting started}
 
 We need to prepare several things before using \textsf{PWDFT.jl}:
