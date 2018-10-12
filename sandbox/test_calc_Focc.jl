@@ -4,7 +4,7 @@ using PWDFT
 function test_no_spin(kT::Float64)
     
     Nstates = 8
-    Nelectrons = 6.0
+    Nelectrons = 8.0
     Nkpt = 2
     Nspin = 1
 
@@ -30,7 +30,7 @@ function test_no_spin(kT::Float64)
     end
         
     @printf("sum(Focc) = %18.10f\n", sum(Focc)/Nkpt)
-    @printf("Entropy (-TS) = %18.10f\n", calc_entropy( Focc, wk, kT, Nspin=Nspin ))
+    @printf("Entropy (-TS) = %18.10e\n", calc_entropy( Focc, wk, kT, Nspin=Nspin ))
 
 end
 
