@@ -1,6 +1,8 @@
 using Printf
 using PWDFT
 
+include("calc_entropy_v2.jl")
+
 function test_no_spin(kT::Float64)
     
     Nstates = 8
@@ -17,10 +19,7 @@ function test_no_spin(kT::Float64)
     wk = zeros(Nkpt)
     wk[:] .= 1.0/Nkpt
 
-    println("\nkT = ", kT)
-    
     Focc, E_fermi = calc_Focc( evals, wk, Nelectrons, kT )
-    @printf("E_fermi = %18.10f\n", E_fermi)
 
     for ik = 1:Nkpt
         @printf("\n")
@@ -28,9 +27,17 @@ function test_no_spin(kT::Float64)
             @printf("[ik=%3d,ist=%3d]: %18.10f %18.10f\n", ik, ist, evals[ist,ik], Focc[ist,ik])
         end
     end
-        
+    
     @printf("sum(Focc) = %18.10f\n", sum(Focc)/Nkpt)
-    @printf("Entropy (-TS) = %18.10e\n", calc_entropy( Focc, wk, kT, Nspin=Nspin ))
+
+    println("wk = ", wk)
+
+    println("\nkT = ", kT)
+    @printf("E_fermi = %18.10f\n", E_fermi)
+
+    @printf("Entropy (-TS)    = %18.10e\n", calc_entropy( Focc, wk, kT, Nspin=Nspin ))
+    
+    @printf("Entropy (-TS) v2 = %18.10e\n", calc_entropy_v2( wk, kT, evals, E_fermi, Nspin ))
 
 end
 
@@ -78,5 +85,5 @@ function test_spin(kT::Float64)
 end
 
 test_no_spin(0.01)
-test_spin(0.01)
+#test_spin(0.01)
 

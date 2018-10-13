@@ -24,6 +24,9 @@ function calc_entropy_v2( wk, kT, evals, E_fermi, Nspin )
     Nstates = size(evals)[1]
 
     wks = repeat(wk,Nspin)
+    if Nspin == 1
+        wks[:] = wks[:]*2
+    end
 
     mTS = 0.0
     for ikspin = 1:Nkspin
