@@ -20,6 +20,10 @@ function test_no_spin()
 
     mTS = calc_entropy( Focc, wk, kT, evals, E_fermi )
     @printf("mTS = %18.10f\n", mTS)
+
+    mTS = calc_entropy_v2( wk, kT, evals, E_fermi, Nspin )
+    @printf("mTS v2 = %18.10f\n", mTS)
+
 end
 
 function test_with_spin()

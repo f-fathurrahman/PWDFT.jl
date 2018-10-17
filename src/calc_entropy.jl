@@ -1,90 +1,43 @@
-# F = E - TS
-# S = -k \sum( .... )
-function calc_entropy( Focc::Array{Float64,2}, wk::Array{Float64,1},
-                       kT::Float64; Nspin=1 )
-    #
-    SMALL = eps()
-    
-    Nstates = size(Focc)[1]
-    Nkspin = size(Focc)[2]
-    Nkpt = round(Int64,Nkspin/Nspin)
+"""
+w1gauss(x,n) = integ( y*delta(y,n), [y,-∞,x] )
+where delta(y,n) is the current approximation for the
+delta function as obtained from w0gauss(x,n)
 
-    ent = 0.0
-    if Nspin == 2
-        for ispin = 1:Nspin
-        for ik = 1:Nkpt
-            ikspin = ik + (ispin - 1)*Nkpt
-            for ist = 1:Nstates
-                if Focc[ist,ik] > SMALL
-                    ent = ent + Focc[ist,ik]*log(Focc[ist,ik])*wk[ik]
-                else
-                    ent = ent + (1.0 - Focc[ist,ik])*log(1.0 - Focc[ist,ik])*wk[ik]
-                end
-            end
+Adapted from file Modules/w1gauss.f90 from Quantum ESPRESSO.
+"""
+function w1gauss(x; n=-99)
+    if n == -99
+        if abs(x) <= 36.0
+            f = 1.0/(1.0 + exp(-x))
+            onemf = 1.0 - f
+            return f*log(f) + onemf*log(onemf)
+        else
+            return 0.0
         end
-        end
-    else
-        for ik = 1:Nkpt
-            for ist = 1:Nstates
-                # spin-degenerate case
-                if Focc[ist,ik] > SMALL
-                    ent = ent + 0.5*Focc[ist,ik]*log(0.5*Focc[ist,ik])*wk[ik]
-                else
-                    ent = ent + (1.0 - 0.5*Focc[ist,ik])*log(1.0 - 0.5*Focc[ist,ik])*wk[ik]
-                end
-            end
-        end
-        ent = 2*ent
     end
-
-    # double negative
-    return kT*ent
 end
 
 
 function calc_entropy(
-    Focc::Array{Float64,2},
-    wk::Array{Float64,1},
-    kT::Float64,
-    evals::Array{Float64,2},
-    E_fermi::Float64;
-    Nspin=1
-)
+  wk::Array{Float64,1},
+  kT::Float64,
+  evals::Array{Float64,2},
+  E_fermi::Float64,
+  Nspin::Int64
+)    
+    Nkspin = size(evals)[2]
+    Nstates = size(evals)[1]
 
-    Nstates = size(Focc)[1]
-    Nkspin = size(Focc)[2]
-    Nkpt = round(Int64,Nkspin/Nspin)
-
-    ent = 0.0
-    if Nspin == 2
-        for ispin = 1:Nspin
-        for ik = 1:Nkpt
-            ikspin = ik + (ispin - 1)*Nkpt
-            for ist = 1:Nstates
-                if evals[ist,ikspin] <= E_fermi
-                    ent = ent + Focc[ist,ikspin]*log(Focc[ist,ikspin])*wk[ik]
-                else
-                    ent = ent + (1.0 - Focc[ist,ikspin])*log(1.0 - Focc[ist,ikspin])*wk[ik]
-                end
-            end
-        end
-        end
-    else
-        for ik = 1:Nkpt
-            for ist = 1:Nstates
-                # spin-degenerate case
-                if evals[ist,ik] <= E_fermi
-                    ent = ent + 0.5*Focc[ist,ik]*log(0.5*Focc[ist,ik])*wk[ik]
-                else
-                    ent = ent + (1.0 - 0.5*Focc[ist,ik])*log(1.0 - 0.5*Focc[ist,ik])*wk[ik]
-                end
-            end
-        end
-        ent = 2*ent
+    wks = repeat(wk,Nspin)
+    if Nspin == 1
+        wks[:] = wks[:]*2
     end
 
-    # double negative
-    return kT*ent
+    mTS = 0.0
+    for ikspin = 1:Nkspin
+        for ist = 1:Nstates
+            mTS = mTS + wks[ikspin]*kT*w1gauss( (E_fermi - evals[ist,ikspin])/kT )
+        end
+    end
+    return mTS
 end
-
-

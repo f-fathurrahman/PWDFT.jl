@@ -5,21 +5,22 @@ using LinearAlgebra
 using Random
 using FFTW
 
-include("../extlibs/extlibs.jl") # Load library dependencies
+# Load library dependencies
+# NOTE: This file must be edited manually
+include("../extlibs/extlibs.jl") 
 
 # constants
-
+#
 # CODATA: https://physics.nist.gov/cgi-bin/cuu/Value?rydhcev
 const Ry2eV = 13.605693009  # Ry to eV
-
+#
 # CODATA: https://physics.nist.gov/cgi-bin/cuu/Value?bohrrada0
 # 1/bohr
 const ANG2BOHR = 1.8897261254578281  # angstrom to bohr
 
 export Ry2eV, ANG2BOHR
 
-# Last accessed: 31st July 2018
-
+# Some aliases
 const BlochWavefunc = Array{Array{ComplexF64,2},1}
 const Wavefunc = Array{ComplexF64,2}
 export BlochWavefunc, Wavefunc
