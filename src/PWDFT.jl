@@ -172,10 +172,11 @@ export calc_energies,
 
 include("smear_FD.jl")
 include("calc_Focc.jl")
+include("occupations.jl")
 include("calc_entropy.jl")
 include("sum_upto_E_fermi.jl")
 export smear_FD,
-       calc_Focc,
+       calc_Focc, calc_Focc_v2,
        calc_entropy,
        sum_upto_E_fermi
 

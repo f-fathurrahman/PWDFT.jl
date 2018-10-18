@@ -164,7 +164,12 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
         end
 
         if use_smearing
-            Focc, E_fermi = calc_Focc( evals, wk, Nelectrons, kT, Nspin=Nspin )
+            
+            #Focc, E_fermi = calc_Focc( evals, wk, Nelectrons, kT, Nspin=Nspin )
+            
+            E_fermi = efermig( Nelectrons, wk, kT, evals, Nspin )
+            Focc = calc_Focc_v2( wk, kT, evals, E_fermi, Nspin )
+
             Entropy = calc_entropy( wk, kT, evals, E_fermi, Nspin )
             Ham.electrons.Focc = copy(Focc)
         end
