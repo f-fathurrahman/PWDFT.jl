@@ -4,10 +4,10 @@ iterations with density mixing.
 """
 function KS_solve_SCF!( Ham::Hamiltonian ;
                         startingwfc=nothing, savewfc=false,
-                        betamix = 0.5, NiterMax=100, verbose=true,
+                        betamix = 0.2, NiterMax=100, verbose=true,
                         print_final_ebands=true,
                         print_final_energies=true,
-                        check_rhoe_after_mix=false,
+                        check_rhoe_after_mix=true,
                         use_smearing = false, kT=1e-3,
                         update_psi="LOBPCG", cheby_degree=8,
                         mix_method="simple", MIXDIM=4,
@@ -178,6 +178,15 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
             idxset = (Nkpt*(ispin-1)+1):(Nkpt*ispin)
             Rhoe_new[:,ispin] = calc_rhoe( pw, Focc[:,idxset], psiks[idxset] )
             diffRhoe[ispin] = norm(Rhoe_new[:,ispin] - Rhoe[:,ispin])
+        end
+
+        # check norm of
+        if check_rhoe_after_mix
+            integRhoe = sum(Rhoe_new)*dVol
+            @printf("After mixing: integRhoe_new = %18.10f\n", integRhoe)
+            Rhoe_new = Nelectrons/integRhoe * Rhoe_new
+            integRhoe = sum(Rhoe_new)*dVol
+            @printf("After renormalize Rhoe_new: = %18.10f\n", integRhoe)
         end
 
         if mix_method == "simple"
