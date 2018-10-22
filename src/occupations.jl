@@ -91,7 +91,7 @@ function efermig(
         Ef = 0.5*(Eup + Elw)
         diff_Ef = abs(Ef-Ef_old)
         if verbose
-            @printf("efermig: %3d %18.10f %18.10e\n", iter, Ef, diff_Ef)
+            @printf("efermig: %3d %18.10f %18.10f %18.10e\n", iter, Ef, sumkmid, diff_Ef)
         end
         if diff_Ef < SMALL
             return Ef
@@ -103,6 +103,7 @@ function efermig(
     return Ef
     
 end
+
 
 function calc_Focc_v2(
   wk::Array{Float64,1},
