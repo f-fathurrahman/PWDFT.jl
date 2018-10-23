@@ -15,10 +15,13 @@ function KS_solve_DCM!( Ham::Hamiltonian;
     Npoints = prod(Ns)
     CellVolume = pw.CellVolume
     ΔV = CellVolume/Npoints
+
     electrons = Ham.electrons
+    Nelectrons = electrons.Nelectrons
     Focc = electrons.Focc
     Nocc = electrons.Nstates_occ
     Nstates = electrons.Nstates
+    
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     Nspin = electrons.Nspin
 
@@ -39,10 +42,8 @@ function KS_solve_DCM!( Ham::Hamiltonian;
     # Calculated electron density from this wave function and update Hamiltonian
     #
     Rhoe = zeros(Float64,Npoints,Nspin)
-    for ispin = 1:Nspin
-        idxset = (Nkpt*(ispin-1)+1):(Nkpt*ispin)
-        Rhoe[:,ispin] = calc_rhoe( pw, Focc[:,idxset], psiks[idxset] )
-    end
+
+    Rhoe[:,:] = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin )
     update!(Ham, Rhoe)
 
     Rhoe_old = copy(Rhoe)
@@ -211,10 +212,7 @@ function KS_solve_DCM!( Ham::Hamiltonian;
             end
             end 
 
-            for ispin = 1:Nspin
-                idxset = (Nkpt*(ispin-1)+1):(Nkpt*ispin)
-                Rhoe[:,ispin] = calc_rhoe( pw, Focc[:,idxset], psiks[idxset] )
-            end
+            Rhoe[:,:] = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin )
             update!( Ham, Rhoe )
 
             Rhoe_old = copy(Rhoe)

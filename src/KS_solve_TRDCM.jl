@@ -15,6 +15,8 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
     Focc = electrons.Focc
     Nstates = electrons.Nstates
     Nocc = electrons.Nstates_occ
+    Nelectrons = electrons.Nelectrons
+
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     Nspin = electrons.Nspin
 
@@ -35,10 +37,8 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
     # Calculated electron density from this wave function and update Hamiltonian
     #
     Rhoe = zeros(Float64,Npoints,Nspin)
-    for ispin = 1:Nspin
-        idxset = (Nkpt*(ispin-1)+1):(Nkpt*ispin)
-        Rhoe[:,ispin] = calc_rhoe( pw, Focc[:,idxset], psiks[idxset] )
-    end
+
+    Rhoe[:,:] = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin )
     update!(Ham, Rhoe)
 
     evals = zeros(Float64,Nstates,Nkspin)
@@ -237,10 +237,7 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
             end
             end
 
-            for ispin = 1:Nspin
-                idxset = (Nkpt*(ispin-1)+1):(Nkpt*ispin)
-                Rhoe[:,ispin] = calc_rhoe( pw, Focc[:,idxset], psiks[idxset] )
-            end
+            Rhoe[:,:] = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin )
             update!( Ham, Rhoe )
 
             # Calculate energies once again
@@ -314,12 +311,9 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
                     end
                 end
                 #
-                for ispin = 1:Nspin
-                    idxset = (Nkpt*(ispin-1)+1):(Nkpt*ispin)
-                    Rhoe[:,ispin] = calc_rhoe( pw, Focc[:,idxset], psiks[idxset] )
-                end
-                #
-                update!( Ham, Rhoe )    
+                Rhoe[:,:] = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin )
+                update!( Ham, Rhoe )
+            
                 # Calculate energies once again
                 Ham.energies = calc_energies( Ham, psiks )
                 Etot = sum(Ham.energies)

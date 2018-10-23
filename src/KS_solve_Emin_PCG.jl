@@ -10,14 +10,18 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
 
     pw = Ham.pw
     electrons = Ham.electrons
+    
     Focc = electrons.Focc
     Nstates = electrons.Nstates
+    Nelectrons = electrons.Nelectrons
+    
     Ns = pw.Ns
     Npoints = prod(Ns)
     CellVolume = pw.CellVolume
     Ngw = pw.gvecw.Ngw
     Ngwx = pw.gvecw.Ngwx
     Nkpt = pw.gvecw.kpoints.Nkpt
+    
     Nspin = electrons.Nspin
     Nkspin = Nkpt*Nspin
 
@@ -35,12 +39,10 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
     # update Hamiltonian (calculate Hartree and XC potential).
     #
     Rhoe = zeros(Float64,Npoints,Nspin)
-    for ispin = 1:Nspin
-        idxset = (Nkpt*(ispin-1)+1):(Nkpt*ispin)
-        Rhoe[:,ispin] = calc_rhoe( pw, Focc[:,idxset], psiks[idxset] )
-    end
-    update!(Ham, Rhoe)
 
+    Rhoe[:,:] = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin )
+
+    update!(Ham, Rhoe)
 
     #
     # Variables for PCG
@@ -143,12 +145,9 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
             psic[ikspin] = ortho_sqrt(psiks[ikspin] + α_t*d[ikspin])
         end # ik
         end # ispin
-        #
-        for ispin = 1:Nspin
-            idxset = (Nkpt*(ispin-1)+1):(Nkpt*ispin)
-            Rhoe[:,ispin] = calc_rhoe( pw, Focc[:,idxset], psiks[idxset] )
-        end
-        #
+        
+        Rhoe[:,:] = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin )
+
         update!(Ham, Rhoe)
 
         for ispin = 1:Nspin
@@ -173,10 +172,7 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
         end
         end
 
-        for ispin = 1:Nspin
-            idxset = (Nkpt*(ispin-1)+1):(Nkpt*ispin)
-            Rhoe[:,ispin] = calc_rhoe( pw, Focc[:,idxset], psiks[idxset] )
-        end
+        Rhoe[:,:] = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin )
 
         update!(Ham, Rhoe)
 

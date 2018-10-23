@@ -30,6 +30,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
     Nelectrons = electrons.Nelectrons
     Focc = copy(electrons.Focc) # make sure to use the copy
     Nstates = electrons.Nstates
+    Nstates_occ = electrons.Nstates_occ
     Nspin = electrons.Nspin
     #
     Nkspin = Nkpt*Nspin
@@ -45,18 +46,36 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
         psiks = startingwfc
     end
 
+    E_GAP_INFO = false
+    if Nstates_occ < Nstates
+        E_GAP_INFO = true
+        if Nspin == 2
+            idx_HOMO = max(round(Int64,Nstates_occ/2),1)
+            idx_LUMO = idx_HOMO + 1
+        else
+            idx_HOMO = Nstates_occ
+            idx_LUMO = idx_HOMO + 1
+        end
+    end
+
     #
     # Calculated electron density from this wave function and update Hamiltonian
     #
     Rhoe = zeros(Float64,Npoints,Nspin)
-    for ispin = 1:Nspin
-        idxset = (Nkpt*(ispin-1)+1):(Nkpt*ispin)
-        Rhoe[:,ispin] = calc_rhoe( pw, Focc[:,idxset], psiks[idxset] )
+
+    if Nspin == 2
+        idx_HOMO = max(round(Int64,Nstates_occ/2),1)
+        idx_LUMO = idx_HOMO + 1
+        Focc[idx_HOMO,1:Nkpt] = Focc[idx_HOMO,1:Nkpt] .+ 0.5
+        Focc[idx_HOMO,Nkpt+1:2*Nkpt] = Focc[idx_HOMO,Nkpt+1:2*Nkpt] .- 0.5
     end
 
-    #if Nspin == 2
-    #    @printf("\nInitial integ magn_den = %18.10f\n", sum(Rhoe[:,1] - Rhoe[:,2])*dVol)
-    #end
+    Rhoe[:,:] = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin )
+    if Nspin == 2
+        @printf("\nInitial integ Rhoe up = %18.10f\n", sum(Rhoe[:,1])*dVol)
+        @printf("\nInitial integ Rhoe dn = %18.10f\n", sum(Rhoe[:,2])*dVol)
+        @printf("\nInitial integ magn_den = %18.10f\n", sum(Rhoe[:,1] - Rhoe[:,2])*dVol)
+    end
 
     update!(Ham, Rhoe)
 
@@ -83,19 +102,6 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
         f_old = zeros(Float64,Npoints*Nspin)
     end
 
-
-    E_GAP_INFO = false
-    Nstates_occ = electrons.Nstates_occ
-    if Nstates_occ < Nstates
-        E_GAP_INFO = true
-        if Nspin == 2
-            idx_HOMO = max(round(Int64,Nstates_occ/2),1)
-            idx_LUMO = idx_HOMO + 1
-        else
-            idx_HOMO = Nstates_occ
-            idx_LUMO = idx_HOMO + 1
-        end
-    end
 
     @printf("\n")
     @printf("Self-consistent iteration begins ...\n")
@@ -164,29 +170,23 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
         end
 
         if use_smearing
-            
-            #Focc, E_fermi = calc_Focc( evals, wk, Nelectrons, kT, Nspin=Nspin )
-            
-            E_fermi = efermig( Nelectrons, wk, kT, evals, Nspin )
-            Focc = calc_Focc_v2( wk, kT, evals, E_fermi, Nspin )
-
+            Focc, E_fermi = calc_Focc( Nelectrons, wk, kT, evals, Nspin )
             Entropy = calc_entropy( wk, kT, evals, E_fermi, Nspin )
             Ham.electrons.Focc = copy(Focc)
         end
 
+        Rhoe_new[:,:] = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin )
         for ispin = 1:Nspin
-            idxset = (Nkpt*(ispin-1)+1):(Nkpt*ispin)
-            Rhoe_new[:,ispin] = calc_rhoe( pw, Focc[:,idxset], psiks[idxset] )
             diffRhoe[ispin] = norm(Rhoe_new[:,ispin] - Rhoe[:,ispin])
         end
 
         # check norm of
         if check_rhoe_after_mix
             integRhoe = sum(Rhoe_new)*dVol
-            @printf("After mixing: integRhoe_new = %18.10f\n", integRhoe)
+            #@printf("Before: integRhoe_new = %18.10f\n", integRhoe)
             Rhoe_new = Nelectrons/integRhoe * Rhoe_new
             integRhoe = sum(Rhoe_new)*dVol
-            @printf("After renormalize Rhoe_new: = %18.10f\n", integRhoe)
+            #@printf("After renormalize Rhoe_new: = %18.10f\n", integRhoe)
         end
 
         if mix_method == "simple"
@@ -225,8 +225,8 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
             Rhoe[:,:] = mix_anderson!( Nspin, Rhoe, Rhoe_new, betamix, df, dv, iter, MIXDIM )
         
         else
-            @printf("ERROR: Unknown mix_method = %s\n", mix_method)
-            error("STOPPED")
+            error(@sprintf("Unknown mix_method = %s\n", mix_method))
+
         end
 
         for rho in Rhoe
@@ -238,10 +238,10 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
         # renormalize
         if check_rhoe_after_mix
             integRhoe = sum(Rhoe)*dVol
-            @printf("After mixing: integRhoe = %18.10f\n", integRhoe)
+            #@printf("After mixing: integRhoe = %18.10f\n", integRhoe)
             Rhoe = Nelectrons/integRhoe * Rhoe
             integRhoe = sum(Rhoe)*dVol
-            @printf("After renormalize Rhoe: = %18.10f\n", integRhoe)
+            #@printf("After renormalize Rhoe: = %18.10f\n", integRhoe)
         end
 
         update!( Ham, Rhoe )
@@ -262,7 +262,9 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
                 @printf("SCF: %8d %18.10f %18.10e %18.10e %18.10e\n",
                         iter, Etot, diffE, diffRhoe[1], diffRhoe[2] )
                 magn_den = Rhoe[:,1] - Rhoe[:,2]
-                #@printf("integ magn_den = %18.10f\n", sum(magn_den)*dVol) 
+                @printf("integ Rhoe spin up = %18.10f\n", sum(Rhoe[:,1])*dVol) 
+                @printf("integ Rhoe spin dn = %18.10f\n", sum(Rhoe[:,2])*dVol) 
+                @printf("integ magn_den = %18.10f\n", sum(magn_den)*dVol) 
             end
         
         end
