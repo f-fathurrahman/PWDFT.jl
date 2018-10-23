@@ -170,13 +170,11 @@ export calc_energies,
        calc_E_Hartree,
        calc_E_Ps_nloc
 
-include("smear_FD.jl")
 include("calc_Focc.jl")
 include("occupations.jl")
 include("calc_entropy.jl")
 include("sum_upto_E_fermi.jl")
-export smear_FD,
-       calc_Focc, calc_Focc_v2,
+export calc_Focc,
        calc_entropy,
        sum_upto_E_fermi
 
@@ -222,7 +220,5 @@ export KS_solve_TRDCM!
 include("CheFSI.jl")
 export chebyfilt,
        get_ub_lb_lanczos
-
-#include("do_precompile.jl")
 
 end
