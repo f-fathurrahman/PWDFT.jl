@@ -7,7 +7,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
                         betamix = 0.2, NiterMax=100, verbose=true,
                         print_final_ebands=true,
                         print_final_energies=true,
-                        check_rhoe_after_mix=true,
+                        check_rhoe=false,
                         use_smearing = false, kT=1e-3,
                         update_psi="LOBPCG", cheby_degree=8,
                         mix_method="simple", MIXDIM=4,
@@ -181,7 +181,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
         end
 
         # check norm of
-        if check_rhoe_after_mix
+        if check_rhoe
             integRhoe = sum(Rhoe_new)*dVol
             #@printf("Before: integRhoe_new = %18.10f\n", integRhoe)
             Rhoe_new = Nelectrons/integRhoe * Rhoe_new
@@ -236,7 +236,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
         end
 
         # renormalize
-        if check_rhoe_after_mix
+        if check_rhoe
             integRhoe = sum(Rhoe)*dVol
             #@printf("After mixing: integRhoe = %18.10f\n", integRhoe)
             Rhoe = Nelectrons/integRhoe * Rhoe
