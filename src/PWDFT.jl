@@ -106,6 +106,7 @@ export PsPot_GTH,
 #
 include("Electrons.jl")
 export Electrons,
+       print_ebands,
        get_Zvals
 
 include("calc_strfact.jl")
