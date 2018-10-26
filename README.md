@@ -43,20 +43,37 @@ ln -fs PWDFT.jl PWDFT
 
 - Open the file `extlibs/extlibs.jl` using text editor. Edit the
   `LIBXC` and `LIBSYMSPG` according to your LibXC and spglib installations.
+   These variables should point to the appropriate dynamic libraries
+   of LibXC and spglib, respectively. Examples:
+```
+@checked_lib LIBXC "/usr/local/libxc-3.0.0/lib/libxc.so"
+@checked_lib LIBSYMSPG "/usr/local/spglib-1.10.4/lib/libsymspg.so"
+```
 
-- To make sure the package is installed correctly, you can load the package
-  and verify that there are no error messages after the loading.
+- To make sure that the package is installed correctly, you can load the package
+  and verify that there are no error messages during precompilation step.
+  You can do this by typing the following in the Julia console.
 
 ```julia
 using PWDFT
 ```
+
+- Change directory to `examples` and run the following in the terminal.
+
+```
+julia run.jl "atom_H/main_H_atom.jl"
+```
+  
+	The above command will calculate total energy of hyrogen atom by
+  SCF method.
+
 
 ## Units
 
 `PWDFT.jl` internally uses Hartree atomic units,
 (energy in Hartree and length in bohr).
 
-## Quick start
+## A simple work flow
 
 - create an instance of `Atoms`:
 

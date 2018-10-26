@@ -12,8 +12,8 @@ macro checked_lib(libname, path)
 end
 
 
-@checked_lib LIBXC "/home/efefer/mysoftwares/libxc-3.0.0/lib/libxc.so"
-@checked_lib LIBSYMSPG "/home/efefer/mysoftwares/spglib-1.10.4/lib/libsymspg.so"
+@checked_lib LIBXC "/usr/local/libxc-3.0.0/lib/libxc.so"
+@checked_lib LIBSYMSPG "/usr/local/spglib-1.10.4/lib/libsymspg.so"
 
 
 
