@@ -79,7 +79,7 @@ function PWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2}; kpoints=nothing )
     gvec = init_gvec( Ns, RecVecs, ecutrho )
 
     if kpoints==nothing
-        kpoints = KPoints( 1, zeros(3,1), [1.0], RecVecs )
+        kpoints = KPoints( 1, (1,1,1), zeros(3,1), [1.0], RecVecs )
     end
 
     gvecw = init_gvecw( ecutwfc, gvec, kpoints )

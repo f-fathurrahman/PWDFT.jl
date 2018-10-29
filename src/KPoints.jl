@@ -3,9 +3,18 @@ The type for describing Bloch wave vector of electronic states.
 """
 mutable struct KPoints
     Nkpt::Int64
+    mesh::Tuple{Int64,Int64,Int64}
     k::Array{Float64,2}
     wk::Array{Float64,1}
     RecVecs::Array{Float64,2} # copy of reciprocal vectors
+end
+
+# for compatibility purpose, `mesh` is defaulting to (0,0,0)
+# This should be useful for band structure calculation and
+# manual specification of kpoints
+function KPoints( atoms::Atoms, k::Array{Float64,2},
+                  wk::Array{Float64,1}, RecVecs::Array{Float64,2} )
+    return KPoints( atoms, (0,0,0), k, wk, RecVecs )
 end
 
 """
@@ -16,7 +25,13 @@ function KPoints( atoms::Atoms )
     k = zeros(3,1)
     wk = [1.0]
     RecVecs = 2*pi*invTrans_m3x3(atoms.LatVecs)
-    return KPoints( Nkpt, k, wk, RecVecs )
+    return KPoints( Nkpt, (0,0,0), k, wk, RecVecs )
+end
+
+
+function KPoints( atoms::Atoms, mesh::Tuple{Int64,Int64,Int64}, is_shift::Array{Int64,1};
+                  time_reversal=1 )
+    return KPoints( atoms, (mesh[1], mesh[2], mesh[3]), is_shift, time_reversal=time_reversal )
 end
 
 
@@ -83,7 +98,7 @@ function KPoints( atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{Int64,1};
     # convert to cartesian unit
     kred = RecVecs*kred
 
-    return KPoints( Nkpt, kred, wk, RecVecs )
+    return KPoints( Nkpt, (mesh[1], mesh[2], mesh[3]), kred, wk, RecVecs )
 
 end
 
@@ -205,8 +220,7 @@ function get_special_kpoints(lattice::String)
                     "L" => [1/2, 0.0, 1/2],
                     "M" => [1/2, 0.0, 0.0])
     else
-        println("ERROR: unknown lattice = ", lattice)
-        exit()
+        error(@sprintf("Unknown lattice = %s\n", lattice))
     end
 end
 
@@ -228,6 +242,9 @@ function println( kpoints::KPoints; header=true )
     end
 
     @printf("\n")
+    if kpoints.mesh != (0,0,0)
+        @printf("Mesh: (%4d,%4d,%4d)\n", kpoints.mesh[1], kpoints.mesh[2], kpoints.mesh[3])
+    end
     @printf("Total number of kpoints = %d\n", kpoints.Nkpt )
 
     @printf("\n")
