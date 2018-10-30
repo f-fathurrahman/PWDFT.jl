@@ -11,40 +11,39 @@ function mix_ppulay!( x, gx, beta, X, F, iter, MIXDIM::Int64, k::Int64,
 
     f = gx - x
 
-    if iter > 1
+    if iter == 1
+        dx = copy(x)
+        df = copy(f)
+    else
         dx = x - x_old
         df = f - f_old
     end
 
-    if iter == 1
+    if iter < MIXDIM
         is_pulay = false
     else
         is_pulay = iter%k == 0
     end
 
-    active_dim = mod(iter-1,MIXDIM) + 1
-
-    if iter == 1
-        X[:,1] = x
-        F[:,1] = f
-    end
-
     # shift history
-    for i = active_dim:-1:2
-        X[:,i] = X[:,i-1]
-        F[:,i] = F[:,i-1]
+    if iter <= MIXDIM
+        X[:,iter] = dx
+        F[:,iter] = df
+    else
+        for i = 1:MIXDIM-1
+            X[:,i] = X[:,i+1]
+            F[:,i] = F[:,i+1]
+        end
     end
 
-    # new history, put at the beginning
-    if iter > 1
-        X[:,1] = dx
-        F[:,1] = df
+    # new history, put at the end
+    if iter > MIXDIM
+        X[:,MIXDIM] = dx
+        F[:,MIXDIM] = df
     end
 
     if is_pulay
-        Xk = X[:,1:active_dim]
-        Fk = F[:,1:active_dim]
-        addv = (Xk + beta*Fk)*inv(Fk'*Fk)*(Fk'*f)
+        addv = (X + beta*F)*inv(F'*F)*(F'*f) 
         xnew = x + beta*f - addv
     else
         xnew = x + beta*f
