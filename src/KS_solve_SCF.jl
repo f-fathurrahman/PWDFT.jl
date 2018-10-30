@@ -267,8 +267,9 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
 
         if verbose
             if Nspin == 1
-                @printf("SCF: %8d %18.10f %18.10e %18.10e\n",
+                @printf("\nSCF: %8d %18.10f %18.10e %18.10e\n",
                         iter, Etot, diffE, diffRhoe[1] )
+                @printf("integ Rhoe = %18.10f\n", sum(Rhoe)*dVol)
             else
                 @printf("SCF: %8d %18.10f %18.10e %18.10e %18.10e\n",
                         iter, Etot, diffE, diffRhoe[1], diffRhoe[2] )
