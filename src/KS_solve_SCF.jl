@@ -108,7 +108,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
     @printf("update_psi = %s\n", update_psi)
     @printf("\n")
     @printf("mix_method = %s\n", mix_method)
-    if mix_method in ("rpulay", "rpulay_kerker", "anderson")
+    if mix_method in ("rpulay", "rpulay_kerker", "anderson", "ppulay")
         @printf("MIXDIM = %d\n", MIXDIM)
     end
     @printf("Density mixing with betamix = %10.5f\n", betamix)
