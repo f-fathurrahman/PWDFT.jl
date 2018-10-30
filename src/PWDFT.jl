@@ -197,8 +197,10 @@ export diag_LOBPCG, diag_LOBPCG!,
 #
 include("mix_anderson.jl")
 include("mix_rpulay.jl")
+include("mix_ppulay.jl")
 export mix_anderson!,
-       mix_rpulay!
+       mix_rpulay!,
+       mix_ppulay!
 
 include("gen_wavefunc.jl")
 export rand_Wavefunc, rand_BlochWavefunc, zeros_BlochWavefunc

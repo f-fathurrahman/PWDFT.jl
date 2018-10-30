@@ -10,7 +10,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
                         check_rhoe=false,
                         use_smearing = false, kT=1e-3,
                         update_psi="LOBPCG", cheby_degree=8,
-                        mix_method="simple", MIXDIM=4,
+                        mix_method="simple", MIXDIM=5,
                         print_e_gap=false,
                         ETOT_CONV_THR=1e-6 )
 
@@ -95,7 +95,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
         df = zeros(Float64,Npoints*Nspin,MIXDIM)
         dv = zeros(Float64,Npoints*Nspin,MIXDIM)
     
-    elseif mix_method in ("rpulay", "rpulay_kerker")
+    elseif mix_method in ("rpulay", "rpulay_kerker", "ppulay")
         XX = zeros(Float64,Npoints*Nspin,MIXDIM)
         FF = zeros(Float64,Npoints*Nspin,MIXDIM)
         x_old = zeros(Float64,Npoints*Nspin)
@@ -204,6 +204,17 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
             Rhoe = reshape( mix_rpulay!(
                 reshape(Rhoe,(Npoints*Nspin)),
                 reshape(Rhoe_new,(Npoints*Nspin)), betamix, XX, FF, iter, MIXDIM, x_old, f_old
+                ), (Npoints,Nspin) )
+            
+            if Nspin == 2
+                magn_den = Rhoe[:,1] - Rhoe[:,2]
+            end
+
+        elseif mix_method == "ppulay"
+        
+            Rhoe = reshape( mix_ppulay!(
+                reshape(Rhoe,(Npoints*Nspin)),
+                reshape(Rhoe_new,(Npoints*Nspin)), betamix, XX, FF, iter, MIXDIM, 3, x_old, f_old
                 ), (Npoints,Nspin) )
             
             if Nspin == 2
