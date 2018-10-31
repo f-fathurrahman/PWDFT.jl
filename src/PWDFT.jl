@@ -196,9 +196,11 @@ export diag_LOBPCG, diag_LOBPCG!,
 # Mixing functions
 #
 include("mix_anderson.jl")
+include("mix_pulay.jl")
 include("mix_rpulay.jl")
 include("mix_ppulay.jl")
 export mix_anderson!,
+       mix_pulay!,
        mix_rpulay!,
        mix_ppulay!
 

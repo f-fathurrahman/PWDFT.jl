@@ -153,8 +153,8 @@ end
 function test_main()
 
     #Ham = create_Hamiltonian_H_atom()
-    #Ham = create_Hamiltonian_H2()
-    Ham = create_Hamiltonian_N2()
+    Ham = create_Hamiltonian_H2()
+    #Ham = create_Hamiltonian_N2()
     #Ham = create_Hamiltonian_O2()
     #Ham = create_Hamiltonian_Co_atom()
     #Ham = create_Hamiltonian_Ni_atom()
@@ -162,8 +162,8 @@ function test_main()
 
     # Solve the KS problem
     @time KS_solve_SCF!(
-        Ham, ETOT_CONV_THR=1e-6, NiterMax=100, betamix=0.2, update_psi="LOBPCG",
-        mix_method="ppulay"
+        Ham, ETOT_CONV_THR=1e-6, NiterMax=100, betamix=0.7, update_psi="LOBPCG",
+        mix_method="pulay"
     )
 
     Nstates = Ham.electrons.Nstates

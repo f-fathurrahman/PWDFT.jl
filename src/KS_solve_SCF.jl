@@ -95,7 +95,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
         df = zeros(Float64,Npoints*Nspin,MIXDIM)
         dv = zeros(Float64,Npoints*Nspin,MIXDIM)
     
-    elseif mix_method in ("rpulay", "rpulay_kerker", "ppulay")
+    elseif mix_method in ("rpulay", "rpulay_kerker", "ppulay", "pulay")
         XX = zeros(Float64,Npoints*Nspin,MIXDIM)
         FF = zeros(Float64,Npoints*Nspin,MIXDIM)
         x_old = zeros(Float64,Npoints*Nspin)
@@ -183,10 +183,10 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
         # check norm of
         if check_rhoe
             integRhoe = sum(Rhoe_new)*dVol
-            #@printf("Before: integRhoe_new = %18.10f\n", integRhoe)
+            @printf("Before: integRhoe_new = %18.10f\n", integRhoe)
             Rhoe_new = Nelectrons/integRhoe * Rhoe_new
             integRhoe = sum(Rhoe_new)*dVol
-            #@printf("After renormalize Rhoe_new: = %18.10f\n", integRhoe)
+            @printf("After renormalize Rhoe_new: = %18.10f\n", integRhoe)
         end
 
         if mix_method == "simple"
@@ -197,6 +197,17 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
         elseif mix_method == "simple_kerker"
             for ispin = 1:Nspin
                 Rhoe[:,ispin] = Rhoe[:,ispin] + betamix*precKerker(pw, Rhoe_new[:,ispin] - Rhoe[:,ispin])
+            end
+
+        elseif mix_method == "pulay"
+        
+            Rhoe = reshape( mix_pulay!(
+                reshape(Rhoe,(Npoints*Nspin)),
+                reshape(Rhoe_new,(Npoints*Nspin)), betamix, XX, FF, iter, MIXDIM, x_old, f_old
+                ), (Npoints,Nspin) )
+            
+            if Nspin == 2
+                magn_den = Rhoe[:,1] - Rhoe[:,2]
             end
 
         elseif mix_method == "rpulay"
