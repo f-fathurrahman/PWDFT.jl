@@ -6,30 +6,26 @@ using PWDFT
 include("dump_bandstructure.jl")
 include("gen_kpath.jl")
 
-function test_Cu_fcc()
+function test_Al_fcc()
 
     # Atoms
-    atoms = init_atoms_xyz_string(
+    atoms = Atoms( xyz_string_frac=
         """
         1
 
-        Cu  0.0  0.0  0.0
-        """, in_bohr=true)
-    atoms.LatVecs = gen_lattice_fcc(3.61496*ANG2BOHR)
-    atoms.positions = atoms.LatVecs*atoms.positions
-    println(atoms)
+        Al  0.0  0.0  0.0
+        """, in_bohr=true,
+        LatVecs = gen_lattice_fcc(4.0495*ANG2BOHR) )
 
     # Initialize Hamiltonian
-    pspfiles = ["../pseudopotentials/pade_gth/Cu-q11.gth"]
-    ecutwfc = 30.0
+    pspfiles = ["../pseudopotentials/pade_gth/Al-q3.gth"]
+    ecutwfc = 15.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc,
-                       meshk=[16,16,16], extra_states=1 )
+                       meshk=[8,8,8], extra_states=4 )
     println(Ham)
 
-    #
     # Solve the KS problem
-    #
-    KS_solve_SCF!( Ham, betamix=0.2, mix_method="rpulay", use_smearing=true, kT=0.01 )
+    KS_solve_SCF!( Ham, betamix=0.2, mix_method="rpulay", use_smearing=true, kT=0.001 )
 
 
     #
@@ -49,7 +45,7 @@ function test_Cu_fcc()
 
     # Manually construct Ham.electrons
     Ham.electrons = Electrons( atoms, Ham.pspots, Nspin=1, Nkpt=kpoints.Nkpt,
-                               Nstates_empty=1 )
+                               Nstates_empty=4 )
 
     Nstates = Ham.electrons.Nstates
     ebands = Ham.electrons.ebands
@@ -89,8 +85,8 @@ function test_Cu_fcc()
     end
 
     dump_bandstructure( evals, kpoints.k, kpt_spec, kpt_spec_labels,
-                        filename="TEMP_Cu_fcc_v2.dat" )
+                        filename="TEMP_Al_fcc_v2.dat" )
 
 end
 
-test_Cu_fcc()
+test_Al_fcc()

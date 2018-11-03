@@ -12,11 +12,18 @@ end
 # for compatibility purpose, `mesh` is defaulting to (0,0,0)
 # This should be useful for band structure calculation and
 # manual specification of kpoints
-function KPoints( atoms::Atoms, k::Array{Float64,2},
+#=function KPoints( atoms::Atoms, k::Array{Float64,2},
                   wk::Array{Float64,1}, RecVecs::Array{Float64,2} )
     Nkpt = size(k)[1]
     return KPoints( Nkpt, (0,0,0), k, wk, RecVecs )
 end
+=#
+
+function KPoints( Nkpt::Int64, k::Array{Float64,2},
+                  wk::Array{Float64,1}, RecVecs::Array{Float64,2} )
+    return KPoints( Nkpt, (0,0,0), k, wk, RecVecs )
+end
+
 
 """
 Creates a 'dummy' instance of `KPoints` with only one kpoint.
@@ -25,7 +32,7 @@ function KPoints( atoms::Atoms )
     Nkpt = 1
     k = zeros(3,1)
     wk = [1.0]
-    RecVecs = 2*pi*invTrans_m3x3(atoms.LatVecs)
+    RecVecs = 2*pi*inv(atoms.LatVecs')
     return KPoints( Nkpt, (0,0,0), k, wk, RecVecs )
 end
 
@@ -94,7 +101,7 @@ function KPoints( atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{Int64,1};
 
     # need to calculate this here because a `PWGrid` instance is
     # not given in the inputs.
-    RecVecs = 2*pi*invTrans_m3x3(atoms.LatVecs)
+    RecVecs = 2*pi*inv(atoms.LatVecs')
     
     # convert to cartesian unit
     kred = RecVecs*kred
@@ -117,7 +124,7 @@ function kpoints_from_file( atoms::Atoms, filename::String )
     end
     close(file)
     # kpts need to be converted to Cartesian form
-    RecVecs = 2*pi*invTrans_m3x3(atoms.LatVecs)
+    RecVecs = 2*pi*(atoms.LatVecs')
     kpt = RecVecs*kred
     #
     wk = ones(Nkpt) # not used for non-scf calculations
@@ -152,7 +159,7 @@ function kpath_from_file( atoms::Atoms, filename::String )
 
     close(file)
     # kpts need to be converted to Cartesian form
-    RecVecs = 2*pi*invTrans_m3x3(atoms.LatVecs)
+    RecVecs = 2*pi*inv(atoms.LatVecs')
     kpt = RecVecs*kred
     kpt_spec = RecVecs*kpt_spec_red
     #
