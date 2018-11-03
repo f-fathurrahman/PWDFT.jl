@@ -14,7 +14,8 @@ end
 # manual specification of kpoints
 function KPoints( atoms::Atoms, k::Array{Float64,2},
                   wk::Array{Float64,1}, RecVecs::Array{Float64,2} )
-    return KPoints( atoms, (0,0,0), k, wk, RecVecs )
+    Nkpt = size(k)[1]
+    return KPoints( Nkpt, (0,0,0), k, wk, RecVecs )
 end
 
 """
@@ -121,7 +122,7 @@ function kpoints_from_file( atoms::Atoms, filename::String )
     #
     wk = ones(Nkpt) # not used for non-scf calculations
     #
-    return KPoints(Nkpt, kpt, wk, RecVecs)
+    return KPoints(Nkpt, (0,0,0), kpt, wk, RecVecs)
 end
 
 function kpath_from_file( atoms::Atoms, filename::String )
@@ -157,7 +158,7 @@ function kpath_from_file( atoms::Atoms, filename::String )
     #
     wk = ones(Nkpt) # not used for non-scf calculations
     #
-    return KPoints(Nkpt, kpt, wk, RecVecs), kpt_spec, kpt_spec_labels
+    return KPoints(Nkpt, (0,0,0), kpt, wk, RecVecs), kpt_spec, kpt_spec_labels
 end
 
 function gen_MonkhorstPack( mesh::Array{Int64,1} )
