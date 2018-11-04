@@ -119,10 +119,11 @@ end
 
 function write_abinit( Ham::Hamiltonian;
                        abinit_psp=nothing, prefix="./", prefix_psp="./",
-                       use_smearing=false )
+                       use_smearing=false, kT=0.001 )
 
     pw = Ham.pw
     atoms = Ham.atoms
+    electrons = Ham.electrons
     LatVecs = pw.LatVecs
     kpoints = pw.gvecw.kpoints    
     Nspecies = atoms.Nspecies
@@ -180,7 +181,15 @@ function write_abinit( Ham::Hamiltonian;
 
     @printf(f, "ecut %f\n", pw.ecutwfc)
 
-    println(f, "occopt 1")
+    if use_smearing
+        println(f, "occopt 3")
+        @printf(f, "tsmear %f\n", kT)
+    else
+        println(f, "occopt 1")
+    end
+
+    @printf(f, "nband %d\n", electrons.Nstates)
+
     @printf(f, "ngkpt %d %d %d\n", kpoints.mesh[1], kpoints.mesh[2], kpoints.mesh[3])
     println(f, "chksymbreak 0")
     println(f, "nshiftk 1")
@@ -235,6 +244,9 @@ function read_abinit_etotal( filename::String )
         if occursin("NL   psp  energy", l)
             E_Ps_nloc = parse( Float64, split(l, "=")[2] )
         end
+        if occursin("-kT*entropy", l)
+            mTS = parse( Float64, split(l, "=")[2] )
+        end
         if occursin("Etotal", l)
             E_total = parse( Float64, split(l, "=")[2] )
         end
@@ -246,10 +258,6 @@ function read_abinit_etotal( filename::String )
     return energies
 end
 
-function test_read_abinit_etotal()
-    read_abinit_etotal("../TEMP_ABINIT/LOG1")
-end
-test_read_abinit_etotal()
 
 function test_CuSO4()
     # initialize atoms and Hamiltonian
@@ -262,6 +270,7 @@ function test_CuSO4()
 end
 #test_CuSO4()
 
+
 function test_H2()
     # initialize atoms and Hamiltonian
     atoms = Atoms( xyz_file="../structures/H2.xyz",
@@ -273,3 +282,28 @@ function test_H2()
                        prefix="../TEMP_ABINIT/" )
 end
 #test_H2()
+
+function test_Al_fcc()
+
+    atoms = Atoms( xyz_string_frac=
+    """
+    1
+
+    Al  0.0  0.0  0.0
+    """, in_bohr=true,
+    LatVecs = gen_lattice_fcc(7.6525970200) )
+    pspfiles = ["../pseudopotentials/pade_gth/Al-q3.gth"]
+    ecutwfc = 15.0
+    Ham = Hamiltonian( atoms, pspfiles, ecutwfc, xcfunc="LDA",
+                       Nspin=1, meshk=[8,8,8], extra_states=4 )
+
+    write_abinit( Ham, use_smearing=true,
+                  prefix_psp="../_compare/abinit_psp/",
+                  prefix="../TEMP_ABINIT/" )
+end
+test_Al_fcc()
+
+function test_read_abinit_etotal()
+    read_abinit_etotal("../TEMP_ABINIT/LOG1")
+end
+test_read_abinit_etotal()
