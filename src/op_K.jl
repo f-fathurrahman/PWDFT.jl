@@ -1,3 +1,22 @@
+function op_K( Ham::Hamiltonian, psiks::BlochWavefunc )
+    Nstates = size(psiks[1])[2] # Nstates should be similar for all Bloch states
+    
+    Nspin = Ham.electrons.Nspin
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+    out = zeros_BlochWavefunc(Ham)
+    
+    for ispin = 1:Nspin
+    for ik = 1:Nkpt
+        Ham.ik = ik
+        Ham.ispin = ispin
+        ikspin = ik + (ispin - 1)*Nkpt
+        out[ikspin] = op_K( Ham, psiks[ikspin] )
+    end
+    end
+    return out
+end
+
+
 # Apply kinetic operator to wave function in reciprocal space
 
 function op_K( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
@@ -13,7 +32,7 @@ function op_K( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
     k = pw.gvecw.kpoints.k[:,ik]
 
     Gw = zeros(3)
-    out = Array{ComplexF64}(undef,size(psi))
+    out = zeros(ComplexF64,size(psi))
 
     for ist = 1:Nstates
         for igk = 1:Ngw[ik]
@@ -39,7 +58,7 @@ function op_K( Ham::Hamiltonian, psi::Array{ComplexF64,1} )
     k = pw.gvecw.kpoints.k[:,ik]
 
     Gw = zeros(3)
-    out = Array{ComplexF64}(undef,size(psi))
+    out = zeros(ComplexF64,size(psi))
 
     for igk = 1:Ngw[ik]
         ig = idx_gw2g[igk]
@@ -50,4 +69,3 @@ function op_K( Ham::Hamiltonian, psi::Array{ComplexF64,1} )
 
     return 0.5*out # two minus signs -> positive
 end
-

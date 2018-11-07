@@ -1,3 +1,20 @@
+function op_V_Ps_nloc( Ham::Hamiltonian, psiks::BlochWavefunc )
+    Nstates = size(psiks[1])[2] # Nstates should be similar for all Bloch states
+    Nspin = Ham.electrons.Nspin
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+    out = zeros_BlochWavefunc(Ham)
+    
+    for ispin = 1:Nspin
+    for ik=1:Nkpt
+        Ham.ik = ik
+        Ham.ispin = ispin
+        ikspin = ik + (ispin - 1)*Nkpt
+        out[ikspin] = op_V_Ps_nloc( Ham, psiks[ikspin] )
+    end
+    end
+    return out
+end
+
 function op_V_Ps_nloc( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
 
     ik = Ham.ik

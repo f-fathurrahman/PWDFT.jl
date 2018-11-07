@@ -1,7 +1,14 @@
+function calc_rhoe( Ham::Hamiltonian, psiks::BlochWavefunc )
+    return calc_rhoe(
+        Ham.electrons.Nelectrons,
+        Ham.pw, Ham.electrons.Focc, 
+        psiks, Ham.electrons.Nspin )
+end
+
 function calc_rhoe(
     Nelectrons_true::Float64,
     pw::PWGrid, Focc::Array{Float64,2},
-    psiks::Array{Array{ComplexF64,2},1}, Nspin::Int64;
+    psiks::BlochWavefunc, Nspin::Int64;
     renormalize=true
 )
 

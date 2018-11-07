@@ -1,13 +1,53 @@
-function op_V_loc( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
-    ispin = Ham.ispin
-    V_loc = Ham.potentials.Ps_loc + Ham.potentials.Hartree + Ham.potentials.XC[:,ispin]
-    return op_V_loc( Ham.ik, Ham.pw, V_loc, psi )
+function op_V_loc( Ham::Hamiltonian, psiks::BlochWavefunc )
+    Nstates = size(psiks[1])[2] # Nstates should be similar for all Bloch states
+    Nspin = Ham.electrons.Nspin
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+    out = zeros_BlochWavefunc(Ham)
+    
+    for ispin = 1:Nspin
+    for ik=1:Nkpt
+        Ham.ik = ik
+        Ham.ispin = ispin
+        ikspin = ik + (ispin - 1)*Nkpt
+        out[ikspin] = op_V_loc( Ham, psiks[ikspin] )
+    end
+    end
+    return out
 end
 
+function op_V_Ps_loc( Ham::Hamiltonian, psiks::BlochWavefunc )
+    Nstates = size(psiks[1])[2] # Nstates should be similar for all Bloch states
+    Nspin = Ham.electrons.Nspin
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+    out = zeros_BlochWavefunc(Ham)
+    
+    for ispin = 1:Nspin
+    for ik=1:Nkpt
+        Ham.ik = ik
+        Ham.ispin = ispin
+        ikspin = ik + (ispin - 1)*Nkpt
+        out[ikspin] = op_V_Ps_loc( Ham, psiks[ikspin] )
+    end
+    end
+    return out
+end
+
+# apply V_Ps_loc, Hartree, and XC potentials
+function op_V_loc( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
+    ispin = Ham.ispin
+    ik = Ham.ik
+    V_loc = Ham.potentials.Ps_loc + Ham.potentials.Hartree + Ham.potentials.XC[:,ispin]
+    return op_V_loc( ik, Ham.pw, V_loc, psi )
+end
+
+# only apply V_Ps_loc
 function op_V_Ps_loc( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
     return op_V_loc( Ham.ik, Ham.pw, Ham.potentials.Ps_loc, psi )
 end
 
+# apply general V_loc
+# ik must be given to get information about
+# mapping between psi in G-space to real space
 function op_V_loc( ik::Int64, pw::PWGrid, V_loc::Array{Float64,1}, psi::Array{ComplexF64,2} )
     Ns = pw.Ns
     CellVolume  = pw.CellVolume

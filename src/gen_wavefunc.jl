@@ -2,12 +2,11 @@ function rand_Wavefunc( Nbasis, Nstates )
     return ortho_sqrt( rand(ComplexF64,Nbasis,Nstates) )
 end
 
-function zeros_BlochWavefunc( pw::PWGrid, electrons::Electrons )
+function zeros_BlochWavefunc( pw::PWGrid, Nstates::Int64, Nspin::Int64)
     Nkpt = pw.gvecw.kpoints.Nkpt
-    Nspin = electrons.Nspin
-    Nkspin = Nspin*Nkpt
     Ngw = pw.gvecw.Ngw
-    Nstates = electrons.Nstates
+
+    Nkspin = Nspin*Nkpt
 
     psiks = Array{Array{ComplexF64,2},1}(undef,Nkspin)
 
@@ -20,15 +19,21 @@ function zeros_BlochWavefunc( pw::PWGrid, electrons::Electrons )
 	return psiks
 end
 
-function rand_BlochWavefunc( pw::PWGrid, electrons::Electrons )
-
-    Nkpt = pw.gvecw.kpoints.Nkpt
+function zeros_BlochWavefunc( pw::PWGrid, electrons::Electrons )
     Nspin = electrons.Nspin
-    Nkspin = Nspin*Nkpt
-    Ngw = pw.gvecw.Ngw
     Nstates = electrons.Nstates
+    return zeros_BlochWavefunc( pw, Nstates, Nspin )
+end
 
-    psiks = Array{Array{ComplexF64,2},1}(undef,Nkspin)
+
+
+function rand_BlochWavefunc( pw::PWGrid, Nstates::Int64, Nspin::Int64 )
+    Nkpt = pw.gvecw.kpoints.Nkpt
+    Ngw = pw.gvecw.Ngw
+
+    Nkspin = Nspin*Nkpt
+
+    psiks = BlochWavefunc(undef,Nkspin)
 
     for ispin = 1:Nspin
     for ik = 1:Nkpt
@@ -38,7 +43,18 @@ function rand_BlochWavefunc( pw::PWGrid, electrons::Electrons )
     end
 
 	return psiks
-
 end
 
+function rand_BlochWavefunc( pw::PWGrid, electrons::Electrons )
+    Nspin = electrons.Nspin
+    Nstates = electrons.Nstates
+    return rand_BlochWavefunc( pw, Nstates, Nspin )
+end
 
+function rand_BlochWavefunc( Ham::Hamiltonian )
+    return rand_BlochWavefunc( Ham.pw, Ham.electrons )
+end
+
+function zeros_BlochWavefunc( Ham::Hamiltonian )
+    return zeros_BlochWavefunc( Ham.pw, Ham.electrons )
+end
