@@ -29,7 +29,7 @@ function op_K( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
     Ngwx = pw.gvecw.Ngwx
     Ngw = pw.gvecw.Ngw
     idx_gw2g = pw.gvecw.idx_gw2g[ik]
-    k = pw.gvecw.kpoints.k[:,ik]
+    k = @view pw.gvecw.kpoints.k[:,ik]
 
     Gw = zeros(3)
     out = zeros(ComplexF64,size(psi))
@@ -55,7 +55,7 @@ function op_K( Ham::Hamiltonian, psi::Array{ComplexF64,1} )
     Ngwx = pw.gvecw.Ngwx
     Ngw = pw.gvecw.Ngw
     idx_gw2g = pw.gvecw.idx_gw2g[ik]
-    k = pw.gvecw.kpoints.k[:,ik]
+    k = @view pw.gvecw.kpoints.k[:,ik]
 
     Gw = zeros(3)
     out = zeros(ComplexF64,size(psi))
