@@ -19,7 +19,7 @@
 \usepackage{braket}
 
 \usepackage{minted}
-\newminted{julia}{breaklines}
+\newminted{julia}{breaklines,fontsize=\footnotesize}
 \newminted{text}{breaklines}
 
 \newcommand{\jlcode}[1]{\mintinline{julia}{#1}}
@@ -410,12 +410,43 @@ function KPoints( atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{Int64,1};
 SPGLIB is used internally to generate reduce number of k-points.
 
 
-
 \section{Wave functions}
 
-Using `\jlcode{Array{ComplexF64,2}}.
+In the present implementation, I have chosen to use the simplest
+data structure for representing wave functions, namely
+\jlcode{Array{ComplexF64,2}}. In \textsf{PWDFT.jl}, an alias
+has been defined:
+\begin{juliacode}
+const Wavefunc = Array{ComplexF64,2}
+\end{juliacode}
 
-General wavefunction on kpoints
+I also differentiate between wave function and Bloch wave function.
+A Bloch wave function is composed of several wave functions having
+different Bloch wave vectors $\mathbf{k}$ or k-points.
+The following alias also has been defined
+\begin{juliacode}
+const BlochWavefunc = Array{Array{ComplexF64,2},1}
+\end{juliacode}
+
+Spin index is merged with kpoint index
+
+Conventions: \jlcode{psi} for an instance of \jlcode{Wavefunc} and
+\jlcode{psiks} for an instance of \jlcode{BlochWavefunc}
+
+Functions related to wave functions:
+\begin{itemize}
+\item \jlcode{rand_Wavefunc}
+\item \jlcode{zeros_Wavefunc}
+\item \jlcode{rand_BlochWavefunc}
+\item \jlcode{zeros_BlochWavefunc}
+\end{itemize}
+
+Wave functions in real and reciprocal space.
+
+Converting between wave functions in real and reciprocal space
+
+Orthonormalization functions
+\jlcode{ortho_gram_schmidt} and \jlcode{ortho_sqrt}
 
 
 \section{Total energy components}
@@ -424,7 +455,7 @@ Total energy components are stored in the type \jlcode{Energies}. Currently its
 fields are as follows.
 \begin{itemize}
 %
-\item `Kinetic`: kinetic energy
+\item \jlcode{Kinetic}: kinetic energy
 %
 \item \jlcode{Ps_loc}: local pseudopotential energy
 %
@@ -485,6 +516,19 @@ struct PsPot_GTH
 end
 \end{juliacode}
 
+\section{Hamiltonian operator}
+
+Apply Hamiltonian operator to wave function
+\begin{juliacode}
+for ispin = 1:Nspin
+    for ik = 1:Nkpt
+        Ham.ispin = ispin
+        Ham.ik = ik
+        Hpsiks = op_H(Ham, psiks)
+    end
+end
+\end{juliacode}
+
 
 \section{Solving Kohn-Sham problems}
 
@@ -496,7 +540,7 @@ Function names: \jlcode{KS_solve_*}
 
 \jlcode{KS_solve_SCF}
 
-\inputminted[breaklines]{julia}{../src/KS_solve_SCF.jl}
+\inputminted[breaklines,fontsize=\footnotesize]{julia}{../src/KS_solve_SCF.jl}
 
 
 
@@ -510,23 +554,23 @@ Davidson, LOBPCG, and PCG
 
 This method is described by IsmailBeigi-Arias
 
-\inputminted[breaklines]{julia}{../src/KS_solve_Emin_PCG.jl}
+\inputminted[breaklines,fontsize=\footnotesize]{julia}{../src/KS_solve_Emin_PCG.jl}
 
 
 \subsection{Direct constrained minimization method of Yang}
 
 \jlcode{KS_solve_DCM}
 
-\inputminted[breaklines]{julia}{../src/KS_solve_DCM.jl}
+\inputminted[breaklines,fontsize=\footnotesize]{julia}{../src/KS_solve_DCM.jl}
 
 
-\inputminted[breaklines]{julia}{../src/KS_solve_TRDCM.jl}
+\inputminted[breaklines,fontsize=\footnotesize]{julia}{../src/KS_solve_TRDCM.jl}
 
 
 \subsection{Chebyshev filtered subspace iteration SCF}
 
 \jlcode{update_psi="CheFSI"}
 
-\inputminted[breaklines]{julia}{../src/CheFSI.jl}
+\inputminted[breaklines,fontsize=\footnotesize]{julia}{../src/CheFSI.jl}
 
 \end{document}
