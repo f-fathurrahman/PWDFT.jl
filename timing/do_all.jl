@@ -164,9 +164,6 @@ function time_op_K()
 
 end
 
-time_op_K()
-
-#=
 println()
 InteractiveUtils.versioninfo()
 
@@ -175,4 +172,4 @@ time_Atoms()
 time_PWGrid()
 time_Hamiltonian()
 size_Hamiltonian()
-=#
+time_op_K()
