@@ -41,7 +41,7 @@ end
 
 function test_main()
     L = 10.0
-    ecutwfc = 15.0
+    ecutwfc = 25.0
     # choose a rather large cell
     LatVecs = gen_lattice_sc(L)
     
@@ -66,11 +66,11 @@ function test_main()
         fr[ip] = gauss3d( alpha, sigma, r )
     end
     integ_fr = sum(fr)*dVol
-    @printf("integ_fr = %18.10f\n", integ_fr)
+    @printf("integ_fr  = %18.10f\n", integ_fr)
 
-    fg = R_to_G( pw, fr )
+    fg = R_to_G( pw, fr )  # return all
 
-    fgr = real( G_to_R( pw, fg ) )
+    fgr = real(G_to_R( pw, fg ))
     integ_fgr = sum(fgr)*dVol
     @printf("integ_fgr = %18.10f\n", integ_fgr)
 
@@ -88,10 +88,10 @@ function test_main()
     r_eval = (5.0, 5.0, 5.0)
     rr = ( r_eval[1]-c[1], r_eval[2]-c[2], r_eval[3]-c[3] )
     f_interp = pw_interp(pw, fg, r_eval)
-    println("fr = ", gauss3d(alpha, sigma, rr) )
-    println("f_interp = ", f_interp)
+    @printf("fr       = %18.10f\n", gauss3d(alpha, sigma, rr) )
+    @printf("f_interp = %18.10f\n", real(f_interp)/Npoints)
 
-    println("ratio = ", f_interp/gauss3d(alpha, sigma, rr))
+    println("ratio = ", f_interp/Npoints/gauss3d(alpha, sigma, rr))
     
 
     #=
@@ -112,7 +112,7 @@ function pw_interp( pw::PWGrid, fg::Array{ComplexF64,1}, r::Tuple{Float64,Float6
         Gr = G[1]*r[1] + G[2]*r[2] + G[3]*r[3]
         s = s + fg[ip]*exp( im*Gr )
     end
-    return s/sqrt(pw.CellVolume)/prod(pw.Ns)
+    return s
 end
 
 #plot_funcx()

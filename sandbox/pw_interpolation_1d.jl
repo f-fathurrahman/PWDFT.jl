@@ -24,17 +24,20 @@ end
 function test_main()
     Npoints = 25
     L = 10.0
-    x = range(0.0, stop=L, length=Npoints)
-    fx = zeros(Npoints)
-    cx = 5.0
-    alpha = 1.0
-    sigma = 1.0
+    x = zeros(Npoints)
     for ip = 1:Npoints
-        #fx[ip] = funcx( cx, L, x[ip], alpha)
+        x[ip] = (ip-1)*L/Npoints
+    end
+
+    fx = zeros(Npoints)
+    cx = 0.5*L
+    alpha = 1.0
+    sigma = 0.5
+    for ip = 1:Npoints
         fx[ip] = gauss1d(alpha, sigma, x[ip]-cx)
     end
 
-    fg = fft( fx )
+    fg = fft(fx)/Npoints
 
     Ng = Npoints
     G = zeros(Ng)
@@ -50,21 +53,25 @@ function test_main()
 
     println()
 
-    f_interp = zeros(ComplexF64,Ng)
-    for ip = 1:Npoints
+    Npoints_plot = Npoints
+    f_interp = zeros(ComplexF64,Npoints_plot)
+    #x_plots = range(0,L,length=Npoints_plot)
+    x_plots = copy(x)
+
+    for ip = 1:Npoints_plot
         s = 0.0 + im*0.0
         for ig = 1:Ng
             ipp = idx_g2r[ig]
-            s = s + fg[ipp]*exp(im*G[ig]*x[ip])/L
+            s = s + fg[ipp]*exp(im*G[ig]*x_plots[ip])
         end
         f_interp[ip] = s
-        @printf("%4d %18.10f %18.10f %18.10f\n", ip, fx[ip], real(s), imag(s))
+        println(ip, " ", fx[ip], " ", abs(s))
     end
 
-    Plots.plot(x, abs.(real(f_interp)), leg=true)
-    Plots.plot!(x, imag(f_interp))
-    Plots.plot!(x, abs.(f_interp))
-    Plots.plot!(x, fx)
+    Plots.plot(x, fx, leg=true)
+    Plots.plot!(x_plots, real(f_interp))
+    Plots.plot!(x_plots, imag(f_interp))
+    Plots.plot!(x_plots, abs.(f_interp))
     Plots.savefig("TEMP_funcx_1d_interp.pdf")
 end
 
