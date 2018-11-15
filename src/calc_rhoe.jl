@@ -38,7 +38,7 @@ function calc_rhoe(
         psiR[:,:] = G_to_R(pw, cpsi)
 
         # orthonormalization in real space
-        ortho_gram_schmidt!( Nstates, psiR )
+        ortho_sqrt!( psiR )
         psiR = sqrt(Npoints/CellVolume)*psiR
         #
         for ist = 1:Nstates
@@ -84,7 +84,7 @@ function calc_rhoe( ik::Int64, pw::PWGrid, Focc::Array{Float64,2},
     psiR = G_to_R(pw, cpsi)
 
     # orthonormalization in real space
-    ortho_gram_schmidt!( Nstates, psiR )
+    ortho_sqrt!( psiR )
     psiR = sqrt(Npoints/CellVolume)*psiR
 
     rho = zeros(Float64,Npoints)
@@ -137,7 +137,7 @@ function calc_rhoe( Ham::Hamiltonian,
     psiR = G_to_R(pw, cpsi)
 
     # orthonormalization in real space
-    ortho_gram_schmidt!( Nstates, psiR )
+    ortho_sqrt!( Nstates, psiR )
     psiR = sqrt(Npoints/CellVolume)*psiR
 
     Rhoe = zeros(Float64,Npoints)
