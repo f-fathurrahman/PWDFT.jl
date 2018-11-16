@@ -34,7 +34,7 @@ function test_SCF_v2()
         15.0
     )
     #KS_solve_SCF!( Ham )
-    KS_solve_SCF!( Ham, mix_method="pulay" )
+    KS_solve_SCF!( Ham, mix_method="pulay", NiterMax=6 )
 
     return nothing
 end
