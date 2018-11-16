@@ -304,10 +304,10 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
                 for ikspin = 1:Nkspin
                     if iter > 1
                         psiks[ikspin] = Y[ikspin]*G[ikspin][:,set1]
-                        ortho_gram_schmidt!(psiks[ikspin])
+                        ortho_sqrt!(psiks[ikspin])
                     else
                         psiks[ikspin] = Y[ikspin][:,set5]*G[ikspin][set5,set1]
-                        ortho_gram_schmidt!(psiks[ikspin])
+                        ortho_sqrt!(psiks[ikspin])
                     end
                 end
                 #
