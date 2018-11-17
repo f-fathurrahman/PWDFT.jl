@@ -15,10 +15,10 @@ function test_SCF_v1()
     
     KS_solve_SCF!( Ham, NiterMax=1 )
     KS_solve_SCF!( Ham, betamix=0.5, NiterMax=1  )
-    KS_solve_SCF!( Ham, mix_method="pulay", NiterMax=6 )
-    KS_solve_SCF!( Ham, mix_method="ppulay", NiterMax=6 )
-    KS_solve_SCF!( Ham, mix_method="rpulay", NiterMax=6 )
-    KS_solve_SCF!( Ham, mix_method="anderson", NiterMax=6 )
+    KS_solve_SCF!( Ham, mix_method="pulay", NiterMax=1 )
+    KS_solve_SCF!( Ham, mix_method="ppulay", NiterMax=1 )
+    KS_solve_SCF!( Ham, mix_method="rpulay", NiterMax=1 )
+    KS_solve_SCF!( Ham, mix_method="anderson", NiterMax=1 )
 
     return nothing
 end
@@ -34,7 +34,7 @@ function test_SCF_v2()
         15.0
     )
     #KS_solve_SCF!( Ham )
-    KS_solve_SCF!( Ham, mix_method="pulay", NiterMax=6 )
+    KS_solve_SCF!( Ham, mix_method="pulay", NiterMax=1 )
 
     return nothing
 end
