@@ -1,4 +1,4 @@
-\documentclass[english,10pt]{beamer}
+\documentclass[english,9pt]{beamer}
 
 \setlength{\parskip}{\smallskipamount}
 \setlength{\parindent}{0pt}
@@ -89,18 +89,65 @@ Institut Teknologi Bandung
 
 
 \begin{frame}[fragile]
-\frametitle{Example}
+\frametitle{Example: hydrogen molecule in a box}
 
 \begin{juliacode}
 using PWDFT
-atoms = init_atoms_xyz("H2.xyz")
+atoms = Atoms( xyz_file="H2.xyz",
+               LatVecs=gen_lattice_sc(16.0) )
 pspfiles = ["../pseudopotentials/pade_gth/H-q1.gth"]
-LatVecs = 16.0*diagm( ones(3) )
-ecutwfc = 15.0 # in Hartree
-Ham = PWHamiltonian( atoms, pspfiles, ecutwfc, LatVecs )
-Ham.energies.NN = calc_E_NN( Ham.pw, atoms, [1.0] )
-KS_solve_SCF!( Ham, update_psi="CheFSI" )
+ecutwfc = 15.0
+Ham = Hamiltonian( atoms, pspfiles, ecutwfc )
+KS_solve_SCF!( Ham )
 \end{juliacode}
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Converged Kohn-Sham energy components}
+
+\begin{columns}
+
+\begin{column}{0.45\textwidth}
+PWDFT.jl's result:
+\begin{textcode}
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       1.0100082964
+Ps_loc     energy:      -2.7127874818
+Ps_nloc    energy:       0.0000000000
+Hartree    energy:       0.9015209348
+XC         energy:      -0.6314251867
+PspCore    energy:      -0.0000012675
+-------------------------------------
+Electronic energy:      -1.4326847047
+NN         energy:       0.3131700043
+-------------------------------------
+Total      energy:      -1.1195147004
+\end{textcode}
+\end{column}
+
+\begin{column}{0.55\textwidth}
+
+ABINIT's result:
+\begin{textcode}
+Components of total free energy (in Hartree) :
+
+   Kinetic energy  =  1.01004059294567E+00
+   Hartree energy  =  9.01545039301481E-01
+   XC energy       = -6.31436384237843E-01
+   Ewald energy    =  3.13170052325859E-01
+   PspCore energy  = -1.26742500464741E-06
+   Loc. psp. energy= -2.71283243086241E+00
+   NL   psp  energy=  0.00000000000000E+00
+   >>>>>>>>> Etotal= -1.11951439795224E+00
+\end{textcode}
+\end{column}
+
+\end{columns}
 
 \end{frame}
 
