@@ -4,6 +4,7 @@ by Ismail-Beigi and Arias.
 """
 function KS_solve_Emin_PCG!( Ham::Hamiltonian;
                              startingwfc=nothing, savewfc=false,
+                             startingrhoe=:gaussian,
                              α_t=3e-5, NiterMax=200, verbose=true,
                              print_final_ebands=true, print_final_energies=true,
                              I_CG_BETA=2, ETOT_CONV_THR=1e-6 )
@@ -40,9 +41,27 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
     #
     Rhoe = zeros(Float64,Npoints,Nspin)
 
-    Rhoe[:,:] = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin )
+    if startingrhoe == :gaussian
+        @assert Nspin == 1
+        Rhoe[:,1] = guess_rhoe( Ham )
+    else
+        Rhoe[:,:] = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin )
+    end
 
     update!(Ham, Rhoe)
+
+    evals = zeros(Nstates,Nkspin)
+
+    # Starting eigenvalues and psi
+    for ispin = 1:Nspin
+    for ik = 1:Nkpt
+        Ham.ik = ik
+        Ham.ispin = ispin
+        ikspin = ik + (ispin - 1)*Nkpt
+        evals[:,ikspin], psiks[ikspin] =
+        diag_LOBPCG( Ham, psiks[ikspin], verbose_last=false, NiterMax=10 )
+    end
+    end
 
     #
     # Variables for PCG

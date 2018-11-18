@@ -4,6 +4,7 @@ iterations with density mixing.
 """
 function KS_solve_SCF!( Ham::Hamiltonian ;
                         startingwfc=nothing, savewfc=false,
+                        startingrhoe=:gaussian,
                         betamix = 0.2, NiterMax=100, verbose=true,
                         print_final_ebands=true,
                         print_final_energies=true,
@@ -40,7 +41,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
     #
     # Random guess of wave function
     #
-    if startingwfc==nothing
+    if startingwfc == nothing
         psiks = rand_BlochWavefunc(pw, electrons)
     else
         psiks = startingwfc
@@ -70,7 +71,13 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
         Focc[idx_HOMO,Nkpt+1:2*Nkpt] = Focc[idx_HOMO,Nkpt+1:2*Nkpt] .- 0.5
     end
 
-    Rhoe[:,:] = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin )
+    if startingrhoe == :gaussian
+        @assert Nspin == 1
+        Rhoe[:,1] = guess_rhoe( Ham )
+    else
+        Rhoe[:,:] = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin )
+    end
+
     if Nspin == 2
         @printf("\nInitial integ Rhoe up = %18.10f\n", sum(Rhoe[:,1])*dVol)
         @printf("\nInitial integ Rhoe dn = %18.10f\n", sum(Rhoe[:,2])*dVol)

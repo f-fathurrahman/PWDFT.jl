@@ -1,7 +1,6 @@
 using Printf
 using PWDFT
 
-include("../src/guess_rhoe.jl")
 include("../test/all_pade_psp.jl")
 
 function test_atmlength()
