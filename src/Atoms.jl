@@ -253,13 +253,7 @@ function println( a::Atoms; header=true )
 
 end
 
-"""
-Returns an array of atomic numbers (with size `Nspecies`) given an instance
-of `Atoms`.
-"""
-function get_Zatoms( atoms::Atoms )
-
-    ZATOMS = Dict(
+const ZATOMS = Dict(
     "H"  => 1,
     "He" => 2,
     "Li" => 3,
@@ -347,6 +341,12 @@ function get_Zatoms( atoms::Atoms )
     "At" => 85,
     "Rn" => 86,)
 
+
+"""
+Returns an array of atomic numbers (with size `Nspecies`) given an instance
+of `Atoms`.
+"""
+function get_Zatoms( atoms::Atoms )
     Nspecies = atoms.Nspecies
     SpeciesSymbols = atoms.SpeciesSymbols
     Zatoms = zeros(Float64,Nspecies)
