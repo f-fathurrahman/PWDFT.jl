@@ -17,13 +17,15 @@ function guess_rhoe( Ham::Hamiltonian )
 
     strf = calc_strfact( atoms, pw )
 
+    println("Generating Gaussian Rhoe")
+
     for ia = 1:Natoms
         isp = atm2species[ia]
         Zval = pspots[isp].zval
         l = decay_lengths[isp]
         for ig = 1:Ng
             ip = idx_g2r[ig]
-            RhoeG[ig] = RhoeG[ig] + Zval*strf[ig,isp]*exp(-G2[ig]*l^2)
+            RhoeG[ip] = RhoeG[ip] + Zval*strf[ig,isp]*exp(-G2[ig]*l^2)
         end
     end
     Rhoe = real( G_to_R(pw, RhoeG) )
@@ -32,12 +34,9 @@ function guess_rhoe( Ham::Hamiltonian )
     CellVolume = pw.CellVolume
 
     intRhoe = sum(Rhoe)*CellVolume/Npoints
-    println("Before normalization: ", intRhoe)
-
     Rhoe = Rhoe*Nelectrons/intRhoe
-
     intRhoe = sum(Rhoe)*CellVolume/Npoints
-    println("After normalization: ", intRhoe)
+    @printf("Integrated Gaussian Rhoe: %18.10f\n", intRhoe)
 
     return Rhoe
 end
@@ -115,7 +114,7 @@ function atmlength( densty::Float64, zion::Float64, znucl::Float64 )
     if nval == 0
         Length = 0.0
     
-    # Bare ions : adjusted on 1h and 2he only
+    # Bare ions : adjusted on 1H and 2He only
     elseif coreel < 0.5
         data_Length[1:4] = [0.6, 0.4, 0.3, 0.25]
         Length = 0.2
