@@ -19,8 +19,8 @@
 \usepackage{braket}
 
 \usepackage{minted}
-\newminted{julia}{breaklines,fontsize=\footnotesize}
-\newminted{text}{breaklines}
+\newminted{julia}{breaklines,fontsize=\normalsize}
+\newminted{text}{breaklines,fontsize=\normalsize}
 
 \newcommand{\jlcode}[1]{\mintinline{julia}{#1}}
 
@@ -78,8 +78,17 @@ Pkg.add(PackageSpec(url="https://github.com/f-fathurrahman/PWDFT.jl"))
 
 The second way is to use Julia's development directory located at
 \texttt{\$HOME/.julia/dev}.
-I usually do this by sym-linking my original \textsf{PWDFT.jl} directory
-to \texttt{\$HOME/.julia/dev}.
+To enable this, please put the following in the
+your \texttt{\$HOME/.julia/config/startup.jl} file:
+\begin{juliacode}
+push!(LOAD_PATH, expanduser("~/.julia/dev"))
+\end{juliacode}
+I usually sym-links my original \textsf{PWDFT.jl} directory
+to a directory named \texttt{PWDFT} (without \texttt{.jl} part)
+under \texttt{\$HOME/.julia/dev}.
+\begin{textcode}
+ln -fs /path/to/PWDFT.jl ~/.julia/dev/PWDFT
+\end{textcode}
 
 To test the installation, you can run the following:
 \begin{juliacode}
@@ -537,11 +546,7 @@ Two main algorithms: SCF and direct minimization
 Function names: \jlcode{KS_solve_*}
 
 \subsection{Self-consistent field}
-
 \jlcode{KS_solve_SCF}
-
-\inputminted[breaklines,fontsize=\footnotesize]{julia}{../src/KS_solve_SCF.jl}
-
 
 
 \subsection{Eigensolver}
@@ -552,25 +557,14 @@ Davidson, LOBPCG, and PCG
 
 \jlcode{KS_solve_Emin_PCG}
 
-This method is described by IsmailBeigi-Arias
-
-\inputminted[breaklines,fontsize=\footnotesize]{julia}{../src/KS_solve_Emin_PCG.jl}
-
+This method is described by Ismail-Beigi and Arias
 
 \subsection{Direct constrained minimization method of Yang}
 
 \jlcode{KS_solve_DCM}
 
-\inputminted[breaklines,fontsize=\footnotesize]{julia}{../src/KS_solve_DCM.jl}
-
-
-\inputminted[breaklines,fontsize=\footnotesize]{julia}{../src/KS_solve_TRDCM.jl}
-
-
 \subsection{Chebyshev filtered subspace iteration SCF}
 
 \jlcode{update_psi="CheFSI"}
-
-\inputminted[breaklines,fontsize=\footnotesize]{julia}{../src/CheFSI.jl}
 
 \end{document}
