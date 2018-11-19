@@ -16,56 +16,110 @@ structure package such as Quantum ESPRESSO, ABINIT, VASP, etc.
   with `FFTW` and `SpecialFunctions` packages installed.
 - [LibXC](https://gitlab.com/libxc/libxc) version > 3.0:
   which needs to be compiled and and installed separately.
-- [spglib](https://github.com/atztogo/spglib): which needs to be compiled and installed
+- [SPGLIB](https://github.com/atztogo/spglib): which needs to be compiled and installed
   separately.
-- A working C compiler to compile LibXC and spglib.
+- A working C compiler to compile LibXC and SPGLIB.
 
 ## Installation
 
-- Compile and install LibXC and spglib.
+### Compile and install LibXC and SPGLIB.
 
-- Install Julia package `FFTW` and `SpecialFunctions`. The following
-  command can be run under Julia console.
+Configure and install LibXC
 
-```Julia
+```bash
+cd libxc-3.0.0 # please change according to your LibXC version
+./configure --prefix=/usr/local/libxc-3.0.0 --disable-fortran --enable-shared
+make
+make install # may need root privilege
+```
+
+Configure and install SPGLIB (using Cmake)
+
+```bash
+cd spglib-master
+mkdir build
+cd build
+cmake -D CMAKE_INSTALL_PREFIX=/usr/local/spglib-1.10.4
+make
+make install  # may need root privilege
+```
+
+
+### Install Julia's packages: `FFTW` and `SpecialFunctions`
+
+This can be done by executing the following commands at Julia console.
+
+```julia
+using Pkg
 Pkg.add("FFTW")
 Pkg.add("SpecialFunctions")
 ```
 
-- Currently, this package is not yet registered. You can use this package by
-  cloning this repository under the `$HOME/.julia/dev` directory.
+### Setup `PWDFT.jl` as Julia package
 
-- Create symlink under `$HOME/.julia/dev` to point to `PWDFT.jl`
+Currently, this package is not yet registered. So, `Pkg.add("PWDFT")` will not work (yet).
+
+We have two alternatives:
+
+1. Using Julia's package manager to install directly from the repository URL:
+
+```julia
+Pkg.add(PackageSpec(url="https://github.com/f-fathurrahman/PWDFT.jl"))
+```
+
+2. Using Julia development directory. We will use `$HOME/.julia/dev` for this.
+   To enable `$HOME/.julia/dev` directory, we need to modify the Julia's
+  `LOAD_PATH` variable. Add the following line in your
+  `$HOME/.julia/config/startup.jl`.
+
+```julia
+push!(LOAD_PATH, expanduser("~/.julia/dev"))
+```
+
+  After this has been set, you can download the the package as zip file (using Github) or
+  clone this repository to your computer.
+
+  If you download the zip file, extract the zip file under
+  `$HOME/.julia/dev$`. You need to rename the extracted directory
+  to `PWDFT` (with no `.jl` extension).
+
+  Alternatively, create symlink under `$HOME/.julia/dev`
+  to point to you cloned (or extracted) `PWDFT.jl` directory. The link name should not
+  contain the `.jl` part. For example:
 
 ```bash
-ln -fs PWDFT.jl PWDFT
+ln -fs /path/to/PWDFT.jl $HOME/.julia/dev/PWDFT
 ```
 
-- Open the file `extlibs/extlibs.jl` using text editor. Edit the
-  `LIBXC` and `LIBSYMSPG` according to your LibXC and spglib installations.
-   These variables should point to the appropriate dynamic libraries
-   of LibXC and spglib, respectively. Examples:
-```
+### Edit the `extlibs/extlibs.jl` file
+
+Open the file `extlibs/extlibs.jl` (found under PWDFT.jl directory)
+using text editor. Edit the `LIBXC` and `LIBSYMSPG`
+according to your LibXC and SPGLIB installations.
+These variables should point to the appropriate dynamic libraries
+of LibXC and spglib, respectively. For example:
+
+```julia
 @checked_lib LIBXC "/usr/local/libxc-3.0.0/lib/libxc.so"
 @checked_lib LIBSYMSPG "/usr/local/spglib-1.10.4/lib/libsymspg.so"
 ```
 
-- To make sure that the package is installed correctly, you can load the package
-  and verify that there are no error messages during precompilation step.
-  You can do this by typing the following in the Julia console.
+To make sure that the package is installed correctly, you can load the package
+and verify that there are no error messages during precompilation step.
+You can do this by typing the following in the Julia console.
 
 ```julia
 using PWDFT
 ```
 
-- Change directory to `examples` and run the following in the terminal.
+Change directory to `examples` and run the following in the terminal.
 
 ```
 julia run.jl "atom_H/main_H_atom.jl"
 ```
   
-	The above command will calculate total energy of hyrogen atom by
-  SCF method.
+The above command will calculate total energy of hydrogen atom
+by SCF method.
 
 
 ## Units
