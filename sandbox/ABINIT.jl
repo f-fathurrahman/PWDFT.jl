@@ -131,7 +131,7 @@ function write_abinit( Ham::Hamiltonian;
     atm2species = atoms.atm2species
     atpos = atoms.positions
 
-    f = open( prefix*"FILES", "w" )
+    f = open( prefix*"/FILES", "w" )
 
     println( f, "INPUT" )
     println( f, "LOG1" )
@@ -152,7 +152,7 @@ function write_abinit( Ham::Hamiltonian;
 
     # write INPUT file
 
-    f = open( prefix*"INPUT", "w" )
+    f = open( prefix*"/INPUT", "w" )
 
     println( f, "acell 1.0 1.0 1.0" )
     println( f, "rprim" )
