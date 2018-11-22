@@ -10,6 +10,15 @@ The Kohn-Sham orbitals are expanded using plane wave basis. This basis set is
 very popular within solid-state community and is also used in several electronic
 structure package such as Quantum ESPRESSO, ABINIT, VASP, etc.
 
+## Features
+
+- Total energy calculation of molecules, surfaces, and crystalline system via
+  within periodic unit cell.
+- SCF with electron density mixing (for semiconducting and metallic systems)
+- Direct minimization method using conjugate gradient (for semiconducting)
+- GTH pseudopotentials (included in the repository)
+- LDA-VWN and GGA-PBE functionals (via LibXC)
+
 ## Requirements
 
 - [Julia](https://julialang.org/downloads) version > 0.7:
