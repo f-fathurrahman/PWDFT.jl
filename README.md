@@ -118,14 +118,17 @@ Change directory to `examples` and run the following in the terminal.
 julia run.jl "atom_H/main_H_atom.jl"
 ```
   
-The above command will calculate total energy of hydrogen atom
-by SCF method.
+The above command will calculate total energy of hydrogen atom by SCF method.
 
+If you want to use direct minimization method, use the following instead.
+
+```
+julia run.jl "atom_H/main_H_atom.jl" Emin
+```
 
 ## Units
 
-`PWDFT.jl` internally uses Hartree atomic units,
-(energy in Hartree and length in bohr).
+`PWDFT.jl` internally uses Hartree atomic units (energy in Hartree and length in bohr).
 
 ## A simple work flow
 
