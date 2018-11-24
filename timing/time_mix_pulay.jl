@@ -1,12 +1,26 @@
+using PWDFT
+
 function time_mix_pulay()
 
-  Npoints = 500
+    Npoints = 500
+    Rhoe = rand(Npoints)
+    Rhoe_new = rand(Npoints)
 
-	# create mock data
+    MIXDIM = 5
+    XX = rand(Npoints,MIXDIM)
+    FF = rand(Npoints,MIXDIM)
 
-  Rhoe = reshape( mix_pulay!(
-                reshape(Rhoe,(Npoints*Nspin)),
-                reshape(Rhoe_new,(Npoints*Nspin)), betamix, XX, FF, iter, MIXDIM, x_old, f_old
-                ), (Npoints,Nspin) )
+    x_old = rand(Npoints)
+    f_old = rand(Npoints)
+
+    betamix = 0.1
+
+    iter = 6
+
+    # create mock data
+    Rhoe = mix_pulay!(Rhoe, Rhoe_new, betamix, XX, FF, iter, MIXDIM, x_old, f_old)
 
 end
+
+time_mix_pulay()
+
