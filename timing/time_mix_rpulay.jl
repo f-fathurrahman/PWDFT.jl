@@ -5,7 +5,7 @@ using Random
 
 Random.seed!(1234)
 
-function do_mix_pulay(Npoints)
+function do_mix_rpulay(Npoints)
 
     # create mock data
     Rhoe = rand(Npoints)
@@ -22,25 +22,25 @@ function do_mix_pulay(Npoints)
 
     iter = 6
 
-    Rhoe = mix_pulay!(Rhoe, Rhoe_new, betamix, XX, FF, iter, MIXDIM, x_old, f_old)
+    Rhoe = mix_rpulay!(Rhoe, Rhoe_new, betamix, XX, FF, iter, MIXDIM, x_old, f_old)
 
 end
 
-function time_mix_pulay()
+function time_mix_rpulay()
 
     @printf("\n")
-    @printf("---------------------------------------------------------\n")
-    @printf("Timing mix_pulay (includes time for allocating mock data)\n")
-    @printf("---------------------------------------------------------\n")
+    @printf("----------------------------------------------------------\n")
+    @printf("Timing mix_rpulay (includes time for allocating mock data)\n")
+    @printf("----------------------------------------------------------\n")
     @printf("\n")
 
     NN = (20,30,40,50,60,70,80)
     for N in NN 
         Npoints = N^3
         @printf("Npoints = %8d: ", Npoints)
-        @btime do_mix_pulay($Npoints)
+        @btime do_mix_rpulay($Npoints)
     end
 end
 
-time_mix_pulay()
+time_mix_rpulay()
 
