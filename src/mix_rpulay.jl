@@ -30,8 +30,8 @@ function mix_rpulay!( x, gx, beta, X, F, iter, MIXDIM, x_old, f_old )
         # Restart, use the last history
         if active_dim == 0
             #
-            X[:,1] = X[:,MIXDIM]
-            F[:,1] = F[:,MIXDIM]
+            X[:,1] = @view X[:,MIXDIM]
+            F[:,1] = @view F[:,MIXDIM]
             X[:,2:MIXDIM] .= 0.0
             F[:,2:MIXDIM] .= 0.0
             #
@@ -41,14 +41,14 @@ function mix_rpulay!( x, gx, beta, X, F, iter, MIXDIM, x_old, f_old )
             xnew = x + beta*f - addv
         else
             for i = active_dim:-1:2
-                X[:,i] = X[:,i-1]
-                F[:,i] = F[:,i-1]
+                X[:,i] = @view X[:,i-1]
+                F[:,i] = @view F[:,i-1]
             end
             X[:,1] = dx
             F[:,1] = df
             #
-            Xk = X[:,1:active_dim]
-            Fk = F[:,1:active_dim]
+            Xk = @view X[:,1:active_dim]
+            Fk = @view F[:,1:active_dim]
             addv = (Xk + beta*Fk)*inv(Fk'*Fk)*(Fk'*f)
             xnew = x + beta*f - addv
         end
