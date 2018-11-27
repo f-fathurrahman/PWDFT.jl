@@ -25,8 +25,7 @@ function free_electron_Hamiltonian(
 
     Nspecies = atoms.Nspecies
     if Nspecies != size(pspfiles)[1]
-        @printf("ERROR length of pspfiles is not equal to %d\n", Nspecies)
-        exit()
+        error( @sprintf("Length of pspfiles is not equal to %d\n", Nspecies) )
     end
 
     Npoints = prod(pw.Ns)

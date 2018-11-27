@@ -93,9 +93,8 @@ function Electrons( atoms::Atoms, Pspots::Array{PsPot_GTH,1};
     sFocc = sum(Focc)/Nkpt
     # Check if the generated Focc is consistent
     if abs( sFocc - Nelectrons ) > eps()
-        @printf("ERROR: diff sum(Focc) and Nelectrons is not small\n")
         @printf("sum Focc = %f, Nelectrons = %f\n", sFocc, Nelectrons)
-        exit()
+        error(@sprintf("ERROR: diff sum(Focc) and Nelectrons is not small\n"))
     end
 
     return Electrons( Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin )
@@ -177,9 +176,8 @@ function Electrons( atoms::Atoms, Zvals::Array{Float64,1};
     sFocc = sum(Focc)/Nkpt
     # Check if the generated Focc is consistent
     if abs( sFocc - Nelectrons ) > eps()
-        @printf("ERROR diff sum(Focc) and Nelectrons is not small\n")
         @printf("sum Focc = %f, Nelectrons = %f\n", sFocc, Nelectrons)
-        exit()
+        error(@sprintf("ERROR diff sum(Focc) and Nelectrons is not small\n"))
     end
 
     return Electrons( Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin )

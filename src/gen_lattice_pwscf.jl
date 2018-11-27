@@ -201,9 +201,7 @@ function gen_lattice_triclinic( a::Float64, b::Float64, c::Float64,
                                 alpha_degree::Float64, beta_degree::Float64, gamma_degree::Float64)
 
     if alpha_degree + beta_degree + gamma_degree <= 180.0
-        println("ERROR in gen_lattice_triclinic")
-        println("sum of angles must be larger than 180°")
-        exit()
+        error("sum of angles must be larger than 180°")
     end
 
     alpha = alpha_degree*pi/180

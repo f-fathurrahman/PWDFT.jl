@@ -30,8 +30,7 @@ function allowed( nr::Int64 )
     end
 
     if nr != ( mr * 2^pwr[1]* 3^pwr[2] * 5^pwr[3] * 7^pwr[4] * 11^pwr[5] )
-        println("Error in fft_support.jl: alllowed")
-        exit()
+        error("Cannot fint nr")
     end
 
 
@@ -66,8 +65,7 @@ function good_fft_order( nr::Int64 )
     end
 
     if new_nr > nfftx
-        println("Error in good_fft_order: fft_order too large")
-        exit()
+        error("fft_order is too large")
     end
     return new_nr
 

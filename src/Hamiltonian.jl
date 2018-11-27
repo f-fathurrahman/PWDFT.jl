@@ -54,8 +54,7 @@ function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
 
     Nspecies = atoms.Nspecies
     if Nspecies != size(pspfiles)[1]
-        @printf("ERROR length of pspfiles is not equal to %d\n", Nspecies)
-        exit()
+        error( @sprintf("Length of pspfiles is not equal to %d\n", Nspecies) )
     end
 
     Npoints = prod(pw.Ns)
@@ -201,8 +200,7 @@ function update!( Ham::Hamiltonian, atoms::Atoms,
 
     Nspecies = atoms.Nspecies
     if Nspecies != size(pspfiles)[1]
-        @printf("ERROR length of pspfiles is not equal to %d\n", Nspecies)
-        exit()
+        error( @sprintf("ERROR length of pspfiles is not equal to %d\n", Nspecies) )
     end
 
     pw = Ham.pw
