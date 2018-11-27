@@ -66,7 +66,7 @@ function diag_LOBPCG!( Ham::Hamiltonian, X::Array{ComplexF64,2};
 
     nconv = 0
     iter = 1
-    resnrm = ones(Nstates,1)
+    resnrm = ones(Nstates)
 
     P = zeros(ComplexF64,Nbasis,Nstates)
     HP = zeros(ComplexF64,Nbasis,Nstates)
@@ -92,7 +92,7 @@ function diag_LOBPCG!( Ham::Hamiltonian, X::Array{ComplexF64,2};
         # Residuals
         R = HX - X*XHX
         for j = 1:Nstates
-            resnrm[j] = norm( R[:,j] )
+            resnrm[j] = norm( @view R[:,j] )
         end
 
         nconv = length( findall( devals .< tol ) )
@@ -124,42 +124,44 @@ function diag_LOBPCG!( Ham::Hamiltonian, X::Array{ComplexF64,2};
         W = Kprec( Ham.ik, pw, R )
 
         if Nlock > 0
-            Xlock = X[:,ilock]
+            Xlock = @view X[:,ilock]
             Ylock = Kprec( Ham.ik, pw, Xlock )
             Slock = Xlock'*Xlock
             for j = 1:Nact
-                W[:,iact[j]] = W[:,iact[j]] - Ylock*( Slock\( Xlock'*W[:,iact[j]] ) )
-             end
-             #
-             X[:,iact] = X[:,iact] - Xlock*(Xlock'*X[:,iact])
-             W[:,iact] = W[:,iact] - Xlock*(Xlock'*W[:,iact])
-             #
-             HX[:,iact] = op_H( Ham, X[:,iact] )
-             HW = op_H( Ham, W[:,iact] )
-             #
-             HX[:,iact] = HX[:,iact] - Xlock*( Xlock'*HX[:,iact] )
-             HW = HW - Xlock*(Xlock'*HW)
-             #
-             C = W[:,iact]'*W[:,iact] #C = (C+C')/2;
-             R = (cholesky(Hermitian(C))).U
-             W[:,iact] = W[:,iact]/R
-             HW = HW/R
-             #
-             Q  = [X[:,iact] W[:,iact]]
-             HQ = [HX[:,iact] HW]
+                #W[:,iact[j]] = W[:,iact[j]] - Ylock*( Slock\( Xlock'*W[:,iact[j]] ) )
+                ww = @view W[:,iact[j]]
+                ww = ww - Ylock*( Slock\( Xlock'*ww ) )
+            end
+            #
+            X[:,iact] = X[:,iact] - Xlock*(Xlock'*X[:,iact])
+            W[:,iact] = W[:,iact] - Xlock*(Xlock'*W[:,iact])
+            #
+            HX[:,iact] = op_H( Ham, X[:,iact] )
+            HW = op_H( Ham, W[:,iact] )
+            #
+            HX[:,iact] = HX[:,iact] - Xlock*( Xlock'*HX[:,iact] )
+            HW = HW - Xlock*(Xlock'*HW)
+            #
+            C = W[:,iact]'*W[:,iact] #C = (C+C')/2;
+            R = (cholesky(Hermitian(C))).U
+            W[:,iact] = W[:,iact]/R
+            HW = HW/R
+            #
+            Q  = [X[:,iact] W[:,iact]]
+            HQ = [HX[:,iact] HW]
 
-             T = Hermitian(Q'*(HQ))
-             G = Hermitian(Q'*Q)
-             sd, S = eigen( T, G ) # evals, evecs
+            T = Hermitian(Q'*(HQ))
+            G = Hermitian(Q'*Q)
+            sd, S = eigen( T, G ) # evals, evecs
 
-             U = S[:,1:Nact]
-             Xact = Q*U;
-             X[:,:] = [Xlock Xact]
-             T = Hermitian( X'*op_H(Ham,X) ) #; T = (T+T')/2;
-             evalT, evecsT = eigen(T);
+            U = S[:,1:Nact]
+            Xact = Q*U;
+            X[:,:] = [Xlock Xact]
+            T = Hermitian( X'*op_H(Ham,X) ) #; T = (T+T')/2;
+            evalT, evecsT = eigen(T);
 
-             X[:,:] = X*evecsT
-             HX = op_H(Ham, X)
+            X[:,:] = X*evecsT
+            HX = op_H(Ham, X)
 
         else
             # nlock == 0

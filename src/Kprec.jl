@@ -7,7 +7,7 @@ Simple preconditioner based on kinetic energy.
 
 - `psi`: wave function
 """
-function Kprec( ik::Int64, pw::PWGrid, psi::Array{ComplexF64,2} )
+function Kprec( ik::Int64, pw::PWGrid, psi )
 
     Ngw_ik  = size(psi)[1]
     Nstates = size(psi)[2]
@@ -16,13 +16,11 @@ function Kprec( ik::Int64, pw::PWGrid, psi::Array{ComplexF64,2} )
     k = pw.gvecw.kpoints.k[:,ik]
 
     Kpsi  = zeros( ComplexF64, Ngw_ik, Nstates )
-    Gw = zeros(Float64,3)
 
     for ist = 1:Nstates
         for igk = 1:Ngw_ik
             ig = idx_gw2g[igk]
-            Gw = G[:,ig] + k[:]
-            Gw2 = Gw[1]^2 + Gw[2]^2 + Gw[3]^2
+            Gw2 = (G[1,ig] + k[1])^2 + (G[2,ig] + k[2])^2 + (G[3,ig] + k[3])^2
             Kpsi[igk,ist] = psi[igk,ist] / ( 1.0 + Gw2 )
         end
     end
