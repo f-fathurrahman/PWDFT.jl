@@ -29,16 +29,15 @@ function op_K( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
     Ngwx = pw.gvecw.Ngwx
     Ngw = pw.gvecw.Ngw
     idx_gw2g = pw.gvecw.idx_gw2g[ik]
-    k = @view pw.gvecw.kpoints.k[:,ik]
+    G = pw.gvec.G
+    k = pw.gvecw.kpoints.k[:,ik]
 
-    Gw = zeros(3)
     out = zeros(ComplexF64,size(psi))
 
     for ist = 1:Nstates
         for igk = 1:Ngw[ik]
             ig = idx_gw2g[igk]
-            Gw[:] = pw.gvec.G[:,ig] + k[:]
-            Gw2 = Gw[1]^2 + Gw[2]^2 + Gw[3]^2
+            Gw2 = (G[1,ig] + k[1])^2 + (G[2,ig] + k[2])^2 + (G[3,ig] + k[3])^2
             out[igk,ist] = psi[igk,ist]*Gw2
         end
     end
@@ -55,15 +54,15 @@ function op_K( Ham::Hamiltonian, psi::Array{ComplexF64,1} )
     Ngwx = pw.gvecw.Ngwx
     Ngw = pw.gvecw.Ngw
     idx_gw2g = pw.gvecw.idx_gw2g[ik]
-    k = @view pw.gvecw.kpoints.k[:,ik]
+    G = pw.gvec.G
+    k = pw.gvecw.kpoints.k[:,ik]
 
-    Gw = zeros(3)
     out = zeros(ComplexF64,size(psi))
 
     for igk = 1:Ngw[ik]
         ig = idx_gw2g[igk]
         Gw[:] = pw.gvec.G[:,ig] + k[:]
-        Gw2 = Gw[1]^2 + Gw[2]^2 + Gw[3]^2
+        Gw2 = (G[1,ig] + k[1])^2 + (G[2,ig] + k[2])^2 + (G[3,ig] + k[3])^2
         out[igk] = psi[igk]*Gw2
     end
 
