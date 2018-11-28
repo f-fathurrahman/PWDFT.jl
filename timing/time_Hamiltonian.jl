@@ -22,3 +22,5 @@ function time_Hamiltonian()
     end
 
 end
+
+time_Hamiltonian()

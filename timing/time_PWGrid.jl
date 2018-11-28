@@ -14,3 +14,5 @@ function time_PWGrid()
         @btime PWGrid($ecutwfc, $LatVecs)
     end
 end
+
+time_PWGrid()

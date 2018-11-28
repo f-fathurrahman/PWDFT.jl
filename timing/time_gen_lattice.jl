@@ -15,3 +15,5 @@ function time_gen_lattice()
     @printf("gen_lattice_bcc : ")
     @btime gen_lattice_bcc(10.0)
 end
+
+time_gen_lattice()

@@ -25,3 +25,5 @@ function time_Atoms()
     Cl  1.0   0.0   0.0
     """, LatVecs=gen_lattice_sc(10.0))
 end
+
+time_Atoms()
