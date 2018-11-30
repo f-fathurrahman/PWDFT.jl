@@ -1,12 +1,12 @@
 const ALL_PADE_PSP = Dict(
-    "Ag" => ("Ag-q19.gth", "Ag-q11.gth", "Ag-q1.gth",),
+    "Ag" => ("Ag-q11.gth", "Ag-q19.gth", "Ag-q1.gth",),
     "Al" => ("Al-q3.gth",),
     "Ar" => ("Ar-q8.gth",),
     "As" => ("As-q5.gth",),
     "At" => ("At-q7.gth",),
-    "Au" => ("Au-q19.gth", "Au-q11.gth", "Au-q1.gth",),
+    "Au" => ("Au-q11.gth", "Au-q19.gth", "Au-q1.gth",),
     "Ba" => ("Ba-q10.gth", "Ba-q2.gth",),
-    "Be" => ("Be-q2.gth", "Be-q4.gth",),
+    "Be" => ("Be-q4.gth", "Be-q2.gth",),
     "Bi" => ("Bi-q5.gth",),
     "B"  => ("B-q3.gth",),
     "Br" => ("Br-q7.gth",),
@@ -83,6 +83,6 @@ const ALL_PADE_PSP = Dict(
     "Xe" => ("Xe-q8.gth",),
     "Yb" => ("Yb-q24.gth",),
     "Y"  => ("Y-q11.gth", "Y-q3.gth",),
-    "Zn" => ("Zn-q20.gth", "Zn-q12.gth", "Zn-q2.gth",),
+    "Zn" => ("Zn-q12.gth", "Zn-q20.gth", "Zn-q2.gth",),
     "Zr" => ("Zr-q12.gth", "Zr-q4.gth",),
 )

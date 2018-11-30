@@ -1,3 +1,6 @@
+include("all_pade_psp.jl")
+include("all_pbe_psp.jl")
+
 function inv_m3x3( A::Array{Float64,2} )
 
     @assert( (size(A)[1] == 3) && (size(A)[2] == 3) )
