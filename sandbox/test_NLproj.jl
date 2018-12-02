@@ -9,11 +9,17 @@ The new implementation in Hamiltonian is slightly more efficient than this.
 =#
 function test_main()
     LatVecs = gen_lattice_sc(20.0)
-    pw = PWGrid(60.0, LatVecs)
+    pw = PWGrid(80.0, LatVecs)
     println(pw)
 
     # Atoms
-    atoms = init_atoms_xyz("../structures/PtO.xyz")
+    #atoms = init_atoms_xyz("../structures/PtO.xyz")
+    atoms = init_atoms_xyz_string("""
+        1
+
+        Cs  0.0  0.0  0.0
+        """)
+    atoms.LatVecs = LatVecs
     println(atoms)
 
     # Structure factor
@@ -23,11 +29,16 @@ function test_main()
     PsPots = Array{PsPot_GTH}(undef,Nspecies)
 
     # XXX Need to match Nspecies
-    PsPots[1] = PsPot_GTH("../pseudopotentials/pade_gth/Pt-q10.gth")
-    PsPots[2] = PsPot_GTH("../pseudopotentials/pade_gth/O-q6.gth")
+    #PsPots[1] = PsPot_GTH("../pseudopotentials/pade_gth/Pt-q10.gth")
+    #PsPots[2] = PsPot_GTH("../pseudopotentials/pade_gth/O-q6.gth")
 
-    println(PsPots[1])
-    println(PsPots[2])
+    #PsPots[1] = PsPot_GTH("../pseudopotentials/pade_gth/Ba-q10.gth")
+
+    PsPots[1] = PsPot_GTH("../pseudopotentials/pade_gth/Cs-q9.gth")
+
+    for psp in PsPots
+        println(psp)
+    end
 
     ik = 1
     Ngwx = pw.gvecw.Ngwx

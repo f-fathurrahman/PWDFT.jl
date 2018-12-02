@@ -307,7 +307,7 @@ function eval_proj_G( psp::PsPot_GTH, l::Int64, iproj::Int64, Gm::Array{Float64,
         # XXX only one projector
         for ig = 1:Ng
             Gr2 = ( Gm[ig]*rrl )^2
-            Vprj[ig] = Gm[ig]^3 * exp(-0.5*Gr2)
+            Vprj[ig] = Gm[ig]^3 * exp(-0.5*Gr2) * 16.0/sqrt(105.0) / 8.0 / 2.0
         end
 
     end  # if l
@@ -365,7 +365,7 @@ function eval_proj_G( psp::PsPot_GTH, l::Int64, iproj::Int64, Gm::Float64, CellV
     elseif l == 3
         # XXX only one projector
         Gr2 = ( Gm*rrl )^2
-        Vprj = Gm^3 * exp(-0.5*Gr2)
+        Vprj = Gm^3 * exp(-0.5*Gr2) * 16.0/sqrt(105.0) / 8.0 / 2.0
 
     end  # if l
 
