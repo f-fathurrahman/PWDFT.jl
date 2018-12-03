@@ -18,6 +18,8 @@
 \usepackage{amssymb}
 \usepackage{braket}
 
+\usepackage[normalem]{ulem}
+
 \usepackage{minted}
 \newminted{julia}{breaklines,fontsize=\normalsize}
 \newminted{text}{breaklines,fontsize=\normalsize}
@@ -47,7 +49,7 @@ density functional theory calculations on materials.
 It uses plane wave basis sets to discretize Kohn-Sham equations.
 It also uses pseudopotentials to replace strong Coulombic nuclei-electron
 interactions \footnote{You can carry out the calculation with
-full potential, however this will requires a lot of plane waves (large
+full potential anyway, however this will requires a lot of plane waves (large
 cutoff energy)}.
 
 I assumes that the readers already have some experience with similar electronic
@@ -137,31 +139,6 @@ atoms = Atoms(xyz_string="""
               """,
               LatVecs=gen_lattice_sc(16.0))
 \end{juliacode}
-
-
-\section{Status}
-
-\textbf{28 May 2018} The following features are working now:
-\begin{itemize}
-\item LDA and GGA, spin-paired and spin polarized calculations
-\item Calculation with k-points (for periodic solids).
-  \textsf{SPGLIB} is used to reduce the Monkhorst-Pack grid points
-  for integration over Brillouin zone.
-\end{itemize}
-
-Band structure calculation is possible in principle as this can be
-done by simply solving
-Schrodinger equation with converged Kohn-Sham potentials, however there
-is currently no tidy script or function to do that.
-
-Total energy result for isolated systems (atoms and molecules) agrees quite
-well with ABINIT and PWSCF results.
-
-Total energy result for periodic solid is quite different from ABINIT and PWSCF.
-I suspect that this is related to treatment of electrostatic terms in periodic system.
-
-SCF is rather shaky for several systems, however it is working in quite well in nonmetallic
-system.
 
 \part{Implementation Notes}
 
@@ -566,5 +543,35 @@ This method is described by Ismail-Beigi and Arias
 \subsection{Chebyshev filtered subspace iteration SCF}
 
 \jlcode{update_psi="CheFSI"}
+
+
+\section{Status}
+
+\textbf{28 May 2018} The following features are working now:
+\begin{itemize}
+\item LDA and GGA, spin-paired and spin polarized calculations
+\item Calculation with k-points (for periodic solids).
+  \textsf{SPGLIB} is used to reduce the Monkhorst-Pack grid points
+  for integration over Brillouin zone.
+\end{itemize}
+
+Band structure calculation is possible in principle as this can be
+done by simply solving
+Schrodinger equation with converged Kohn-Sham potentials, however there
+is currently no tidy script or function to do that.
+
+Total energy result for isolated systems (atoms and molecules) agrees quite
+well with ABINIT and PWSCF results.
+
+\sout{Total energy result for periodic solid is quite different from ABINIT and PWSCF.
+I suspect that this is related to treatment of electrostatic terms in periodic system.}
+
+These discrepancies have been minimized. For several systems the agreement is very good
+even though I did not use the same algorithm as ABINIT.
+
+\sout{SCF is rather shaky for several systems, however it is working in quite well in nonmetallic
+system.}
+
+SCF stability has been improved with Pulay mixing and its variants.
 
 \end{document}
