@@ -38,7 +38,7 @@ Alternatively, one can pass the content of xyz file as string in `xyz_string`.
 `xyz_string_frac` is the same as `xyz_string`, however the actual coordinates will be
 transformed by multiplying it with `LatVecs`. This is useful for crystals.
 """
-function Atoms( ;xyz_file="", xyz_string="", xyz_string_frac="",
+function Atoms( ;xyz_file="", xyz_string="", xyz_string_frac="", ext_xyz_file="",
     in_bohr=false, LatVecs=10*[1.0 0.0 0.0; 0.0 1.0 0.0; 0.0 0.0 1.0] )
 
     if xyz_file != ""
@@ -53,6 +53,9 @@ function Atoms( ;xyz_file="", xyz_string="", xyz_string_frac="",
         atoms = init_atoms_xyz_string(xyz_string_frac, in_bohr=in_bohr)
         atoms.positions = LatVecs*atoms.positions
         atoms.LatVecs = LatVecs
+        return atoms
+    elseif ext_xyz_file != ""
+        atoms = init_atoms_xyz_ext(ext_xyz_file, in_bohr=in_bohr)
         return atoms
     else
         # No arguments are assumed to be provided
@@ -72,7 +75,7 @@ end
 
 # extended XYZ format used in ASE
 function init_atoms_xyz_ext( filexyz; in_bohr=false, verbose=false )
-    f = open(xyz_file, "r")
+    f = open(filexyz, "r")
     l = readline(f)
     Natoms = parse(Int64, l)
     positions = zeros(3,Natoms)
@@ -99,10 +102,12 @@ function init_atoms_xyz_ext( filexyz; in_bohr=false, verbose=false )
     # convert from angstrom to bohr
     if !in_bohr
         if verbose
-            println("Coordinate in xyz file is assumed to be given in angstrom")
+            println("Coordinates and lattice vectors in extended xyz file is assumed")
+            println("to be given in angstrom")
             println("It will be converted to bohr")
         end
         positions[:,:] = positions[:,:] * ANG2BOHR
+        LatVecs[:,:] = LatVecs[:,:] * ANG2BOHR
     else
         if verbose
             println("Coordinate in xyz file is assumed to be given in bohr")
