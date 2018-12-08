@@ -44,7 +44,7 @@ export spg_find_primitive,
        reduce_atoms, gen_kgrid_reduced
 
 include("KPoints.jl")
-export KPoints,
+export KPoints, write_KPoints, read_KPoints,
        kpoints_from_file,
        kpath_from_file,
        get_special_kpoints
@@ -80,9 +80,9 @@ export good_fft_order
 # Plane wave basis
 #
 include("PWGrid.jl")
-export PWGrid,
-       GVectors,
-       GVectorsW,
+export PWGrid, write_PWGrid, read_PWGrid,
+       GVectors, write_GVectors, read_GVectors,
+       GVectorsW, write_GVectorsW, write_GVectorsW,
        op_nabla, op_nabla_dot
 
 #

@@ -9,6 +9,46 @@ mutable struct KPoints
     RecVecs::Array{Float64,2} # copy of reciprocal vectors
 end
 
+function write_KPoints( f::IOStream, kpoints::KPoints )
+    write(f, kpoints.Nkpt)
+    write(f, kpoints.mesh[1])
+    write(f, kpoints.mesh[2])
+    write(f, kpoints.mesh[3])
+    write(f, kpoints.k)
+    write(f, kpoints.wk)
+    write(f, kpoints.RecVecs)
+end
+
+function read_KPoints( f::IOStream )
+    
+    tmpInt = Array{Int64}(undef,1)
+    
+    read!(f, tmpInt)
+    Nkpt = tmpInt[1]
+    
+    k = Array{Float64}(undef,3,Nkpt)
+    wk = Array{Float64}(undef,Nkpt)
+    RecVecs = Array{Float64}(undef,3,3)
+
+    read!(f, tmpInt)
+    mesh1 = tmpInt[1]
+    
+    read!(f, tmpInt)
+    mesh2 = tmpInt[1]
+    
+    read!(f, tmpInt)
+    mesh3 = tmpInt[1]
+    
+    mesh = (mesh1, mesh2, mesh3)
+
+    read!(f, k)
+    read!(f, wk)
+    read!(f, RecVecs)
+
+    return KPoints(Nkpt, mesh, k, wk, RecVecs)
+end
+
+
 # for compatibility purpose, `mesh` is defaulting to (0,0,0)
 # This should be useful for band structure calculation and
 # manual specification of kpoints
