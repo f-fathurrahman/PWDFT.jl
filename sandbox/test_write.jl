@@ -90,6 +90,46 @@ function test02()
     println("test02 is finished")
 end
 
+
+# writing Array{String}
+function test03()
+
+    atoms = Atoms(xyz_string_frac="""
+    2
+
+    H  0.0   0.0   0.0
+    H  0.25  0.25  0.25
+    """, LatVecs=gen_lattice_fcc(5.0))
+
+    f = open("TEMP_string.dat", "w")
+    
+    write(f, atoms.positions)
+    for ia = 1:atoms.Natoms
+        write(f, codeunits(atoms.atsymbs[ia]))
+    end
+    write(f, atoms.Zvals)
+
+    close(f)
+
+    f = open("TEMP_string.dat", "r")
+    positions = Array{Float64,2}(undef,3,atoms.Natoms)
+    read!(f, positions)
+
+    tmpStr = Array{UInt8}(undef,1)
+    read!(f, tmpStr)
+
+    Zvals = Array{Float64}(undef,atoms.Nspecies)
+    read!(f, Zvals)
+
+    close(f)
+
+    println("positions = ", positions)
+    println("tmpStr = ", tmpStr)
+    println("Zvals = ", Zvals)
+
+end
+test03()
+
 function test_pw()
 
     atoms = Atoms(xyz_string_frac="""
@@ -117,6 +157,29 @@ end
 
 
 #test_kpoints()
-test_pw()
+#test_pw()
 #test01()
 #test02()
+
+
+function test_Atoms()
+    atoms = Atoms(xyz_string_frac="""
+    2
+
+    H  0.0   0.0   0.0
+    H  0.25  0.25  0.25
+    """, LatVecs=gen_lattice_fcc(5.0))
+
+    f = open("TEMP_atoms.dat", "w")
+    write_Atoms(f, atoms)
+    close(f)
+
+    println(atoms)
+
+    f = open("TEMP_pw.dat", "r")
+    atoms2 = read_Atoms(f)
+    close(f)
+
+    println(atoms2)
+end
+#test_Atoms()

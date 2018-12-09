@@ -26,7 +26,7 @@ const Wavefunc = Array{ComplexF64,2}
 export BlochWavefunc, Wavefunc
 
 include("Atoms.jl")
-export Atoms, 
+export Atoms,
        init_atoms_xyz,
        init_atoms_xyz_string,
        get_Zatoms
