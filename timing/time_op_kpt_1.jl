@@ -54,3 +54,5 @@ function time_op_kpt_1()
     @btime op_H( $Ham, $psiks )
 
 end
+
+time_op_kpt_1()
