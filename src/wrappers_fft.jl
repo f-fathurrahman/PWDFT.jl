@@ -25,6 +25,16 @@ function G_to_R( pw::PWGrid, fG::Array{ComplexF64,2} )
     return out
 end
 
+function G_to_R!( pw::PWGrid, fG::Array{ComplexF64,2} )
+    Ns = pw.Ns
+    Npoints = prod(Ns)
+    plan = pw.planbw
+    for ic = 1:size(fG,2)
+        fG[:,ic] = reshape( plan*reshape(fG[:,ic],Ns), Npoints )
+    end
+    return
+end
+
 function R_to_G( pw::PWGrid, fR::Array{ComplexF64,1} )
     Ns = pw.Ns
     Npoints = prod(Ns)
@@ -37,6 +47,7 @@ function R_to_G( pw::PWGrid, fR::Array{ComplexF64,3} )
     return pw.planfw*fR
 end
 
+# used in Poisson solver
 function R_to_G( pw::PWGrid, fR_::Array{Float64,1} )
     Ns = pw.Ns
     Npoints = prod(Ns)
@@ -56,6 +67,17 @@ function R_to_G( pw::PWGrid, fR::Array{ComplexF64,2} )
         out[:,ic] = reshape( plan*reshape(fR[:,ic],Ns), Npoints )
     end
     return out
+end
+
+function R_to_G!( pw::PWGrid, fR::Array{ComplexF64,2} )
+    Ns = pw.Ns
+    plan = pw.planfw
+    Npoints = prod(Ns)
+    Ncol = size(fR,2)
+    for ic = 1:Ncol
+        fR[:,ic] = reshape( plan*reshape(fR[:,ic],Ns), Npoints )
+    end
+    return
 end
 
 #
