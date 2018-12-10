@@ -61,7 +61,7 @@ function op_V_loc( ik::Int64, pw::PWGrid, V_loc::Array{Float64,1}, psi::Array{Co
     end
 
     # get values of psi in real space grid via forward transform
-    ctmp = G_to_R( pw, ctmp )
+    G_to_R!(pw, ctmp)
 
     for ist = 1:Nstates
         for ip = 1:Npoints
@@ -69,8 +69,8 @@ function op_V_loc( ik::Int64, pw::PWGrid, V_loc::Array{Float64,1}, psi::Array{Co
         end
     end
 
-    cVpsi = R_to_G( pw, ctmp )
-    return cVpsi[idx,:]
+    R_to_G!(pw, ctmp)
+    return ctmp[idx,:]
 end
 
 #

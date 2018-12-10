@@ -20,7 +20,7 @@ function calc_rhoe(
     Npoints = prod(Ns)
     Nstates = size(psiks[1])[2]
 
-    cpsi = zeros(ComplexF64, Npoints, Nstates)
+    #cpsi = zeros(ComplexF64, Npoints, Nstates)
     psiR = zeros(ComplexF64, Npoints, Nstates)
     Rhoe = zeros(Float64, Npoints, Nspin)
 
@@ -29,13 +29,23 @@ function calc_rhoe(
 
         ikspin = ik + (ispin - 1)*Nkpt
 
-        cpsi[:,:] .= 0.0 + im*0.0
+        #cpsi[:,:] .= 0.0 + im*0.0
+        psiR .= 0.0 + im*0.0
         
         # Transform to real space
         idx = pw.gvecw.idx_gw2r[ik]
         psi = psiks[ikspin]
-        cpsi[idx,:] = psi[:,:]
-        psiR[:,:] = G_to_R(pw, cpsi)
+        
+        # Using the following loop gives not too much improvement
+        # over slicing-operations
+        #for ist = 1:Nstates
+        #    for ig = 1:Ngw[ik]
+        #        psiR[idx[ig],ist] = psi[ig,ist]
+        #    end
+        #end
+
+        psiR[idx,:] = psi[:,:]
+        G_to_R!(pw, psiR)
 
         # orthonormalization in real space
         ortho_sqrt!( psiR )
