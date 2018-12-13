@@ -1,6 +1,6 @@
-using Printf
-using PWDFT
-
+"""
+Write GTH pseudopotential in the format that can be read by PWSCF.
+"""
 function write_psp_pwscf( psp::PsPot_GTH; prefix="." )
     atsymb = psp.atsymb
     zval = psp.zval
@@ -51,12 +51,85 @@ function write_psp_pwscf( psp::PsPot_GTH; prefix="." )
     return
 end
 
-function test_main()
-    psp = PsPot_GTH("../pseudopotentials/pade_gth/Pd-q10.gth")
-    #psp = PsPot_GTH("../pseudopotentials/pade_gth/Ga-q3.gth")
-    
-    kT = 0.001  # degauss in PWSCF uses Ry unit
-    write_psp_pwscf(psp, prefix="../TEMP_PWSCF")
+"""
+Write a PWSCF input file from a given `Hamiltonian` instance.
+Limitation:
+- Calculation is `scf`
+- Atomic mass is set to 1.0
+"""
+function write_pwscf( Ham::Hamiltonian;
+                      prefix="./", prefix_psp="./",
+                      use_smearing=false, kT=0.001 )
+    atoms = Ham.atoms
+    pw = Ham.pw
+
+    Natoms = atoms.Natoms
+    Nspecies = atoms.Nspecies
+    SpeciesSymbols = atoms.SpeciesSymbols
+    atpos = atoms.positions
+    atsymbs = atoms.atsymbs
+
+    ecutwfc = pw.ecutwfc
+
+    f = open(prefix*"PWINPUT", "w")
+
+    @printf(f, "&CONTROL\n")
+    @printf(f, "  calculation = 'scf'\n")
+    @printf(f, "  restart_mode = 'from_scratch'\n")
+    @printf(f, "  pseudo_dir = './'\n")
+    @printf(f, "  outdir = './tmp'\n")
+    @printf(f, "  verbosity = 'high'\n")
+    @printf(f, "  disk_io = 'none'\n")
+    @printf(f, "/\n\n")
+
+    @printf(f, "&SYSTEM\n")
+    @printf(f, "  ibrav = 0\n")
+    @printf(f, "  nat = %d\n", Natoms)
+    @printf(f, "  ntyp = %d\n", Nspecies)
+    @printf(f, "  ecutwfc = %18.10f\n", ecutwfc*2)
+    if use_smearing
+        @printf(f, "  occupations = 'smearing'\n")
+        @printf(f, "  smearing = 'fermi-dirac'\n")
+        @printf(f, "  degauss = %18.10f\n", kT*2)
+    end
+    @printf(f, "/\n\n")
+
+    @printf(f, "&ELECTRONS\n")
+    @printf(f, "  electron_maxstep = 150\n")
+    @printf(f, "  mixing_beta = 0.1\n")
+    @printf(f, "/\n\n")
+
+    @printf(f, "ATOMIC_SPECIES\n")
+    for isp = 1:Nspecies
+        ss = SpeciesSymbols[isp]
+        @printf(f, "%5s 1.0 %s\n", ss, ss*".gth")
+    end
+    @printf(f, "\n")
+
+    @printf(f, "ATOMIC_POSITIONS bohr\n")
+    for ia = 1:Natoms
+        @printf(f, "%s %18.10f %18.10f %18.10f\n",
+                atsymbs[ia], atpos[1,ia], atpos[2,ia], atpos[3,ia])
+    end
+    @printf(f, "\n")
+
+    kmesh = pw.gvecw.kpoints.mesh
+    @printf(f, "K_POINTS automatic\n")
+    @printf(f, "%d %d %d 0 0 0\n", kmesh[1], kmesh[2], kmesh[3])
+    @printf(f, "\n")
+
+    LatVecs = pw.LatVecs
+    @printf(f, "CELL_PARAMETERS bohr\n")
+    for i = 1:3
+        @printf(f, "%18.10f %18.10f %18.10f\n", LatVecs[1,i], LatVecs[2,i], LatVecs[3,i])
+    end
+    @printf(f, "\n")
+
+    close(f)
+
+    for psp in Ham.pspots
+        write_psp_pwscf(psp, prefix=prefix_psp)
+    end
+
 end
 
-test_main()
