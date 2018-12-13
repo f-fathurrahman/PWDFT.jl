@@ -1,7 +1,9 @@
+#
+# Various utilities to read PWDFT.jl log
+#
+
 function read_pwdft_Natoms( filename::String )
-
     Natoms = 0
-
     f = open(filename, "r")
     while !eof(f)
         l = readline(f)
@@ -10,11 +12,10 @@ function read_pwdft_Natoms( filename::String )
         end
     end
     close(f)
-
     return Natoms
 end
 
-function read_pwdft_energies( filename::String)
+function read_pwdft_energies( filename::String )
     E_kin      = 0.0
     E_hartree  = 0.0
     E_xc       = 0.0
