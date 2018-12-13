@@ -36,46 +36,36 @@ function main( ; method="SCF" )
 end
 
 #=
-FFT grid = (27,27,27)
-!    total energy              =     -15.82591729 Ry = -7.912958645
-     one-electron contribution =       4.64239409 Ry
-     hartree contribution      =       1.15137054 Ry
-     xc contribution           =      -4.82383139 Ry
-     ewald contribution        =     -16.79585054 Ry = -8.39792527
+    Kinetic energy  =  3.21045499991613E+00
+    Hartree energy  =  5.76194835366404E-01
+    XC energy       = -2.41016569027563E+00
+    Ewald energy    = -8.39792740071415E+00
+    PspCore energy  = -2.94625629171302E-01
+    Loc. psp. energy= -2.17613632002650E+00
+    NL   psp  energy=  1.58119195731965E+00
+    >>>>>>>>> Etotal= -7.91101324758539E+00
 
-Kinetic energy  =  3.20979169051178E+00
-Hartree energy  =  5.75704916874837E-01
-XC energy       = -2.40756461272468E+00
-Ewald energy    = -8.39792740071415E+00
-PspCore energy  = -2.94625629171302E-01
-Loc. psp. energy= -2.17494660308169E+00
-NL   psp  energy=  1.58096345360260E+00
->>>>>>>>> Etotal= -7.90860418470260E+00
-
-Kinetic    energy:       3.2108017168
-Ps_loc     energy:      -2.1760104813
-Ps_nloc    energy:       1.5806486758
-Hartree    energy:       0.5830565701
-XC         energy:      -2.4157170879
+PWDFT.jl:
+Kinetic    energy:       3.2107141913
+Ps_loc     energy:      -2.1756827897
+Ps_nloc    energy:       1.5804698683
+Hartree    energy:       0.5829626011
+XC         energy:      -2.4156830816
+PspCore    energy:      -0.2946256268
 -------------------------------------
-Electronic energy:       0.7827793934
-NN         energy:      -8.3979258900
+Electronic energy:       0.4881551626
+NN         energy:      -8.3979274007
 -------------------------------------
-Total      energy:      -7.6151464966
-PspCore ene = -0.29462546778533705
-
-TotEne + PspCore = -7.909771964367133
+Total      energy:      -7.9097722381
 
 
-FFT grid = (27,27,27)
-Kinetic    energy:       3.2107925351
-Ps_loc     energy:      -2.4706316946
-Ps_nloc    energy:       1.5806564220
-Hartree    energy:       0.5830491953
-XC         energy:      -2.4157133347
+QE:
+one-elec   energy:       2.3207092600
+Hartree    energy:       0.5764842900
+XC         energy:      -2.4102748100
 -------------------------------------
-Electronic energy:       0.4881531232
-NN         energy:      -8.3979258900
+Electronic energy:       0.4869187400
+NN         energy:      -8.3979274200
 -------------------------------------
-Total      energy:      -7.9097727668
+Total      energy:      -7.9110086800
 =#
