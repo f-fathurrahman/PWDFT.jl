@@ -11,7 +11,7 @@ function main( ; method="SCF" )
     println(Ham)
 
     if method == "SCF"
-        KS_solve_SCF!( Ham )
+        KS_solve_SCF!( Ham, mix_method="pulay" )
 
     elseif method == "Emin"
         KS_solve_Emin_PCG!( Ham )
