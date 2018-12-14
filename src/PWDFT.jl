@@ -179,7 +179,7 @@ export calc_Focc,
        calc_entropy,
        sum_upto_E_fermi
 
-include("calc_grad_v2.jl")
+include("calc_grad.jl")
 export calc_grad
 
 #
