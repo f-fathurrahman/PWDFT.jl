@@ -10,7 +10,7 @@ function diag_CheFSI!( Ham::Hamiltonian, psiks::BlochWavefunc, cheby_degree::Int
         ikspin = ik + (ispin - 1)*Nkpt
         ub, lb = get_ub_lb_lanczos( Ham, Nstates*2 )
         psiks[ikspin] = chebyfilt( Ham, psiks[ikspin], cheby_degree, lb, ub)
-        psiks[ikspin] = ortho_sqrt( psiks[ik] )
+        psiks[ikspin] = ortho_sqrt( psiks[ikspin] )
     end
     end
 end
