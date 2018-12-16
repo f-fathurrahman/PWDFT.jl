@@ -58,7 +58,7 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
     Ham.energies.NN = calc_E_NN( Ham.atoms )
 
     # calculate PspCore energy
-    Ham.energies.PspCore = calc_PspCore_ene( Ham.atoms, Ham.pspots, CellVolume )
+    Ham.energies.PspCore = calc_PspCore_ene( Ham.atoms, Ham.pspots )
 
     #
     Ham.energies = calc_energies( Ham, psiks )
