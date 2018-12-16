@@ -7,21 +7,18 @@ Random.seed!(1234)
 include("my_scf.jl")
 
 const DIR_PWDFT = joinpath( dirname(pathof(PWDFT)), "..")
+const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
 
 function test_my_scf(β::Float64)
 
-    atoms = Atoms(xyz_string_frac=
-        """
-        2
+    atoms = Atoms(
+        xyz_file=joinpath(DIR_PWDFT, "structures/NH3.xyz"),
+        LatVecs=gen_lattice_sc(16.0))
+    pspfiles = [joinpath(DIR_PSP, "N-q5.gth"),
+                joinpath(DIR_PSP, "H-q1.gth")]
 
-        Si  0.0  0.0  0.0
-        Si  0.25  0.25  0.25
-        """, in_bohr=true, LatVecs=gen_lattice_fcc(10.2631))
-
-    # Initialize Hamiltonian
-    pspfiles = [joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth", "Si-q4.gth")]
-    ecutwfc = 20.0
-    Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[4,4,4] )
+    ecutwfc = 15.0
+    Ham = Hamiltonian( atoms, pspfiles, 15.0 )
     println(Ham)
 
     my_scf!(Ham, betamix=β)
