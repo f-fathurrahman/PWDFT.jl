@@ -132,7 +132,7 @@ function alt2_KS_solve_SCF!( Ham::Hamiltonian ;
     Ham.energies.NN = calc_E_NN( Ham.atoms )
 
     # calculate PspCore energy
-    Ham.energies.PspCore = calc_PspCore_ene( Ham.atoms, Ham.pspots, CellVolume )
+    Ham.energies.PspCore = calc_PspCore_ene( Ham.atoms, Ham.pspots )
 
     CONVERGED = 0
 
