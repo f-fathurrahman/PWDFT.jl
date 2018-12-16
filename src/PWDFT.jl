@@ -157,7 +157,7 @@ include("Poisson_solve.jl")
 export Poisson_solve
 
 include("calc_rhoe.jl")
-export calc_rhoe
+export calc_rhoe, calc_rhoe!
 
 include("Kprec.jl")
 export Kprec

@@ -1,3 +1,5 @@
+include("calc_rhoe_inplace.jl")
+
 function calc_rhoe( Ham::Hamiltonian, psiks::BlochWavefunc )
     return calc_rhoe(
         Ham.electrons.Nelectrons,
