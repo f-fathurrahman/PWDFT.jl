@@ -478,7 +478,7 @@ its fields are as follows.
 %
 \end{itemize}
 
-All of these potentials are in the real space representation.
+All of these potentials are stored in the real space representation.
 
 
 \section{Pseudopotentials}
@@ -536,11 +536,13 @@ Davidson, LOBPCG, and PCG
 
 This method is described by Ismail-Beigi and Arias
 
-\subsection{Direct constrained minimization method of Yang}
+Presently only working for systems with band gap (insulators and semiconductors).
+
+\subsection{Direct constrained minimization method of Yang (experimental feature)}
 
 \jlcode{KS_solve_DCM}
 
-\subsection{Chebyshev filtered subspace iteration SCF}
+\subsection{Chebyshev filtered subspace iteration SCF (experimental feature)}
 
 \jlcode{update_psi="CheFSI"}
 
