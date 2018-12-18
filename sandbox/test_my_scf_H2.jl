@@ -11,6 +11,7 @@ const DIR_PWDFT = joinpath( dirname(pathof(PWDFT)), "..")
 const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
 
 function test_my_scf(β::Float64; mix_what=:density)
+
     atoms = Atoms(
         xyz_file=joinpath(DIR_PWDFT, "structures/H2.xyz"),
         LatVecs=gen_lattice_sc(16.0))
@@ -26,7 +27,6 @@ function test_my_scf(β::Float64; mix_what=:density)
         println("mix_what = ", mix_what)
         error("Unknown mix_what")
     end
-
 
     println()
     println("Kohn-Sham energy components\n")
