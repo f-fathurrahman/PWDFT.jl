@@ -141,8 +141,8 @@ function KPoints( atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{Int64,1};
 
     # need to calculate this here because a `PWGrid` instance is
     # not given in the inputs.
-    RecVecs = 2*pi*inv(atoms.LatVecs')
-    
+    RecVecs = 2*pi*inv(Matrix(atoms.LatVecs'))
+
     # convert to cartesian unit
     kred = RecVecs*kred
 
