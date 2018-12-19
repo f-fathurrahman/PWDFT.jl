@@ -145,6 +145,12 @@ mutable struct EnergiesPWSCF
     mTS::Float64
 end
 
+import Base: sum
+function sum( energies::EnergiesPWSCF )
+    return energies.OneElectron + energies.Hartree + energies.XC +
+           energies.NN + energies.mTS
+end
+
 import Base: println
 function println( energies::EnergiesPWSCF; use_smearing=false )
 
