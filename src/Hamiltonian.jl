@@ -104,7 +104,7 @@ function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
     ik = 1
     ispin = 1
     return Hamiltonian( pw, potentials, energies, rhoe,
-                          electrons, atoms, Pspots, pspotNL, xcfunc, ik, ispin )
+                        electrons, atoms, Pspots, pspotNL, xcfunc, ik, ispin )
 end
 
 

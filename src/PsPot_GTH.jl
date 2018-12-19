@@ -368,7 +368,7 @@ function eval_proj_G( psp::PsPot_GTH, l::Int64, iproj::Int64, Gm::Float64, CellV
         Vprj = Gm^3 * exp(-0.5*Gr2) * 16.0/sqrt(105.0) / 8.0 / 2.0
 
     end  # if l
-
+    
     pre =  4.0 * pi^(5.0/4.0) * sqrt( 2.0^(l+1) * rrl^(2*l+3) / CellVolume )
     Vprj = pre * Vprj
     return Vprj

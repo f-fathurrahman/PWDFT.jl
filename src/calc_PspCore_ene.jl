@@ -2,7 +2,7 @@ function calc_PspCore_ene( atoms::Atoms, PsPots::Array{PsPot_GTH,1} )
 
     Nspecies = atoms.Nspecies
     epsatm = zeros(Nspecies)
-    CellVolume = det(atoms.LatVecs)
+    CellVolume = abs(det(atoms.LatVecs))
 
     for isp = 1:Nspecies
         zval = atoms.Zvals[isp]

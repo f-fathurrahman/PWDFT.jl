@@ -187,7 +187,7 @@ function PWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2}; kpoints=nothing )
     #RecVecs = 2*pi*inv(LatVecs')
     RecVecs = 2*pi*invTrans_m3x3(LatVecs)
 
-    CellVolume = det(LatVecs)
+    CellVolume = abs(det(LatVecs))
     #
     LatVecsLen = Array{Float64}(undef,3)
     LatVecsLen[1] = norm(LatVecs[:,1])
