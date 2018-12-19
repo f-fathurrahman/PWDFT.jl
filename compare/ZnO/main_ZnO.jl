@@ -14,8 +14,8 @@ function main( ; method="SCF" )
     # Initialize Hamiltonian
     pspfiles = ["../pseudopotentials/pade_gth/Zn-q2.gth",
                 "../pseudopotentials/pade_gth/O-q6.gth"]
-    ecutwfc_Ry = 30.0
-    Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, meshk=[3,3,3] )
+    ecutwfc = 15.0
+    Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3] )
     println(Ham)
 
     #

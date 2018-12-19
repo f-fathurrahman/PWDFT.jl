@@ -5,9 +5,9 @@ function main( ; method="SCF" )
                    LatVecs = gen_lattice_cubic(16.0) )
 
     # Initialize Hamiltonian
-    ecutwfc_Ry = 30.0
+    ecutwfc = 15.0
     pspfiles = ["../pseudopotentials/pade_gth/O-q6.gth"]
-    Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5 )
+    Ham = Hamiltonian( atoms, pspfiles, ecutwfc )
     println(Ham)
 
     if method == "SCF"

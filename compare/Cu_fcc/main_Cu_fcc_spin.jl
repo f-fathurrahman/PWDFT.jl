@@ -9,8 +9,8 @@ function main()
 
     # Initialize Hamiltonian
     pspfiles = ["../pseudopotentials/pade_gth/Cu-q11.gth"]
-    ecutwfc_Ry = 30.0
-    Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, Nspin=2, xcfunc="VWN",
+    ecutwfc = 15.0
+    Ham = Hamiltonian( atoms, pspfiles, ecutwfc, Nspin=2, xcfunc="VWN",
                          meshk=[3,3,3], extra_states=4 )
 
     #

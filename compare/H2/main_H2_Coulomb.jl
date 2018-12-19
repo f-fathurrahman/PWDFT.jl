@@ -5,8 +5,8 @@ function main( ; method="SCF" )
                    LatVecs=gen_lattice_sc(16.0) )
 
     # Initialize Hamiltonian
-    ecutwfc_Ry = 30.0
-    Ham = Hamiltonian( atoms, ecutwfc_Ry*0.5 )
+    ecutwfc = 15.0
+    Ham = Hamiltonian( atoms, ecutwfc )
     println(Ham)
 
     if method == "SCF"

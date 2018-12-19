@@ -8,8 +8,8 @@ function main( ; method="SCF" )
             """, LatVecs=gen_lattice_sc(16.0))
 
     # Initialize Hamiltonian
-    ecutwfc_Ry = 30.0
-    Ham = Hamiltonian( atoms, ecutwfc_Ry*0.5, extra_states=3 )
+    ecutwfc = 15.0
+    Ham = Hamiltonian( atoms, ecutwfc, extra_states=3 )
 
     if method == "SCF"
         KS_solve_SCF!( Ham, mix_method="rpulay", betamix=0.1, use_smearing=true )

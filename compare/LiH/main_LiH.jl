@@ -5,10 +5,10 @@ function main( ; method="SCF" )
                    LatVecs=gen_lattice_cubic(16.0) )
 
     # Initialize Hamiltonian
-    ecutwfc_Ry = 30.0
+    ecutwfc = 15.0
     pspfiles = ["../pseudopotentials/pade_gth/Li-q3.gth",
                 "../pseudopotentials/pade_gth/H-q1.gth"]
-    Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5 )
+    Ham = Hamiltonian( atoms, pspfiles, ecutwfc )
 
     println(Ham)
 
@@ -22,19 +22,8 @@ function main( ; method="SCF" )
         KS_solve_DCM!( Ham, NiterMax=15 )
 
     else
-        println("ERROR: unknown method = ", method)
+        error( @sprintf("ERROR: unknown method = %s", method) )        
     end
-
-    Nstates = Ham.electrons.Nstates
-    ebands = Ham.electrons.ebands
-
-    println("\nBand energies:")
-    for ist = 1:Nstates
-        @printf("%8d  %18.10f = %18.10f eV\n", ist, ebands[ist], ebands[ist]*Ry2eV*2)
-    end
-
-    println("\nTotal energy components")
-    println(Ham.energies)
 
 end
 

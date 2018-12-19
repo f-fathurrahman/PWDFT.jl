@@ -6,8 +6,8 @@ function main( ; method="SCF" )
 
     # Initialize Hamiltonian
     pspfiles = ["../pseudopotentials/pbe_gth/H-q1.gth"]
-    ecutwfc_Ry = 30.0
-    Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, xcfunc="PBE" )
+    ecutwfc = 15.0
+    Ham = Hamiltonian( atoms, pspfiles, ecutwfc, xcfunc="PBE" )
     println(Ham)
 
     if method == "SCF"

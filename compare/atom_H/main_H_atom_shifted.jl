@@ -18,15 +18,15 @@ function do_pos( newpos::Array{Float64,1}, method::String )
 
     # Initialize Hamiltonian
     pspfiles = ["../pseudopotentials/pade_gth/H-q1.gth"]
-    ecutwfc_Ry = 30.0
-    Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5 )
+    ecutwfc = 15.0
+    Ham = Hamiltonian( atoms, pspfiles, ecutwfc )
     println(Ham)
 
     #
     # Solve the KS problem
     #
     if method == "SCF"
-        KS_solve_SCF!( Ham, mix_method="anderson", ETOT_CONV_THR=1e-6 )
+        KS_solve_SCF!( Ham, mix_method="anderson" )
 
     elseif method == "CheFSI"
         KS_solve_SCF!( Ham, update_psi="CheFSI", betamix=0.5 )
