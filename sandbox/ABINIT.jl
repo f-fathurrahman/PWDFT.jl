@@ -8,7 +8,6 @@ At.7.LDA.hgh
 Au.11.LDA.hgh
 B.3.LDA.hgh
 Ba.10.LDA.hgh
-Ba.2.LDA.hgh
 Be.4.LDA.hgh
 Bi.5.LDA.hgh
 Br.7.LDA.hgh
