@@ -1,13 +1,14 @@
-\documentclass[a4paper,10pt]{paper}
+\documentclass[a4paper,10pt,twocolumn]{paper}
 
 \usepackage[a4paper]{geometry}
-\geometry{verbose,tmargin=1.5cm,bmargin=1.5cm,lmargin=1.5cm,rmargin=1.5cm}
+\geometry{verbose,tmargin=2.0cm,bmargin=2.0cm,lmargin=0.5cm,rmargin=0.5cm}
 
 \setlength{\parskip}{\smallskipamount}
 \setlength{\parindent}{0pt}
 
+\usepackage{mathptmx}
 \usepackage{fontspec}
-%\setmainfont{Linux Libertine O}
+\setmainfont{Times New Roman}
 \setmonofont{FreeMono}
 
 \usepackage{hyperref}
@@ -20,9 +21,11 @@
 
 \usepackage[normalem]{ulem}
 
+\usepackage{mhchem}
+
 \usepackage{minted}
-\newminted{julia}{breaklines,fontsize=\normalsize}
-\newminted{text}{breaklines,fontsize=\normalsize}
+\newminted{julia}{breaklines,fontsize=\footnotesize}
+\newminted{text}{breaklines,fontsize=\footnotesize}
 
 \newcommand{\jlcode}[1]{\mintinline{julia}{#1}}
 
@@ -64,7 +67,7 @@ You need the following to use \texttt{PWDFT.jl}:
 \item Julia version 0.7 or higher
 \item LibXC
 \item SPGLIB
-\item C compiler to compiler LibXC and SPGLIB
+\item C compiler to compile LibXC and SPGLIB
 \end{itemize}
 
 \textsf{PWDFT.jl} is a Julia package, so you need to copy (or clone)
@@ -102,14 +105,23 @@ If there are no error messages then the installation is OK.
 
 \subsection{LibXC}
 
+\textsf{PWDFT.jl} uses LibXC to calculate exchange correlation energy
+and potential.
+The following commands can be used to configure, build, and install LibXC
+in your computer.
 \begin{textcode}
-./configure --prefix=/home/user/softwares/libxc --disable-fortran --enable-shared
+./configure --prefix=/home/user/softwares/libxc \\
+  --disable-fortran --enable-shared
 make
 make install
 \end{textcode}
 
 \subsection{SPGLIB}
 
+\textsf{PWDFT.jl} uses SPGLIB to generate reduced k-point for integration
+over Brillouin zone.
+The following commands can be used to configure, build, and install SPGLIB
+in your computer.
 \begin{textcode}
 cd spglib-master
 mkdir build
@@ -128,28 +140,33 @@ We need to prepare several things before using \textsf{PWDFT.jl}:
 \item Pseudopotentials
 \end{itemize}
 
-This code will initialize a hydrogen molecule (H2) inside a box of
+This code will initialize a hydrogen molecule ($\ce{H2}$) inside a box of
 $16\times16\times16$ bohr.
 \begin{juliacode}
-atoms = Atoms(xyz_string="""
-              2
-              
-              H      3.83653478       4.23341768       4.23341768
-              H      4.63030059       4.23341768       4.23341768
-              """,
-              LatVecs=gen_lattice_sc(16.0))
+atoms = Atoms(
+  xyz_string="""
+  2
+    
+  H      3.83653478       4.23341768       4.23341768
+  H      4.63030059       4.23341768       4.23341768
+  """,
+  LatVecs=gen_lattice_sc(16.0))
 \end{juliacode}
+
+
+
 
 \part{Implementation Notes}
 
-In this note, I will describe several user-defined types that are
+In this note, I will describe several user-defined data types that are
 used throughout \textsf{PWDFT.jl}. Beginners are not expected to know them
 all, however they are needed to know the internal of \textsf{PWDFT.jl}.
 
 When referring to a file, I always meant to the file contained in
 the \texttt{src/} directory.
 
-Even though it is not strictly required in Julia, I tried to always use type annotations.
+Even though it is not strictly required in Julia, I have tried to always
+use type annotations.
 
 \section{Atoms}
 
@@ -193,15 +210,20 @@ function Atoms( ;xyz_file="", xyz_string="", xyz_string_frac="",
                 LatVecs=10*[1.0 0.0 0.0; 0.0 1.0 0.0; 0.0 0.0 1.0] )
 \end{juliacode}
 %
-\item The above mentioned \jlcode{Atoms} constructor is actually a wrapper for the functions
-  \jlcode{init_atoms_xyz} and \jlcode{init_atoms_xyz_string} which takes either
+\item Using \jlcode{init_atoms_xyz} or \jlcode{init_atoms_xyz}
+  which takes either
   a string containing path to xyz file or the content of the xyz file
-  itself. When using this function, one must set \jlcode{LatVecs}.
+  itself. When using this function, one must set \jlcode{LatVecs}
   field manually.
+  The \jlcode{Atoms} constructor mentioned before is actually
+  a wrapper for the functions
+  \jlcode{init_atoms_xyz} and \jlcode{init_atoms_xyz_string}.
 \end{itemize}
 
-A note about \jlcode{Zvals}: Both \jlcode{Atoms} and \jlcode{init_atoms_*} function set
-\jlcode{Zvals} to \jlcode{zeros(Nspecies)}. After passed to \jlcode{Hamiltonian} constructor
+A note about \jlcode{Zvals}: \\
+Both \jlcode{Atoms} and \jlcode{init_atoms_*} function set
+\jlcode{Zvals} to \jlcode{zeros(Nspecies)}.
+After passed to \jlcode{Hamiltonian} constructor
 \jlcode{Zvals} will be set according to the pseudopotentials used.
 
 TODO: examples
@@ -258,14 +280,18 @@ This type is defined in the file \jlcode{PWGrid.jl}. It has the following fields
 %
 \item \jlcode{ecutwfc::Float64}: cutoff for wave function expansion
 %
-\item \jlcode{ecutrho::Float64}: cutoff for electron density expansion, for norm-converving
+\item \jlcode{ecutrho::Float64}: cutoff for electron density
+  expansion, for norm-converving
   pseudopotential: \jlcode{ecutrho = 4*ecutwfc}.
 %
-\item \jlcode{Ns::Tuple{Int64,Int64,Int64}}: parameters defining real-space grid points.
+\item \jlcode{Ns::Tuple{Int64,Int64,Int64}}: parameters defining real-space
+grid points.
 %
-\item \jlcode{LatVecs::Array{Float64,2}}: lattice vectors of unit cell ($3\times3$ matrix)
+\item \jlcode{LatVecs::Array{Float64,2}}: lattice vectors of
+unit cell ($3\times3$ matrix)
 %
-\item \jlcode{RecVecs::Array{Float64,2}}: reciprocal lattice vectors ($3\times3$ matrix)
+\item \jlcode{RecVecs::Array{Float64,2}}: reciprocal lattice
+vectors ($3\times3$ matrix)
 %
 \item \jlcode{CellVolume::Float64}: the volume of real-space unit cell
 %
@@ -275,7 +301,8 @@ This type is defined in the file \jlcode{PWGrid.jl}. It has the following fields
 \item \jlcode{gvec::GVectors}: an instace of \jlcode{GVectors}:
   for potentials and density expansion
 %
-\item \jlcode{gvecw::GVectorsW}: an instace of \jlcode{GVectorsW}, for wave function expansion
+\item \jlcode{gvecw::GVectorsW}: an instace of \jlcode{GVectorsW},
+for wave function expansion
 %
 \item \jlcode{planfw::FFTW.cFFTWPlan{Complex{Float64},-1,false,3}}: FFTW forward plan
 %
@@ -328,7 +355,7 @@ This function takes the following arguments
 \item \jlcode{RecVecs}: 3 by 3 matrix describing reciprocal lattice vectors
 %
 \item \jlcode{ecutrho}: cutoff energy (in Hartree). For norm-conserving PP,
-  it is 4 times `ecutwfc`.
+  it is 4 times \jlcode{ecutwfc}.
 \end{itemize}
 
 
@@ -508,6 +535,7 @@ Apply Hamiltonian operator to wave function
 \begin{juliacode}
 for ispin = 1:Nspin
     for ik = 1:Nkpt
+        # Important: need to set internal variables within ::Hamiltonian
         Ham.ispin = ispin
         Ham.ik = ik
         Hpsiks = op_H(Ham, psiks)
@@ -516,19 +544,41 @@ end
 \end{juliacode}
 
 
+\section{Eigensolver}
+
+Three methods are available:
+\begin{itemize}
+\item LOBPCG method
+\item blocked Davidson method
+\item preconditioned conjugate gradient by minizing trace of Hamiltonian
+\end{itemize}
+
+These eigensolvers can be used to find eigenvalues and eigenvectors
+of Hamiltonian at fixed potential.
+
+
+
 \section{Solving Kohn-Sham problems}
 
-Two main algorithms: SCF and direct minimization
+Two main algorithms are available:
+\begin{itemize}
+\item self-consistent field (SCF)
+\item direct minimization of Kohn-Sham total energy functional
+\end{itemize}
 
-Function names: \jlcode{KS_solve_*}
+The solvers of Kohn-Sham problems start with prefix \jlcode{KS_solve_}.
+Currently implemented solvers are
+\begin{itemize}
+\item \jlcode{KS_solve_SCF}
+\item \jlcode{KS_solve_Emin_PCG}
+\item \jlcode{KS_solve_DCM}
+\item \jlcode{KS_solve_TRDCM}
+\end{itemize}
+
 
 \subsection{Self-consistent field}
 \jlcode{KS_solve_SCF}
 
-
-\subsection{Eigensolver}
-
-Davidson, LOBPCG, and PCG
 
 \subsection{Direct energy minimization via nonlinear conjugate gradient method}
 
