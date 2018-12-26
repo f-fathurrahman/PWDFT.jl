@@ -91,6 +91,16 @@ function write_pwscf( Ham::Hamiltonian; filename="PWINPUT",
     @printf(f, "  ntyp = %d\n", Nspecies)
     @printf(f, "  ecutwfc = %18.10f\n", ecutwfc*2)
     @printf(f, "  nbnd = %d\n", electrons.Nstates)
+
+    # When Nelectrons is odd and no-smearing is used, we must
+    # use occupations = 'from_input' and add the OCCUPATIONS card
+    Nelectrons = electrons.Nelectrons
+    is_odd = round(Int64,Nelectrons)%2 == 1
+    is_manual_occ = is_odd && !use_smearing
+    if is_manual_occ
+        @printf(f, "  occupations = 'from_input'\n")
+    end
+    
     if use_smearing
         @printf(f, "  occupations = 'smearing'\n")
         @printf(f, "  smearing = 'fermi-dirac'\n")
@@ -128,6 +138,25 @@ function write_pwscf( Ham::Hamiltonian; filename="PWINPUT",
         @printf(f, "%18.10f %18.10f %18.10f\n", LatVecs[1,i], LatVecs[2,i], LatVecs[3,i])
     end
     @printf(f, "\n")
+
+    # FIXME: this only tested for Nkpt=1
+    if is_manual_occ
+        Focc = electrons.Focc
+        Nspin = electrons.Nspin
+        Nstates = electrons.Nstates
+        @printf(f, "OCCUPATIONS")
+        for isp = 1:Nspin
+            @printf(f, "\n")
+            for ist = 1:Nstates
+                @printf(f, "%10.5f ", Focc[ist,isp])
+                if ist%10 == 0
+                    @printf(f, "\n")
+                end
+            end
+        end
+    end
+    @printf(f, "\n")
+
 
     close(f)
 
