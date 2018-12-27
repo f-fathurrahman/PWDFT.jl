@@ -1,7 +1,7 @@
-\documentclass[a4paper,10pt,twocolumn]{paper}
+\documentclass[a4paper,12pt]{paper}
 
 \usepackage[a4paper]{geometry}
-\geometry{verbose,tmargin=2.0cm,bmargin=2.0cm,lmargin=0.5cm,rmargin=0.5cm}
+\geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
 
 \setlength{\parskip}{\smallskipamount}
 \setlength{\parindent}{0pt}
@@ -27,7 +27,8 @@
 \newminted{julia}{breaklines,fontsize=\footnotesize}
 \newminted{text}{breaklines,fontsize=\footnotesize}
 
-\newcommand{\jlcode}[1]{\mintinline{julia}{#1}}
+\newcommand{\jlcode}[1]{\mintinline[fontsize=\footnotesize]{julia}{#1}}
+\newcommand{\myverbcode}[1]{\mintinline[fontsize=\footnotesize]{text}{#1}}
 
 \newenvironment{markdown}%
     {\VerbatimEnvironment\begin{VerbatimOut}{tmp.markdown}}%
@@ -110,7 +111,7 @@ and potential.
 The following commands can be used to configure, build, and install LibXC
 in your computer.
 \begin{textcode}
-./configure --prefix=/home/user/softwares/libxc \\
+./configure --prefix=/home/user/softwares/libxc \
   --disable-fortran --enable-shared
 make
 make install
@@ -132,7 +133,7 @@ make install
 \end{textcode}
 
 
-\section{Getting started}
+\section{Total energy calculation}
 
 We need to prepare several things before using \textsf{PWDFT.jl}:
 \begin{itemize}
@@ -154,6 +155,41 @@ atoms = Atoms(
 \end{juliacode}
 
 
+After creating an instance of \jlcode{Atoms}, we need to create
+an instance of Hamiltonian:
+\begin{juliacode}
+DIR_PWDFT = joinpath(dirname(pathof(PWDFT)), "..")
+DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
+pspfiles = [joinpath(DIR_PSP, "H-q1.gth")]
+ecutwfc = 30.0 
+Ham = Hamiltonian(atoms, pspfiles, ecutwfc)
+\end{juliacode}
+
+Once the instance of \jlcode{Hamiltonian is initialized}, we can solve
+the Kohn-Sham problem by SCF method (or your own solver!),
+for example:
+\begin{juliacode}
+KS_solve_SCF!(Ham)
+\end{juliacode}
+During the call of this function several info will be printed to
+\jlcode{stdout}. You can redirect this print out to file if you
+want to save the print out and analyze it later
+\begin{juliacode}
+# save the reference to original stdout
+stdout_orig = stdout
+# Open file for writing
+fileout = open("LOG_"*molname, "w")
+# Redirect stdout
+redirect_stdout(fileout)
+# Solve the Kohn-Sham problem
+KS_solve_SCF!(Ham)
+# Close IO
+close(fileout)
+\end{juliacode}
+
+\jlcode{KS_solve_SCF!} has several options that you can used.
+For more information you can see the original code in
+\myverbcode{src/KS_solve_SCF.jl}.
 
 
 \part{Implementation Notes}
@@ -171,7 +207,7 @@ use type annotations.
 \section{Atoms}
 
 \texttt{Atoms} can be used to represent molecular or crystalline structures.
-This type is implemented in the file \texttt{src/Atoms.jl}.
+This type is implemented in the file \myverbcode{src/Atoms.jl}.
 
 It has the following fields:
 \begin{itemize}
@@ -278,40 +314,48 @@ The plane wave basis is described by the type \jlcode{PWGrid}.
 This type is defined in the file \jlcode{PWGrid.jl}. It has the following fields:
 \begin{itemize}
 %
-\item \jlcode{ecutwfc::Float64}: cutoff for wave function expansion
+\item \jlcode{ecutwfc::Float64}:\\
+  cutoff for wave function expansion
 %
-\item \jlcode{ecutrho::Float64}: cutoff for electron density
+\item \jlcode{ecutrho::Float64}:\\
+  cutoff for electron density
   expansion, for norm-converving
-  pseudopotential: \jlcode{ecutrho = 4*ecutwfc}.
+  pseudopotential we have \\
+  \jlcode{ecutrho = 4*ecutwfc}.
 %
-\item \jlcode{Ns::Tuple{Int64,Int64,Int64}}: parameters defining real-space
-grid points.
+\item \jlcode{Ns::Tuple{Int64,Int64,Int64}}:\\
+  parameters defining real-space grid points.
 %
 \item \jlcode{LatVecs::Array{Float64,2}}: lattice vectors of
 unit cell ($3\times3$ matrix)
 %
-\item \jlcode{RecVecs::Array{Float64,2}}: reciprocal lattice
-vectors ($3\times3$ matrix)
+\item \jlcode{RecVecs::Array{Float64,2}}:\\
+  reciprocal lattice vectors ($3\times3$ matrix)
 %
-\item \jlcode{CellVolume::Float64}: the volume of real-space unit cell
+\item \jlcode{CellVolume::Float64}:\\
+  the volume of real-space unit cell
 %
-\item \jlcode{r::Array{Float64,2}}: real-space grid points.
+\item \jlcode{r::Array{Float64,2}}:\\
+  real-space grid points.
   Its shape is \jlcode{(3,Npoints)}
 %
-\item \jlcode{gvec::GVectors}: an instace of \jlcode{GVectors}:
+\item \jlcode{gvec::GVectors}:\\
+  an instance of \jlcode{GVectors},
   for potentials and density expansion
 %
-\item \jlcode{gvecw::GVectorsW}: an instace of \jlcode{GVectorsW},
-for wave function expansion
+\item \jlcode{gvecw::GVectorsW}:\\
+  an instace of \jlcode{GVectorsW}, for wave function expansion
 %
-\item \jlcode{planfw::FFTW.cFFTWPlan{Complex{Float64},-1,false,3}}: FFTW forward plan
+\item \jlcode{planfw}:\\
+  FFTW forward plan
 %
-\item \jlcode{planbw::AbstractFFTs.}\\
-      \jlcode{ScaledPlan{ComplexF64,FFTW.cFFTWPlan{ComplexF64,1,false,3- Float64}}}: FFTW backward plan
+\item \jlcode{planbw}:\\
+  FFTW backward plan
 %
 \end{itemize}
 
-The following constructor can be used to create an instance of `PWGrid`:
+The following constructor can be used to create an instance of
+\jlcode{PWGrid}:
 
 \begin{juliacode}
 function PWGrid( ecutwfc::Float64,
@@ -322,8 +366,8 @@ function PWGrid( ecutwfc::Float64,
 
 \subsection{$\mathbf{G}$-vectors for potentials and densities expansion}
 
-$\mathbf{G}$-vectors are described by type `GVectors`. It is defined in file `PWGrid.jl`.
-It has the following fields:
+$\mathbf{G}$-vectors are described by type \jlcode{GVectors}.
+It is defined in the file \jlcode{PWGrid.jl}. It has the following fields:
 \begin{itemize}
 %
 \item \jlcode{Ng::Int64}: total number of $\mathbf{G}$-vectors
@@ -373,7 +417,8 @@ They are a subset of \jlcode{GVectors}. It has the following fields:
 \item \jlcode{idx_gw2g::Array{Array{Int64,1},1}}: mapping between indices of
   \jlcode{GVectorsW} to indices of \jlcode{GVectors}.
 %
-\item \jlcode{idx_gw2r::Array{Array{Int64,1},1}}: mapping between indices of `GVectorsW`
+\item \jlcode{idx_gw2r::Array{Array{Int64,1},1}}: mapping between indices of
+  \jlcode{GVectorsW}
   to indices of real space grid points \jlcode{PWGrid.r}
 %
 \item \jlcode{kpoints::KPoints}: an instance of \jlcode{KPoints}
@@ -416,11 +461,12 @@ size = \((N_1, N_2, N_3)\) and the \(\mathbf{b}_i\)'s are reciprocal lattice vec
 Constructor:
 
 \begin{juliacode}
-function KPoints( atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{Int64,1};
+function KPoints( atoms::Atoms, mesh::Array{Int64,1},
+                  is_shift::Array{Int64,1};
                   time_reversal=1 )
 \end{juliacode}
 
-SPGLIB is used internally to generate reduce number of k-points.
+SPGLIB is used to generate reduced k-points within the first Brillouin zone.
 
 
 \section{Wave functions}
