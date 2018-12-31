@@ -164,7 +164,150 @@ function write_pwscf( Ham::Hamiltonian; filename="PWINPUT",
         write_psp_pwscf(psp, prefix=prefix)
     end
 
+    return
+
 end
+
+function write_pwscf( atoms::Atoms, pspfiles::Array{String,1},
+                      ecutwfc::Float64 ;
+                      Nspin = 1,
+                      meshk = [1,1,1], shiftk = [0,0,0],
+                      kpoints = nothing,
+                      xcfunc = "VWN",
+                      extra_states = 0,
+                      filename="PWINPUT",
+                      prefix="./",
+                      use_smearing=false, kT=0.001 )
+    # kpoints
+    if kpoints == nothing
+        kpoints = KPoints( atoms, meshk, shiftk )
+    else
+        @assert typeof(kpoints) == KPoints
+    end
+
+    Nspecies = atoms.Nspecies
+    if Nspecies != size(pspfiles)[1]
+        error( @sprintf("Length of pspfiles is not equal to %d\n", Nspecies) )
+    end
+
+    Pspots = Array{PsPot_GTH}(undef,Nspecies)
+    for isp = 1:Nspecies
+        Pspots[isp] = PsPot_GTH( pspfiles[isp] )
+    end
+
+    electrons = Electrons( atoms, Pspots, Nspin=Nspin, Nkpt=kpoints.Nkpt,
+                           Nstates_empty=extra_states )
+
+    atoms.Zvals = get_Zvals( Pspots )
+
+    write_pwscf( atoms, electrons, ecutwfc,
+                 filename=filename,
+                 prefix=prefix,
+                 use_smearing=use_smearing, kT=kT )
+    return
+end
+
+
+
+# simplified version, avoiding full construction of Hamiltonian.
+function write_pwscf( atoms::Atoms, electrons::Electrons, ecutwfc::Float64 ;
+                      filename="PWINPUT",
+                      prefix="./",
+                      use_smearing=false, kT=0.001)
+
+    f = open( joinpath(prefix, filename), "w")
+
+    @printf(f, "&CONTROL\n")
+    @printf(f, "  calculation = 'scf'\n")
+    @printf(f, "  restart_mode = 'from_scratch'\n")
+    @printf(f, "  pseudo_dir = './'\n")
+    @printf(f, "  outdir = './tmp'\n")
+    @printf(f, "  verbosity = 'high'\n")
+    @printf(f, "  disk_io = 'none'\n")
+    @printf(f, "/\n\n")
+
+    @printf(f, "&SYSTEM\n")
+    @printf(f, "  ibrav = 0\n")
+    @printf(f, "  nat = %d\n", Natoms)
+    @printf(f, "  ntyp = %d\n", Nspecies)
+    @printf(f, "  ecutwfc = %18.10f\n", ecutwfc*2)
+    @printf(f, "  nbnd = %d\n", electrons.Nstates)
+
+    # When Nelectrons is odd and no-smearing is used, we must
+    # use occupations = 'from_input' and add the OCCUPATIONS card
+    Nelectrons = electrons.Nelectrons
+    is_odd = round(Int64,Nelectrons)%2 == 1
+    is_manual_occ = is_odd && !use_smearing
+    if is_manual_occ
+        @printf(f, "  occupations = 'from_input'\n")
+    end
+    
+    if use_smearing
+        @printf(f, "  occupations = 'smearing'\n")
+        @printf(f, "  smearing = 'fermi-dirac'\n")
+        @printf(f, "  degauss = %18.10f\n", kT*2)
+    end
+    @printf(f, "/\n\n")
+
+    @printf(f, "&ELECTRONS\n")
+    @printf(f, "  electron_maxstep = 150\n")
+    @printf(f, "  mixing_beta = 0.1\n")
+    @printf(f, "/\n\n")
+
+    @printf(f, "ATOMIC_SPECIES\n")
+    for isp = 1:Nspecies
+        ss = SpeciesSymbols[isp]
+        @printf(f, "%5s 1.0 %s\n", ss, ss*".gth")
+    end
+    @printf(f, "\n")
+
+    @printf(f, "ATOMIC_POSITIONS bohr\n")
+    for ia = 1:Natoms
+        @printf(f, "%s %18.10f %18.10f %18.10f\n",
+                atsymbs[ia], atpos[1,ia], atpos[2,ia], atpos[3,ia])
+    end
+    @printf(f, "\n")
+
+    kmesh = pw.gvecw.kpoints.mesh
+    @printf(f, "K_POINTS automatic\n")
+    @printf(f, "%d %d %d 0 0 0\n", kmesh[1], kmesh[2], kmesh[3])
+    @printf(f, "\n")
+
+    LatVecs = pw.LatVecs
+    @printf(f, "CELL_PARAMETERS bohr\n")
+    for i = 1:3
+        @printf(f, "%18.10f %18.10f %18.10f\n", LatVecs[1,i], LatVecs[2,i], LatVecs[3,i])
+    end
+    @printf(f, "\n")
+
+    # FIXME: this only tested for Nkpt=1
+    if is_manual_occ
+        Focc = electrons.Focc
+        Nspin = electrons.Nspin
+        Nstates = electrons.Nstates
+        @printf(f, "OCCUPATIONS")
+        for isp = 1:Nspin
+            @printf(f, "\n")
+            for ist = 1:Nstates
+                @printf(f, "%10.5f ", Focc[ist,isp])
+                if ist%10 == 0
+                    @printf(f, "\n")
+                end
+            end
+        end
+    end
+    @printf(f, "\n")
+
+
+    close(f)
+
+    for psp in Ham.pspots
+        write_psp_pwscf(psp, prefix=prefix)
+    end
+
+    return
+end
+
 
 mutable struct EnergiesPWSCF
     OneElectron::Float64
