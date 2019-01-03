@@ -45,7 +45,7 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
         @assert Nspin == 1
         Rhoe[:,1] = guess_rhoe( Ham )
     else
-        Rhoe[:,:] = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin )
+        calc_rhoe!( Ham, psiks, Rhoe )
     end
 
     update!(Ham, Rhoe)
@@ -165,8 +165,7 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
         end # ik
         end # ispin
         
-        Rhoe[:,:] = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin )
-
+        calc_rhoe!( Ham, psiks, Rhoe )
         update!(Ham, Rhoe)
 
         for ispin = 1:Nspin
@@ -191,8 +190,7 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
         end
         end
 
-        Rhoe[:,:] = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin )
-
+        calc_rhoe!( Ham, psiks, Rhoe )
         update!(Ham, Rhoe)
 
         Ham.energies = calc_energies( Ham, psiks )
@@ -231,13 +229,10 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
         Ham.ispin = ispin
         ikspin = ik + (ispin - 1)*Nkpt
         psiks[ikspin] = ortho_sqrt(psiks[ikspin])
-        Hr = psiks[ikspin]' * op_H( Ham, psiks[ikspin] )
+        Hr = Hermitian(psiks[ikspin]' * op_H(Ham, psiks[ikspin]))
         evals, evecs = eigen(Hr)
-        evals = real(evals[:])
-        # We need to sort this
-        idx_sorted = sortperm(evals)
-        Ham.electrons.ebands[:,ikspin] = evals[idx_sorted]
-        psiks[ikspin] = psiks[ikspin]*evecs[:,idx_sorted]
+        Ham.electrons.ebands[:,:] = evals
+        psiks[ikspin] = psiks[ikspin]*evecs
     end
     end
 
