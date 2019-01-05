@@ -22,6 +22,7 @@ end
 
 function driver()
 
+    println("Running on ", gethostname())
     t1 = time_stamp("run.jl starts")
     
     Nargs = length(ARGS)

@@ -5,6 +5,9 @@ using BenchmarkTools
 using PWDFT
 
 println()
+println("Running on ", gethostname())
+
+println()
 InteractiveUtils.versioninfo()
 
 const Nargs = length(ARGS)
