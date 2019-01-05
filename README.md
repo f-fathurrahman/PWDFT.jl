@@ -2,8 +2,10 @@
 
 `PWDFT.jl` is a package to solve
 [electronic structure problems](https://en.wikipedia.org/wiki/Electronic_structure)
-based on [density functional theory](https://en.wikipedia.org/wiki/Density_functional_theory)
-(DFT) and [Kohn-Sham equations](https://en.wikipedia.org/wiki/Kohn%E2%80%93Sham_equations).
+based on
+[density functional theory](https://en.wikipedia.org/wiki/Density_functional_theory)
+(DFT)
+and [Kohn-Sham equations](https://en.wikipedia.org/wiki/Kohn%E2%80%93Sham_equations).
 It is written in [Julia programming language](https://julialang.org).
 
 The Kohn-Sham orbitals are expanded using plane wave basis. This basis set is
@@ -15,7 +17,7 @@ structure package such as Quantum ESPRESSO, ABINIT, VASP, etc.
 - Total energy calculation of molecules, surfaces, and crystalline system via
   within periodic unit cell.
 - SCF with electron density mixing (for semiconducting and metallic systems)
-- Direct minimization method using conjugate gradient (for semiconducting)
+- Direct minimization method using conjugate gradient (for semiconducting systems)
 - GTH pseudopotentials (included in the repository)
 - LDA-VWN and GGA-PBE functionals (via LibXC)
 
@@ -168,7 +170,8 @@ KS_solve_Emin_PCG!( Ham ) # direct minimization using preconditioned conjugate g
 
 ![Band structure of silicon (fcc)](images/bands_Si_fcc.svg)
 
-Please see [bandstructure_Si_fcc.jl](sandbox/bandstructure_Si_fcc.jl) as
+Please see
+[bandstructure_Si_fcc.jl](sandbox/bandstructure_01/bandstructure_Si_fcc.jl) as
 an example of how this can be obtained.
 
 ## Some references
