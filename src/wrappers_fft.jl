@@ -25,6 +25,14 @@ function G_to_R( pw::PWGrid, fG::Array{ComplexF64,2} )
     return out
 end
 
+function G_to_R!( pw::PWGrid, fG::Array{ComplexF64,1} )
+    Ns = pw.Ns
+    Npoints = prod(Ns)
+    plan = pw.planbw
+    fG[:] = reshape( plan*reshape(fG[:],Ns), Npoints )
+    return
+end
+
 function G_to_R!( pw::PWGrid, fG::Array{ComplexF64,2} )
     Ns = pw.Ns
     Npoints = prod(Ns)
@@ -79,6 +87,15 @@ function R_to_G!( pw::PWGrid, fR::Array{ComplexF64,2} )
     end
     return
 end
+
+function R_to_G!( pw::PWGrid, fR::Array{ComplexF64,1} )
+    Ns = pw.Ns
+    plan = pw.planfw
+    Npoints = prod(Ns)
+    fR[:] = reshape( plan*reshape(fR[:],Ns), Npoints )
+    return
+end
+
 
 #
 # Using fft and ifft directly
