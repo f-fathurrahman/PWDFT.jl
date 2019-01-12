@@ -4,19 +4,21 @@ using LinearAlgebra
 
 using PWDFT
 
-include("alt1_KS_solve_SCF.jl")
-include("../src/mix_rpulay.jl")
+const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
+const DIR_STRUCTURES = joinpath(DIR_PWDFT, "structures")
+const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
+
+include(joinpath(DIR_PWDFT, "sandbox", "scf_01", "alt1_KS_solve_SCF.jl"))
 
 function create_Hamiltonian_CH4()
     # Atoms
-    atoms = init_atoms_xyz("../structures/CH4.xyz")
+    atoms = init_atoms_xyz(joinpath(DIR_STRUCTURES,"CH4.xyz"))
     atoms.LatVecs = gen_lattice_cubic(16.0)
-    println(atoms)
 
     # Initialize Hamiltonian
     ecutwfc_Ry = 30.0
-    pspfiles = ["../pseudopotentials/pade_gth/C-q4.gth",
-                "../pseudopotentials/pade_gth/H-q1.gth"]
+    pspfiles = [joinpath(DIR_PSP,"C-q4.gth"),
+                joinpath(DIR_PSP,"H-q1.gth")]
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc_Ry*0.5, extra_states=2 )
 
     return Ham
@@ -25,25 +27,20 @@ end
 function do_calc()
 
     Ham = create_Hamiltonian_CH4()
+    println(Ham)
 
-    psiks = read_wfc(Ham)
+    if isfile("WFC_ikspin_1.data")
+        println("\nWave function is read from file\n")
+        psiks = read_wfc(Ham)
+    else
+        psiks = nothing
+    end
 
     # Solve the KS problem
     @time KS_solve_SCF!(
         Ham, ETOT_CONV_THR=1e-6, NiterMax=50, betamix=0.5, update_psi="davidson",
         savewfc=true, startingwfc=psiks
     )
-    
-    Nstates = Ham.electrons.Nstates
-    ebands = Ham.electrons.ebands
-    
-    println("\nBand energies:")
-    for ist = 1:Nstates
-        @printf("%8d  %18.10f = %18.10f eV\n", ist, ebands[ist], ebands[ist]*Ry2eV*2)
-    end
-    
-    println("\nTotal energy components")
-    println(Ham.energies)
 
     psiks = read_wfc(Ham)
 
