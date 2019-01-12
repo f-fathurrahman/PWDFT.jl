@@ -1,7 +1,11 @@
 using PWDFT
 
+const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
+const DIR_STRUCTURES = joinpath(DIR_PWDFT, "structures")
+
 function test01()
-    atoms = init_atoms_xyz("../structures/CuSO4.xyz", verbose=true)
+    filename = joinpath(DIR_STRUCTURES,"CuSO4.xyz")
+    atoms = init_atoms_xyz(filename, verbose=true)
     println(atoms)
     
     dummy_atoms = Atoms()
@@ -9,7 +13,8 @@ function test01()
 end
 
 function test02()
-    atoms = Atoms(xyz_file="../structures/CuSO4.xyz")
+    filename = joinpath(DIR_STRUCTURES, "CuSO4.xyz")
+    atoms = Atoms(xyz_file=filename)
     println(atoms)
 end
 
