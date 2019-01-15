@@ -337,7 +337,9 @@ function init_gvecw( ecutwfc::Float64, gvec::GVectors, kpoints::KPoints )
     #
     for ik = 1:Nkpt
         for ig = 1:Ng
-            Gk[:] = G[:,ig] .+ kpts[:,ik]
+            Gk[1] = G[1,ig] + kpts[1,ik]
+            Gk[2] = G[2,ig] + kpts[2,ik]
+            Gk[3] = G[3,ig] + kpts[3,ik]
             Gk2[ig] = Gk[1]^2 + Gk[2]^2 + Gk[3]^2
         end
         idx_gw2g[ik] = findall( 0.5*Gk2 .<= ecutwfc )
