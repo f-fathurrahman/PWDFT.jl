@@ -1,9 +1,9 @@
-function time_Hamiltonian()
+function time_Hamiltonian_H()
     
     @printf("\n")
-    @printf("---------------------------\n")
-    @printf("Timing Hamiltonian function\n")
-    @printf("---------------------------\n")
+    @printf("--------------------------------------------\n")
+    @printf("Timing Hamiltonian initialization for atom H\n")
+    @printf("--------------------------------------------\n")
     @printf("\n")
 
     atoms = Atoms( xyz_string="""
@@ -13,7 +13,7 @@ function time_Hamiltonian()
         """,
         LatVecs=gen_lattice_sc(16.0) )
     
-    pspfiles = ["../pseudopotentials/pade_gth/H-q1.gth"]    
+    pspfiles = [joinpath(DIR_PSP,"H-q1.gth")]
     ECUTWFC = range(15.0, stop=50.0, step=5.0)    
 
     for ecutwfc in ECUTWFC
@@ -23,4 +23,4 @@ function time_Hamiltonian()
 
 end
 
-time_Hamiltonian()
+time_Hamiltonian_H()
