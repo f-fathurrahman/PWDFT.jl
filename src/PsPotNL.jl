@@ -79,7 +79,9 @@ function PsPotNL( pw::PWGrid, atoms::Atoms, Pspots::Array{PsPot_GTH},
                 idx_gw2g = pw.gvecw.idx_gw2g[ik]
                 for igk = 1:Ngw[ik]
                     ig = idx_gw2g[igk]
-                    g = G[:,ig] + k[:,ik]
+                    g[1] = G[1,ig] + k[1,ik]
+                    g[2] = G[2,ig] + k[2,ik]
+                    g[3] = G[3,ig] + k[3,ik]
                     Gm = norm(g)
                     GX = atpos[1,ia]*g[1] + atpos[2,ia]*g[2] + atpos[3,ia]*g[3]
                     Sf = cos(GX) - im*sin(GX)
