@@ -194,7 +194,7 @@ function update!(Ham::Hamiltonian, rhoe::Array{Float64,2})
     return
 end
 
-
+# FIXME: this is not used much
 function update!( Ham::Hamiltonian, atoms::Atoms,
     strf::Array{ComplexF64,2}, pspfiles::Array{String,1} )
 
