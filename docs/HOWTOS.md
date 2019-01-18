@@ -33,6 +33,18 @@ We need to be careful to also specify `in_bohr` keyword to get
 the correct coordinates in bohr (which is used internally in `PWDFT.jl`).
 
 
+
+# Referring or including files in `sandbox` (or other dirs in `PWDFT.jl`)
+
+```julia
+using PWDFT
+const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
+const DIR_PSP = joinpath(DIR_PWDFT,"pseudopotentials","pade_gth")
+
+pspfiles = [joinpath(DIR_PSP,"Ag-q11.gth")]
+```
+
+
 # Generating lattice vectors
 
 Lattice vectors are simply 3x3 array. We can set it manually or use
@@ -40,6 +52,16 @@ one of functions defined in
 [gen_lattice_pwscf.jl](../src/gen_lattice_pwscf.jl)
 for generating lattice vectors for Bravais lattices that used
 in Quantum ESPRESSO's PWSCF.
+
+# Using Babel to generate xyz file from SMILES
+
+```
+babel file.smi file.sdf
+babel file.sdf file.xyz
+```
+
+Use `babel -h` to autogenerate hydrogens.
+
 
 
 # Setting up pseudopotentials
@@ -53,7 +75,7 @@ under `sandbox` subdirectory of `PWDFT.jl` distribution.
 ```julia
 using PWDFT
 
-DIR_PWDFT = jointpath(dirname(pathof(PWDFT)))
+DIR_PWDFT = jointpath(dirname(pathof(PWDFT)),"..")
 include(jointpath(DIRPWDFT,"sandbox","get_default_psp.jl"))
 
 atoms = Atoms(ext_xyz_file="atoms.xyz")
