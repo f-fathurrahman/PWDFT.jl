@@ -231,7 +231,7 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
         psiks[ikspin] = ortho_sqrt(psiks[ikspin])
         Hr = Hermitian(psiks[ikspin]' * op_H(Ham, psiks[ikspin]))
         evals, evecs = eigen(Hr)
-        Ham.electrons.ebands[:,:] = evals
+        Ham.electrons.ebands[:,ik] = evals
         psiks[ikspin] = psiks[ikspin]*evecs
     end
     end
