@@ -19,6 +19,7 @@ function test_H2()
 
     atoms.Zvals = [1.0]  # hardwired
 
+    println("")
     F_NN = calc_forces_NN( atoms )
 
     Natoms = atoms.Natoms
@@ -27,11 +28,37 @@ function test_H2()
         @printf("%s %18.10f %18.10f %18.10f\n", atsymbs[ia],
                 F_NN[1,ia], F_NN[2,ia], F_NN[3,ia] )
     end
+
+    F_NN = calc_forces_NN_finite_diff( atoms )
+
+    println("")
+    println("Using finite difference")
+    Natoms = atoms.Natoms
+    atsymbs = atoms.atsymbs
+    for ia = 1:Natoms
+        @printf("%s %18.10f %18.10f %18.10f\n", atsymbs[ia],
+                F_NN[1,ia], F_NN[2,ia], F_NN[3,ia] )
+    end
+
 end
 
 
 
 function test_GaAs()
+
+    LatVecs = zeros(3,3)
+    LatVecs[:,1] = [0.5, 0.5, 0.0]
+    LatVecs[:,2] = [0.5, 0.0, 0.5]
+    LatVecs[:,3] = [0.0, 0.5, 0.5]
+    LatVecs = LatVecs*5.6537*ANG2BOHR
+
+#    atoms = Atoms(xyz_string_frac=
+#        """
+#        2
+#
+#        Ga  0.0  0.0  0.0
+#        As  0.25  0.25  0.25
+#        """, in_bohr=true, LatVecs=gen_lattice_fcc(5.6537*ANG2BOHR))
 
     atoms = Atoms(xyz_string_frac=
         """
@@ -39,10 +66,11 @@ function test_GaAs()
 
         Ga  0.0  0.0  0.0
         As  0.15  0.25  0.25
-        """, in_bohr=true, LatVecs=gen_lattice_fcc(5.6537*ANG2BOHR))
+        """, in_bohr=true, LatVecs=LatVecs)
 
     atoms.Zvals = [3.0, 5.0]  # hardwired
 
+    println("")
     F_NN = calc_forces_NN( atoms )
 
     Natoms = atoms.Natoms
@@ -51,7 +79,19 @@ function test_GaAs()
         @printf("%s %18.10f %18.10f %18.10f\n", atsymbs[ia],
                 F_NN[1,ia], F_NN[2,ia], F_NN[3,ia] )
     end
+
+    F_NN = calc_forces_NN_finite_diff( atoms )
+
+    println("")
+    println("Using finite difference")
+    Natoms = atoms.Natoms
+    atsymbs = atoms.atsymbs
+    for ia = 1:Natoms
+        @printf("%s %18.10f %18.10f %18.10f\n", atsymbs[ia],
+                F_NN[1,ia], F_NN[2,ia], F_NN[3,ia] )
+    end
+
 end
 
-#test_H2()
+test_H2()
 test_GaAs()

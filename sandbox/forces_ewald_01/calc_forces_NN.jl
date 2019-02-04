@@ -135,13 +135,13 @@ function calc_forces_NN(
             x = 4*pi/Ω * exp(-0.25*G2/η^2)/G2
             #@printf("η = %f\n", η)
             Gtau = G[1]*dtau[1] + G[2]*dtau[2] + G[3]*dtau[3]
-            if abs(exp(-0.25*G2/η^2)) > 1e-10
-                @printf("%d %d %d\n", i, j, k)
-                @printf("exp factor = %18.10f\n", exp(-0.25*G2/η^2))
-                @printf("G2 = %18.10f\n", G2)
-                @printf("x = %18.10f\n", x)
-                @printf("Gtau, sin(Gtau) = %18.10f %18.10f\n", Gtau, sin(Gtau))
-            end            
+            #if abs(exp(-0.25*G2/η^2)) > 1e-10
+            #    @printf("%d %d %d\n", i, j, k)
+            #    @printf("exp factor = %18.10f\n", exp(-0.25*G2/η^2))
+            #    @printf("G2 = %18.10f\n", G2)
+            #    @printf("x = %18.10f\n", x)
+            #    @printf("Gtau, sin(Gtau) = %18.10f %18.10f\n", Gtau, sin(Gtau))
+            #end            
             F_NN_G[:,ia] = F_NN_G[:,ia] + x*sin(Gtau)*G[:]*ZiZj
         end
         end
@@ -155,6 +155,160 @@ function calc_forces_NN(
 
     F_NN = F_NN_G + F_NN_R
 
-    #return F_NN*0.5 # Convert to Hartree
-    return F_NN    
+    return -F_NN*0.5 # Convert to Hartree
+    #return F_NN
+end
+
+
+function calc_forces_NN_finite_diff(
+    atoms::Atoms; Δ=0.001
+)
+    return calc_forces_NN_finite_diff(atoms.LatVecs, atoms, atoms.Zvals; Δ=Δ)
+end
+
+
+function calc_forces_NN_finite_diff(
+    LatVecs::Array{Float64,2},
+    atoms::Atoms,
+    Zvals::Array{Float64,1}; Δ=0.001
+)
+
+    atm2species = atoms.atm2species
+    Natoms = atoms.Natoms
+
+    F_NN = zeros(3,Natoms)
+    for ia = 1:Natoms
+        for i = 1:3
+            
+            pos = copy(atoms.positions)            
+            
+            pos[i,ia] = atoms.positions[i,ia] + 0.5*Δ
+            Eplus = calc_E_NN_v3(LatVecs, Natoms, atm2species, pos, Zvals, ebsl=1e-10)
+
+            pos[i,ia] = atoms.positions[i,ia] - 0.5*Δ
+            Eminus = calc_E_NN_v3(LatVecs, Natoms, atm2species, pos, Zvals, ebsl=1e-10)
+
+            println("")
+            @printf("ia = %d idir = %d\n", ia, i)
+            @printf("Eplus  = %18.10f\n", Eplus)
+            @printf("Eminus = %18.10f\n", Eminus)
+            @printf("diff   = %18.10e\n", Eplus-Eminus)
+            @printf("F      = %18.10f\n", -(Eplus-Eminus)/Δ)
+
+            F_NN[i,ia] = -(Eplus - Eminus) / Δ
+        end
+    end
+
+    return F_NN
+end
+
+
+
+function calc_E_NN_v3(
+    LatVecs::Array{Float64,2},
+    Natoms::Int64, atm2species::Array{Int64,1}, tau::Array{Float64,2},
+    Zvals::Array{Float64,1};
+    gcut=2.0,
+    ebsl=1e-8 )
+
+    t1 = LatVecs[:,1]
+    t2 = LatVecs[:,2]
+    t3 = LatVecs[:,3]
+  
+    Ω = abs(det(LatVecs))
+
+    RecVecs = 2*pi*inv(LatVecs')
+    g1 = RecVecs[:,1]
+    g2 = RecVecs[:,2]
+    g3 = RecVecs[:,3]
+
+    t1m = sqrt(dot(t1,t1))
+    t2m = sqrt(dot(t2,t2))
+    t3m = sqrt(dot(t3,t3))
+
+    g1m = sqrt(dot(g1,g1))
+    g2m = sqrt(dot(g2,g2))
+    g3m = sqrt(dot(g3,g3))
+
+    glast2 = gcut*gcut
+    gexp = -log(ebsl)    
+    η = sqrt(glast2/gexp)/2
+
+    x = 0.0
+    totalcharge = 0.0
+    for ia = 1:Natoms
+        isp = atm2species[ia]
+        x = x + Zvals[isp]^2
+        totalcharge = totalcharge + Zvals[isp]
+    end
+
+    ewald = -2*η*x/sqrt(pi) - pi*(totalcharge^2)/(Ω*η^2)
+
+    tmax = sqrt(0.5*gexp)/η
+
+    mmm1 = round(Int64, tmax/t1m + 1.5)
+    mmm2 = round(Int64, tmax/t2m + 1.5)
+    mmm3 = round(Int64, tmax/t3m + 1.5)
+
+    dtau = zeros(Float64,3)
+    G = zeros(Float64,3)
+    T = zeros(Float64,3)
+
+    for ia = 1:Natoms
+    for ja = 1:Natoms
+        dtau[1] = tau[1,ia] - tau[1,ja]
+        dtau[2] = tau[2,ia] - tau[2,ja]
+        dtau[3] = tau[3,ia] - tau[3,ja]
+        isp = atm2species[ia]
+        jsp = atm2species[ja]
+        ZiZj = Zvals[isp]*Zvals[jsp]
+        for i = -mmm1:mmm1
+        for j = -mmm2:mmm2
+        for k = -mmm3:mmm3
+            if (ia != ja) || ( (abs(i) + abs(j) + abs(k)) != 0 )
+                T[1] = i*t1[1] + j*t2[1] + k*t3[1]
+                T[2] = i*t1[2] + j*t2[2] + k*t3[2]
+                T[3] = i*t1[3] + j*t2[3] + k*t3[3]
+                rmag2 = sqrt( (dtau[1] - T[1])^2 +
+                              (dtau[2] - T[2])^2 +
+                              (dtau[3] - T[3])^2 )
+                ewald = ewald + ZiZj*erfc(rmag2*η)/rmag2
+            end
+        end
+        end
+        end
+    end
+    end
+
+    mmm1 = round(Int64, gcut/g1m + 1.5)
+    mmm2 = round(Int64, gcut/g2m + 1.5)
+    mmm3 = round(Int64, gcut/g3m + 1.5)
+      
+    for i = -mmm1:mmm1
+    for j = -mmm2:mmm2
+    for k = -mmm3:mmm3
+        if ( abs(i) + abs(j) + abs(k) ) != 0
+            G[1] = i*g1[1] + j*g2[1] + k*g3[1]
+            G[2] = i*g1[2] + j*g2[2] + k*g3[2]
+            G[3] = i*g1[3] + j*g2[3] + k*g3[3]        
+            G2 = G[1]^2 + G[2]^2 + G[3]^2
+            x = 4*pi/Ω * exp(-0.25*G2/η^2)/G2
+            for ia = 1:Natoms
+            for ja = 1:Natoms
+                isp = atm2species[ia]
+                jsp = atm2species[ja]
+                ZiZj = Zvals[isp]*Zvals[jsp]
+                dtau[1] = tau[1,ia] - tau[1,ja]
+                dtau[2] = tau[2,ia] - tau[2,ja]
+                dtau[3] = tau[3,ia] - tau[3,ja]
+                Gtau = G[1]*dtau[1] + G[2]*dtau[2] + G[3]*dtau[3]
+                ewald = ewald + x*ZiZj*cos(Gtau)
+            end # ja
+            end # ia
+        end # if
+    end
+    end
+    end
+
+    return ewald*0.5 # Convert to Hartree
 end
