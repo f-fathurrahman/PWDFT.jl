@@ -61,6 +61,8 @@ function calc_forces_NN(
     mmm2 = round(Int64, tmax/t2m + 1.5)
     mmm3 = round(Int64, tmax/t3m + 1.5)
 
+    @printf("R-space sum indices: %d %d %d\n", mmm1, mmm2, mmm3)
+
     dtau = zeros(Float64,3)
     G = zeros(Float64,3)
     T = zeros(Float64,3)
@@ -112,6 +114,8 @@ function calc_forces_NN(
     mmm2 = round(Int64, gcut/g2m + 1.5)
     mmm3 = round(Int64, gcut/g3m + 1.5)
 
+    @printf("G-space sum indices: %d %d %d\n", mmm1, mmm2, mmm3)
+
     for ia = 1:Natoms
     for ja = 1:Natoms
         
@@ -132,15 +136,7 @@ function calc_forces_NN(
             G[3] = i*g1[3] + j*g2[3] + k*g3[3]        
             G2 = G[1]^2 + G[2]^2 + G[3]^2
             x = 4*pi/Ω * exp(-0.25*G2/η^2)/G2
-            #@printf("η = %f\n", η)
             Gtau = G[1]*dtau[1] + G[2]*dtau[2] + G[3]*dtau[3]
-            #if abs(exp(-0.25*G2/η^2)) > 1e-10
-            #    @printf("%d %d %d\n", i, j, k)
-            #    @printf("exp factor = %18.10f\n", exp(-0.25*G2/η^2))
-            #    @printf("G2 = %18.10f\n", G2)
-            #    @printf("x = %18.10f\n", x)
-            #    @printf("Gtau, sin(Gtau) = %18.10f %18.10f\n", Gtau, sin(Gtau))
-            #end            
             F_NN_G[:,ia] = F_NN_G[:,ia] + x*sin(Gtau)*G[:]*ZiZj
         end
         end
