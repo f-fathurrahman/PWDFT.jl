@@ -14,13 +14,13 @@ function test_H2()
         2
 
         H      3.83653478       4.23341768       4.23341768
-        H      4.63030059       4.23341768       4.23341768
+        H      4.73030059       4.23341768       4.23341768
         """, LatVecs=gen_lattice_sc(16.0))
 
     atoms.Zvals = [1.0]  # hardwired
 
     println("")
-    F_NN = calc_forces_NN( atoms )
+    F_NN = calc_forces_NN( atoms )*2.0
 
     Natoms = atoms.Natoms
     atsymbs = atoms.atsymbs
@@ -29,7 +29,7 @@ function test_H2()
                 F_NN[1,ia], F_NN[2,ia], F_NN[3,ia] )
     end
 
-    F_NN = calc_forces_NN_finite_diff( atoms )
+    F_NN = calc_forces_NN_finite_diff( atoms )*2.0
 
     println("")
     println("Using finite difference")
@@ -65,13 +65,13 @@ function test_GaAs()
         2
 
         Ga  0.0  0.0  0.0
-        As  0.15  0.25  0.25
+        As  0.25  0.35  0.25
         """, in_bohr=true, LatVecs=LatVecs)
 
     atoms.Zvals = [3.0, 5.0]  # hardwired
 
     println("")
-    F_NN = calc_forces_NN( atoms )
+    F_NN = calc_forces_NN( atoms )*2.0
 
     Natoms = atoms.Natoms
     atsymbs = atoms.atsymbs
@@ -80,7 +80,7 @@ function test_GaAs()
                 F_NN[1,ia], F_NN[2,ia], F_NN[3,ia] )
     end
 
-    F_NN = calc_forces_NN_finite_diff( atoms )
+    F_NN = calc_forces_NN_finite_diff( atoms )*2.0
 
     println("")
     println("Using finite difference")

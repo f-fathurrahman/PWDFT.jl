@@ -48,8 +48,8 @@ function calc_forces_NN(
     tau = atoms.positions
 
     # Parameters
-    gcut = 2.0
-    ebsl = 1e-8
+    gcut = 20.0
+    ebsl = 1e-10
 
     glast2 = gcut*gcut
     gexp = -log(ebsl)    
@@ -74,7 +74,6 @@ function calc_forces_NN(
 
     for ia = 1:Natoms
     for ja = 1:Natoms
-    if ia != ja
 
         dtau[1] = tau[1,ia] - tau[1,ja]
         dtau[2] = tau[2,ia] - tau[2,ja]
@@ -87,7 +86,8 @@ function calc_forces_NN(
         for i = -mmm1:mmm1
         for j = -mmm2:mmm2
         for k = -mmm3:mmm3
-            if (abs(i) + abs(j) + abs(k)) != 0
+            if (ia != ja) || ( (abs(i) + abs(j) + abs(k)) != 0 )            
+#            if (abs(i) + abs(j) + abs(k)) != 0
                 T[1] = i*t1[1] + j*t2[1] + k*t3[1]
                 T[2] = i*t1[2] + j*t2[2] + k*t3[2]
                 T[3] = i*t1[3] + j*t2[3] + k*t3[3]
@@ -105,7 +105,6 @@ function calc_forces_NN(
         end
     end
     end
-    end
 
     println(F_NN_R)
 
@@ -115,11 +114,11 @@ function calc_forces_NN(
 
     for ia = 1:Natoms
     for ja = 1:Natoms
-    if ia != ja
         
         isp = atm2species[ia]
         jsp = atm2species[ja]
         ZiZj = Zvals[isp]*Zvals[jsp]
+
         dtau[1] = tau[1,ia] - tau[1,ja]
         dtau[2] = tau[2,ia] - tau[2,ja]
         dtau[3] = tau[3,ia] - tau[3,ja]
@@ -149,14 +148,13 @@ function calc_forces_NN(
         end # if
     end
     end
-    end
 
     println(F_NN_G)
 
     F_NN = F_NN_G + F_NN_R
 
-    return -F_NN*0.5 # Convert to Hartree
-    #return F_NN
+    #return F_NN*0.5
+    return F_NN
 end
 
 
@@ -176,6 +174,8 @@ function calc_forces_NN_finite_diff(
     atm2species = atoms.atm2species
     Natoms = atoms.Natoms
 
+    println("Zvals = ", Zvals)
+
     F_NN = zeros(3,Natoms)
     for ia = 1:Natoms
         for i = 1:3
@@ -188,12 +188,12 @@ function calc_forces_NN_finite_diff(
             pos[i,ia] = atoms.positions[i,ia] - 0.5*Δ
             Eminus = calc_E_NN_v3(LatVecs, Natoms, atm2species, pos, Zvals, ebsl=1e-10)
 
-            println("")
-            @printf("ia = %d idir = %d\n", ia, i)
-            @printf("Eplus  = %18.10f\n", Eplus)
-            @printf("Eminus = %18.10f\n", Eminus)
-            @printf("diff   = %18.10e\n", Eplus-Eminus)
-            @printf("F      = %18.10f\n", -(Eplus-Eminus)/Δ)
+            #println("")
+            #@printf("ia = %d idir = %d\n", ia, i)
+            #@printf("Eplus  = %18.10f\n", Eplus)
+            #@printf("Eminus = %18.10f\n", Eminus)
+            #@printf("diff   = %18.10e\n", Eplus-Eminus)
+            #@printf("F      = %18.10f\n", -(Eplus-Eminus)/Δ)
 
             F_NN[i,ia] = -(Eplus - Eminus) / Δ
         end
