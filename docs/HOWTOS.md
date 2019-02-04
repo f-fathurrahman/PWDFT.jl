@@ -40,6 +40,7 @@ the correct coordinates in bohr (which is used internally in `PWDFT.jl`).
 using PWDFT
 const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
 const DIR_PSP = joinpath(DIR_PWDFT,"pseudopotentials","pade_gth")
+const DIR_STRUCTURES = joinpath(DIR_PWDFT, "structures")
 
 pspfiles = [joinpath(DIR_PSP,"Ag-q11.gth")]
 ```

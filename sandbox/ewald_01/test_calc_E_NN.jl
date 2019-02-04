@@ -2,11 +2,14 @@ using LinearAlgebra
 using Printf
 using PWDFT
 
+const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
+const DIR_STRUCTURES = joinpath(DIR_PWDFT, "structures")
+
 #=
 ewald = 3.58126919 Ry = 1.790634595 Ha
 =#
 function test_N2()
-    atoms = init_atoms_xyz("../structures/N2.xyz")
+    atoms = Atoms(xyz_file=joinpath(DIR_STRUCTURES,"N2.xyz"))
     println(atoms)
 
     LatVecs = gen_lattice_sc(16.0)
@@ -25,7 +28,7 @@ end
 ewald contribution = 0.62633998 Ry = 0.31316999 Ha
 """
 function test_H2()
-    atoms = init_atoms_xyz("../structures/H2.xyz")
+    atoms = Atoms(xyz_file=joinpath(DIR_STRUCTURES,"H2.xyz"))
     println(atoms)
 
     LatVecs = gen_lattice_sc(16.0)
@@ -44,7 +47,7 @@ end
 PWSCF result = -0.04393722 Ry = -0.02196861 Ha
 """
 function test_LiH()
-    atoms = init_atoms_xyz("../structures/LiH.xyz")
+    atoms = Atoms(xyz_file=joinpath(DIR_STRUCTURES,"LiH.xyz"))
     println(atoms)
 
     LatVecs = gen_lattice_sc(16.0)
@@ -63,7 +66,7 @@ end
 PWSCF result = -0.17733109 Ry = -0.088665545 Ha
 """
 function test_H()
-    atoms = init_atoms_xyz("../structures/H.xyz")
+    atoms = Atoms(xyz_file=joinpath(DIR_STRUCTURES,"H.xyz"))
     println(atoms)
 
     LatVecs = gen_lattice_sc(16.0)
