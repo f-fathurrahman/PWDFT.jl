@@ -5,6 +5,8 @@ using PWDFT
 const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
 const DIR_STRUCTURES = joinpath(DIR_PWDFT, "structures")
 
+include("calc_E_NN_v2.jl")
+
 #=
 ewald = 3.58126919 Ry = 1.790634595 Ha
 =#
@@ -14,7 +16,7 @@ function test_N2()
     LatVecs = gen_lattice_sc(16.0)
     Zvals = [5.0] # XXX hardwired
 
-    E_NN = calc_E_NN( LatVecs, atoms, Zvals )
+    E_NN = calc_E_NN_v2( LatVecs, atoms, Zvals )
 
     E_NN_ref = 1.790634595
     diffE = abs(E_NN - E_NN_ref)
@@ -32,7 +34,7 @@ function test_H2()
     LatVecs = gen_lattice_sc(16.0)
     Zvals = [1.0] # XXX hardwired
 
-    E_NN = calc_E_NN( LatVecs, atoms, Zvals )
+    E_NN = calc_E_NN_v2( LatVecs, atoms, Zvals )
 
     E_NN_ref = 0.31316999 
     diffE = abs(E_NN - E_NN_ref)
@@ -50,7 +52,7 @@ function test_LiH()
     LatVecs = gen_lattice_sc(16.0)
     Zvals = [1.0,1.0] # XXX hardwired
 
-    E_NN = calc_E_NN( LatVecs, atoms, Zvals )
+    E_NN = calc_E_NN_v2( LatVecs, atoms, Zvals )
     
     E_NN_ref = -0.02196861
     diffE = abs(E_NN - E_NN_ref)
@@ -68,7 +70,7 @@ function test_H()
     LatVecs = gen_lattice_sc(16.0)
     Zvals = [1.0] # XXX hardwired
 
-    E_NN = calc_E_NN( LatVecs, atoms, Zvals )
+    E_NN = calc_E_NN_v2( LatVecs, atoms, Zvals )
 
     E_NN_ref = -0.088665545
     diffE = abs(E_NN - E_NN_ref)
@@ -90,7 +92,7 @@ function test_Si_fcc()
 
     atoms.Zvals = [4.0]  # hardwired
 
-    E_NN = calc_E_NN( atoms )
+    E_NN = calc_E_NN_v2( atoms )
 
     E_NN_ref = -16.79585054*0.5
 
@@ -114,7 +116,7 @@ function test_GaAs()
 
     atoms.Zvals = [3.0, 5.0]  # hardwired
 
-    E_NN = calc_E_NN( atoms )
+    E_NN = calc_E_NN_v2( atoms )
 
     E_NN_ref = -16.84241132*0.5
 

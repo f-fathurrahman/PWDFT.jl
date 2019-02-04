@@ -1,15 +1,15 @@
 using SpecialFunctions: erfc
 
-function calc_E_NN( atoms::Atoms )
-    return calc_E_NN( atoms.LatVecs, atoms, atoms.Zvals )
+function calc_E_NN_v2( atoms::Atoms )
+    return calc_E_NN_v2( atoms.LatVecs, atoms, atoms.Zvals )
 end
 
-function calc_E_NN( atoms::Atoms, Zvals::Array{Float64,1} )
-    return calc_E_NN( atoms.LatVecs, atoms, Zvals )
+function calc_E_NN_v2( atoms::Atoms, Zvals::Array{Float64,1} )
+    return calc_E_NN_v2( atoms.LatVecs, atoms, Zvals )
 end
 
-function calc_E_NN( pw::PWGrid, atoms::Atoms, Zvals::Array{Float64,1} )
-    return calc_E_NN( pw.LatVecs, atoms, Zvals )
+function calc_E_NN_v2( pw::PWGrid, atoms::Atoms, Zvals::Array{Float64,1} )
+    return calc_E_NN_v2( pw.LatVecs, atoms, Zvals )
 end
 
 """
@@ -39,7 +39,7 @@ The original code is written in Rydberg unit.
 Revised to improve readability and using η to match the definition
 used in Eq. (F.5) in Prof. Richard Martins' book.
 """
-function calc_E_NN( LatVecs::Array{Float64,2}, atoms::Atoms, Zvals::Array{Float64,1} )
+function calc_E_NN_v2( LatVecs::Array{Float64,2}, atoms::Atoms, Zvals::Array{Float64,1} )
 
     t1 = LatVecs[:,1]
     t2 = LatVecs[:,2]
