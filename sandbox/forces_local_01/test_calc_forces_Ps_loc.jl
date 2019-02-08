@@ -24,25 +24,26 @@ function test_H2()
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc )
 
     Random.seed!(1234)
-    KS_solve_Emin_PCG!(Ham, ETOT_CONV_THR=1e-8)
+    #KS_solve_Emin_PCG!(Ham, ETOT_CONV_THR=1e-8)
+    KS_solve_SCF!(Ham, mix_method="pulay", ETOT_CONV_THR=1e-8)
 
     Natoms = atoms.Natoms
     atsymbs = atoms.atsymbs
 
     println("")
-    F_Ps_loc = calc_forces_Ps_loc( Ham )*2.0
+    F_Ps_loc = calc_forces_Ps_loc( Ham.atoms, Ham.pw, Ham.pspots, Ham.rhoe )*2.0
     for ia = 1:Natoms
         @printf("%s %18.10f %18.10f %18.10f\n", atsymbs[ia],
                 F_Ps_loc[1,ia], F_Ps_loc[2,ia], F_Ps_loc[3,ia] )
     end
 
-#    F_Ps_loc = calc_forces_Ps_loc_finite_diff( Ham )*2.0
-#    println("")
-#    println("Using finite difference")
-#    for ia = 1:Natoms
-#        @printf("%s %18.10f %18.10f %18.10f\n", atsymbs[ia],
-#                F_Ps_loc[1,ia], F_Ps_loc[2,ia], F_Ps_loc[3,ia] )
-#    end
+    println("")
+    F_Ps_loc = calc_forces_Ps_loc_finite_diff( Ham.atoms, Ham.pw, Ham.pspots, Ham.rhoe )*2.0
+    println("Using finite difference")
+    for ia = 1:Natoms
+        @printf("%s %18.10f %18.10f %18.10f\n", atsymbs[ia],
+                F_Ps_loc[1,ia], F_Ps_loc[2,ia], F_Ps_loc[3,ia] )
+    end
 
 end
 
