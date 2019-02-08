@@ -61,8 +61,6 @@ function calc_forces_NN(
     mmm2 = round(Int64, tmax/t2m + 1.5)
     mmm3 = round(Int64, tmax/t3m + 1.5)
 
-    @printf("R-space sum indices: %d %d %d\n", mmm1, mmm2, mmm3)
-
     dtau = zeros(Float64,3)
     G = zeros(Float64,3)
     T = zeros(Float64,3)
@@ -76,6 +74,7 @@ function calc_forces_NN(
 
     for ia = 1:Natoms
     for ja = 1:Natoms
+    if ia != ja
 
         dtau[1] = tau[1,ia] - tau[1,ja]
         dtau[2] = tau[2,ia] - tau[2,ja]
@@ -88,8 +87,7 @@ function calc_forces_NN(
         for i = -mmm1:mmm1
         for j = -mmm2:mmm2
         for k = -mmm3:mmm3
-            if (ia != ja) || ( (abs(i) + abs(j) + abs(k)) != 0 )            
-#            if (abs(i) + abs(j) + abs(k)) != 0
+            if (abs(i) + abs(j) + abs(k)) != 0
                 T[1] = i*t1[1] + j*t2[1] + k*t3[1]
                 T[2] = i*t1[2] + j*t2[2] + k*t3[2]
                 T[3] = i*t1[3] + j*t2[3] + k*t3[3]
@@ -107,6 +105,7 @@ function calc_forces_NN(
         end
     end
     end
+    end
 
     println(F_NN_R)
 
@@ -114,10 +113,9 @@ function calc_forces_NN(
     mmm2 = round(Int64, gcut/g2m + 1.5)
     mmm3 = round(Int64, gcut/g3m + 1.5)
 
-    @printf("G-space sum indices: %d %d %d\n", mmm1, mmm2, mmm3)
-
     for ia = 1:Natoms
     for ja = 1:Natoms
+    if ia != ja
         
         isp = atm2species[ia]
         jsp = atm2species[ja]
@@ -142,6 +140,7 @@ function calc_forces_NN(
         end
         end
         end # if
+    end
     end
     end
 

@@ -14,7 +14,7 @@ function test_H2()
         2
 
         H      3.83653478       4.23341768       4.23341768
-        H      4.73030059       4.23341768       4.23341768
+        H      4.63030059       4.23341768       4.23341768
         """, LatVecs=gen_lattice_sc(16.0))
 
     atoms.Zvals = [1.0]  # hardwired
@@ -132,3 +132,4 @@ end
 test_H2()
 test_GaAs()
 test_Si_fcc()
+
