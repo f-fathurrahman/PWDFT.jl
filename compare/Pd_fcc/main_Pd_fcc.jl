@@ -41,14 +41,16 @@ end
     -kT*entropy     = -2.26701305153683E-02
     >>>>>>>>> Etotal= -2.84397220063240E+01
 
-Kinetic    energy:      23.5372109366
-Ps_loc     energy:      -5.3317439583
-Ps_nloc    energy:     -13.8733354170
-Hartree    energy:       3.2345191391
-XC         energy:      -5.1246108125
+Kinetic    energy:      25.5438065335
+Ps_loc     energy:      -9.8715679296
+Ps_nloc    energy:     -16.0142752833
+Hartree    energy:       3.4706813329
+XC         energy:      -4.8667156881
+PspCore    energy:       3.9972245314
+-TS              :      -0.0222154525
 -------------------------------------
-Electronic energy:       2.4420398879
-NN         energy:     -31.1867538034
+Electronic energy:       2.2369380442
+NN         energy:     -31.1867519715
 -------------------------------------
-Total      energy:     -28.7447139155
+Total free energy:     -28.9498139273
 =#
