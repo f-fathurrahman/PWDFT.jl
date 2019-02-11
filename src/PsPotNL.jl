@@ -16,7 +16,7 @@ function println( pspotNL::PsPotNL )
 end
 
 
-function PsPotNL( pw::PWGrid, atoms::Atoms, Pspots::Array{PsPot_GTH},
+function PsPotNL( atoms::Atoms, pw::PWGrid, Pspots::Array{PsPot_GTH},
                   kpoints::KPoints; check_norm=false )
 
     Natoms = atoms.Natoms

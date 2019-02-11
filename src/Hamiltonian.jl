@@ -97,7 +97,7 @@ function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
                            Nstates_empty=extra_states )
 
     # NL pseudopotentials
-    pspotNL = PsPotNL( pw, atoms, Pspots, kpoints, check_norm=false )
+    pspotNL = PsPotNL( atoms, pw, Pspots, kpoints, check_norm=false )
 
     atoms.Zvals = get_Zvals( Pspots )
 
