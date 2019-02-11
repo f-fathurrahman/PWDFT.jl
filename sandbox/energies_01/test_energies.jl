@@ -1,6 +1,6 @@
 using Printf
-
-include("../src/Energies.jl")
+using PWDFT
+using BenchmarkTools
 
 function test_main()
     energies = Energies()
@@ -8,8 +8,6 @@ function test_main()
 
     println("test sum: ", sum(energies))
 end
-
-using BenchmarkTools
 
 function test_bench()
     energies = Energies()
