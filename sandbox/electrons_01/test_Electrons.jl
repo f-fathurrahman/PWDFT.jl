@@ -1,16 +1,23 @@
 using Printf
 using PWDFT
 
+const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
+const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
+const DIR_STRUCTURES = joinpath(DIR_PWDFT, "structures")
+
 function test_CuSO4()
-    atoms = init_atoms_xyz("../structures/CuSO4.xyz")
+    atoms = Atoms(
+        xyz_file=joinpath(DIR_STRUCTURES,"CuSO4.xyz"),
+        LatVecs=gen_lattice_sc(20.0)
+    )
     println(atoms)
     
     Nspecies = atoms.Nspecies
     
     Pspots = Array{PsPot_GTH}(undef,Nspecies)
-    pspfiles = ["../pseudopotentials/pade_gth/Cu-q11.gth",
-                "../pseudopotentials/pade_gth/O-q6.gth",
-                "../pseudopotentials/pade_gth/S-q6.gth"]
+    pspfiles = [joinpath(DIR_PSP, "Cu-q11.gth"),
+                joinpath(DIR_PSP, "O-q6.gth"),
+                joinpath(DIR_PSP, "S-q6.gth")]
     for isp = 1:Nspecies
         Pspots[isp] = PsPot_GTH(pspfiles[isp])
         println(Pspots[isp])
@@ -26,20 +33,18 @@ end
 
 
 function test_Ni_fcc()
-    atoms = init_atoms_xyz_string(
+    atoms = Atoms(xyz_string=
         """
         1
 
         Ni  0.0  0.0  0.0
-        """
-    )
-    atoms.LatVecs = gen_lattice_fcc(5.0)
+        """, LatVecs = gen_lattice_fcc(5.0))
     println(atoms)
     
     Nspecies = atoms.Nspecies
     
     Pspots = Array{PsPot_GTH}(undef,Nspecies)
-    pspfiles = ["../pseudopotentials/pade_gth/Ni-q18.gth"]
+    pspfiles = [joinpath(DIR_PSP, "Ni-q18.gth")]
 
     for isp = 1:Nspecies
         Pspots[isp] = PsPot_GTH(pspfiles[isp])
