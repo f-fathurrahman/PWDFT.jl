@@ -114,6 +114,35 @@ Rhoe = calc_rhoe( Ham, psiks )
 calc_rhoe!( Ham, psiks, Rhoe )
 ```
 
+# Read and write array (binary file)
+
+Write to binary files:
+```julia
+for ikspin = 1:Nkpt*Nspin
+    wfc_file = open("WFC_ikspin_"*string(ikspin)*".data","w")
+    write( wfc_file, psiks[ikspin] )
+    close( wfc_file )
+end
+```
+
+Read from binary files:
+```julia
+psiks = BlochWavefunc(undef,Nkpt)
+for ispin = 1:Nspin
+for ik = 1:Nkpt
+    ikspin = ik + (ispin-1)*Nkpt
+    # Don't forget to use read mode
+    wfc_file = open("WFC_ikspin_"*string(ikspin)*".data","r")
+    psiks[ikspin] = Array{ComplexF64}(undef,Ngw[ik],Nstates)
+    psiks[ikspin] = read!( wfc_file, psiks[ikspin] )
+    close( wfc_file )
+end
+end
+```
+
+
+
+
 # Subspace rotation
 
 In case need sorting:
