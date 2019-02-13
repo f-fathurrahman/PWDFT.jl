@@ -1,4 +1,4 @@
-\documentclass[a4paper,12pt]{paper}
+\documentclass[a4paper,12pt]{article}
 
 \usepackage[a4paper]{geometry}
 \geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
@@ -6,10 +6,8 @@
 \setlength{\parskip}{\smallskipamount}
 \setlength{\parindent}{0pt}
 
-\usepackage{mathptmx}
 \usepackage{fontspec}
-\setmainfont{Times New Roman}
-\setmonofont{FreeMono}
+\setmonofont{Iosevka}
 
 \usepackage{hyperref}
 \usepackage{url}
@@ -643,7 +641,11 @@ Presently only working for systems with band gap (insulators and semiconductors)
 \jlcode{update_psi="CheFSI"}
 
 
-\section{Status}
+\part{Howtos}
+\input{HOWTOS.tex}
+
+
+\section*{Status}
 
 \textbf{28 May 2018} The following features are working now:
 \begin{itemize}
@@ -671,5 +673,8 @@ even though I did not use the same algorithm as ABINIT.
 system.}
 
 SCF stability has been improved with Pulay mixing and its variants.
+
+
+
 
 \end{document}
