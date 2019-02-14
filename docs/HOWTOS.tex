@@ -97,6 +97,28 @@ then
 pspfiles = ["Al-q3.gth", "O-q6.gth", "H-q1.gth"]
 \end{juliacode}
 
+\subsection*{Initializing Hamiltonian}
+
+For molecular systems:
+\begin{juliacode}
+Ham = Hamiltonian( atoms, pspfiles, ecutwfc )
+\end{juliacode}
+
+For insulator and semiconductor solids:
+\begin{juliacode}
+Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3] )
+\end{juliacode}
+
+For metallic systems:
+\begin{juliacode}
+Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3], extra_states=4 )
+\end{juliacode}
+
+Empty extra states can be specified by using \jlcode{extra_states} keyword.
+
+For spin-polarized systems, \jlcode{Nspin} keyword can be used.
+
+
 
 \subsection*{Calculating electron density}
 
