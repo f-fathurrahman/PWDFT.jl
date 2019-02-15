@@ -119,6 +119,13 @@ Empty extra states can be specified by using \jlcode{extra_states} keyword.
 For spin-polarized systems, \jlcode{Nspin} keyword can be used.
 
 
+\subsection*{Iterative diagonalization of Hamiltonian}
+
+\begin{juliacode}
+evals =  diag_LOBPCG!( Ham, psiks, verbose=false, verbose_last=false,
+                       Nstates_conv=Nstates_occ )
+\end{juliacode}
+
 
 \subsection*{Calculating electron density}
 
