@@ -23,13 +23,14 @@ structure package such as Quantum ESPRESSO, ABINIT, VASP, etc.
 
 ## Requirements
 
-- [Julia](https://julialang.org/downloads) version > 0.7:
+- [Julia](https://julialang.org/downloads) version >= 0.7:
   with `FFTW` and `SpecialFunctions` packages installed.
-- [LibXC](https://gitlab.com/libxc/libxc) version > 3.0:
+- [LibXC](https://gitlab.com/libxc/libxc) version >= 3.0:
   which needs to be compiled and and installed separately.
 - [SPGLIB](https://github.com/atztogo/spglib): which needs to be compiled and installed
   separately.
-- A working C compiler to compile LibXC and SPGLIB.
+- A working C compiler to compile LibXC and SPGLIB. Other development tools
+  such as Cmake and Make are required to compile these libraries.
 
 ## Installation
 
