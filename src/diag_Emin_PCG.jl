@@ -13,7 +13,7 @@ function diag_Emin_PCG( Ham::Hamiltonian, X0::Array{ComplexF64,2};
 end
 
 
-function diag_Emin_PCG!( Ham::Hamiltonian, psiks::Array{Array{ComplexF64,2},1};
+function diag_Emin_PCG!( Ham::Hamiltonian, psiks::BlochWavefunc;
                          tol=1e-5, NiterMax=100, verbose=false,
                          verbose_last=false, Nstates_conv=0,
                          tol_ebands=1e-4,

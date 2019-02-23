@@ -18,7 +18,7 @@ function zeros_BlochWavefunc( pw::PWGrid, Nstates::Int64, Nspin::Int64)
 
     Nkspin = Nspin*Nkpt
 
-    psiks = Array{Array{ComplexF64,2},1}(undef,Nkspin)
+    psiks = BlochWavefunc(undef,Nkspin)
 
     for ispin = 1:Nspin
     for ik = 1:Nkpt
@@ -36,7 +36,7 @@ end
 # -----------------------------------------------------------------------------
 
 function rand_BlochWavefunc( Ham::Hamiltonian )
-    return rand_BlochWavefunc( Ham.pw, Ham.electrons )
+    return rand_BlochWavefunc( Ham.pw, Ham.electrons.Nstates, Ham.electrons.Nspin )
 end
 
 function rand_BlochWavefunc( pw::PWGrid, electrons::Electrons )

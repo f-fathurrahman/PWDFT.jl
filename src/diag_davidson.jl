@@ -9,7 +9,7 @@ function diag_davidson( Ham::Hamiltonian, X0::Array{ComplexF64,2};
 end
 
 
-function diag_davidson!( Ham::Hamiltonian, psiks::Array{Array{ComplexF64,2},1};
+function diag_davidson!( Ham::Hamiltonian, psiks::BlochWavefunc;
                          tol=1e-5, NiterMax=100, verbose=false,
                          verbose_last=false, Nstates_conv=0 )
     

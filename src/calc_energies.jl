@@ -25,7 +25,7 @@ end
 #
 # Use ik and spin
 #
-function calc_E_Ps_nloc( Ham::Hamiltonian, psiks::Array{Array{ComplexF64,2},1} )
+function calc_E_Ps_nloc( Ham::Hamiltonian, psiks::BlochWavefunc )
 
     Nstates = Ham.electrons.Nstates
     Focc = Ham.electrons.Focc
@@ -138,7 +138,7 @@ end
 # Ham is assumed to be already updated at input psi
 #
 # Ham.energies.NN should be calculated outside this function
-function calc_energies( Ham::Hamiltonian, psiks::Array{Array{ComplexF64,2},1} )
+function calc_energies( Ham::Hamiltonian, psiks::BlochWavefunc )
 
     pw = Ham.pw
     potentials = Ham.potentials

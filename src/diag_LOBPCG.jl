@@ -1,4 +1,4 @@
-function diag_LOBPCG!( Ham::Hamiltonian, psiks::Array{Array{ComplexF64,2},1};
+function diag_LOBPCG!( Ham::Hamiltonian, psiks::BlochWavefunc;
                        tol=1e-5, NiterMax=100, verbose=false,
                        verbose_last=false, Nstates_conv=0 )
     
