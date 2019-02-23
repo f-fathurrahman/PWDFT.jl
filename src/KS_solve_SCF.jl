@@ -166,7 +166,8 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
                             Nstates_conv=Nstates_occ )
 
         elseif update_psi == "CheFSI"
-            # evals will be calculated later
+
+            evals =
             diag_CheFSI!( Ham, psiks, cheby_degree )
 
         else
@@ -316,20 +317,6 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
         Etot_old = Etot
 
         flush(stdout)
-    end
-
-    # Eigenvalues are not calculated if using CheFSI.
-    # We calculate them here.
-    if update_psi == "CheFSI"
-        for ispin = 1:Nspin
-        for ik = 1:Nkpt
-            Ham.ik = ik
-            Ham.ispin = ispin
-            ikspin = ik + (ispin - 1)*Nkpt
-            Hr = psiks[ikspin]' * op_H( Ham, psiks[ikspin] )
-            evals[:,ikspin] = eigvals(Hermitian(Hr))
-        end
-        end
     end
 
     Ham.electrons.ebands = evals

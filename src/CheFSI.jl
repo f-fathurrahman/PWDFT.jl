@@ -1,36 +1,58 @@
-function diag_CheFSI!( Ham::Hamiltonian, psiks::BlochWavefunc, cheby_degree::Int64)
+function diag_CheFSI!(
+    Ham::Hamiltonian,
+    psiks::BlochWavefunc,
+    cheby_degree::Int64
+)
     Nspin = Ham.electrons.Nspin
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     Nstates = Ham.electrons.Nstates
+
+    Nkspin = Nkpt*Nspin
+    evals = zeros(Nstates,Nkspin)
 
     for ispin = 1:Nspin
     for ik = 1:Nkpt
         Ham.ik = ik
         Ham.ispin = ispin
         ikspin = ik + (ispin - 1)*Nkpt
+        
         ub, lb = get_ub_lb_lanczos( Ham, Nstates*2 )
+        
         psiks[ikspin] = chebyfilt( Ham, psiks[ikspin], cheby_degree, lb, ub)
-        psiks[ikspin] = ortho_sqrt( psiks[ikspin] )
+        ortho_sqrt!( psiks[ikspin] )
+
+        Hr = psiks[ikspin]' * op_H( Ham, psiks[ikspin] )
+        evals[:,ikspin] = eigvals(Hermitian(Hr))
     end
     end
+
+    return evals
+
 end
 
 
-function chebyfilt( Ham::Hamiltonian, X, degree, lb, ub)
+function chebyfilt(
+    Ham::Hamiltonian,
+    X::Array{ComplexF64,2},
+    degree::Int64,
+    lb::Int64, 
+    ub::Int64
+)
+
     Ngw_ik  = size(X)[1]
     Nstates = size(X)[2]
-    #
+
     ee = (ub - lb)/2
     c = (ub + lb)/2
     sigma = ee/(lb-ub)
     sigma1 = sigma
-    #
+
     Y = zeros(ComplexF64,Ngw_ik,Nstates)
     Y1 = zeros(ComplexF64,Ngw_ik,Nstates)
-    #
+
     Y = op_H(Ham, X) - X*c
     Y = Y*sigma1/ee
-    #
+
     for i = 2:degree
         sigma2 = 1/(2/sigma1 - sigma)
         Y1 = ( op_H(Ham,Y) - Y*c)*2 * sigma2/ee - X*(sigma*sigma2)
