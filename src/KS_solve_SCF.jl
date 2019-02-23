@@ -3,7 +3,7 @@ Solves Kohn-Sham problem using traditional self-consistent field (SCF)
 iterations with density mixing.
 """
 function KS_solve_SCF!( Ham::Hamiltonian ;
-                        startingwfc=nothing, savewfc=false,
+                        startingwfc=:random, savewfc=false,
                         startingrhoe=:gaussian,
                         betamix = 0.2, NiterMax=100, verbose=true,
                         print_final_ebands=true,
@@ -39,12 +39,13 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
     Nstates_occ = electrons.Nstates_occ
 
     #
-    # Random guess of wave function
+    # Initial wave function
     #
-    if startingwfc == nothing
-        psiks = rand_BlochWavefunc(pw, electrons)
+    if startingwfc == :read
+        psiks = read_psiks( Ham )
     else
-        psiks = startingwfc
+        # generate random BlochWavefunc
+        psiks = rand_BlochWavefunc( Ham )
     end
 
     E_GAP_INFO = false

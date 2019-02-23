@@ -1,5 +1,5 @@
 function KS_solve_TRDCM!( Ham::Hamiltonian;
-                          NiterMax = 100, startingwfc=nothing,
+                          NiterMax = 100, startingwfc=:random,
                           verbose=true,
                           print_final_ebands=true, print_final_energies=true,
                           savewfc=false, ETOT_CONV_THR=1e-6 )
@@ -22,16 +22,18 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
 
     Nkspin = Nkpt*Nspin
 
-    psiks = Array{Array{ComplexF64,2},1}(undef,Nkspin)
+    psiks = BlochWavefunc(undef,Nkspin)
 
     #
     # Initial wave function
     #
-    if startingwfc == nothing
-        psiks = rand_BlochWavefunc(pw, electrons)
+    if startingwfc == :read
+        psiks = read_psiks( Ham )
     else
-        psiks = startingwfc
+        # generate random BlochWavefunc
+        psiks = rand_BlochWavefunc( Ham )
     end
+
 
     #
     # Calculated electron density from this wave function and update Hamiltonian
@@ -66,9 +68,10 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
     Etot_old = Etot
 
     # subspace
-    Y = Array{Array{ComplexF64,2},1}(undef,Nkspin)
-    R = Array{Array{ComplexF64,2},1}(undef,Nkspin)
-    P = Array{Array{ComplexF64,2},1}(undef,Nkspin)
+    Y = BlochWavefunc(undef,Nkspin)
+    R = BlochWavefunc(undef,Nkspin)
+    P = BlochWavefunc(undef,Nkspin)
+    #
     G = Array{Array{ComplexF64,2},1}(undef,Nkspin)
     T = Array{Array{Float64,2},1}(undef,Nkspin)
     B = Array{Array{Float64,2},1}(undef,Nkspin)
@@ -88,7 +91,8 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
     end
     end
 
-    D = zeros(Float64,3*Nstates,Nkspin)  # array for saving eigenvalues of subspace problem
+    # array for saving eigenvalues of subspace problem
+    D = zeros(Float64,3*Nstates,Nkspin)
 
     #XXX use plain 3d-array for G, T, and B ?
 

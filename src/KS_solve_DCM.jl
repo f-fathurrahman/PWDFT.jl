@@ -3,7 +3,7 @@ Solves Kohn-Sham problem using direct constrined minimization (DCM) as described
 by Yang.
 """
 function KS_solve_DCM!( Ham::Hamiltonian;
-                        NiterMax = 100, startingwfc=nothing,
+                        NiterMax = 100, startingwfc=:random,
                         verbose=true,
                         print_final_ebands=true, print_final_energies=true,
                         savewfc=false, ETOT_CONV_THR=1e-6 )
@@ -27,15 +27,16 @@ function KS_solve_DCM!( Ham::Hamiltonian;
 
     Nkspin = Nkpt*Nspin
 
-    psiks = Array{Array{ComplexF64,2},1}(undef,Nkspin)
+    psiks = BlochWavefunc(undef,Nkspin)
 
     #
     # Initial wave function
     #
-    if startingwfc == nothing
-        psiks = rand_BlochWavefunc(pw, electrons)
+    if startingwfc == :read
+        psiks = read_psiks( Ham )
     else
-        psiks = startingwfc
+        # generate random BlochWavefunc
+        psiks = rand_BlochWavefunc( Ham )
     end
 
     #
@@ -72,9 +73,10 @@ function KS_solve_DCM!( Ham::Hamiltonian;
     Etot_old = sum(Ham.energies)
 
     # subspace
-    Y = Array{Array{ComplexF64,2},1}(undef,Nkspin)
-    R = Array{Array{ComplexF64,2},1}(undef,Nkspin)
-    P = Array{Array{ComplexF64,2},1}(undef,Nkspin)
+    Y = BlochWavefunc(undef,Nkspin)
+    R = BlochWavefunc(undef,Nkspin)
+    P = BlochWavefunc(undef,Nkspin)
+
     G = Array{Array{ComplexF64,2},1}(undef,Nkspin)
     T = Array{Array{Float64,2},1}(undef,Nkspin)
     B = Array{Array{Float64,2},1}(undef,Nkspin)

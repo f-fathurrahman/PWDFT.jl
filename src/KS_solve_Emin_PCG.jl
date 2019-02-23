@@ -3,8 +3,9 @@ Solves Kohn-Sham problem using direct energy minimization as described
 by Ismail-Beigi and Arias.
 """
 function KS_solve_Emin_PCG!( Ham::Hamiltonian;
-                             startingwfc=nothing, savewfc=false,
+                             startingwfc=:random, savewfc=false,
                              startingrhoe=:gaussian,
+                             skip_initial_diag=false,
                              α_t=3e-5, NiterMax=200, verbose=true,
                              print_final_ebands=true, print_final_energies=true,
                              I_CG_BETA=2, ETOT_CONV_THR=1e-6 )
@@ -29,10 +30,11 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
     #
     # Initial wave function
     #
-    if startingwfc == nothing
-        psiks = rand_BlochWavefunc(pw, electrons)
+    if startingwfc == :read
+        psiks = read_psiks( Ham )
     else
-        psiks = startingwfc
+        # generate random BlochWavefunc
+        psiks = rand_BlochWavefunc( Ham )
     end
 
     #
@@ -51,43 +53,23 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
     update!(Ham, Rhoe)
 
     evals = zeros(Nstates,Nkspin)
+    if !skip_initial_diag
+        evals =
+        diag_LOBPCG!( Ham, psiks, verbose=false, verbose_last=false, NiterMax=10 )
+    end
 
-    # Starting eigenvalues and psi
-    for ispin = 1:Nspin
-    for ik = 1:Nkpt
-        Ham.ik = ik
-        Ham.ispin = ispin
-        ikspin = ik + (ispin - 1)*Nkpt
-        evals[:,ikspin], psiks[ikspin] =
-        diag_LOBPCG( Ham, psiks[ikspin], verbose_last=false, NiterMax=10 )
-    end
-    end
 
     #
     # Variables for PCG
     #
-    g = Array{Array{ComplexF64,2},1}(undef,Nkspin)
-    d = Array{Array{ComplexF64,2},1}(undef,Nkspin)
-    g_old = Array{Array{ComplexF64,2},1}(undef,Nkspin)
-    d_old = Array{Array{ComplexF64,2},1}(undef,Nkspin)
-    Kg = Array{Array{ComplexF64,2},1}(undef,Nkspin)
-    Kg_old = Array{Array{ComplexF64,2},1}(undef,Nkspin)
-    psic = Array{Array{ComplexF64,2},1}(undef,Nkspin)
-    gt = Array{Array{ComplexF64,2},1}(undef,Nkspin)
-    #
-    for ispin = 1:Nspin
-    for ik = 1:Nkpt
-        ikspin = ik + (ispin - 1)*Nkpt
-        g[ikspin] = zeros(ComplexF64, Ngw[ik], Nstates)
-        d[ikspin] = zeros(ComplexF64, Ngw[ik], Nstates)
-        g_old[ikspin] = zeros(ComplexF64, Ngw[ik], Nstates)
-        d_old[ikspin] = zeros(ComplexF64, Ngw[ik], Nstates)
-        Kg[ikspin] = zeros(ComplexF64, Ngw[ik], Nstates)
-        Kg_old[ikspin] = zeros(ComplexF64, Ngw[ik], Nstates)
-        psic[ikspin] = zeros(ComplexF64, Ngw[ik], Nstates)
-        gt[ikspin] = zeros(ComplexF64, Ngw[ik], Nstates)
-    end
-    end
+    g      = zeros_BlochWavefunc( Ham )
+    d      = zeros_BlochWavefunc( Ham )
+    g_old  = zeros_BlochWavefunc( Ham )
+    d_old  = zeros_BlochWavefunc( Ham )
+    Kg     = zeros_BlochWavefunc( Ham )
+    Kg_old = zeros_BlochWavefunc( Ham )
+    psic   = zeros_BlochWavefunc( Ham )
+    gt     = zeros_BlochWavefunc( Ham )
     
     β = zeros(Nkspin)
     α = zeros(Nkspin)
