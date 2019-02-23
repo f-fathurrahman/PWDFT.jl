@@ -7,7 +7,6 @@ const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
 const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
 
 include("calc_forces_Ps_nloc.jl")
-include("read_psiks.jl")
 
 function test_Si_fcc()
 
