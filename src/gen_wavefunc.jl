@@ -1,5 +1,15 @@
-function rand_Wavefunc( Nbasis, Nstates )
-    return ortho_sqrt( rand(ComplexF64,Nbasis,Nstates) )
+# -----------------------------------------------------------------------------
+# Generate "zeros" wavefunction
+# -----------------------------------------------------------------------------
+
+function zeros_BlochWavefunc( Ham::Hamiltonian )
+    return zeros_BlochWavefunc( Ham.pw, Ham.electrons )
+end
+
+function zeros_BlochWavefunc( pw::PWGrid, electrons::Electrons )
+    Nspin = electrons.Nspin
+    Nstates = electrons.Nstates
+    return zeros_BlochWavefunc( pw, Nstates, Nspin )
 end
 
 function zeros_BlochWavefunc( pw::PWGrid, Nstates::Int64, Nspin::Int64)
@@ -19,13 +29,15 @@ function zeros_BlochWavefunc( pw::PWGrid, Nstates::Int64, Nspin::Int64)
 	return psiks
 end
 
-function zeros_BlochWavefunc( pw::PWGrid, electrons::Electrons )
-    Nspin = electrons.Nspin
-    Nstates = electrons.Nstates
-    return zeros_BlochWavefunc( pw, Nstates, Nspin )
+
+
+# -----------------------------------------------------------------------------
+# Generate random wavefunction
+# -----------------------------------------------------------------------------
+
+function rand_Wavefunc( Nbasis, Nstates )
+    return ortho_sqrt( rand(ComplexF64,Nbasis,Nstates) )
 end
-
-
 
 function rand_BlochWavefunc( pw::PWGrid, Nstates::Int64, Nspin::Int64 )
     Nkpt = pw.gvecw.kpoints.Nkpt
@@ -55,6 +67,3 @@ function rand_BlochWavefunc( Ham::Hamiltonian )
     return rand_BlochWavefunc( Ham.pw, Ham.electrons )
 end
 
-function zeros_BlochWavefunc( Ham::Hamiltonian )
-    return zeros_BlochWavefunc( Ham.pw, Ham.electrons )
-end
