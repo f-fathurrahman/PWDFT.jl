@@ -53,7 +53,6 @@ include("XSF_utils.jl")
 export write_xsf,
        write_xsf_data3d_crystal
 
-
 # General utilities
 include("Utilities.jl")
 export print_matrix
@@ -228,5 +227,9 @@ export KS_solve_TRDCM!
 include("CheFSI.jl")
 export chebyfilt,
        get_ub_lb_lanczos
+
+include("read_psiks.jl")
+export read_psiks
+
 
 end

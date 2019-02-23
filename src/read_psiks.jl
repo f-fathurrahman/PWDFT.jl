@@ -1,4 +1,4 @@
-function read_psiks(Ham)
+function read_psiks( Ham::Hamiltonian )
 
     Nstates = Ham.electrons.Nstates
     Ngw = Ham.pw.gvecw.Ngw
