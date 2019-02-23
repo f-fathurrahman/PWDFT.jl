@@ -35,8 +35,14 @@ end
 # Generate random wavefunction
 # -----------------------------------------------------------------------------
 
-function rand_Wavefunc( Nbasis, Nstates )
-    return ortho_sqrt( rand(ComplexF64,Nbasis,Nstates) )
+function rand_BlochWavefunc( Ham::Hamiltonian )
+    return rand_BlochWavefunc( Ham.pw, Ham.electrons )
+end
+
+function rand_BlochWavefunc( pw::PWGrid, electrons::Electrons )
+    Nspin = electrons.Nspin
+    Nstates = electrons.Nstates
+    return rand_BlochWavefunc( pw, Nstates, Nspin )
 end
 
 function rand_BlochWavefunc( pw::PWGrid, Nstates::Int64, Nspin::Int64 )
@@ -57,13 +63,7 @@ function rand_BlochWavefunc( pw::PWGrid, Nstates::Int64, Nspin::Int64 )
 	return psiks
 end
 
-function rand_BlochWavefunc( pw::PWGrid, electrons::Electrons )
-    Nspin = electrons.Nspin
-    Nstates = electrons.Nstates
-    return rand_BlochWavefunc( pw, Nstates, Nspin )
-end
-
-function rand_BlochWavefunc( Ham::Hamiltonian )
-    return rand_BlochWavefunc( Ham.pw, Ham.electrons )
+function rand_Wavefunc( Nbasis, Nstates )
+    return ortho_sqrt( rand(ComplexF64,Nbasis,Nstates) )
 end
 
