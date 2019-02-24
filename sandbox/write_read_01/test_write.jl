@@ -8,7 +8,7 @@ function test_kpoints()
     H  0.0   0.0   0.0
     H  0.25  0.25  0.25
     """, LatVecs=gen_lattice_fcc(5.0))
-    kpoints = KPoints( atoms, [4,4,4], [0,0,0])
+    kpoints = KPoints(atoms, [4,4,4], [0,0,0])
 
     println(kpoints)
 
