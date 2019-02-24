@@ -86,7 +86,7 @@ function PsPotNL( atoms::Atoms, pw::PWGrid, Pspots::Array{PsPot_GTH,1},
                     GX = atpos[1,ia]*g[1] + atpos[2,ia]*g[2] + atpos[3,ia]*g[3]
                     Sf = cos(GX) - im*sin(GX)
                     betaNL[igk,ibeta,ik] =
-                    (1.0*im)^l * Ylm_real(l,m,g) * eval_proj_G(psp,l,iprj,Gm,pw.CellVolume) * Sf
+                    Ylm_real(l,m,g)*eval_proj_G(psp,l,iprj,Gm,pw.CellVolume)*Sf
                 end
             end
             end
