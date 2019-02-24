@@ -70,7 +70,7 @@ function Ylm_complex( l::Int64, m::Int64, R::Array{Float64,1} )
             return ylm
 
         elseif m == 0
-            ylm = 0.25*sqrt(7.0/pi) * ( 2.0*z^2 - 3.0*x^2 - 3*y^2 ) / r^3 + im*0.0
+            ylm = 0.25*sqrt(7.0/pi) * z * ( 2.0*z^2 - 3.0*x^2 - 3*y^2 ) / r^3 + im*0.0
             return ylm
 
         elseif m == 1
