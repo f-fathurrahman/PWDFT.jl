@@ -16,7 +16,7 @@ function println( pspotNL::PsPotNL )
 end
 
 
-function PsPotNL( atoms::Atoms, pw::PWGrid, Pspots::Array{PsPot_GTH},
+function PsPotNL( atoms::Atoms, pw::PWGrid, Pspots::Array{PsPot_GTH,1},
                   kpoints::KPoints; check_norm=false )
 
     Natoms = atoms.Natoms
@@ -104,7 +104,11 @@ end
 
 
 
-function check_betaNL_norm( pw, betaNL, kpoints::KPoints )
+function check_betaNL_norm(
+    pw::PWGrid,
+    betaNL::Array{ComplexF64,3},
+    kpoints::KPoints
+)
 
     Npoints = prod(pw.Ns)
     NbetaNL = size(betaNL)[2]
@@ -122,7 +126,7 @@ function check_betaNL_norm( pw, betaNL, kpoints::KPoints )
         #
         for ibeta = 1:NbetaNL
             norm_G = dot( betaNL[:,ibeta,ik], betaNL[:,ibeta,ik] )
-            ctmp[:] = 0.0 + im*0.0
+            ctmp[:] .= 0.0 + im*0.0
             ctmp[idx_gw2r] = betaNL[:,ibeta,ik]
             ctmp = G_to_R(pw, ctmp)*Npoints
             data3d = real(ctmp)
