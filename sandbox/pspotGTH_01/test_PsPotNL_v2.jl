@@ -35,10 +35,7 @@ function test_main()
         println(psp)
     end
 
-    kpoints = KPoints( atoms, [1,1,1], [0,0,0] )
-    println(kpoints)
-
-    pspotNL = PsPotNL_v2( atoms, pw, pspots, kpoints, check_norm=true )
+    pspotNL = PsPotNL_v2( atoms, pw, pspots, check_norm=true )
 
 end
 

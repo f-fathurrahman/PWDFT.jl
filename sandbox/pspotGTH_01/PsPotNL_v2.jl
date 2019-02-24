@@ -1,11 +1,10 @@
 function PsPotNL_v2(
     atoms::Atoms,
     pw::PWGrid,
-    pspots::Array{PsPot_GTH,1},
-    kpoints::KPoints;
+    pspots::Array{PsPot_GTH,1};
     check_norm=false
 )
-
+    kpoints = pw.gvecw.kpoints
     Natoms = atoms.Natoms
     atm2species = atoms.atm2species
     atpos = atoms.positions
