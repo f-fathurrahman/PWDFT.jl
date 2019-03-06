@@ -51,7 +51,7 @@ Configure and install SPGLIB (using Cmake)
 cd spglib-master
 mkdir build
 cd build
-cmake -D CMAKE_INSTALL_PREFIX=/usr/local/spglib-1.10.4
+cmake -D CMAKE_INSTALL_PREFIX=/usr/local/spglib-1.10.4 ../
 make
 make install  # may need root privilege
 ```
