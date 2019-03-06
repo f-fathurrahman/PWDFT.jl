@@ -62,6 +62,46 @@ Institut Teknologi Bandung
 
 \end{frame}
 
+\begin{frame}
+\frametitle{Software packages for DFT calculations}
+
+There are a lot of software packages for DFT calculations, for examples:
+
+\begin{itemize}
+\item Quantum ESPRESSO
+\item VASP
+\item ABINIT
+\item Gaussian series: G03, G09, G16
+\item NWchem
+\end{itemize}
+
+More extensive list:
+\url{https://en.wikipedia.org/wiki/List_of_quantum_chemistry_and_solid-state_physics_software}
+
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Problems}
+
+These packages are very helpful for doing various calculations based on DFT.
+
+These packages are suitable for black-box-type calculations where we are only concerned about the results.
+
+However they are generally quite difficult to be extended. For example if there are some new development
+on the DFT functionals, users generally need to wait for the next release of the package to use them
+(if these functionals are to be implemented at all).
+
+Another example is when users want to develop custom post-processing tools. Users need to know in some detail
+about how the data they are interested in is represented or implemented in the package's source code.
+
+\end{frame}
+
+
+
+
 
 \begin{frame}
 \frametitle{PWDFT.jl}
@@ -78,11 +118,12 @@ Institut Teknologi Bandung
 
 
 \begin{frame}
-\frametitle{Aim}
+\frametitle{Aims}
 
 \begin{itemize}
-\item Friendly-to-develop DFT package
-\item quick development for testing various algorithms
+\item Friendly-to-developers DFT package: enables quick implementation of various algorithms
+\item educational purpose: simple yet powerful enough to carry out practical DFT calculations
+for molecular and crystalline systems.
 \end{itemize}
 
 \end{frame}

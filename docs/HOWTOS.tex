@@ -170,7 +170,6 @@ end
 \subsection*{Subspace rotation}
 
 In case need sorting:
-
 \begin{juliacode}
 Hr = psiks[ikspin]' * op_H( Ham, psiks[ikspin] )
 evals, evecs = eigen(Hr)
@@ -186,4 +185,8 @@ Ham.electrons.ebands[:,ikspin] = evals[idx_sorted]
 psiks[ikspin] = psiks[ikspin]*evecs[:,idx_sorted]
 \end{juliacode}
 
-
+Usually we don't need to sort the eigenvalues if we use Hermitian matrix. We can calculate the
+subspace Hamiltonian by:
+\begin{juliacode}
+evals, evecs = eigen(Hermitian(Hr))
+\end{juliacode}
