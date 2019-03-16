@@ -9,13 +9,6 @@ function PsPotNL()
     return PsPotNL(0, zeros(Int64,1,1,1,1), zeros(ComplexF64,1,1,1) )
 end
 
-import Base: println
-function println( pspotNL::PsPotNL )
-    @printf("\n")
-    @printf("NbetaNL = %d", pspotNL.NbetaNL)
-end
-
-
 function PsPotNL( atoms::Atoms, pw::PWGrid, Pspots::Array{PsPot_GTH,1},
                   kpoints::KPoints; check_norm=false )
 
@@ -155,3 +148,5 @@ function calc_betaNL_psi( ik::Int64, betaNL::Array{ComplexF64,3}, psi::Array{Com
     end
     return betaNL_psi
 end
+
+include("PsPotNL_io.jl")
