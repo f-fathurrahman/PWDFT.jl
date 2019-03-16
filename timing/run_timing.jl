@@ -7,6 +7,7 @@ using PWDFT
 const DIR_PWDFT = joinpath( dirname(pathof(PWDFT)), "..")
 const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
 const DIR_STRUCTURES = joinpath(DIR_PWDFT, "structures")
+const DIR_TIMING = joinpath(DIR_PWDFT, "timing")
 
 import Dates
 function time_stamp(message::String)
@@ -43,7 +44,7 @@ if Nargs == 0
         "time_op_kpt_1.jl"
     ]    
     for fil in FILELIST
-        include(fil)
+        include(joinpath(DIR_TIMING, fil))
     end
 else
     include(ARGS[1])
