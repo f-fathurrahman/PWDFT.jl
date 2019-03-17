@@ -20,7 +20,6 @@ function calc_forces_Ps_loc(
             Rhoe_tot[ip] = Rhoe_tot[ip] + Rhoe[ip,ispin]
         end
     end
-    @printf("Integ Rhoe_tot = %18.10f\n", sum(Rhoe_tot)*pw.CellVolume/prod(pw.Ns))
 
     RhoeG = R_to_G(pw, Rhoe_tot)/Npoints  # this normalization is required
 
@@ -44,8 +43,7 @@ function calc_forces_Ps_loc(
             Vg_ig = eval_Vloc_G( psp, G2[ig] )
 
             ip = idx_g2r[ig]
-            F_Ps_loc[:,ia] = F_Ps_loc[:,ia] +
-                             im*G[:,ig]*Vg_ig*conj(RhoeG[ip])*Sf
+            F_Ps_loc[:,ia] = F_Ps_loc[:,ia] + im*G[:,ig]*Vg_ig*conj(RhoeG[ip])*Sf
             #F_Ps_loc[:,ia] = F_Ps_loc[:,ia] +
             #G[:,ig]*Vg_ig*(sin(GX)*real(RhoeG[ip]) + cos(GX)*imag(RhoeG[ip]))
         end
