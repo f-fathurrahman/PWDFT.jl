@@ -50,6 +50,22 @@ function test_Si_fcc()
                 F_Ps_nloc[1,ia], F_Ps_nloc[2,ia], F_Ps_nloc[3,ia] )
     end
 
+    #println("\nTest calc_dbetaNL:")
+    #dbetaNL = calc_dbetaNL(Ham.atoms, Ham.pw, Ham.pspots, Ham.pspotNL)
+    #println("sum dbetaNL = ", sum(dbetaNL))
+
+    #ik = 1
+    #dbetaNL_psi = calc_dbetaNL_psi(ik, dbetaNL, psiks[1])
+    #println("sum dbetaNL_psi = ", sum(dbetaNL_psi))
+
+    F_Ps_nloc =
+    calc_forces_Ps_nloc( Ham.atoms, Ham.pw, Ham.pspots, Ham.electrons, Ham.pspotNL, psiks )*2.0
+    println("Analytic:")
+    for ia = 1:Natoms
+        @printf("%s %18.10f %18.10f %18.10f\n", atsymbs[ia],
+                F_Ps_nloc[1,ia], F_Ps_nloc[2,ia], F_Ps_nloc[3,ia] )
+    end
+
 
 end
 
