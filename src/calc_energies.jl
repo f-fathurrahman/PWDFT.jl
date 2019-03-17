@@ -1,30 +1,3 @@
-# FIXME: psi is not used
-function calc_E_xc( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
-    CellVolume = Ham.pw.CellVolume
-    Npoints = prod(Ham.pw.Ns)
-    rhoe = Ham.rhoe
-    if Ham.xcfunc == "PBE"
-        epsxc = calc_epsxc_PBE( Ham.pw, rhoe )
-    else
-        epsxc = calc_epsxc_VWN( rhoe )
-    end
-    E_xc = dot( epsxc, rhoe ) * CellVolume/Npoints
-    return E_xc
-end
-
-
-function calc_E_Hartree( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
-    potentials = Ham.potentials
-    CellVolume = Ham.pw.CellVolume
-    Npoints = prod(Ham.pw.Ns)
-    rhoe = Ham.rhoe
-    E_Hartree = 0.5*dot( potentials.Hartree, rhoe ) * CellVolume/Npoints
-    return E_Hartree
-end
-
-#
-# Use ik and spin
-#
 function calc_E_Ps_nloc( Ham::Hamiltonian, psiks::BlochWavefunc )
 
     Nstates = Ham.electrons.Nstates
@@ -74,63 +47,6 @@ function calc_E_Ps_nloc( Ham::Hamiltonian, psiks::BlochWavefunc )
 
 end
 
-#
-# Use Nkpt = 1, Nspin = 1
-#
-function calc_E_Ps_nloc( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
-
-    Nstates = Ham.electrons.Nstates
-    Focc = Ham.electrons.Focc
-    Natoms = Ham.atoms.Natoms
-    atm2species = Ham.atoms.atm2species
-    Pspots = Ham.pspots
-    prj2beta = Ham.pspotNL.prj2beta
-    wk = Ham.pw.gvecw.kpoints.wk
-    NbetaNL = Ham.pspotNL.NbetaNL
-
-    ik = 1
-    ispin = 1
-    ikspin = 1
-
-    # calculate E_NL
-    E_Ps_nloc = 0.0
-
-    betaNL_psi = zeros(ComplexF64,Nstates,NbetaNL)
-
-    betaNL_psi = calc_betaNL_psi( ik, Ham.pspotNL.betaNL, psi )
-    
-    for ist = 1:Nstates
-        
-        enl1 = 0.0
-        
-        for ia = 1:Natoms
-            
-            isp = atm2species[ia]
-            psp = Pspots[isp]
-            
-            for l = 0:psp.lmax
-            for m = -l:l
-            for iprj = 1:psp.Nproj_l[l+1]
-            for jprj = 1:psp.Nproj_l[l+1]
-                ibeta = prj2beta[iprj,ia,l+1,m+psp.lmax+1]
-                jbeta = prj2beta[jprj,ia,l+1,m+psp.lmax+1]
-                hij = psp.h[l+1,iprj,jprj]
-                enl1 = enl1 + hij*real(conj(betaNL_psi[ist,ibeta])*betaNL_psi[ist,jbeta])
-            end
-            end
-            end # m
-            end # l
-        
-        end
-        
-        E_Ps_nloc = E_Ps_nloc + wk[ik]*Focc[ist,ikspin]*enl1
-    
-    end
-
-    return E_Ps_nloc
-
-end
-
 
 #
 # psi is assumed to be already orthonormalized elsewhere
@@ -170,22 +86,38 @@ function calc_energies( Ham::Hamiltonian, psiks::BlochWavefunc )
     end
     end
 
-    Rhoe_total = zeros(Npoints)
+    Rhoe_tot = zeros(Npoints)
     for ispin = 1:Nspin
-        Rhoe_total[:] = Rhoe_total[:] + Ham.rhoe[:,ispin]
+        Rhoe_tot[:] = Rhoe_tot[:] + Ham.rhoe[:,ispin]
     end
 
-    E_Hartree = 0.5*dot( potentials.Hartree, Rhoe_total ) * dVol
+    cRhoeG = conj(R_to_G(pw, Rhoe_tot))/Npoints
+    V_HartreeG = R_to_G(pw, potentials.Hartree)
+    V_Ps_locG = R_to_G(pw, potentials.Ps_loc)
 
-    E_Ps_loc = dot( potentials.Ps_loc, Rhoe_total ) * dVol
-
-    Rhoe = Ham.rhoe
     if Ham.xcfunc == "PBE"
-        epsxc = calc_epsxc_PBE( Ham.pw, Rhoe )
+        epsxc = calc_epsxc_PBE( Ham.pw, Ham.rhoe )
     else
-        epsxc = calc_epsxc_VWN( Rhoe )
+        epsxc = calc_epsxc_VWN( Ham.rhoe )
     end
-    E_xc = dot( epsxc, Rhoe_total ) * dVol
+    epsxcG = R_to_G(pw, epsxc)
+
+    E_Hartree = 0.0
+    E_Ps_loc = 0.0
+    for ig = 2:pw.gvec.Ng
+        ip = pw.gvec.idx_g2r[ig]
+        E_Hartree = E_Hartree + real( V_HartreeG[ip]*cRhoeG[ip] )
+        E_Ps_loc = E_Ps_loc + real( V_Ps_locG[ip]*cRhoeG[ip] )
+    end
+    E_Hartree = 0.5*E_Hartree*CellVolume/Npoints
+    E_Ps_loc = E_Ps_loc*CellVolume/Npoints
+
+    E_xc = 0.0
+    for ig = 1:pw.gvec.Ng
+        ip = pw.gvec.idx_g2r[ig]
+        E_xc = E_xc + real( epsxcG[ip]*cRhoeG[ip] )
+    end
+    E_xc = E_xc*CellVolume/Npoints
 
     if Ham.pspotNL.NbetaNL > 0
         E_Ps_nloc = calc_E_Ps_nloc( Ham, psiks )
@@ -205,67 +137,3 @@ function calc_energies( Ham::Hamiltonian, psiks::BlochWavefunc )
     return energies
 end
 
-
-
-# Special use for Nkpt=1 and Nspin=1
-# !!! Not extended for general k-dependent wavefunction
-#
-# psi is assumed to be already orthonormalized elsewhere
-# `potentials` and `Rhoe` are not updated
-# Ham is assumed to be already updated at input psi
-#
-function calc_energies( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
-
-    @assert( Ham.pw.gvecw.kpoints.Nkpt == 1 )
-    @assert( Ham.electrons.Nspin == 1 )
-
-    pw = Ham.pw
-    potentials = Ham.potentials
-    Focc = Ham.electrons.Focc
-
-    ik = 1
-    ispin = 1
-
-    CellVolume = pw.CellVolume
-    Ns = pw.Ns
-    Npoints = prod(Ns)
-
-    Ngwx = size(psi)[1]  # This should be guaranted by Nkpt = 1
-    Nstates = size(psi)[2]
-
-    Kpsi = op_K( Ham, psi )
-    E_kin = 0.0
-    for ist = 1:Nstates
-        E_kin = E_kin + Focc[ist,1] * real( dot( psi[:,ist], Kpsi[:,ist] ) )
-    end
-
-    Rhoe = Ham.rhoe
-
-    E_Hartree = 0.5*dot( potentials.Hartree, Rhoe ) * CellVolume/Npoints
-
-    E_Ps_loc = dot( potentials.Ps_loc, Rhoe ) * CellVolume/Npoints
-
-    if Ham.xcfunc == "PBE"
-        epsxc = calc_epsxc_PBE( Ham.pw, Rhoe )
-    else
-        epsxc = calc_epsxc_VWN( Rhoe )
-    end
-    E_xc = dot( epsxc, Rhoe ) * CellVolume/Npoints
-
-    if Ham.pspotNL.NbetaNL > 0
-        E_Ps_nloc = calc_E_Ps_nloc( Ham, psi )
-    else
-        E_Ps_nloc = 0.0
-    end
-
-    energies = Energies()
-    energies.Kinetic = E_kin
-    energies.Ps_loc  = E_Ps_loc
-    energies.Ps_nloc = E_Ps_nloc
-    energies.Hartree = E_Hartree
-    energies.XC      = E_xc
-    energies.NN      = Ham.energies.NN
-    energies.PspCore = Ham.energies.PspCore
-
-    return energies
-end
