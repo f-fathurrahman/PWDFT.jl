@@ -23,7 +23,7 @@ function create_Ham_Si_fcc()
     pspfiles = [joinpath(DIR_PSP, "Si-q4.gth")]
 
     ecutwfc = 15.0
-    return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3] )
+    return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[8,8,8] )
 end
 
 
@@ -48,7 +48,7 @@ function create_Ham_GaAs_v1()
                 joinpath(DIR_PSP, "As-q5.gth")]
 
     ecutwfc = 15.0
-    return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3] )
+    return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[8,8,8] )
 end
 
 
@@ -65,21 +65,21 @@ function create_Ham_GaAs_v2()
                 joinpath(DIR_PSP, "As-q5.gth")]
 
     ecutwfc = 15.0
-    return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3] )
+    return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[8,8,8] )
 end
 
 
 function test_main()
 
-    Ham = create_Ham_Si_fcc()
-    #Ham = create_Ham_GaAs_v1()
+    #Ham = create_Ham_Si_fcc()
+    Ham = create_Ham_GaAs_v1()
     #Ham = create_Ham_GaAs_v2()
 
     println(Ham)
 
     Random.seed!(1234)
     
-    KS_solve_Emin_PCG!(Ham, ETOT_CONV_THR=1e-6, savewfc=true)
+    KS_solve_Emin_PCG!(Ham, ETOT_CONV_THR=1e-8, savewfc=true)
     #KS_solve_SCF!(Ham, mix_method="rpulay", ETOT_CONV_THR=1e-8, savewfc=true)
 
     psiks = read_psiks(Ham)
