@@ -9,12 +9,13 @@ function PsPotNL()
     return PsPotNL(0, zeros(Int64,1,1,1,1), zeros(ComplexF64,1,1,1) )
 end
 
-function PsPotNL( atoms::Atoms, pw::PWGrid, Pspots::Array{PsPot_GTH,1},
-                  kpoints::KPoints; check_norm=false )
+function PsPotNL( atoms::Atoms, pw::PWGrid, Pspots::Array{PsPot_GTH,1}; check_norm=false )
 
     Natoms = atoms.Natoms
     atm2species = atoms.atm2species
     atpos = atoms.positions
+
+    kpoints = pw.gvecw.kpoints
 
     # 4: indexed from 0:3
     # 0, 1, 2, 3  -> l indexed
