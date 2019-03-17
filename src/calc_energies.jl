@@ -39,7 +39,7 @@ function calc_E_Ps_nloc( Ham::Hamiltonian, psiks::BlochWavefunc )
     Nspin = Ham.electrons.Nspin
 
     # calculate E_NL
-    E_ps_NL = 0.0
+    E_Ps_nloc = 0.0
 
     betaNL_psi = zeros(ComplexF64,Nstates,NbetaNL)
     for ispin = 1:Nspin
@@ -65,12 +65,12 @@ function calc_E_Ps_nloc( Ham::Hamiltonian, psiks::BlochWavefunc )
                 end # m
                 end # l
             end
-            E_ps_NL = E_ps_NL + wk[ik]*Focc[ist,ikspin]*enl1
+            E_Ps_nloc = E_Ps_nloc + wk[ik]*Focc[ist,ikspin]*enl1
         end
     end
     end
 
-    return E_ps_NL
+    return E_Ps_nloc
 
 end
 
@@ -93,7 +93,7 @@ function calc_E_Ps_nloc( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
     ikspin = 1
 
     # calculate E_NL
-    E_ps_NL = 0.0
+    E_Ps_nloc = 0.0
 
     betaNL_psi = zeros(ComplexF64,Nstates,NbetaNL)
 
@@ -123,11 +123,11 @@ function calc_E_Ps_nloc( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
         
         end
         
-        E_ps_NL = E_ps_NL + wk[ik]*Focc[ist,ikspin]*enl1
+        E_Ps_nloc = E_Ps_nloc + wk[ik]*Focc[ist,ikspin]*enl1
     
     end
 
-    return E_ps_NL
+    return E_Ps_nloc
 
 end
 
