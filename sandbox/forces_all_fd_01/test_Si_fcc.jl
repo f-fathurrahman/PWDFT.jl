@@ -1,5 +1,6 @@
 using LinearAlgebra
 using Printf
+using Random
 using PWDFT
 
 const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
@@ -15,12 +16,13 @@ function test_main()
 
         Si  0.0  0.0  0.0
         Si  0.25  0.25  0.25
-        """, in_bohr=true, LatVecs=gen_lattice_fcc(5.431*ANG2BOHR))
+        """, in_bohr=true, LatVecs=gen_lattice_fcc(10.2631))
+    # LatVecs=gen_lattice_fcc(5.431*ANG2BOHR)
 
     pspfiles = [joinpath(DIR_PSP, "Si-q4.gth")]
     ecutwfc = 15.0
 
-    forces = calc_forces_finite_diff(atoms, pspfiles, ecutwfc)*2.0
+    forces = calc_forces_finite_diff(atoms, pspfiles, ecutwfc, [3,3,3])*2.0
 
     println("")
     println("forces (in Ry/au) = ")

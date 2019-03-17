@@ -1,7 +1,8 @@
 function calc_forces_finite_diff(
     atoms::Atoms,
     pspfiles::Array{String,1},
-    ecutwfc::Float64
+    ecutwfc::Float64,
+    meshk::Array{Int64,1}
 )
 
     pos_orig = copy(atoms.positions)
@@ -17,43 +18,30 @@ function calc_forces_finite_diff(
     F_Kinetic = zeros(3,Natoms)
     F_Ps_nloc = zeros(3,Natoms)
 
-    Δ = 0.005
+    Random.seed!(1234)
+
+    Δ = 0.001
     for ia = 1:Natoms
     for ii = 1:3
         
-        atoms.positions[:,:] = copy(pos_orig)
+        # set to original positions
+        atoms.positions[:,:] = pos_orig[:,:]
 
         atoms.positions[ii,ia] = pos_orig[ii,ia] + 0.5*Δ
-
-        println("")
-        println("positions in angstrom")
-        for ia = 1:Natoms
-            @printf("%s %18.10f %18.10f %18.10f\n", atoms.atsymbs[ia],
-                atoms.positions[1,ia]/ANG2BOHR,
-                atoms.positions[2,ia]/ANG2BOHR,
-                atoms.positions[3,ia]/ANG2BOHR)
-        end
+        println(atoms)
         
-        Ham = Hamiltonian( atoms, pspfiles, ecutwfc )
-        #
-        KS_solve_SCF!( Ham, mix_method="rpulay", ETOT_CONV_THR=1e-8 )
+        Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=meshk )
+        
+        KS_solve_SCF!( Ham, mix_method="rpulay", ETOT_CONV_THR=1e-6 )
         Eplus = sum(Ham.energies)
         energies1 = deepcopy(Ham.energies)
-        #
-        atoms.positions[ii,ia] = pos_orig[ii,ia] - 0.5*Δ
         
-        println("")
-        println("positions in angstrom")
-        for ia = 1:Natoms
-            @printf("%s %18.10f %18.10f %18.10f\n", atoms.atsymbs[ia],
-                atoms.positions[1,ia]/ANG2BOHR,
-                atoms.positions[2,ia]/ANG2BOHR,
-                atoms.positions[3,ia]/ANG2BOHR)
-        end
+        atoms.positions[ii,ia] = pos_orig[ii,ia] - 0.5*Δ
+        println(atoms)
 
-        Ham = Hamiltonian( atoms, pspfiles, ecutwfc )
+        Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=meshk )
         #
-        KS_solve_SCF!( Ham, mix_method="rpulay", ETOT_CONV_THR=1e-8 )
+        KS_solve_SCF!( Ham, mix_method="rpulay", ETOT_CONV_THR=1e-6 )
         Eminus = sum(Ham.energies)
         energies2 = deepcopy(Ham.energies)
         #
