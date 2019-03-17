@@ -1,10 +1,13 @@
 using LinearAlgebra
 using Random
 using Printf
+import Dates
 
 using PWDFT
 
-import Dates
+const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
+const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
+const DIR_STRUCTURES = joinpath(DIR_PWDFT, "structures")
 
 function time_stamp(message::String)
     t1 = Dates.now()
@@ -22,8 +25,8 @@ end
 
 function driver()
 
-    println("Running on ", gethostname())
     t1 = time_stamp("run.jl starts")
+    println("Running on ", gethostname())
     
     Nargs = length(ARGS)
     @assert( Nargs >= 1 )
