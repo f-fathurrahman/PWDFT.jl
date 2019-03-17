@@ -49,7 +49,6 @@ function calc_forces_Ps_loc(
             #F_Ps_loc[:,ia] = F_Ps_loc[:,ia] +
             #G[:,ig]*Vg_ig*(sin(GX)*real(RhoeG[ip]) + cos(GX)*imag(RhoeG[ip]))
         end
-        println(F_Ps_loc[:,ia])
     end
 
     return real(F_Ps_loc)

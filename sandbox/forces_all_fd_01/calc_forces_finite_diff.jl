@@ -1,20 +1,21 @@
-using LinearAlgebra
-using Printf
-using PWDFT
-
-function calc_force_finite_diff( atoms::Atoms, pspfiles, ecutwfc )
+function calc_forces_finite_diff(
+    atoms::Atoms,
+    pspfiles::Array{String,1},
+    ecutwfc::Float64
+)
 
     pos_orig = copy(atoms.positions)
     
     Natoms = atoms.Natoms
-    forces = zeros(3,Natoms)
+    atsymbs = atoms.atsymbs
 
-    forces_NN = zeros(3,Natoms)
-    forces_Ha = zeros(3,Natoms)
-    forces_Ps_loc = zeros(3,Natoms)
-    forces_XC = zeros(3,Natoms)
-    forces_Kinetic = zeros(3,Natoms)
-    forces_Ps_nloc = zeros(3,Natoms)
+    forces = zeros(3,Natoms)
+    F_NN = zeros(3,Natoms)
+    F_Hartree = zeros(3,Natoms)
+    F_Ps_loc = zeros(3,Natoms)
+    F_XC = zeros(3,Natoms)
+    F_Kinetic = zeros(3,Natoms)
+    F_Ps_nloc = zeros(3,Natoms)
 
     Δ = 0.005
     for ia = 1:Natoms
@@ -37,6 +38,7 @@ function calc_force_finite_diff( atoms::Atoms, pspfiles, ecutwfc )
         #
         KS_solve_SCF!( Ham, mix_method="rpulay", ETOT_CONV_THR=1e-8 )
         Eplus = sum(Ham.energies)
+        energies1 = deepcopy(Ham.energies)
         #
         atoms.positions[ii,ia] = pos_orig[ii,ia] - 0.5*Δ
         
@@ -53,8 +55,17 @@ function calc_force_finite_diff( atoms::Atoms, pspfiles, ecutwfc )
         #
         KS_solve_SCF!( Ham, mix_method="rpulay", ETOT_CONV_THR=1e-8 )
         Eminus = sum(Ham.energies)
+        energies2 = deepcopy(Ham.energies)
         #
         forces[ii,ia] = -(Eplus - Eminus)/Δ
+
+        # in Ry/au, for comparison with PWSCF
+        F_Kinetic[ii,ia] = -2*(energies1.Kinetic - energies2.Kinetic)/Δ
+        F_NN[ii,ia] = -2*(energies1.NN - energies2.NN)/Δ
+        F_Ps_loc[ii,ia] = -2*(energies1.Ps_loc - energies2.Ps_loc)/Δ
+        F_Ps_nloc[ii,ia] = -2*(energies1.Ps_nloc - energies2.Ps_nloc)/Δ
+        F_Hartree[ii,ia] = -2*(energies1.Hartree - energies2.Hartree)/Δ
+        F_XC[ii,ia] = -2*(energies1.XC - energies2.XC)/Δ
 
         println("")
         @printf("ia = %d, idir = %d\n", ia, ii)
@@ -65,38 +76,36 @@ function calc_force_finite_diff( atoms::Atoms, pspfiles, ecutwfc )
     end
     end
 
+    println("Kinetic forces:")
+    for ia = 1:Natoms
+        @printf("%s %18.10f %18.10f %18.10f\n", atsymbs[ia],
+                F_Kinetic[1,ia], F_Kinetic[2,ia], F_Kinetic[3,ia] )
+    end
+
+    println("XC forces:")
+    for ia = 1:Natoms
+        @printf("%s %18.10f %18.10f %18.10f\n", atsymbs[ia],
+                F_XC[1,ia], F_XC[2,ia], F_XC[3,ia] )
+    end
+
+    println("NN forces:")
+    for ia = 1:Natoms
+        @printf("%s %18.10f %18.10f %18.10f\n", atsymbs[ia],
+                F_NN[1,ia], F_NN[2,ia], F_NN[3,ia] )
+    end
+
+    println("Ps loc forces:")
+    for ia = 1:Natoms
+        @printf("%s %18.10f %18.10f %18.10f\n", atsymbs[ia],
+                F_Ps_loc[1,ia], F_Ps_loc[2,ia], F_Ps_loc[3,ia] )
+    end
+
+    println("Ps nloc forces:")
+    for ia = 1:Natoms
+        @printf("%s %18.10f %18.10f %18.10f\n", atsymbs[ia],
+                F_Ps_nloc[1,ia], F_Ps_nloc[2,ia], F_Ps_nloc[3,ia] )
+    end
+
     return forces
 
 end
-
-const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
-const DIR_PSP = joinpath(DIR_PWDFT,"pseudopotentials","pade_gth")
-
-function test_main()
-
-    # Atoms
-    atoms = Atoms(xyz_string=
-        """
-        2
-
-        H      3.83653478       4.23341768       4.23341768
-        H      4.63030059       4.23341768       4.23341768
-        """, LatVecs = gen_lattice_sc(16.0))
-
-    pspfiles = [joinpath(DIR_PSP, "H-q1.gth")]
-    ecutwfc = 15.0
-
-    forces = calc_force_finite_diff(atoms, pspfiles, ecutwfc)*2.0
-
-    println("")
-    println("forces (in Ry/au) = ")
-    Natoms = atoms.Natoms
-    atsymbs = atoms.atsymbs
-    for ia = 1:Natoms
-        @printf("%s %18.10f %18.10f %18.10f\n", atsymbs[ia],
-                forces[1,ia], forces[2,ia], forces[3,ia] )
-    end
-
-end
-
-test_main()

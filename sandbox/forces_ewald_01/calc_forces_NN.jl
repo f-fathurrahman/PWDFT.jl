@@ -107,8 +107,6 @@ function calc_forces_NN(
     end
     end
 
-    println(F_NN_R)
-
     mmm1 = round(Int64, gcut/g1m + 1.5)
     mmm2 = round(Int64, gcut/g2m + 1.5)
     mmm3 = round(Int64, gcut/g3m + 1.5)
@@ -143,8 +141,6 @@ function calc_forces_NN(
     end
     end
     end
-
-    println(F_NN_G)
 
     F_NN = F_NN_G + F_NN_R
 

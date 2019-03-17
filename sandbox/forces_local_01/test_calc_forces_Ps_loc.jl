@@ -24,8 +24,8 @@ function test_H2()
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc )
 
     Random.seed!(1234)
-    #KS_solve_Emin_PCG!(Ham, ETOT_CONV_THR=1e-8)
-    KS_solve_SCF!(Ham, mix_method="pulay", ETOT_CONV_THR=1e-8)
+    KS_solve_Emin_PCG!(Ham, ETOT_CONV_THR=1e-8)
+    #KS_solve_SCF!(Ham, mix_method="pulay", ETOT_CONV_THR=1e-8)
 
     Natoms = atoms.Natoms
     atsymbs = atoms.atsymbs
