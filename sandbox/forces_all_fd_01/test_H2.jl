@@ -1,5 +1,6 @@
 using LinearAlgebra
 using Printf
+using Random
 using PWDFT
 
 const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
@@ -21,7 +22,7 @@ function test_main()
     pspfiles = [joinpath(DIR_PSP, "H-q1.gth")]
     ecutwfc = 15.0
 
-    forces = calc_forces_finite_diff(atoms, pspfiles, ecutwfc)*2.0
+    forces = calc_forces_finite_diff(atoms, pspfiles, ecutwfc, [1,1,1])*2.0
 
     println("")
     println("forces (in Ry/au) = ")
