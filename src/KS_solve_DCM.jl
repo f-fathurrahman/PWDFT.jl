@@ -9,7 +9,7 @@ function KS_solve_DCM!( Ham::Hamiltonian;
                         savewfc=false, ETOT_CONV_THR=1e-6 )
 
 
-	pw = Ham.pw
+    pw = Ham.pw
     Ngw = pw.gvecw.Ngw
     Ns = pw.Ns
     Npoints = prod(Ns)
