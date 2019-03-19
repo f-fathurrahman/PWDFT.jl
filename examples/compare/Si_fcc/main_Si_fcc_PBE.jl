@@ -10,7 +10,7 @@ function main( ; method="SCF" )
         LatVecs = gen_lattice_fcc(5.431*ANG2BOHR) )
 
     # Initialize Hamiltonian
-    pspfiles = ["../pseudopotentials/pbe_gth/Si-q4.gth"]
+    pspfiles = [joinpath(DIR_PWDFT, "pseudopotentials", "pbe_gth", "Si-q4.gth")]
     ecutwfc = 15.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc,
                        xcfunc="PBE", meshk=[3,3,3] )

@@ -12,8 +12,8 @@ function main( ; method="SCF" )
         LatVecs = gen_lattice_hexagonal( 3.2495*ANG2BOHR, 5.2069*ANG2BOHR ) )
 
     # Initialize Hamiltonian
-    pspfiles = ["../pseudopotentials/pade_gth/Zn-q2.gth",
-                "../pseudopotentials/pade_gth/O-q6.gth"]
+    pspfiles = [joinpath(DIR_PSP, "Zn-q2.gth"),
+                joinpath(DIR_PSP, "O-q6.gth")]
     ecutwfc = 15.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3] )
     println(Ham)

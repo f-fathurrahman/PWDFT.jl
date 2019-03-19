@@ -1,11 +1,10 @@
 function main( ; method="SCF" )
 
-    # Atoms
-    atoms = Atoms( xyz_file="../structures/H2.xyz",
-                   LatVecs=gen_lattice_sc(16.0) )
+    atoms = Atoms( xyz_file=joinpath(DIR_STRUCTURES, "H2.xyz"),
+                   LatVecs = gen_lattice_sc(16.0) )
 
     # Initialize Hamiltonian
-    pspfiles = ["../pseudopotentials/pade_gth/H-q1.gth"]
+    pspfiles = [joinpath(DIR_PSP, "H-q1.gth")]
     ecutwfc = 15.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc,
                          Nspin=2, extra_states=0 )

@@ -1,7 +1,7 @@
 function main( ; method="SCF" )
 
     # Atoms
-    atoms = Atoms( xyz_file="../structures/H2.xyz",
+    atoms = Atoms( xyz_file=joinpath(DIR_STRUCTURES, "H2.xyz"),
                    LatVecs=gen_lattice_sc(16.0) )
 
     # Initialize Hamiltonian

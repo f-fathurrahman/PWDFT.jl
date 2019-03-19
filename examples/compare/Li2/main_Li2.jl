@@ -1,12 +1,12 @@
 function main( ; method="SCF" )
 
     # Atoms
-    atoms = Atoms( xyz_file="../structures/Li2.xyz",
+    atoms = Atoms( xyz_file=joinpath(DIR_STRUCTURES, "Li2.xyz"),
                    LatVecs=gen_lattice_sc(16.0) )
 
     # Initialize Hamiltonian
     ecutwfc = 15.0
-    pspfiles = ["../pseudopotentials/pade_gth/Li-q1.gth"]
+    pspfiles = [joinpath(DIR_PSP, "Li-q1.gth")]
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc )
 
     if method == "SCF"

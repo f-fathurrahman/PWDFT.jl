@@ -1,13 +1,13 @@
 function main( ; method="SCF" )
 
     # Atoms
-    atoms = Atoms( xyz_file="../structures/CO.xyz",
+    atoms = Atoms( xyz_file=joinpath(DIR_STRUCTURES, "CO.xyz"),
                    LatVecs = gen_lattice_cubic(16.0) )
 
     # Initialize Hamiltonian
     ecutwfc = 15.0
-    pspfiles = ["../pseudopotentials/pbe_gth/C-q4.gth",
-                "../pseudopotentials/pbe_gth/O-q6.gth"]
+    pspfiles = [joinpath(DIR_PWDFT, "pseudopotentials", "pbe_gth", "C-q4.gth"),
+                joinpath(DIR_PWDFT, "pseudopotentials", "pbe_gth", "O-q6.gth")]
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc, xcfunc="PBE" )
     println(Ham)
 

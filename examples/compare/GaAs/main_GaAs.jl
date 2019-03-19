@@ -9,8 +9,8 @@ function main( ; method="SCF" )
         """, in_bohr=true, LatVecs = gen_lattice_fcc(10.6839444516) )
 
     # Initialize Hamiltonian
-    pspfiles = ["../pseudopotentials/pade_gth/Ga-q3.gth",
-                "../pseudopotentials/pade_gth/As-q5.gth"]
+    pspfiles = [joinpath(DIR_PSP, "Ga-q3.gth"),
+                joinpath(DIR_PSP, "As-q5.gth")]
     ecutwfc = 15.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3] )
     println(Ham)

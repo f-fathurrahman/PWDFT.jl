@@ -8,7 +8,7 @@ function main()
         """, LatVecs=gen_lattice_fcc(3.9231*ANG2BOHR))
 
     # Initialize Hamiltonian
-    pspfiles = ["../pseudopotentials/pade_gth/Pt-q18.gth"]
+    pspfiles = [joinpath(DIR_PSP, "Pt-q18.gth")]
     ecutwfc = 15.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc, xcfunc="PBE",
                        meshk=[3,3,3], extra_states=4 )
