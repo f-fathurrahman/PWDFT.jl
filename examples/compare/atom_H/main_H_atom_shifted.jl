@@ -17,7 +17,7 @@ function do_pos( newpos::Array{Float64,1}, method::String )
     atoms.positions[:,1] = newpos  # manually set the position
 
     # Initialize Hamiltonian
-    pspfiles = ["../pseudopotentials/pade_gth/H-q1.gth"]
+    pspfiles = [joinpath(DIR_PSP, "H-q1.gth")]
     ecutwfc = 15.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc )
     println(Ham)
