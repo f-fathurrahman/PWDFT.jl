@@ -95,7 +95,7 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
         @printf("-------------------------------------\n")
         @printf("NiterMax  = %d\n", NiterMax)
         @printf("α_t       = %e\n", α_t)
-        @printf("conv_trh  = %e\n", ETOT_CONV_THR)
+        @printf("conv_thr  = %e\n", ETOT_CONV_THR)
         if I_CG_BETA == 1
             @printf("Using Fletcher-Reeves formula for CG_BETA\n")
         elseif I_CG_BETA == 2
