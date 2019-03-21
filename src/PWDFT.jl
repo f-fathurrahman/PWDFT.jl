@@ -98,7 +98,8 @@ export R_to_G, R_to_G!,
 include("PsPot_GTH.jl")
 export PsPot_GTH,
        eval_Vloc_G,
-       eval_proj_G
+       eval_proj_G,
+       write_psp10
 
 #
 # Electronic variables
