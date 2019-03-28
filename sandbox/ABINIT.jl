@@ -1,6 +1,10 @@
 function write_abinit( Ham::Hamiltonian;
-                       abinit_psp=nothing, prefix="./",
+                       prefix_dir="./",
                        use_smearing=false, kT=0.001 )
+
+    #TODO: Check if prefix is exist or not
+    #TODO: If prefix is exist, check if it is directory or not
+    #TODO: Create prefix if it is
 
     pw = Ham.pw
     atoms = Ham.atoms
@@ -12,7 +16,7 @@ function write_abinit( Ham::Hamiltonian;
     atm2species = atoms.atm2species
     atpos = atoms.positions
 
-    f = open( prefix*"/FILES", "w" )
+    f = open( prefix_dir*"/FILES", "w" )
 
     println( f, "INPUT" )
     println( f, "LOG1" )
@@ -23,14 +27,14 @@ function write_abinit( Ham::Hamiltonian;
     # pseudopotential files
     for isp = 1:Nspecies
         println(f, Ham.atoms.SpeciesSymbols[isp]*".psp10")
-        write_psp10(Ham.pspots[isp], prefix=prefix)
+        write_psp10(Ham.pspots[isp], prefix=prefix_dir)
     end
     close( f )
 
 
     # write INPUT file
 
-    f = open( prefix*"/INPUT", "w" )
+    f = open( prefix_dir*"/INPUT", "w" )
 
     println( f, "acell 1.0 1.0 1.0" )
     println( f, "rprim" )
