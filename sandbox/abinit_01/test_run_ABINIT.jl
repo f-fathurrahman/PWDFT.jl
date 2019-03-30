@@ -6,7 +6,7 @@ const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
 const DIR_STRUCTURES = joinpath(DIR_PWDFT, "structures")
 
 include(joinpath(DIR_PWDFT, "sandbox", "ABINIT.jl"))
-include(joinpath(DIR_PWDFT, "sandbox", "my_scf_01", "my_scf_potmix.jl"))
+include(joinpath(DIR_PWDFT, "sandbox", "KS_solve_SCF_potmix.jl"))
 
 function main()
 
@@ -22,9 +22,7 @@ function main()
     ecutwfc = 15.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[8,8,8] )
 
-    #KS_solve_Emin_PCG!( Ham )
-    @time my_scf_potmix!( Ham, betamix=0.5 )
-    @time my_scf_potmix!( Ham, betamix=0.5 )
+    KS_solve_SCF_potmix!( Ham, betamix=0.7 )
 
     run(`rm -fv TEMP_abinit/\*`)
     write_abinit(Ham, prefix_dir="./TEMP_abinit/")
