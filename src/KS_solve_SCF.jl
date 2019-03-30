@@ -5,11 +5,11 @@ iterations with density mixing.
 function KS_solve_SCF!( Ham::Hamiltonian ;
                         startingwfc=:random, savewfc=false,
                         startingrhoe=:gaussian,
-                        betamix = 0.2, NiterMax=100, verbose=true,
+                        betamix=0.2, NiterMax=100, verbose=true,
                         print_final_ebands=true,
                         print_final_energies=true,
                         check_rhoe=false,
-                        use_smearing = false, kT=1e-3,
+                        use_smearing=false, kT=1e-3,
                         update_psi="LOBPCG", cheby_degree=8,
                         mix_method="simple", MIXDIM=5,
                         print_e_gap=false,
