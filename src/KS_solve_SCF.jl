@@ -72,7 +72,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
         Focc[idx_HOMO,Nkpt+1:2*Nkpt] = Focc[idx_HOMO,Nkpt+1:2*Nkpt] .- 0.5
     end
 
-    if startingrhoe == :gaussian && startingwfc == nothing
+    if startingrhoe == :gaussian && startingwfc == :random
         @assert Nspin == 1
         Rhoe[:,1] = guess_rhoe( Ham )
     else
