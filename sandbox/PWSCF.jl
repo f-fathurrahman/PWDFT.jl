@@ -60,7 +60,7 @@ Limitation:
   (no `prefix_psp`)
 """
 function write_pwscf( Ham::Hamiltonian; filename="PWINPUT",
-                      prefix="./",
+                      prefix_dir="./",
                       use_smearing=false, kT=0.001 )
     atoms = Ham.atoms
     pw = Ham.pw
@@ -74,7 +74,7 @@ function write_pwscf( Ham::Hamiltonian; filename="PWINPUT",
 
     ecutwfc = pw.ecutwfc
 
-    f = open( joinpath(prefix, filename), "w")
+    f = open( joinpath(prefix_dir, filename), "w")
 
     @printf(f, "&CONTROL\n")
     @printf(f, "  calculation = 'scf'\n")
@@ -161,7 +161,7 @@ function write_pwscf( Ham::Hamiltonian; filename="PWINPUT",
     close(f)
 
     for psp in Ham.pspots
-        write_psp_pwscf(psp, prefix=prefix)
+        write_psp_pwscf(psp, prefix=prefix_dir)
     end
 
     return
