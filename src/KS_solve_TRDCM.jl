@@ -1,7 +1,7 @@
 function KS_solve_TRDCM!( Ham::Hamiltonian;
                           NiterMax = 100, startingwfc=:random,
                           verbose=true,
-                          print_final_ebands=true, print_final_energies=true,
+                          print_final_ebands=false, print_final_energies=true,
                           savewfc=false, ETOT_CONV_THR=1e-6 )
 
 

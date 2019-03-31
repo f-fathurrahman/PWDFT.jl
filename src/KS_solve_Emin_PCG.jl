@@ -7,7 +7,7 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
                              startingrhoe=:gaussian,
                              skip_initial_diag=false,
                              α_t=3e-5, NiterMax=200, verbose=true,
-                             print_final_ebands=true, print_final_energies=true,
+                             print_final_ebands=false, print_final_energies=true,
                              I_CG_BETA=2, ETOT_CONV_THR=1e-6 )
 
     pw = Ham.pw
