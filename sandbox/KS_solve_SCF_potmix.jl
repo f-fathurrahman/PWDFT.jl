@@ -2,8 +2,10 @@ function KS_solve_SCF_potmix!(
     Ham::Hamiltonian;
     NiterMax=150,
     betamix=0.2,
+    startingwfc=:random,
+    startingrhoe=:gaussian,
     verbose=true,
-    print_final_ebands=true,
+    print_final_ebands=false,
     print_final_energies=true,
     savewfc=false,
     use_smearing=false,
@@ -18,9 +20,23 @@ function KS_solve_SCF_potmix!(
     atoms = Ham.atoms
     pspots = Ham.pspots
 
-    psiks = rand_BlochWavefunc(Ham)
+    #
+    # Initial wave function
+    #
+    if startingwfc == :read
+        psiks = read_psiks( Ham )
+    else
+        # generate random BlochWavefunc
+        psiks = rand_BlochWavefunc( Ham )
+    end
     
     Rhoe = zeros(Float64,Npoints,Nspin)
+    if startingrhoe == :gaussian && startingwfc == :random
+        @assert Nspin == 1
+        Rhoe[:,1] = guess_rhoe( Ham )
+    else
+        Rhoe[:,:] = calc_rhoe( Ham, psiks )
+    end
 
     Vxc_inp = zeros(Float64,Npoints,Nspin)
     VHa_inp = zeros(Float64,Npoints)
