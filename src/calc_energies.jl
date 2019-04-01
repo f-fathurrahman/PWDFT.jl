@@ -68,6 +68,11 @@ function calc_energies( Ham::Hamiltonian, psiks::BlochWavefunc )
     Nstates = Ham.electrons.Nstates
     wk = Ham.pw.gvecw.kpoints.wk
     Nspin = Ham.electrons.Nspin
+
+    Ngw = Ham.pw.gvecw.Ngw
+    idx_gw2g = Ham.pw.gvecw.idx_gw2g
+    G = Ham.pw.gvec.G
+    k = Ham.pw.gvecw.kpoints.k
     
     #
     # Kinetic energy
@@ -79,12 +84,18 @@ function calc_energies( Ham::Hamiltonian, psiks::BlochWavefunc )
         Ham.ispin = ispin
         ikspin = ik + (ispin - 1)*Nkpt
         psi = psiks[ikspin]
-        Kpsi = op_K( Ham, psi )
         for ist = 1:Nstates
-            E_kin = E_kin + wk[ik] * Focc[ist,ikspin] * real( dot( psi[:,ist], Kpsi[:,ist] ) )
+            psiKpsi = 0.0
+            for igk = 1:Ngw[ik]
+                ig = idx_gw2g[ik][igk]
+                Gw2 = (G[1,ig] + k[1,ik])^2 + (G[2,ig] + k[2,ik])^2 + (G[3,ig] + k[3,ik])^2
+                psiKpsi = psiKpsi + abs(psi[igk,ist])^2*Gw2
+            end
+            E_kin = E_kin + wk[ik]*Focc[ist,ikspin]*psiKpsi
         end
     end
     end
+    E_kin = 0.5*E_kin
 
     Rhoe_tot = zeros(Npoints)
     for ispin = 1:Nspin
