@@ -91,6 +91,9 @@ function write_pwscf( Ham::Hamiltonian; filename="PWINPUT",
     @printf(f, "  ntyp = %d\n", Nspecies)
     @printf(f, "  ecutwfc = %18.10f\n", ecutwfc*2)
     @printf(f, "  nbnd = %d\n", electrons.Nstates)
+    if Ham.xcfunc == "VWN"
+        @printf(f, "  input_dft = 'slater+vwn'\n")
+    end
 
     # When Nelectrons is odd and no-smearing is used, we must
     # use occupations = 'from_input' and add the OCCUPATIONS card
