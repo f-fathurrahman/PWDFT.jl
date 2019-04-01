@@ -1,11 +1,14 @@
 using Printf
 using PWDFT
 
+using Random
+
 const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)), "..")
 const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
 const DIR_STRUCTURES = joinpath(DIR_PWDFT, "structures")
 
 include(joinpath(DIR_PWDFT, "sandbox", "ABINIT.jl"))
+include(joinpath(DIR_PWDFT, "sandbox", "PWSCF.jl"))
 include(joinpath(DIR_PWDFT, "sandbox", "KS_solve_SCF_potmix.jl"))
 
 function init_Ham_Si_fcc( a::Float64, meshk::Array{Int64,1} )
@@ -23,6 +26,8 @@ function init_Ham_Si_fcc( a::Float64, meshk::Array{Int64,1} )
 end
 
 function main()
+
+    Random.seed!(1234)
 
     LATCONST = 10.2631
 
@@ -59,9 +64,20 @@ function main()
         println("\nABINIT result\n")
         println(abinit_energies)
 
+        run(`rm -rfv TEMP_pwscf/\*`)
+        write_pwscf( Ham, prefix_dir="TEMP_pwscf" )
+        cd("./TEMP_pwscf")
+        run(pipeline(`pw.x`, stdin="PWINPUT", stdout="LOG1"))
+        cd("../")
+
+        pwscf_energies = read_pwscf_etotal("TEMP_pwscf/LOG1")
+        println("\nPWSCF result\n")
+        println(pwscf_energies)
+
         close(fileout)
 
-        @printf(f, "%18.10f %18.10f %18.10f\n", a, sum(Ham.energies), sum(abinit_energies) )
+        @printf(f, "%18.10f %18.10f %18.10f %18.10f\n", a, sum(Ham.energies),
+                sum(abinit_energies), sum(pwscf_energies) )
     end
 
     close(f)
