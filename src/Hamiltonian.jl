@@ -14,11 +14,12 @@ end
 
 function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
                       ecutwfc::Float64 ;
-                      Nspin = 1,
-                      meshk = [1,1,1], shiftk = [0,0,0],
-                      kpoints = nothing,
-                      xcfunc = "VWN",
-                      extra_states = 0 )
+                      Nspin=1,
+                      meshk=[1,1,1], shiftk=[0,0,0],
+                      Ns_=(0,0,0),
+                      kpoints= nothing,
+                      xcfunc="VWN",
+                      extra_states=0 )
 
     # kpoints
     if kpoints == nothing
@@ -28,7 +29,7 @@ function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
     end
 
     # Initialize plane wave grids
-    pw = PWGrid( ecutwfc, atoms.LatVecs, kpoints=kpoints )
+    pw = PWGrid( ecutwfc, atoms.LatVecs, kpoints=kpoints, Ns_=Ns_ )
 
     Nspecies = atoms.Nspecies
     if Nspecies != size(pspfiles)[1]
@@ -56,10 +57,10 @@ function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
         psp = Pspots[isp]
         for ig = 1:Ng
             ip = idx_g2r[ig]
-            Vg[ip] = strf[ig,isp] * eval_Vloc_G( psp, G2[ig] ) / CellVolume
+            Vg[ip] = strf[ig,isp] * eval_Vloc_G( psp, G2[ig] )
         end
         #
-        V_Ps_loc[:] = V_Ps_loc[:] + real( G_to_R(pw, Vg) ) * Npoints
+        V_Ps_loc[:] = V_Ps_loc[:] + real( G_to_R(pw, Vg) ) * Npoints / CellVolume
     end
 
     # other potential terms are set to zero
@@ -170,41 +171,6 @@ function update!(Ham::Hamiltonian, rhoe::Array{Float64,2})
         Ham.potentials.XC = calc_Vxc_VWN( rhoe )
     end
     return
-end
-
-# FIXME: this is not used much
-function update!( Ham::Hamiltonian, atoms::Atoms,
-    strf::Array{ComplexF64,2}, pspfiles::Array{String,1} )
-
-    Nspecies = atoms.Nspecies
-    if Nspecies != size(pspfiles)[1]
-        error( @sprintf("ERROR length of pspfiles is not equal to %d\n", Nspecies) )
-    end
-
-    pw = Ham.pw
-
-    Npoints = prod(pw.Ns)
-    CellVolume = pw.CellVolume
-    G2 = pw.gvec.G2
-
-    Vg = zeros(ComplexF64, Npoints)
-    V_Ps_loc = zeros(Float64, Npoints)
-
-    pw = Ham.pw
-    for isp = 1:Nspecies
-        psp = PsPot_GTH( pspfiles[isp] )
-        println(psp)
-        for ig = 1:Npoints
-            Vg[ig] = strf[ig,isp] * eval_Vloc_G( psp, G2[ig], CellVolume )
-        end
-        #
-        V_Ps_loc[:] = V_Ps_loc[:] + real( G_to_R(pw, Vg) ) * Npoints
-    end
-
-    # Update
-    Ham.potentials.Ps_loc = V_Ps_loc
-    return
-
 end
 
 include("Hamiltonian_io.jl")
