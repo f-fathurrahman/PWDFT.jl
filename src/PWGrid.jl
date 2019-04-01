@@ -47,12 +47,12 @@ Creates an instance of `PWGrid` given the following inputs:
 
 - `kpoints`: optional, an instance of `KPoints`.
 """
-function PWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2}; kpoints=nothing )
+function PWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2}; kpoints=nothing, Ns_=(0,0,0) )
 
     ecutrho = 4.0*ecutwfc
     #
-    #RecVecs = 2*pi*inv(LatVecs')
-    RecVecs = 2*pi*invTrans_m3x3(LatVecs)
+    RecVecs = 2*pi*inv(Matrix(LatVecs'))
+    #RecVecs = 2*pi*invTrans_m3x3(LatVecs)
 
     CellVolume = abs(det(LatVecs))
     #
@@ -65,11 +65,14 @@ function PWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2}; kpoints=nothing )
     Ns2 = 2*round( Int64, sqrt(ecutrho/2)*LatVecsLen[2]/pi ) + 1
     Ns3 = 2*round( Int64, sqrt(ecutrho/2)*LatVecsLen[3]/pi ) + 1
 
-    Ns1 = good_fft_order(Ns1)
-    Ns2 = good_fft_order(Ns2)
-    Ns3 = good_fft_order(Ns3)
-
-    Ns = (Ns1,Ns2,Ns3)
+    if any(Ns_ .== 0)
+        Ns1 = good_fft_order(Ns1)
+        Ns2 = good_fft_order(Ns2)
+        Ns3 = good_fft_order(Ns3)
+        Ns = (Ns1,Ns2,Ns3)
+    else
+        Ns = Ns_[:]
+    end
 
     Npoints = prod(Ns)
     r = init_grid_R( Ns, LatVecs )
