@@ -8,13 +8,13 @@ function Poisson_solve( pw::PWGrid, rhoR::Array{Float64,1} )
     Ng = gvec.Ng
     idx_g2r = gvec.idx_g2r
 
-    ctmp = 4.0*pi*R_to_G( pw, rhoR )
+    ctmp = R_to_G( pw, rhoR )
     
-    ctmp[1] = 0.0  # the first GVectors is zero vector
+    ctmp[1] = 0.0 + im*0.0  # the first GVectors is zero vector
 
     for ig = 2:Ng
         ip = idx_g2r[ig]
         ctmp[ip] = ctmp[ip]/G2[ig]
     end
-    return ctmp
+    return 4.0*pi*ctmp
 end
