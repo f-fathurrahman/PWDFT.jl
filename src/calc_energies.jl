@@ -120,6 +120,7 @@ function calc_energies( Ham::Hamiltonian, psiks::BlochWavefunc )
         E_Hartree = E_Hartree + real( V_HartreeG[ip]*cRhoeG[ip] )
         E_Ps_loc = E_Ps_loc + real( V_Ps_locG[ip]*cRhoeG[ip] )
     end
+    #E_Ps_loc = E_Ps_loc + real( V_Ps_locG[1]*cRhoeG[1] ) # including pspcore ene
     E_Hartree = 0.5*E_Hartree*CellVolume/Npoints
     E_Ps_loc = E_Ps_loc*CellVolume/Npoints
 
