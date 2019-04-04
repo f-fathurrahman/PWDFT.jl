@@ -9,6 +9,7 @@ include(joinpath(DIR_PWDFT, "sandbox", "ABINIT.jl"))
 include(joinpath(DIR_PWDFT, "sandbox", "PWSCF.jl"))
 include(joinpath(DIR_PWDFT, "sandbox", "KS_solve_SCF_potmix.jl"))
 
+
 function init_Ham_Al_fcc( a::Float64, meshk::Array{Int64,1} )
     # Atoms
     atoms = Atoms( xyz_string_frac=
@@ -26,7 +27,6 @@ end
 
 
 
-
 function main()
 
     LATCONST = 7.6525970200
@@ -36,9 +36,7 @@ function main()
     Ndata = 15
     Δ = (scal_f - scal_i)/(Ndata-1)
 
-    stdout_orig = stdout
-
-    f = open("TEMP_EOS_data.dat", "w")
+    f = open("TEMP_EOS_data_pwscf.dat", "w")
 
     for i = 1:Ndata
 
@@ -46,23 +44,7 @@ function main()
 
         a = LATCONST*scal
 
-        fname = "TEMP_LOG_"*string(i)
-        fileout = open(fname, "w")
-        
-        redirect_stdout(fileout)
-    
         Ham = init_Ham_Al_fcc( a, [8,8,8] )
-        KS_solve_SCF!( Ham, use_smearing=true, kT=0.001, mix_method="rpulay" )
-
-        run(`rm -fv TEMP_abinit/\*`)
-        write_abinit(Ham, prefix_dir="./TEMP_abinit/", use_smearing=true, kT=0.001)
-        cd("./TEMP_abinit")
-        run(pipeline(`abinit`, stdin="FILES", stdout="ABINIT_o_LOG"))
-        cd("../")
-
-        abinit_energies = read_abinit_etotal("TEMP_abinit/LOG1")
-        println("\nABINIT result\n")
-        println(abinit_energies)
 
         run(`rm -rfv TEMP_pwscf/\*`)
         write_pwscf( Ham, prefix_dir="TEMP_pwscf", use_smearing=true, kT=0.001 )
@@ -74,10 +56,8 @@ function main()
         println("\nPWSCF result\n")
         println(pwscf_energies)
 
-        close(fileout)
+        @printf(f, "%18.10f %18.10f\n", a, sum(pwscf_energies) )
 
-        @printf(f, "%18.10f %18.10f %18.10f %18.10f\n", a, sum(Ham.energies),
-                sum(abinit_energies), sum(pwscf_energies) )
     end
 
     close(f)
