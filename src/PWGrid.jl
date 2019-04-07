@@ -212,7 +212,7 @@ function init_gvecw( ecutwfc::Float64, gvec::GVectors, kpoints::KPoints )
             Gk[3] = G[3,ig] + kpts[3,ik]
             Gk2[ig] = Gk[1]^2 + Gk[2]^2 + Gk[3]^2
         end
-        idx_gw2g[ik] = findall( 0.5*Gk2 .<= ecutwfc )
+        idx_gw2g[ik] = findall( 0.5*Gk2 .< ecutwfc )
         idx_gw2r[ik] = idx_g2r[idx_gw2g[ik]]
         Ngw[ik] = length(idx_gw2g[ik])
     end
