@@ -57,6 +57,8 @@ function KS_solve_SCF_potmix!(
     @printf("SCF iteration starts (with potential mixing), betamix = %f\n", betamix)
     @printf("\n")
 
+    diffPot = 1.0
+
     for iterSCF = 1:NiterMax
         
         evals = diag_LOBPCG!( Ham, psiks )
@@ -79,7 +81,7 @@ function KS_solve_SCF_potmix!(
 
         diffEtot = abs(Etot - Etot_old)
 
-        @printf("%5d %18.10f %18.10e\n", iterSCF, Etot, diffEtot)
+        @printf("%5d %18.10f %18.10e %18.10e\n", iterSCF, Etot, diffEtot, diffPot)
 
         if diffEtot < ETOT_CONV_THR
             CONVERGED = CONVERGED + 1
@@ -96,6 +98,9 @@ function KS_solve_SCF_potmix!(
         # Mix potentials (only Hartree and XC)
         Ham.potentials.Hartree = betamix*Ham.potentials.Hartree + (1-betamix)*VHa_inp
         Ham.potentials.XC = betamix*Ham.potentials.XC + (1-betamix)*Vxc_inp
+
+        diffPot = sum(Ham.potentials.Hartree-VHa_inp)/Npoints +
+                  sum(Ham.potentials.XC - Vxc_inp)/(Npoints*Nspin)
 
         flush(stdout)
     end
