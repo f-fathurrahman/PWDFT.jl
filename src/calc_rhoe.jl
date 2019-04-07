@@ -65,7 +65,7 @@ function calc_rhoe(
     # Ensure that there is no negative rhoe
     for rho in Rhoe
         if rho < eps()
-            rho = eps()
+            rho = 0.0
         end
     end
 
