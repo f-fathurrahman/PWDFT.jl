@@ -17,13 +17,20 @@ function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
                       Nspin=1,
                       meshk=[1,1,1], shiftk=[0,0,0],
                       Ns_=(0,0,0),
-                      kpoints= nothing,
+                      kpoints=nothing,
+                      kpts_str="",
                       xcfunc="VWN",
                       extra_states=0 )
 
     # kpoints
     if kpoints == nothing
-        kpoints = KPoints( atoms, meshk, shiftk )
+        if kpts_str == ""
+            # automatic generation of kpoints
+            kpoints = KPoints( atoms, meshk, shiftk )
+        else
+            # use the given kpoints
+            kpoints = kpoints_from_string( atoms, kpts_str )
+        end
     else
         @assert typeof(kpoints) == KPoints
     end
@@ -91,12 +98,26 @@ end
 # No pspfiles given. Use Coulomb potential (all electrons)
 #
 function Hamiltonian( atoms::Atoms, ecutwfc::Float64;
-                      Nspin = 1,
-                      meshk = [1,1,1], shiftk=[0,0,0],    
+                      Nspin=1,
+                      meshk=[1,1,1],
+                      shiftk=[0,0,0],
+                      kpts_str="",
+                      kpoints=nothing,   
                       xcfunc="VWN", extra_states=0 )
-    
+
     # kpoints
-    kpoints = KPoints( atoms, meshk, shiftk )
+    if kpoints == nothing
+        if kpts_str == ""
+            # automatic generation of kpoints
+            kpoints = KPoints( atoms, meshk, shiftk )
+        else
+            # use the given kpoints
+            kpoints = kpoints_from_string( atoms, kpts_str )
+        end
+    else
+        @assert typeof(kpoints) == KPoints
+    end
+
 
     # Initialize plane wave grids
     pw = PWGrid( ecutwfc, atoms.LatVecs, kpoints=kpoints )
