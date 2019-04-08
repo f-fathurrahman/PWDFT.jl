@@ -139,8 +139,6 @@ end
 
 function kpoints_from_string( atoms::Atoms, kpts_string::String )
     Nkpt, kred, wk = parse_kpts_string(kpts_string)
-
-    println(kred')
     # kpts need to be converted to Cartesian form
     RecVecs = 2*pi*inv(Matrix(atoms.LatVecs'))
     kpt = RecVecs*kred
