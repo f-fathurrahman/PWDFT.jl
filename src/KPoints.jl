@@ -110,6 +110,44 @@ function KPoints( atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{Int64,1};
 
 end
 
+# unit in crystal coord
+function parse_kpts_string(kpts_string::String)
+
+    lines = split(kpts_string, "\n", keepempty=false)
+    Nkpt = parse(Int64, lines[1])
+
+    kpts = zeros(3,Nkpt)
+    wk = zeros(Nkpt)
+    for ik = 1:Nkpt
+        ll = split(lines[ik+1], " ", keepempty=false)
+        k1 = parse(Float64, ll[1])
+        k2 = parse(Float64, ll[2])
+        k3 = parse(Float64, ll[3])
+        w  = parse(Float64, ll[4])
+        kpts[:,ik] = [k1, k2, k3]
+        wk[ik] = w
+    end
+
+    # normalize sum(wk) to 1
+    ss = sum(wk)
+    wk = wk/ss
+
+    return Nkpt, kpts, wk
+
+end
+
+
+function kpoints_from_string( atoms::Atoms, kpts_string::String )
+    Nkpt, kred, wk = parse_kpts_string(kpts_string)
+
+    println(kred')
+    # kpts need to be converted to Cartesian form
+    RecVecs = 2*pi*inv(Matrix(atoms.LatVecs'))
+    kpt = RecVecs*kred
+    return KPoints(Nkpt, (0,0,0), kpt, wk, RecVecs)
+end
+
+
 # Temporary work around for generating kpoints for band structure calculations
 function kpoints_from_file( atoms::Atoms, filename::String )
     file = open(filename)
@@ -124,7 +162,7 @@ function kpoints_from_file( atoms::Atoms, filename::String )
     end
     close(file)
     # kpts need to be converted to Cartesian form
-    RecVecs = 2*pi*(atoms.LatVecs')
+    RecVecs = 2*pi*inv(Matrix(atoms.LatVecs'))
     kpt = RecVecs*kred
     #
     wk = ones(Nkpt) # not used for non-scf calculations
