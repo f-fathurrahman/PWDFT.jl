@@ -68,7 +68,9 @@ function println( kpoints::KPoints; header=true )
     end
 
     RecVecs = kpoints.RecVecs
-    ss = maximum(abs.(RecVecs))
+    LatVecs = inv(Matrix(RecVecs'))
+    alat = norm(LatVecs[:,1])
+    ss = 1.0/alat
 
     # This is useful for comparison with pwscf
     @printf("\n")
