@@ -224,7 +224,7 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
         @printf("Final Kohn-Sham eigenvalues:\n")
         @printf("----------------------------\n")
         @printf("\n")
-        print_ebands(Ham.electrons, Ham.pw.gvecw.kpoints)
+        print_ebands(Ham.electrons, Ham.pw.gvecw.kpoints, unit="eV")
     end
 
     if verbose && print_final_energies
