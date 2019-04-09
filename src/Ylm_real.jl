@@ -21,7 +21,8 @@ function Ylm_real( l::Int64, m::Int64, R::Array{Float64,1} )
     elseif R[1] < -SMALL
         phi = atan( R[2]/R[1] ) + pi
     else
-        phi = pi/2.0*sign(R[2])  # XXX If R[2] == 0 ???
+        #phi = pi/2.0*sign(R[2])  # XXX If R[2] == 0 ???
+        phi = if R[2] >= 0 pi/2 else -pi/2 end
     end
     sint = sqrt( max(0.0, 1.0 - cost^2) )
 
@@ -54,7 +55,7 @@ function Ylm_real( l::Int64, m::Int64, R::Array{Float64,1} )
             return ylm
         # dyz
         elseif m == -1
-            ylm = sqrt(15.0/(4.0*pi))*cost*sint*sin(phi)
+            ylm = sqrt(15.0/4.0/pi)*cost*sint*sin(phi)
             return ylm
         # dz2
         elseif m == 0
@@ -66,7 +67,7 @@ function Ylm_real( l::Int64, m::Int64, R::Array{Float64,1} )
             return ylm
         # dx2-y2
         elseif m == 2
-            ylm = 0.5*sqrt(15.0/4.0/pi) * sint^2 * cos(2.0*phi)
+            ylm = sqrt(15.0/16.0/pi) * sint^2 * cos(2.0*phi)
             return ylm
         end
 
