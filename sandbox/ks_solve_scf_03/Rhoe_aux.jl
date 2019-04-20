@@ -10,6 +10,8 @@ function gen_Rhoe_aux_G( atoms::Atoms, pw::PWGrid; TOL = 1e-8 )
     Gcut = 2*pw.ecutwfc/(2*pi)
     eta = 0.5*Gcut^2/-log(TOL)
 
+    alpha = 2*eta^2  # alternative parameter
+
     # structure factor
     Sf = calc_strfact( atoms, pw )
     
@@ -34,8 +36,65 @@ function gen_Rhoe_aux_G( atoms::Atoms, pw::PWGrid; TOL = 1e-8 )
     Rhoe_aux = real( G_to_R(pw,Rhoe_aux_G) )
 
     println("Rhoe_aux_G(G=0) = ", Rhoe_aux_G[1]*CellVolume)
+
+    ss = 0.0
+    for ia = 1:atoms.Natoms
+        isp = atoms.atm2species[ia]
+        ss = ss + Zvals[isp]^2
+    end
+    E_self = sqrt(alpha/pi)*ss
     
-    return Rhoe_aux*Npoints  # note the minus sign
+    return Rhoe_aux*Npoints, E_self/CellVolume
+end
+
+
+function gen_Rhoe_aux_G( atoms::Atoms, pw::PWGrid, pspots; TOL = 1e-8 )
+
+    Zvals = atoms.Zvals
+
+    # structure factor
+    Sf = calc_strfact( atoms, pw )
+    
+    Ng = pw.gvec.Ng
+    G2 = pw.gvec.G2
+    Nspecies = atoms.Nspecies
+    Npoints = prod(pw.Ns)
+    idx_g2r = pw.gvec.idx_g2r
+    CellVolume = pw.CellVolume
+    dVol = CellVolume/Npoints
+
+    Rhoe_aux_G = zeros(ComplexF64,Npoints)
+    Rhoe_aux = zeros(Float64,Npoints)
+
+    for isp = 1:Nspecies
+        rlocal = pspots[isp].rlocal
+        alpha = 1/(rlocal*sqrt(2))
+        eta = sqrt(0.5*alpha)
+        println("eta = ", eta)
+        for ig = 1:Ng
+            ip = idx_g2r[ig]
+            # determine eta
+            #eta = 0.5*Gcut^2/-log(TOL)
+            #alpha = 2*eta^2  # alternative parameter
+            #rloc = 1/(alpha*sqrt(2))
+            #Rhoe_aux_G[ip] = Rhoe_aux_G[ip] - Zvals[isp]*exp(-0.125*G2[ig]/eta^2)*Sf[ig,isp]/CellVolume
+            Rhoe_aux_G[ip] = Rhoe_aux_G[ip] - Zvals[isp]*exp(-0.25*G2[ig])*Sf[ig,isp]/CellVolume
+        end
+    end
+
+    Rhoe_aux = real( G_to_R(pw,Rhoe_aux_G) )
+
+    println("Rhoe_aux_G(G=0) = ", Rhoe_aux_G[1]*CellVolume)
+
+    E_self = 0.0
+    for ia = 1:atoms.Natoms
+        isp = atoms.atm2species[ia]
+        rlocal = pspots[isp].rlocal
+        alpha = 1/(rlocal*sqrt(2))
+        E_self = E_self + sqrt(alpha/pi)*Zvals[isp]^2
+    end
+    
+    return Rhoe_aux*Npoints, E_self/CellVolume
 end
 
 
@@ -152,6 +211,9 @@ end
 
 
 
+function gen_V_aux_G( Ham )
+    return gen_V_aux_G( Ham.atoms, Ham.pw )
+end
 
 function gen_V_aux_G( atoms::Atoms, pw::PWGrid; TOL = 1e-8 )
 
@@ -181,7 +243,7 @@ function gen_V_aux_G( atoms::Atoms, pw::PWGrid; TOL = 1e-8 )
     V_aux = zeros(Float64,Npoints)
 
 
-    for ig = 2:Ng
+    for ig = 1:Ng
         ip = idx_g2r[ig]
 
         Gm = sqrt(G2[ig])
@@ -196,11 +258,12 @@ function gen_V_aux_G( atoms::Atoms, pw::PWGrid; TOL = 1e-8 )
             end
         end
     end
+    println("V_aux_G[1] = ", V_aux_G[1])
+    println("V_aux_G[2] = ", V_aux_G[2])
 
-
-    V_aux = G_to_R(pw, V_aux_G)*Npoints
+    V_aux = real(G_to_R(pw, V_aux_G))*Npoints
 
     println("integ V_aux in R-space, constructed from G-space: ", sum(V_aux)*dVol)
 
-    return V_aux  # note the minus sign
+    return -V_aux  # note the minus sign
 end
