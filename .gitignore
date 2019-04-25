@@ -5,6 +5,8 @@ clean_cov_mem.sh
 do_coverage.sh
 do_track_allocation.sh
 
+create_zip.sh
+
 broken
 
 .ipynb_checkpoints
