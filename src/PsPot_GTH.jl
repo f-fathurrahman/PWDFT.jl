@@ -1,3 +1,5 @@
+using SpecialFunctions: erf
+
 struct PsPot_GTH
     pspfile::String
     atsymb::String
@@ -117,12 +119,23 @@ function eval_Vloc_R( psp::PsPot_GTH, r::Array{Float64,2} )
 
     term1 = psp.c[1]
     for ip = 1:Npoints
-        rrloc = r[ip]/psp.rloc
+        rrloc = r[ip]/psp.rlocal
         for i = 2:4
             term1 = term1 + psp.c[i]*rrloc^(2.0*(i-1))
         end
         Vloc[ip] = -psp.zval/r[ip] * erf( rrloc/sqrt(2.0) ) + exp(-0.5*rrloc^2)*term1
     end
+    return Vloc
+end
+
+
+function eval_Vloc_R( psp::PsPot_GTH, r::Float64 )
+    term1 = psp.c[1]
+    rrloc = r/psp.rlocal
+    for i = 2:4
+        term1 = term1 + psp.c[i]*rrloc^(2.0*(i-1))
+    end
+    Vloc = -psp.zval/r * erf( rrloc/sqrt(2.0) ) + exp(-0.5*rrloc^2)*term1
     return Vloc
 end
 
@@ -162,6 +175,29 @@ function eval_Vloc_G( psp::PsPot_GTH, G2::Float64 )
     else
         Vg = 2*pi*zval*rloc^2 + (2*pi)^1.5 * rloc^3 * (c1 + 3.0*c2 + 15.0*c3 + 105.0*c4)  # to match QE
         #Vg = 0.0  # E_pspcore needs to be added later
+    end
+
+    return Vg
+end
+
+
+function eval_Vloc_G_short( psp::PsPot_GTH, G2::Float64 )
+    rloc = psp.rlocal
+    zval = psp.zval
+    c1 = psp.c[1]
+    c2 = psp.c[2]
+    c3 = psp.c[3]
+    c4 = psp.c[4]
+
+    pre2 = sqrt(8*pi^3)*rloc^3
+    Gr = sqrt(G2)*rloc
+    expGr2 = exp(-0.5*Gr^2)
+
+    if sqrt(G2) > eps()
+        Vg = pre2*expGr2 * (c1 + c2*(3.0 - Gr^2) +
+             c3*(15.0 - 10.0*Gr^2 + Gr^4) + c4*(105.0 - 105.0*Gr^2 + 21.0*Gr^4 - Gr^6) )
+    else
+        Vg = 0.0
     end
 
     return Vg
