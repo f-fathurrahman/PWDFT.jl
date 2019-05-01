@@ -177,8 +177,8 @@ function init_gvec( Ns, RecVecs, ecutrho )
     end
 
     # if sorted
-    idx_sorted = sortperm(G2)
-    return GVectors( Ng, G[:,idx_sorted], G2[idx_sorted], idx_g2r[idx_sorted] )
+    #idx_sorted = sortperm(G2)
+    #return GVectors( Ng, G[:,idx_sorted], G2[idx_sorted], idx_g2r[idx_sorted] )
     
     return GVectors( Ng, G, G2, idx_g2r )
 end
