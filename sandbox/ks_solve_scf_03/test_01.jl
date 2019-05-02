@@ -12,6 +12,8 @@ const DIR_STRUCTURES = joinpath(DIR_PWDFT, "structures")
 
 include("init_aux_loc.jl")
 
+include("calc_Eion_screened.jl")
+
 function init_Ham_Si_fcc()
 
     LATCONST = 10.2631
@@ -54,22 +56,17 @@ end
 
 function main()
 
-    #Ham = init_Ham_Si_fcc()
-    Ham = init_Ham_GaAs()
+    Ham = init_Ham_Si_fcc()
+    #Ham = init_Ham_GaAs()
 
     println(Ham)
 
-    V_Ps_loc, Rhoe_aux, E_alphat, E_sisa, u_Ps_loc = init_aux_loc( Ham )
+    Rhoe_aux, u_Ps_loc = init_aux_loc( Ham )
     
-    V_Ps_loc_G = R_to_G(Ham.pw, V_Ps_loc)
     Rhoe_aux_G = R_to_G(Ham.pw, Rhoe_aux)
     u_Ps_loc_G = R_to_G(Ham.pw, u_Ps_loc)
 
     V_aux = real( G_to_R( Ham.pw, Poisson_solve(Ham.pw, Rhoe_aux) ) )
-
-    println(sum(Ham.potentials.Ps_loc))
-    println(sum(V_Ps_loc))
-    println("diff V Ps loc = ", sum(Ham.potentials.Ps_loc - V_Ps_loc))
 
     pw = Ham.pw
 
@@ -99,8 +96,6 @@ function main()
     Nkspin = Nkpt*Nspin
 
     V_Ps_loc_orig = copy(Ham.potentials.Ps_loc)
-    #Ham.potentials.Ps_loc = V_Ps_loc_orig - V_aux
-    #Ham.potentials.Ps_loc = V_Ps_loc - V_aux
     Ham.potentials.Ps_loc = copy(u_Ps_loc)
 
     println("Some local potentials")
@@ -108,7 +103,6 @@ function main()
         @printf("%d %18.10f %18.10f %18.10f\n", i, u_Ps_loc[i], V_Ps_loc_orig[i] - V_aux[i],
                V_Ps_loc_orig[i] - V_aux[i] - u_Ps_loc[i])
     end
-    #exit()
 
     Random.seed!(1234)
 
@@ -118,8 +112,8 @@ function main()
     Rhoe_tot = Rhoe[:,1]
     Rhoe_neu = Rhoe_tot + Rhoe_aux
     
-    println("integ Rhoe     = ", sum(Rhoe)*dVol)
-    println("integ Rhoe_neu = ", sum(Rhoe_neu)*dVol)
+    @printf("integ Rhoe     = %18.10f\n", sum(Rhoe)*dVol)
+    @printf("integ Rhoe_neu = %18.10f\n", sum(Rhoe_neu)*dVol)
 
     @assert( Nspin == 1 )
 
@@ -149,12 +143,30 @@ function main()
     # calculate PspCore energy
     Ham.energies.PspCore = calc_PspCore_ene( Ham.atoms, Ham.pspots )
 
+    Eion_scr = calc_Eion_screened( Ham.atoms )
+
     CONVERGED = 0
 
     betamix = 0.6
 
     ETOT_CONV_THR = 1e-6
 
+    
+    gcut = 2.0
+    ebsl = 1e-8
+    glast2 = gcut*gcut
+    gexp = -log(ebsl)    
+    η = sqrt(glast2/gexp)/2
+
+    zz = 0.0
+    Q = 0.0
+    for ia = Ham.atoms.Natoms
+        isp = Ham.atoms.atm2species[ia]
+        zz = zz + Ham.atoms.Zvals[isp]^2
+        Q = Q + Ham.atoms.Zvals[isp]
+    end
+    E_self2 = -η*zz/sqrt(pi)
+    E_self3 = -pi*Q^2/(2*η^2*CellVolume)
 
     for iterSCF = 1:150
 
@@ -179,14 +191,18 @@ function main()
         V_Hartree  = real( G_to_R(pw, V_HartreeG) )
         Ham.potentials.Hartree = V_Hartree
 
-
         V_es_G = V_HartreeG + u_Ps_loc_G
+        println("V_es_G[1] = ", V_es_G[1])
+
         V_es = real( G_to_R(pw, V_es_G) )
         V_es_v2 = V_Hartree + u_Ps_loc
+        
         println("diff V_es = ", sum(V_es - V_es_v2) )
         println("min V_es    = ", Base.findmin(V_es))
         println("min V_es_v2 = ", Base.findmin(V_es_v2))
-        exit()
+
+        println("integ V_es = ", sum(V_es)*dVol)
+        println("integ V_es_v2 = ", sum(V_es)*dVol)
 
         if Ham.xcfunc == "PBE"
             Ham.potentials.XC[:,1] = calc_Vxc_PBE( Ham.pw, Rhoe[:,1] )
@@ -243,7 +259,6 @@ function main()
 
         println("E_Ps_loc aux = ", sum(u_Ps_loc.*Rhoe_tot)*dVol + E_aux )
 
-        println( sum(V_Ps_loc_orig - V_Ps_loc) )
         E_Ps_loc = E_Ps_loc*dVol + E_aux
         E_Ps_loc_orig = sum( V_Ps_loc_orig .* Rhoe_tot )*dVol
         #E_Hartree = 0.5*E_Hartree*dVol - E_aux - 0.5*E_self 
@@ -258,12 +273,6 @@ function main()
 
         println("E_Ps_loc      = ", E_Ps_loc)
         println("E_Ps_loc_orig = ", E_Ps_loc_orig)
-        println( sum(V_Ps_loc .* Rhoe_tot)*dVol )
-        println( sum(V_Ps_loc_orig .* Rhoe_tot)*dVol )
-
-        println( sum(u_Ps_loc .* Rhoe_tot)*dVol + E_aux )
-
-        println( sum(u_Ps_loc .* Rhoe_tot)*dVol + E_aux - E_Ps_loc_orig )
 
         #exit()
         #E_Hartree = 0.5*sum( Ham.potentials.Hartree.*Rhoe_neu )*dVol
@@ -288,6 +297,23 @@ function main()
 
         @printf("\nSCF: %8d %18.10f %18.10e %18.10e\n", iterSCF, Etot, diffE, diffRhoe[1] )
         @printf("integ Rhoe = %18.10f\n", sum(Rhoe)*dVol)
+
+        Etot_v2 = E_kin +
+                  0.5*sum( V_Hartree.*Rhoe_neu )*dVol +
+                  sum( u_Ps_loc.*Rhoe_tot )*dVol +
+                  E_self2 + E_self3 +
+                  E_xc + E_Ps_nloc + 
+                  Eion_scr +
+                  Ham.energies.PspCore
+        println("=====================================================")
+        println("E_Hartree_v2 = ", 0.5*sum( V_Hartree.*Rhoe_neu )*dVol)
+        println("E_Ps_loc_v2  = ", sum( u_Ps_loc.*Rhoe_tot )*dVol)
+        println("E_self2 = ", E_self2)
+        println("E_self3 = ", E_self3)
+        println("=====================================================")
+        println("Etot v2 = ", Etot_v2)
+        println("=====================================================")
+
 
         if diffE < ETOT_CONV_THR
             CONVERGED = CONVERGED + 1
