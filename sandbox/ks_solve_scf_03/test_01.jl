@@ -30,19 +30,46 @@ function init_Ham_Si_fcc()
 end
 
 
+function init_Ham_GaAs()
+    
+    LATCONST = 10.6839444516
+
+    atoms = Atoms(xyz_string_frac=
+        """
+        2
+
+        Ga  0.0  0.0  0.0
+        As  0.25  0.25  0.25
+        """, in_bohr=true, LatVecs=gen_lattice_fcc(LATCONST))
+
+    # Initialize Hamiltonian
+    pspfiles = [joinpath(DIR_PSP, "Ga-q3.gth"),
+                joinpath(DIR_PSP, "As-q5.gth")]
+    ecutwfc = 15.0
+    return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3] )
+end
+
+
+
+
 function main()
-    Ham = init_Ham_Si_fcc()
+
+    #Ham = init_Ham_Si_fcc()
+    Ham = init_Ham_GaAs()
+
     println(Ham)
 
-    V_Ps_loc, Rhoe_aux, E_alphat, E_sisa = init_aux_loc( Ham )
+    V_Ps_loc, Rhoe_aux, E_alphat, E_sisa, u_Ps_loc = init_aux_loc( Ham )
     
     V_Ps_loc_G = R_to_G(Ham.pw, V_Ps_loc)
     Rhoe_aux_G = R_to_G(Ham.pw, Rhoe_aux)
+    u_Ps_loc_G = R_to_G(Ham.pw, u_Ps_loc)
 
     V_aux = real( G_to_R( Ham.pw, Poisson_solve(Ham.pw, Rhoe_aux) ) )
 
     println(sum(Ham.potentials.Ps_loc))
     println(sum(V_Ps_loc))
+    println("diff V Ps loc = ", sum(Ham.potentials.Ps_loc - V_Ps_loc))
 
     pw = Ham.pw
 
@@ -71,17 +98,17 @@ function main()
 
     Nkspin = Nkpt*Nspin
 
-
-    u_Ps_loc_G = zeros(ComplexF64,Npoints)
-    for ig = 2:Ng
-        ip = idx_g2r[ig]
-        u_Ps_loc_G[ip] = V_Ps_loc_G[ip] - 4*pi*Rhoe_aux_G[ip]/G2[ig]
-    end
-    u_Ps_loc = real( G_to_R(Ham.pw, u_Ps_loc_G) )
-
-    Ham.potentials.Ps_loc = u_Ps_loc
+    V_Ps_loc_orig = copy(Ham.potentials.Ps_loc)
+    #Ham.potentials.Ps_loc = V_Ps_loc_orig - V_aux
     #Ham.potentials.Ps_loc = V_Ps_loc - V_aux
+    Ham.potentials.Ps_loc = copy(u_Ps_loc)
 
+    println("Some local potentials")
+    for i = 1:5
+        @printf("%d %18.10f %18.10f %18.10f\n", i, u_Ps_loc[i], V_Ps_loc_orig[i] - V_aux[i],
+               V_Ps_loc_orig[i] - V_aux[i] - u_Ps_loc[i])
+    end
+    #exit()
 
     Random.seed!(1234)
 
@@ -124,12 +151,12 @@ function main()
 
     CONVERGED = 0
 
-    betamix = 0.5
+    betamix = 0.6
 
     ETOT_CONV_THR = 1e-6
 
 
-    for iterSCF = 1:30
+    for iterSCF = 1:150
 
         evals = diag_LOBPCG!( Ham, psiks, verbose=false, verbose_last=false,
                           Nstates_conv=Nstates_occ )
@@ -149,7 +176,17 @@ function main()
         Rhoe_neu = Rhoe_tot + Rhoe_aux
                 
         V_HartreeG = Poisson_solve(pw, Rhoe_neu)
-        Ham.potentials.Hartree = real( G_to_R(pw, V_HartreeG) )
+        V_Hartree  = real( G_to_R(pw, V_HartreeG) )
+        Ham.potentials.Hartree = V_Hartree
+
+
+        V_es_G = V_HartreeG + u_Ps_loc_G
+        V_es = real( G_to_R(pw, V_es_G) )
+        V_es_v2 = V_Hartree + u_Ps_loc
+        println("diff V_es = ", sum(V_es - V_es_v2) )
+        println("min V_es    = ", Base.findmin(V_es))
+        println("min V_es_v2 = ", Base.findmin(V_es_v2))
+        exit()
 
         if Ham.xcfunc == "PBE"
             Ham.potentials.XC[:,1] = calc_Vxc_PBE( Ham.pw, Rhoe[:,1] )
@@ -180,7 +217,7 @@ function main()
         end
         E_kin = 0.5*E_kin
 
-        cRhoeG = conj(R_to_G(pw, Rhoe_neu))/Npoints
+        cRhoeG_neu = conj(R_to_G(pw, Rhoe_neu))/Npoints
         cRhoeG_tot = conj(R_to_G(pw, Rhoe_tot))/Npoints
 
         if Ham.xcfunc == "PBE"
@@ -190,18 +227,49 @@ function main()
         end
         E_xc = dot( epsxc, Rhoe_tot ) * dVol
 
-        E_self = sum( V_aux .* Rhoe_aux )*dVol
+        
+        E_self = 0.5*sum( V_aux .* Rhoe_aux )*dVol
+        E_aux  = sum( V_aux .* Rhoe_tot )*dVol
+        E_aux2 = sum( (V_Hartree - V_aux) .* Rhoe_aux )*dVol
 
         E_Hartree = 0.0
         E_Ps_loc = 0.0
         for ig = 2:pw.gvec.Ng
             ip = pw.gvec.idx_g2r[ig]
             E_Ps_loc = E_Ps_loc + real( u_Ps_loc_G[ip] * conj(cRhoeG_tot[ip]) )
-            E_Hartree = E_Hartree + 4*pi/G2[ig] * real( V_HartreeG[ip] * conj(cRhoeG[ip]) )
+            E_Hartree = E_Hartree + real( V_HartreeG[ip] * conj(cRhoeG_neu[ip]) )
         end
-        E_Ps_loc = E_Ps_loc*dVol + E_alphat - E_sisa
-        E_Hartree = 0.5*E_Hartree*dVol + E_self
+        #E_Ps_loc = E_Ps_loc*dVol #+ E_alphat #- E_sisa
+
+        println("E_Ps_loc aux = ", sum(u_Ps_loc.*Rhoe_tot)*dVol + E_aux )
+
+        println( sum(V_Ps_loc_orig - V_Ps_loc) )
+        E_Ps_loc = E_Ps_loc*dVol + E_aux
+        E_Ps_loc_orig = sum( V_Ps_loc_orig .* Rhoe_tot )*dVol
+        #E_Hartree = 0.5*E_Hartree*dVol - E_aux - 0.5*E_self 
+        E_Hartree = 0.5*sum(V_Hartree .* Rhoe_neu )*dVol - E_aux - E_self
+        
+        println("E_self = ", E_self)
+        println("E_aux  = ", E_aux)
+        println("E_aux2 = ", E_aux2)
+
+        E_Hartree_old = 0.5*sum((V_Hartree - V_aux).*Rhoe_tot)*dVol
+        println("E_Hartree old = ", E_Hartree_old)
+
+        println("E_Ps_loc      = ", E_Ps_loc)
+        println("E_Ps_loc_orig = ", E_Ps_loc_orig)
+        println( sum(V_Ps_loc .* Rhoe_tot)*dVol )
+        println( sum(V_Ps_loc_orig .* Rhoe_tot)*dVol )
+
+        println( sum(u_Ps_loc .* Rhoe_tot)*dVol + E_aux )
+
+        println( sum(u_Ps_loc .* Rhoe_tot)*dVol + E_aux - E_Ps_loc_orig )
+
+        #exit()
         #E_Hartree = 0.5*sum( Ham.potentials.Hartree.*Rhoe_neu )*dVol
+
+        E_Ps_loc = E_Ps_loc_orig
+        E_Hartree = E_Hartree_old
 
         if Ham.pspotNL.NbetaNL > 0
             E_Ps_nloc = calc_E_Ps_nloc( Ham, psiks )
@@ -220,8 +288,6 @@ function main()
 
         @printf("\nSCF: %8d %18.10f %18.10e %18.10e\n", iterSCF, Etot, diffE, diffRhoe[1] )
         @printf("integ Rhoe = %18.10f\n", sum(Rhoe)*dVol)
-   
-        println(Ham.energies)
 
         if diffE < ETOT_CONV_THR
             CONVERGED = CONVERGED + 1
@@ -230,9 +296,7 @@ function main()
         end
 
         if CONVERGED >= 2
-            if verbose
-                @printf("SCF is converged: iter: %d , diffE = %10.7e\n", iterSCF, diffE)
-            end
+            @printf("SCF is converged: iter: %d , diffE = %10.7e\n", iterSCF, diffE)
             break
         end
         #
@@ -240,9 +304,9 @@ function main()
 
         flush(stdout)
 
-
-
     end
+
+    println(Ham.energies)
 
 end
 
