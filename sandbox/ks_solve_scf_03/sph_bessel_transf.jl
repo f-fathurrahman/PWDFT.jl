@@ -15,9 +15,13 @@ function main()
 
     Zval = psp.zval
 
-    myfunc(r) = r^2*besselj0(r)*( PWDFT.eval_Vloc_R( psp, r ) + Zval*erf(r)/r )
+    Gm = 10.0
+
+    myfunc(r) = r^2*besselj0(Gm*r)*( PWDFT.eval_Vloc_R( psp, r ) + Zval*erf(r)/r )
+    #myfunc(r) = r^2*( PWDFT.eval_Vloc_R( psp, r ) + Zval*erf(r)/r )
+
     
-    for rmax in [1.0, 2.0, 5.0, 7.5, 10.0, 20.0, 30.0]
+    for rmax in [1.0, 2.0, 5.0, 7.5, 10.0, 20.0, 30.0, 40.0, 50.0, 100.0, 200.0, 1000.0]
         res = quadgk( myfunc, eps(), rmax )
         @printf("rmax = %18.10f, integ = %18.10f, err = %18.10e\n", rmax, res[1], res[2])
     end

@@ -1,34 +1,5 @@
-include("Rhoe_aux.jl")
-
-
-function gen_V_Ps_loc_short( Ham::Hamiltonian )
-
-    Nspecies = Ham.atoms.Nspecies
-    Npoints = prod(Ham.pw.Ns)
-    CellVolume = Ham.pw.CellVolume
-    G2 = Ham.pw.gvec.G2
-
-    V_Ps_loc_short = zeros(Npoints)
-    Vg = zeros(ComplexF64, Npoints)
-
-    strf = calc_strfact( Ham.atoms, Ham.pw )
-
-    for isp = 1:Nspecies
-        pspot = Ham.pspots[isp]
-        for ig = 1:Ham.pw.gvec.Ng
-            ip = Ham.pw.gvec.idx_g2r[ig]
-            Vg[ip] = strf[ig,isp] * PWDFT.eval_Vloc_G_short( pspot, G2[ig] )
-        end
-        #
-        V_Ps_loc_short[:] = V_Ps_loc_short[:] + real( G_to_R(Ham.pw, Vg) ) * Npoints / CellVolume
-    end
-
-    return V_Ps_loc_short
-
-end
-
-
-
+using SpecialFunctions: erf, besselj0
+using QuadGK
 
 
 """
@@ -69,8 +40,6 @@ function KS_solve_SCF_03!( Ham::Hamiltonian ;
     #
     Nkspin = Nkpt*Nspin
 
-    Nstates_occ = electrons.Nstates_occ
-
     #
     # Initial wave function
     #
@@ -109,7 +78,7 @@ function KS_solve_SCF_03!( Ham::Hamiltonian ;
         @assert Nspin == 1
         Rhoe[:,1] = guess_rhoe( Ham )
     else
-        Rhoe[:,:] = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin )
+        Rhoe[:,:] = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin, renormalize=false )
     end
 
     if Nspin == 2
@@ -122,25 +91,45 @@ function KS_solve_SCF_03!( Ham::Hamiltonian ;
     println("integ of Rhoe_aux = ", sum(Rhoe_aux)*dVol)
     println("E self = ", E_self)
 
+    # Check integrated electrostatic potentials
+    V_es_tot = Ham.potentials.Hartree + Ham.potentials.Ps_loc
+    int_V_es = sum(V_es_tot)*dVol
+    println("integ V es tot = ", sum(V_es_tot)*dVol)
+
+
     V_Ps_loc_short = gen_V_Ps_loc_short( Ham )
 
     V_aux_G = Poisson_solve( pw, Rhoe_aux )
+    #V_aux_G[1] = 2*sqrt(1.0/pi)*Nelectrons*dVol
+    ##V_aux_G[1] = Nelectrons
     V_aux = real( G_to_R( pw, V_aux_G ) )
+
+    V_aux_v2 = gen_V_aux_G( Ham.atoms, Ham.pw, Ham.pspots )
     
-    V_aux_v2 = Ham.potentials.Ps_loc - V_Ps_loc_short
+    #V_aux_v2 = Ham.potentials.Ps_loc - V_Ps_loc_short
 
     println("Some V_aux: ")
     for i = 1:5
-        @printf("%5d %18.10f %18.10f\n", i, V_aux[i], V_aux_v2[i])
+        dr = norm(Ham.pw.r[:,i])
+        if dr <= eps()
+            dr = eps()
+        end
+        V_erf = -Ham.atoms.Zvals[1]/dr*erf(dr)
+        @printf("%5d %18.10f %18.10f %18.10f\n", i, V_aux[i], V_aux_v2[i], abs(V_erf-V_aux[i]) )
     end
+    println("minimum V_aux = ", minimum(V_aux))
     
+    Vzero = -2*sqrt(1.0/pi)*Ham.atoms.Zvals[1]
+    println("-Zvals*erf(r)/r at zero = ", Vzero)  # for the first species
+
+    println("diff Vzero = ", (Vzero - minimum(V_aux))*dVol)
+
+
     println("integ of V_Ps_loc_short = ", sum(V_Ps_loc_short)*dVol)
     println("integ of V_aux = ", sum(V_aux)*dVol)
     println("integ of V_Ps_loc = ", sum(Ham.potentials.Ps_loc)*dVol)
 
     @assert Nspin == 1  # current limitation
-
-    exit()
 
     # update!(Ham, Rhoe) 
     # Update potentials here
@@ -155,9 +144,16 @@ function KS_solve_SCF_03!( Ham::Hamiltonian ;
     end
 
     Ps_loc_orig = copy(Ham.potentials.Ps_loc)
-    Ham.potentials.Ps_loc = Ham.potentials.Ps_loc - V_aux
+    #Ham.potentials.Ps_loc = Ham.potentials.Ps_loc - V_aux
+    
+    #Ham.potentials.Ps_loc = gen_V_Ps_loc_screened( Ham.atoms, Ham.pw, Ham.pspots )
+    
+    Ham.potentials.Ps_loc = V_Ps_loc_short
+    #V_aux = Ps_loc_orig - V_Ps_loc_short
 
-    println("integ of V_Ps_loc = ", sum(Ham.potentials.Ps_loc)*dVol)
+    #println("integ of V_Ps_loc = ", sum(Ham.potentials.Ps_loc)*dVol)
+
+    #exit()
 
     
     # Check integrated electrostatic potentials
@@ -267,18 +263,9 @@ function KS_solve_SCF_03!( Ham::Hamiltonian ;
             Ham.electrons.Focc = copy(Focc)
         end
 
-        Rhoe_new[:,:] = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin )
+        Rhoe_new[:,:] = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin, renormalize=false )
         for ispin = 1:Nspin
             diffRhoe[ispin] = norm(Rhoe_new[:,ispin] - Rhoe[:,ispin])
-        end
-
-        # check norm of
-        if check_rhoe
-            integRhoe = sum(Rhoe_new)*dVol
-            @printf("Before: integRhoe_new = %18.10f\n", integRhoe)
-            Rhoe_new = Nelectrons/integRhoe * Rhoe_new
-            integRhoe = sum(Rhoe_new)*dVol
-            @printf("After renormalize Rhoe_new: = %18.10f\n", integRhoe)
         end
 
         if mix_method == "simple"
@@ -369,6 +356,10 @@ function KS_solve_SCF_03!( Ham::Hamiltonian ;
         V_HartreeG = Poisson_solve(pw, Rhoe_neu)
         Ham.potentials.Hartree = real( G_to_R(pw, V_HartreeG) )
 
+        # Check integrated electrostatic potentials
+        V_es_tot = Ham.potentials.Hartree + Ham.potentials.Ps_loc
+        println("integ V es tot = ", sum(V_es_tot)*dVol)
+
         if Ham.xcfunc == "PBE"
             Ham.potentials.XC[:,1] = calc_Vxc_PBE( Ham.pw, Rhoe[:,1] )
         else  # VWN is the default
@@ -424,26 +415,39 @@ function KS_solve_SCF_03!( Ham::Hamiltonian ;
         for ig = 2:pw.gvec.Ng
             ip = pw.gvec.idx_g2r[ig]
             #E_Hartree = E_Hartree + 4*pi*abs(cRhoeG[ip])^2/pw.gvec.G2[ig]
-            #E_Hartree = E_Hartree + real( V_HartreeG[ip] * cRhoeG[ip] )
+            #E_Hartree = E_Hartree + real( (V_HartreeG[ip] - V_aux_G[ip]) * cRhoeG_tot[ip] )
             #E_Hartree = E_Hartree + 4*pi*abs(cRhoeG_tot[ip])^2 / pw.gvec.G2[ig]
             E_Ps_loc = E_Ps_loc + real( V_Ps_locG[ip] * cRhoeG_tot[ip] )
         end
-        #E_Hartree = 0.5*E_Hartree*dVol/CellVolume - E_self
+        #E_Hartree = 0.5*( E_Hartree - V_aux_G[1] )*dVol #/CellVolume #- E_self
         #E_Hartree = 0.5*E_Hartree #*dVol
         E_Ps_loc = E_Ps_loc*dVol
 
-        E_Hartree = 0.5*sum( (Ham.potentials.Hartree - V_aux).*(Rhoe_neu - Rhoe_aux) )*dVol #- E_self
-        #E_Hartree = 0.5*sum( Ham.potentials.Hartree.*Rhoe_neu )*dVol #- E_self
+        #E_Hartree = 0.5*sum( (Ham.potentials.Hartree - V_aux).*(Rhoe_neu - Rhoe_aux) )*dVol #- E_self
+        #E_Hartree = 0.5*sum( (Ham.potentials.Hartree - V_aux).*Rhoe_tot )*dVol #- E_self
+        
+        E_Hartree = 0.5*sum( Ham.potentials.Hartree.*Rhoe_neu )*dVol #- E_self
+        
+        #E_Hartree = 0.5*sum( (Ham.potentials.Hartree - V_aux).*(Rhoe_neu - Rhoe_aux) )*dVol
 
-        #E_Hartree = 0.5*dot(Rhoe_neu,Rhoe_neu)*dVol - E_self
+        println("E_Hartree_neu = ", 0.5*sum( Ham.potentials.Hartree.*Rhoe_neu )*dVol)
+        println("E_self        = ", E_self)
+        println("E_Hartree     = ", E_Hartree)
+        println("E_Hartree_old = ", 0.5*sum( (Ham.potentials.Hartree - V_aux).*(Rhoe_neu - Rhoe_aux) )*dVol)
+        println("E_self num    = ", 0.5*sum( (V_aux).*(Rhoe_aux) )*dVol)
 
-        #println("V_H(G=0) = ", V_HartreeG[1])
-        #println("V_H(G=0)*dVol = ", V_HartreeG[1]*dVol)
+        println("E neu - aux   = ", 0.5*sum( Ham.potentials.Hartree.*Rhoe_neu )*dVol - sum( (V_aux).*(Rhoe) )*dVol)
+        println("E neu-aux-num = ", -0.5*sum( (V_aux).*(Rhoe_aux) )*dVol + 0.5*sum( Ham.potentials.Hartree.*Rhoe_neu )*dVol - sum( (V_aux).*(Rhoe) )*dVol)
 
-        #println("V_Ps_locG[1] = ", V_Ps_locG[1])
-        #println("V_Ps_locG[1]*Natoms*dVol = ", V_Ps_locG[1]*2*dVol)
-        #println("V_Ps_locG[1]*Natoms*dVol = ", V_Ps_locG[1]*2*dVol/CellVolume)
+        println("E H Rhoe neu  = ", 0.5*sum( (Ham.potentials.Hartree).*(Rhoe_aux) )*dVol)
+        
+        E_alphat = calc_E_alphat(Ham.atoms, Ham.pw, Ham.pspots )
+        
+        println("E_alphat = ", E_alphat)
 
+        E_Hartree = 0.5*sum( (Ham.potentials.Hartree - V_aux).*(Rhoe_neu - Rhoe_aux) )*dVol - E_alphat # override
+        E_Ps_loc = sum( Ham.potentials.Ps_loc.*Rhoe )*dVol + sum( (V_aux).*(Rhoe) )*dVol
+        #exit()
 
         if Ham.pspotNL.NbetaNL > 0
             E_Ps_nloc = calc_E_Ps_nloc( Ham, psiks )

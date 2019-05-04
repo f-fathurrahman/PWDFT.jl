@@ -4,7 +4,7 @@ function init_Gshells( gvec::GVectors )
 
     eps8 = 1e-8
 
-    G2_sorted = sort(gvec.G2)
+    G2_sorted = copy(gvec.G2)
     ngl = 1
     for ig = 2:Ng
         if G2_sorted[ig] > (G2_sorted[ig-1] + eps8)

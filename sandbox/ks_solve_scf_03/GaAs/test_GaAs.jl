@@ -40,11 +40,11 @@ function main()
     println(Ham)
 
     KS_solve_SCF_03!( Ham, mix_method="rpulay" )
+    exit()
+
     #KS_solve_SCF!( Ham, mix_method="rpulay" )
     #KS_solve_SCF_potmix!( Ham, ETOT_CONV_THR=1e-10 )
     #KS_solve_Emin_PCG!( Ham, ETOT_CONV_THR=1e-9, startingwfc=:random )
-
-    exit()
 
     run(`rm -fv TEMP_abinit/\*`)
     write_abinit(Ham, prefix_dir="./TEMP_abinit/")

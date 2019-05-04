@@ -1,52 +1,33 @@
+function gen_V_Ps_loc_short( Ham::Hamiltonian )
+
+    Nspecies = Ham.atoms.Nspecies
+    Npoints = prod(Ham.pw.Ns)
+    CellVolume = Ham.pw.CellVolume
+    G2 = Ham.pw.gvec.G2
+
+    V_Ps_loc_short = zeros(Npoints)
+    Vg = zeros(ComplexF64, Npoints)
+
+    strf = calc_strfact( Ham.atoms, Ham.pw )
+
+    for isp = 1:Nspecies
+        pspot = Ham.pspots[isp]
+        for ig = 1:Ham.pw.gvec.Ng
+            ip = Ham.pw.gvec.idx_g2r[ig]
+            Vg[ip] = strf[ig,isp] * PWDFT.eval_Vloc_G_short( pspot, G2[ig] )
+        end
+        #
+        V_Ps_loc_short[:] = V_Ps_loc_short[:] + real( G_to_R(Ham.pw, Vg) ) * Npoints / CellVolume
+    end
+
+    return V_Ps_loc_short
+
+end
+
+
 function gen_Rhoe_aux_G( Ham:: Hamiltonian )
     return gen_Rhoe_aux_G( Ham.atoms, Ham.pw )
 end
-
-function gen_Rhoe_aux_G( atoms::Atoms, pw::PWGrid; TOL = 1e-8 )
-
-    Zvals = atoms.Zvals
-
-    # determine eta
-    Gcut = 2*pw.ecutwfc/(2*pi)
-    eta = 0.5*Gcut^2/-log(TOL)
-
-    alpha = 2*eta^2  # alternative parameter
-
-    # structure factor
-    Sf = calc_strfact( atoms, pw )
-    
-    Ng = pw.gvec.Ng
-    G2 = pw.gvec.G2
-    Nspecies = atoms.Nspecies
-    Npoints = prod(pw.Ns)
-    idx_g2r = pw.gvec.idx_g2r
-    CellVolume = pw.CellVolume
-    dVol = CellVolume/Npoints
-
-    Rhoe_aux_G = zeros(ComplexF64,Npoints)
-    Rhoe_aux = zeros(Float64,Npoints)
-
-    for ig = 1:Ng
-        ip = idx_g2r[ig]
-        for isp = 1:Nspecies
-            Rhoe_aux_G[ip] = Rhoe_aux_G[ip] - Zvals[isp]*exp(-0.125*G2[ig]/eta^2)*Sf[ig,isp]/CellVolume
-        end
-    end
-
-    Rhoe_aux = real( G_to_R(pw,Rhoe_aux_G) )
-
-    println("Rhoe_aux_G(G=0) = ", Rhoe_aux_G[1]*CellVolume)
-
-    ss = 0.0
-    for ia = 1:atoms.Natoms
-        isp = atoms.atm2species[ia]
-        ss = ss + Zvals[isp]^2
-    end
-    E_self = sqrt(alpha/pi)*ss
-    
-    return Rhoe_aux*Npoints, E_self/CellVolume
-end
-
 
 function gen_Rhoe_aux_G( atoms::Atoms, pw::PWGrid, pspots; TOL = 1e-8 )
 
@@ -70,7 +51,7 @@ function gen_Rhoe_aux_G( atoms::Atoms, pw::PWGrid, pspots; TOL = 1e-8 )
         rlocal = pspots[isp].rlocal
         alpha = 1/(rlocal*sqrt(2))
         eta = sqrt(0.5*alpha)
-        println("eta = ", eta)
+        beta_s = rlocal*sqrt(2)
         for ig = 1:Ng
             ip = idx_g2r[ig]
             # determine eta
@@ -78,7 +59,7 @@ function gen_Rhoe_aux_G( atoms::Atoms, pw::PWGrid, pspots; TOL = 1e-8 )
             #alpha = 2*eta^2  # alternative parameter
             #rloc = 1/(alpha*sqrt(2))
             #Rhoe_aux_G[ip] = Rhoe_aux_G[ip] - Zvals[isp]*exp(-0.125*G2[ig]/eta^2)*Sf[ig,isp]/CellVolume
-            Rhoe_aux_G[ip] = Rhoe_aux_G[ip] - Zvals[isp]*exp(-0.25*G2[ig])*Sf[ig,isp]/CellVolume
+            Rhoe_aux_G[ip] = Rhoe_aux_G[ip] - Zvals[isp]*exp( -0.25*G2[ig]*beta_s^2 )*Sf[ig,isp]/CellVolume
         end
     end
 
@@ -90,22 +71,172 @@ function gen_Rhoe_aux_G( atoms::Atoms, pw::PWGrid, pspots; TOL = 1e-8 )
     for ia = 1:atoms.Natoms
         isp = atoms.atm2species[ia]
         rlocal = pspots[isp].rlocal
-        alpha = 1/(rlocal*sqrt(2))
-        E_self = E_self + sqrt(alpha/pi)*Zvals[isp]^2
+        #alpha = 1/(rlocal*sqrt(2))
+        beta_s = rlocal*sqrt(2)
+        #E_self = E_self + sqrt(alpha/pi)*Zvals[isp]^2
+        E_self = E_self + 1/sqrt(2*pi)/beta_s*Zvals[isp]^2  # beta_s = 1
     end
     
-    return Rhoe_aux*Npoints, E_self/CellVolume
+    return Rhoe_aux*Npoints, E_self #/CellVolume
 end
 
 
-function gen_Rhoe_aux_R( Ham::Hamiltonian )
-    return gen_Rhoe_aux_R( Ham.atoms, Ham.pw )
+
+function gen_V_aux_G( Ham )
+    return gen_V_aux_G( Ham.atoms, Ham.pw, Ham.pspots )
 end
 
-function gen_V_aux_R( Ham::Hamiltonian )
-    return gen_V_aux_R( Ham.atoms, Ham.pw )
+function gen_V_aux_G( atoms::Atoms, pw::PWGrid, pspots; TOL = 1e-8 )
+
+    Zvals = atoms.Zvals
+
+    # determine eta
+    Gcut = 2*pw.ecutwfc/(2*pi)
+    eta = 0.5*Gcut^2/-log(TOL)
+
+    alpha = 2*eta^2
+
+    # structure factor
+    Sf = calc_strfact( atoms, pw )
+    
+    Ng = pw.gvec.Ng
+    G2 = pw.gvec.G2
+    Nspecies = atoms.Nspecies
+    Npoints = prod(pw.Ns)
+    idx_g2r = pw.gvec.idx_g2r
+    CellVolume = pw.CellVolume
+    dVol = CellVolume/Npoints
+
+    V_aux_G = zeros(ComplexF64,Npoints)
+    V_aux = zeros(Float64,Npoints)
+
+    for isp = 1:Nspecies
+        
+        psp = pspots[isp]
+        rlocal = psp.rlocal
+        beta_s = rlocal*sqrt(2)
+
+        for ig = 1:Ng
+
+            ip = idx_g2r[ig]
+
+            Gm = sqrt(G2[ig])
+            Gr = Gm*rlocal
+
+            expGr2 = exp(-0.5*Gr^2)      
+            if Gm > eps()
+                V_aux_G[ip] = V_aux_G[ip] - 4*pi*Zvals[isp]*expGr2/G2[ig]*Sf[ig,isp]/CellVolume
+            else
+                #myfunc(r) = r^2 * ( PWDFT.eval_Vloc_R(psp, r) + Zvals[isp]*erf(r/beta_s) )
+                #V0 = quadgk( myfunc, eps(), 10.0 )[1]
+                #V_aux_G[ip] = V_aux_G[ip] - 4*pi*V0*Sf[ig,isp]/CellVolume
+                #V_aux_G[ip] = V_aux_G[ip] - 2*pi*Zvals[isp]*rloc^2*Sf[ig,isp]/CellVolume
+                #V_aux_G[ip] = V_aux_G[ip] - 2*pi*Zvals[isp]*rloc^2*Sf[ig,isp]/CellVolume
+                #V_aux_G[ip] = V_aux_G[ip] - 4*pi*(2*Zvals[isp]/sqrt(pi))*Sf[ig,isp]/CellVolume
+            end
+        end
+    end
+    println("V_aux_G[1] = ", V_aux_G[1])
+    println("V_aux_G[2] = ", V_aux_G[2])
+
+    V_aux = real(G_to_R(pw, V_aux_G))*Npoints
+
+    println("integ V_aux in R-space, constructed from G-space: ", sum(V_aux)*dVol)
+
+    return V_aux  # note the minus sign
 end
 
+
+
+function calc_E_alphat( atoms::Atoms, pw::PWGrid, pspots; TOL = 1e-8 )
+
+    Zvals = atoms.Zvals
+    atm2species = atoms.atm2species
+    Natoms = atoms.Natoms
+
+    # determine eta
+    Gcut = 2*pw.ecutwfc/(2*pi)
+    eta = 0.5*Gcut^2/-log(TOL)
+    alpha = 2*eta^2
+
+    # structure factor
+    Sf = calc_strfact( atoms, pw )
+    
+    Npoints = prod(pw.Ns)
+    CellVolume = pw.CellVolume
+    dVol = CellVolume/Npoints
+
+    E_alphat = 0.0
+    for ia = 1:Natoms
+        isp = atm2species[ia]
+        psp = pspots[isp]
+        rlocal = psp.rlocal
+        beta_s = rlocal*sqrt(2)
+
+        myfunc(r) = r^2 * ( PWDFT.eval_Vloc_R(psp, r) + Zvals[isp]*erf(r/beta_s) )
+        #myfunc(r) = r^2 * ( PWDFT.eval_Vloc_R(psp, r) + Zvals[isp]/r )
+        
+        E_alphat = E_alphat + 4*pi*quadgk( myfunc, eps(), 10.0 )[1]*Zvals[isp]
+    end
+
+    return E_alphat/CellVolume/Npoints
+end
+
+
+
+
+function gen_V_Ps_loc_screened( atoms::Atoms, pw::PWGrid, pspots; TOL = 1e-8 )
+
+    Zvals = atoms.Zvals
+
+    # determine eta
+    Gcut = 2*pw.ecutwfc/(2*pi)
+    eta = 0.5*Gcut^2/-log(TOL)
+
+    alpha = 2*eta^2
+
+    # structure factor
+    Sf = calc_strfact( atoms, pw )
+    
+    Ng = pw.gvec.Ng
+    G2 = pw.gvec.G2
+    Nspecies = atoms.Nspecies
+    Npoints = prod(pw.Ns)
+    idx_g2r = pw.gvec.idx_g2r
+    CellVolume = pw.CellVolume
+    dVol = CellVolume/Npoints
+
+    V_aux_G = zeros(ComplexF64,Npoints)
+    V_aux = zeros(Float64,Npoints)
+
+    println("Generating V_Ps_loc screened")
+
+    for isp = 1:Nspecies
+        
+        psp = pspots[isp]
+        rlocal = psp.rlocal
+        beta_s = rlocal*sqrt(2)
+
+        for ig = 1:Ng
+
+            ip = idx_g2r[ig]
+            
+            Gm = sqrt(G2[ig])
+
+            myfunc(r) = r^2 * besselj0(r*Gm) * ( PWDFT.eval_Vloc_R(psp, r) + Zvals[isp]*erf(r/beta_s) )
+            
+            V0 = quadgk( myfunc, eps(), 20.0 )[1]
+
+            #@printf("Gm = %18.10f, V0 = %18.10f\n", Gm, V0)
+
+            V_aux_G[ip] = V_aux_G[ip] + 4*pi*V0*Sf[ig,isp]/CellVolume
+        end
+    end
+
+    V_aux = real(G_to_R(pw, V_aux_G))*Npoints
+
+    return V_aux
+end
 
 
 # only intended for testing
@@ -142,6 +273,14 @@ function gen_Rhoe_aux_R( atoms::Atoms, pw::PWGrid; TOL = 1e-8 )
     
     println("integ Rhoe_aux in R-space: ", sum(Rhoe_aux)*dVol)
     return Rhoe_aux
+end
+
+function gen_Rhoe_aux_R( Ham::Hamiltonian )
+    return gen_Rhoe_aux_R( Ham.atoms, Ham.pw )
+end
+
+function gen_V_aux_R( Ham::Hamiltonian )
+    return gen_V_aux_R( Ham.atoms, Ham.pw )
 end
 
 
@@ -210,12 +349,7 @@ function gen_V_aux_R( atoms::Atoms, pw::PWGrid; TOL = 1e-8 )
 end
 
 
-
-function gen_V_aux_G( Ham )
-    return gen_V_aux_G( Ham.atoms, Ham.pw )
-end
-
-function gen_V_aux_G( atoms::Atoms, pw::PWGrid; TOL = 1e-8 )
+function gen_Rhoe_aux_G( atoms::Atoms, pw::PWGrid; TOL = 1e-8 )
 
     Zvals = atoms.Zvals
 
@@ -223,10 +357,7 @@ function gen_V_aux_G( atoms::Atoms, pw::PWGrid; TOL = 1e-8 )
     Gcut = 2*pw.ecutwfc/(2*pi)
     eta = 0.5*Gcut^2/-log(TOL)
 
-    alpha = 2*eta^2
-
-    #alpha = 1/(rloc*sqrt(2))
-    rloc = 1/(alpha*sqrt(2))
+    alpha = 2*eta^2  # alternative parameter
 
     # structure factor
     Sf = calc_strfact( atoms, pw )
@@ -239,31 +370,26 @@ function gen_V_aux_G( atoms::Atoms, pw::PWGrid; TOL = 1e-8 )
     CellVolume = pw.CellVolume
     dVol = CellVolume/Npoints
 
-    V_aux_G = zeros(ComplexF64,Npoints)
-    V_aux = zeros(Float64,Npoints)
-
+    Rhoe_aux_G = zeros(ComplexF64,Npoints)
+    Rhoe_aux = zeros(Float64,Npoints)
 
     for ig = 1:Ng
         ip = idx_g2r[ig]
-
-        Gm = sqrt(G2[ig])
-        Gr = Gm*rloc
-        expGr2 = exp(-0.5*Gr^2)
-
         for isp = 1:Nspecies
-            if Gm > eps()
-                V_aux_G[ip] = V_aux_G[ip] - 4*pi*Zvals[isp]*expGr2/G2[ig]*Sf[ig,isp]/CellVolume
-            else
-                V_aux_G[ip] = V_aux_G[ip] + 2*pi*Zvals[isp]*rloc^2*Sf[ig,isp]/CellVolume
-            end
+            Rhoe_aux_G[ip] = Rhoe_aux_G[ip] - Zvals[isp]*exp(-0.125*G2[ig]/eta^2)*Sf[ig,isp]/CellVolume
         end
     end
-    println("V_aux_G[1] = ", V_aux_G[1])
-    println("V_aux_G[2] = ", V_aux_G[2])
 
-    V_aux = real(G_to_R(pw, V_aux_G))*Npoints
+    Rhoe_aux = real( G_to_R(pw,Rhoe_aux_G) )
 
-    println("integ V_aux in R-space, constructed from G-space: ", sum(V_aux)*dVol)
+    println("Rhoe_aux_G(G=0) = ", Rhoe_aux_G[1]*CellVolume)
 
-    return -V_aux  # note the minus sign
+    ss = 0.0
+    for ia = 1:atoms.Natoms
+        isp = atoms.atm2species[ia]
+        ss = ss + Zvals[isp]^2
+    end
+    E_self = sqrt(alpha/pi)*ss
+    
+    return Rhoe_aux*Npoints, E_self/CellVolume
 end

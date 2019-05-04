@@ -13,10 +13,13 @@ include(joinpath(DIR_PWDFT, "sandbox", "PWSCF.jl"))
 
 include("../KS_solve_SCF_03.jl")
 
-function init_Ham_H2()
+function init_Ham_atom_H()
     # Atoms
-    atoms = Atoms( xyz_file=joinpath(DIR_STRUCTURES, "H2.xyz"),
-                   LatVecs = gen_lattice_sc(16.0) )
+    atoms = Atoms( xyz_string="""
+            1
+
+            H   0.0   0.0   0.0
+            """, LatVecs = gen_lattice_sc(16.0) )
 
     # Initialize Hamiltonian
     pspfiles = [joinpath(DIR_PSP, "H-q1.gth")]
@@ -28,16 +31,16 @@ function main()
 
     Random.seed!(1234)
 
-    Ham = init_Ham_H2()
+    Ham = init_Ham_atom_H()
 
 
-    println("")
-    println("======================")
-    println("Using KS_solve_SCF:")
-    println("======================")
-    println("")
-    KS_solve_SCF!( Ham, mix_method="rpulay" )
-    e1 = copy( Ham.energies )
+    #println("")
+    #println("======================")
+    #println("Using KS_solve_SCF:")
+    #println("======================")
+    #println("")
+    #KS_solve_SCF!( Ham, mix_method="rpulay" )
+    #e1 = copy( Ham.energies )
 
     println("")
     println("======================")
@@ -46,6 +49,8 @@ function main()
     println("")
     KS_solve_SCF_03!( Ham, mix_method="rpulay" )
     e2 = copy( Ham.energies )
+
+    exit()
 
 
     run(`rm -fv TEMP_abinit/\*`)

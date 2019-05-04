@@ -45,10 +45,10 @@ end
 
 function main()
 
-    #LATCONST = 10.2631
-    #Ham = init_Ham_Si_fcc( LATCONST, [3,3,3] )
+    LATCONST = 10.2631
+    Ham = init_Ham_Si_fcc( LATCONST, [3,3,3] )
 
-    Ham = init_Ham_H_in_box(16.0)
+    #Ham = init_Ham_H_in_box(16.0)
 
     @assert Ham.electrons.Nspin == 1
 
@@ -64,8 +64,11 @@ function main()
     Rhoe_tot_G = R_to_G(pw, Rhoe_tot)
     println("Rhoe_tot_G(G=0) = ", Rhoe_tot_G[1]*dVol)
 
-    Rhoe_aux = gen_Rhoe_aux_G( Ham )
+    Rhoe_aux, E_self = gen_Rhoe_aux_G( Ham.atoms, Ham.pw, Ham.pspots )
     println("integ of Rhoe_aux = ", sum(Rhoe_aux)*dVol)
+    println("E self = ", E_self)
+
+    exit()
 
     V_aux_G = Poisson_solve( pw, Rhoe_aux )
     V_aux = real( G_to_R( pw, V_aux_G ) )
@@ -74,7 +77,21 @@ function main()
     Rhoe_aux_R = gen_Rhoe_aux_R( Ham )
     V_aux_R = gen_V_aux_R( Ham )
 
-    V_aux = gen_Rhoe_aux_G( Ham.atoms, Ham.pw )
+    V_aux = gen_V_aux_G( Ham.atoms, Ham.pw )
+    println("Some V_aux:")
+    for i = 1:5
+        @printf("%3d %18.10f\n", i, V_aux[i])
+    end
+
+    Rhoe_from_V_aux = -op_nabla_dot( pw, op_nabla(pw, V_aux) )/(4*pi)
+
+    println("Some Rhoe_from_V_aux:")
+    for i = 1:5
+        @printf("%3d %18.10f %18.10f\n", i, Rhoe_from_V_aux[i], Rhoe_aux[i])
+    end
+
+    println
+    println("sum = ", sum(Rhoe_from_V_aux)*dVol)
 
 end
 
