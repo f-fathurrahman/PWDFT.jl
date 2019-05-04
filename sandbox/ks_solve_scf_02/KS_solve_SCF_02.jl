@@ -141,6 +141,7 @@ function KS_solve_SCF_02!(
 
     @assert Nspin == 1  # Current limitation
 
+    Vin = zeros(Npoints)
 
     for iter = 1:NiterMax
 
@@ -174,7 +175,8 @@ function KS_solve_SCF_02!(
         end
 
         # 
-        Vin = Ham.potentials.Hartree + Ham.potentials.XC[:,1]
+        Vin[2:end] = Ham.potentials.Hartree[2:end] + Ham.potentials.XC[2:end,1]
+        Vin[1] = Ham.potentials.XC[1,1]
         deband = -sum(Vin.*Rhoe_new[:,1])*dVol
         #deband = -sum(Vin.*Rhoe[:,1])*dVol
 
@@ -259,7 +261,7 @@ function KS_solve_SCF_02!(
         end
         
         #Etot = sum(Ham.energies)
-        Etot = Eband + deband + EHartree + Exc + Ham.energies.NN + descf # entropy missed
+        Etot = Eband + deband + EHartree + Exc + Ham.energies.NN + descf + Ham.energies.PspCore # entropy missed
 
         @printf("Eband    = %18.10f\n", Eband)
         @printf("deband   = %18.10f\n", deband)
@@ -268,6 +270,7 @@ function KS_solve_SCF_02!(
         @printf("EHartree = %18.10f\n", EHartree)
         @printf("Exc      = %18.10f\n", Exc)
         @printf("NN       = %18.10f\n", Ham.energies.NN)
+        @printf("PspCore  = %18.10f\n", Ham.energies.PspCore)
 
         diffE = abs( Etot - Etot_old )
 
