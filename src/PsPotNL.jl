@@ -80,7 +80,7 @@ function PsPotNL( atoms::Atoms, pw::PWGrid, Pspots::Array{PsPot_GTH,1}; check_no
                     GX = atpos[1,ia]*g[1] + atpos[2,ia]*g[2] + atpos[3,ia]*g[3]
                     Sf = cos(GX) - im*sin(GX)
                     betaNL[igk,ibeta,ik] =
-                    Ylm_real(l,m,g)*eval_proj_G(psp,l,iprj,Gm,pw.CellVolume)*Sf
+                    (-1.0*im)^l * Ylm_real(l,m,g)*eval_proj_G(psp,l,iprj,Gm,pw.CellVolume)*Sf
                 end
             end
             end
@@ -95,7 +95,6 @@ function PsPotNL( atoms::Atoms, pw::PWGrid, Pspots::Array{PsPot_GTH,1}; check_no
     return PsPotNL( NbetaNL, prj2beta, betaNL )
 
 end
-
 
 
 function check_betaNL_norm(
@@ -119,9 +118,9 @@ function check_betaNL_norm(
         idx_gw2r = pw.gvecw.idx_gw2r[ik]
         #
         for ibeta = 1:NbetaNL
-            norm_G = dot( betaNL[:,ibeta,ik], betaNL[:,ibeta,ik] )
+            norm_G = dot( betaNL[1:Ngw[ik],ibeta,ik], betaNL[1:Ngw[ik],ibeta,ik] )
             ctmp[:] .= 0.0 + im*0.0
-            ctmp[idx_gw2r] = betaNL[:,ibeta,ik]
+            ctmp[idx_gw2r] = betaNL[1:Ngw[ik],ibeta,ik]
             ctmp = G_to_R(pw, ctmp)*Npoints
             data3d = real(ctmp)
             data3d_im = imag(ctmp)
