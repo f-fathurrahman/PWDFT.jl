@@ -5,15 +5,21 @@ iterations with density mixing.
 function KS_solve_SCF!( Ham::Hamiltonian ;
                         startingwfc=:random, savewfc=false,
                         startingrhoe=:gaussian,
-                        betamix=0.2, NiterMax=100, verbose=true,
+                        betamix=0.2,
+                        NiterMax=100,
+                        verbose=true,
                         print_final_ebands=false,
                         print_final_energies=true,
                         check_rhoe=false,
-                        use_smearing=false, kT=1e-3,
-                        update_psi="LOBPCG", cheby_degree=8,
-                        mix_method="simple", MIXDIM=5,
+                        use_smearing=false,
+                        kT=1e-3,
+                        update_psi="LOBPCG",
+                        cheby_degree=8,
+                        mix_method="simple",
+                        mixdim=5,
                         print_e_gap=false,
-                        ETOT_CONV_THR=1e-6 )
+                        etot_conv_thr=1e-6,
+                        ethr_evals_last=1e-5 )
 
     pw = Ham.pw
     Ngw = pw.gvecw.Ngw
@@ -95,17 +101,15 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
 
     evals = zeros(Float64,Nstates,Nkspin)
 
-    ETHR_EVALS_LAST = 1e-6
-
     ethr = 0.1
     
     if mix_method == "anderson"
-        df = zeros(Float64,Npoints*Nspin,MIXDIM)
-        dv = zeros(Float64,Npoints*Nspin,MIXDIM)
+        df = zeros(Float64,Npoints*Nspin, mixdim)
+        dv = zeros(Float64,Npoints*Nspin, mixdim)
     
     elseif mix_method in ("rpulay", "rpulay_kerker", "ppulay", "pulay")
-        XX = zeros(Float64,Npoints*Nspin,MIXDIM)
-        FF = zeros(Float64,Npoints*Nspin,MIXDIM)
+        XX = zeros(Float64,Npoints*Nspin, mixdim)
+        FF = zeros(Float64,Npoints*Nspin, mixdim)
         x_old = zeros(Float64,Npoints*Nspin)
         f_old = zeros(Float64,Npoints*Nspin)
     end
@@ -117,7 +121,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
     @printf("\n")
     @printf("mix_method = %s\n", mix_method)
     if mix_method in ("rpulay", "rpulay_kerker", "anderson", "ppulay")
-        @printf("MIXDIM = %d\n", MIXDIM)
+        @printf("mixdim = %d\n", mixdim)
     end
     @printf("Density mixing with betamix = %10.5f\n", betamix)
     if use_smearing
@@ -144,25 +148,25 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
             ethr = 0.01
         else
             ethr = ethr/5.0
-            ethr = max( ethr, ETHR_EVALS_LAST )
+            ethr = max( ethr, ethr_evals_last )
         end
 
         if update_psi == "LOBPCG"
 
             evals =
-            diag_LOBPCG!( Ham, psiks, verbose=false, verbose_last=false,
+            diag_LOBPCG!( Ham, psiks, verbose=false, verbose_last=false, tol=ethr,
                           Nstates_conv=Nstates_occ )
 
         elseif update_psi == "davidson"
 
             evals =
-            diag_davidson!( Ham, psiks, verbose=false, verbose_last=false,
+            diag_davidson!( Ham, psiks, verbose=false, verbose_last=false, tol=ethr,
                             Nstates_conv=Nstates_occ )                
 
         elseif update_psi == "PCG"
 
             evals =
-            diag_Emin_PCG!( Ham, psiks, verbose=false, verbose_last=false,
+            diag_Emin_PCG!( Ham, psiks, verbose=false, verbose_last=false, tol=ethr,
                             Nstates_conv=Nstates_occ )
 
         elseif update_psi == "CheFSI"
@@ -212,7 +216,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
         
             Rhoe = reshape( mix_pulay!(
                 reshape(Rhoe,(Npoints*Nspin)),
-                reshape(Rhoe_new,(Npoints*Nspin)), betamix, XX, FF, iter, MIXDIM, x_old, f_old
+                reshape(Rhoe_new,(Npoints*Nspin)), betamix, XX, FF, iter, mixdim, x_old, f_old
                 ), (Npoints,Nspin) )
             
             if Nspin == 2
@@ -223,7 +227,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
         
             Rhoe = reshape( mix_rpulay!(
                 reshape(Rhoe,(Npoints*Nspin)),
-                reshape(Rhoe_new,(Npoints*Nspin)), betamix, XX, FF, iter, MIXDIM, x_old, f_old
+                reshape(Rhoe_new,(Npoints*Nspin)), betamix, XX, FF, iter, mixdim, x_old, f_old
                 ), (Npoints,Nspin) )
             
             if Nspin == 2
@@ -234,7 +238,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
         
             Rhoe = reshape( mix_ppulay!(
                 reshape(Rhoe,(Npoints*Nspin)),
-                reshape(Rhoe_new,(Npoints*Nspin)), betamix, XX, FF, iter, MIXDIM, 3, x_old, f_old
+                reshape(Rhoe_new,(Npoints*Nspin)), betamix, XX, FF, iter, mixdim, 3, x_old, f_old
                 ), (Npoints,Nspin) )
             
             if Nspin == 2
@@ -245,7 +249,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
         
             Rhoe = reshape( mix_rpulay_kerker!( pw,
                 reshape(Rhoe,(Npoints*Nspin)),
-                reshape(Rhoe_new,(Npoints*Nspin)), betamix, XX, FF, iter, MIXDIM, x_old, f_old
+                reshape(Rhoe_new,(Npoints*Nspin)), betamix, XX, FF, iter, mixdim, x_old, f_old
                 ), (Npoints,Nspin) )
             
             if Nspin == 2
@@ -253,7 +257,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
             end
         
         elseif mix_method == "anderson"
-            Rhoe[:,:] = mix_anderson!( Nspin, Rhoe, Rhoe_new, betamix, df, dv, iter, MIXDIM )
+            Rhoe[:,:] = mix_anderson!( Nspin, Rhoe, Rhoe_new, betamix, df, dv, iter, mixdim )
         
         else
             error(@sprintf("Unknown mix_method = %s\n", mix_method))
@@ -301,7 +305,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
         
         end
 
-        if diffE < ETOT_CONV_THR
+        if diffE < etot_conv_thr
             CONVERGED = CONVERGED + 1
         else  # reset CONVERGED
             CONVERGED = 0
