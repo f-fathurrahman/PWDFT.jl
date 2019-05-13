@@ -40,8 +40,12 @@ export gen_lattice_fcc, gen_lattice_bcc, gen_lattice_trigonal, gen_lattice_trigo
 
 include("spglib.jl")
 export spg_find_primitive,
+       spg_get_symmetry,
        spg_get_ir_reciprocal_mesh,
        reduce_atoms, gen_kgrid_reduced
+
+include("SymmetryInfo.jl")
+export SymmetryInfo
 
 include("KPoints.jl")
 export KPoints, write_KPoints, read_KPoints,

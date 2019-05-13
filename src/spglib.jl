@@ -1,3 +1,30 @@
+function spg_get_symmetry( atoms::Atoms; symprec=1e-5 )
+
+    lattice = Matrix(atoms.LatVecs')
+    positions = Matrix(inv(atoms.LatVecs))*atoms.positions # convert to fractional coordinates
+    ctypes = Base.cconvert( Array{Int32,1}, atoms.atm2species)
+    num_atom = Base.cconvert( Int32, atoms.Natoms )
+
+    max_size = 50
+    cmax_size = Base.cconvert(Int32, max_size)
+    out_rot = zeros(Int32,3,3,max_size)
+    out_translations = zeros(Float64,3,max_size)
+
+    Nsyms_ =
+    ccall((:spg_get_symmetry, PWDFT.LIBSYMSPG), Int32,
+          (Ptr{Int32}, Ptr{Float64}, Int32,
+           Ptr{Float64}, Ptr{Float64}, Ptr{Int32}, Int32, Float64),
+           out_rot, out_translations, cmax_size,
+           lattice, positions, ctypes, num_atom, symprec)
+    
+    Nsyms = Base.convert(Int64, Nsyms_)
+
+    s = Base.convert(Array{Int64,3}, out_rot[:,:,1:Nsyms])
+    ft = out_translations[:,1:Nsyms]
+
+    return Nsyms, s, ft
+end
+
 
 # This function is now included in the KPoints constructor
 function gen_kgrid_reduced( atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{Int64,1};

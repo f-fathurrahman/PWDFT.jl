@@ -5,6 +5,7 @@ mutable struct Hamiltonian
     rhoe::Array{Float64,2} # spin dependent
     electrons::Electrons
     atoms::Atoms
+    sym_info::SymmetryInfo
     pspots::Array{PsPot_GTH,1}
     pspotNL::PsPotNL
     xcfunc::String
@@ -21,6 +22,8 @@ function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
                       kpts_str="",
                       xcfunc="VWN",
                       extra_states=0 )
+
+    sym_info = SymmetryInfo(atoms)
 
     # kpoints
     if kpoints == nothing
@@ -90,7 +93,7 @@ function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
     ik = 1
     ispin = 1
     return Hamiltonian( pw, potentials, energies, rhoe,
-                        electrons, atoms, Pspots, pspotNL, xcfunc, ik, ispin )
+                        electrons, atoms, sym_info, Pspots, pspotNL, xcfunc, ik, ispin )
 end
 
 
@@ -104,6 +107,8 @@ function Hamiltonian( atoms::Atoms, ecutwfc::Float64;
                       kpts_str="",
                       kpoints=nothing,   
                       xcfunc="VWN", extra_states=0 )
+
+    sym_info = SymmetryInfo(atoms)
 
     # kpoints
     if kpoints == nothing
@@ -158,7 +163,7 @@ function Hamiltonian( atoms::Atoms, ecutwfc::Float64;
     ik = 1
     ispin = 1
     return Hamiltonian( pw, potentials, energies, rhoe,
-                          electrons, atoms, Pspots, pspotNL, xcfunc, ik, ispin )
+                        electrons, atoms, sym_info, Pspots, pspotNL, xcfunc, ik, ispin )
 end
 
 
