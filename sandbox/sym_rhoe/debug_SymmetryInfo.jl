@@ -5,7 +5,6 @@ struct SymmetryInfo
     ft::Array{Float64,2}
 end
 
-
 function SymmetryInfo( atoms::Atoms )
     
     Nsyms, s, ft = spg_get_symmetry(atoms)

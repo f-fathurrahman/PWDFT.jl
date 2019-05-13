@@ -8,6 +8,8 @@ const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)), "..")
 const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
 const DIR_STRUCTURES = joinpath(DIR_PWDFT, "structures")
 
+include("Gshells.jl")
+
 function init_Ham_Si_fcc()
     atoms = Atoms(xyz_string_frac=
         """
@@ -88,6 +90,10 @@ function main()
     atoms = Ham.atoms
     sym_info = Ham.sym_info
     println(sym_info)
+
+    #G2_gshells, idx_gshells = init_Gshells(pw.gvec)
+    #Ngshells = length(G2_gshells)
+    #println("Ngshells = ", Ngshells)
 
     sym_gshell = Array{Int64,2}(undef,3,48)
 
