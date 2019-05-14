@@ -5,8 +5,6 @@ using PWDFT
 const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
 const DIR_STRUCTURES = joinpath(DIR_PWDFT, "structures")
 
-include("SymmetryInfo.jl")
-
 function test_Si_fcc()
     atoms = Atoms(xyz_string_frac=
         """
@@ -59,7 +57,7 @@ function test_CH4()
 end
 
 
-#test_Si_fcc()
+test_Si_fcc()
 #test_GaAs()
 #test_CH4()
-test_H_fcc()
+#test_H_fcc()

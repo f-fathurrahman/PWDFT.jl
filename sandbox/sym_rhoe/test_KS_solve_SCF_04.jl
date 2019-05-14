@@ -8,7 +8,10 @@ const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)), "..")
 const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
 const DIR_STRUCTURES = joinpath(DIR_PWDFT, "structures")
 
-include("sym_rhoe.jl")
+include("KS_solve_SCF_04.jl")
+
+include(joinpath(DIR_PWDFT, "sandbox", "ABINIT.jl"))
+include(joinpath(DIR_PWDFT, "sandbox", "PWSCF.jl"))
 
 function init_Ham_Si_fcc()
     atoms = Atoms(xyz_string_frac=
@@ -22,7 +25,7 @@ function init_Ham_Si_fcc()
 
     ecutwfc = 15.0
     pspfiles = [joinpath(DIR_PSP, "Si-q4.gth")]
-    return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3], Ns_=(32,32,32) )
+    return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3] )
 end
 
 
@@ -79,35 +82,38 @@ end
 
 function main()
 
-    Ham = init_Ham_Si_fcc()
-    #Ham = init_Ham_GaAs()
-    #Ham = init_Ham_atom_H()
-    #Ham = init_Ham_H2()
-    #Ham = init_Ham_H2_v2()
-
-    pw = Ham.pw
-    atoms = Ham.atoms
-    LatVecs = pw.LatVecs
-
-    sym_info = Ham.sym_info
-    println(sym_info)
-
-    Ngs, shell_G_sym, ft_ = init_sym_rhoe( Ham )
-    println("Ngs = ", Ngs)
-    exit()
-
     Random.seed!(1234)
 
-    dVol = pw.CellVolume/prod(pw.Ns)
-    psiks = rand_BlochWavefunc(Ham)
-    Rhoe = calc_rhoe(Ham, psiks)
-    println("integ Rhoe = ", sum(Rhoe)*dVol)
+    #Ham = init_Ham_Si_fcc()
+    #Ham = init_Ham_GaAs()
+    Ham = init_Ham_atom_H()
+    #Ham = init_Ham_H2()
+    #Ham = init_Ham_H2_v2()
+    println(Ham)
+    println(Ham.sym_info)
 
-    Rhoe_sym = copy(Rhoe)
-    sym_rhoe!( Ham, Rhoe_sym, Ngs, shell_G_sym, ft_)
-    println("integ Rhoe_sym = ", sum(Rhoe_sym)*dVol)
+    @time KS_solve_SCF_04!( Ham, mix_method="rpulay" )
+    @time KS_solve_SCF_04!( Ham, mix_method="rpulay" )
+   
+    run(`rm -fv TEMP_abinit/\*`)
+    write_abinit(Ham, prefix_dir="./TEMP_abinit/")
+    cd("./TEMP_abinit")
+    run(pipeline(`abinit`, stdin="FILES", stdout="ABINIT_o_LOG"))
+    cd("../")
 
-    println("diff sum abs = ", sum(abs.(Rhoe_sym - Rhoe)))
+    abinit_energies = read_abinit_etotal("TEMP_abinit/LOG1")
+    println("\nABINIT result\n")
+    println(abinit_energies)
+
+    run(`rm -rfv TEMP_pwscf/\*`)
+    write_pwscf( Ham, prefix_dir="TEMP_pwscf" )
+    cd("./TEMP_pwscf")
+    run(pipeline(`pw.x`, stdin="PWINPUT", stdout="LOG1"))
+    cd("../")
+
+    pwscf_energies = read_pwscf_etotal("TEMP_pwscf/LOG1")
+    println("\nPWSCF result\n")
+    println(pwscf_energies)
 
 end
 
