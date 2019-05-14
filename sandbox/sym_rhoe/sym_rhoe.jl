@@ -77,21 +77,12 @@ function init_sym_rhoe( Ham::Hamiltonian )
     # convert fractional translations to Cartesian
     alat = norm(LatVecs[:,1])
     for isym = 1:Nsyms
-        println("non_symmorphic ", isym, " ", non_symmorphic[isym])
         if non_symmorphic[isym]
             for ii = 1:3
                 ft_[ii,isym] = LatVecs[ii,1]*ft[1,isym] + LatVecs[ii,2]*ft[2,isym] + LatVecs[ii,3]*ft[3,isym]
             end
         end
     end
-
-    #for isym = 1:Nsyms
-    #    @printf("%18.10f %18.10f %18.10f\n", ft_[1,isym]/alat, ft_[2,isym]/alat, ft_[3,isym]/alat)
-    #end
-    #println("alat = ", alat)
-    #println(LatVecs/alat)
-#
-    #println(pw.gvec.G[:,2])
 
     return Ngs, shell_G_sym, ft_
 
@@ -118,6 +109,8 @@ function sym_rhoe!( Ham, Rhoe, Ngs, shell_G_sym, ft_ )
     g0 = zeros(3,48)
     is_done_shell = zeros(Bool,48)
 
+    trmat = LatVecs'/(2*pi)
+
     for igl = 1:Ngs
         
         ng = length(shell_G_sym[igl])
@@ -129,7 +122,13 @@ function sym_rhoe!( Ham, Rhoe, Ngs, shell_G_sym, ft_ )
             is_done_shell[ig] = false
         end
         
-        _cryst_to_cart!(g0, LatVecs/(2*pi), -1)
+        #_cryst_to_cart!(g0, LatVecs/(2*pi), -1)
+        g0 = trmat*g0
+        #for ig = 1:ng
+        #    for ii=1:3
+        #        g0[ii,ig] = (LatVecs[1,ii]*g0[1,ig] + LatVecs[2,ii]*g0[2,ig] + LatVecs[3,ii]*g0[3,ig])/(2*pi)
+        #    end
+        #end
 
         for ig = 1:ng
             

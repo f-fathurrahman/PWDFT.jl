@@ -86,14 +86,14 @@ function main()
 
     #Ham = init_Ham_Si_fcc()
     #Ham = init_Ham_GaAs()
-    Ham = init_Ham_atom_H()
-    #Ham = init_Ham_H2()
+    #Ham = init_Ham_atom_H()
+    Ham = init_Ham_H2()
     #Ham = init_Ham_H2_v2()
     println(Ham)
     println(Ham.sym_info)
 
-    @time KS_solve_SCF_04!( Ham, mix_method="rpulay" )
-    @time KS_solve_SCF_04!( Ham, mix_method="rpulay" )
+    @time KS_solve_SCF_04!( Ham, mix_method="anderson" )
+    @time KS_solve_SCF_04!( Ham, mix_method="anderson" )
    
     run(`rm -fv TEMP_abinit/\*`)
     write_abinit(Ham, prefix_dir="./TEMP_abinit/")
