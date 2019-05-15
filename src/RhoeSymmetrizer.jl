@@ -19,9 +19,10 @@ function RhoeSymmetrizer( atoms::Atoms, pw::PWGrid, sym_info::SymmetryInfo )
     shell_G_sym = Array{Array{Int64,1},1}(undef,pw.gvec.Ng)
 
     for ig = 1:pw.gvec.Ng
-        xx = ( LatVecs[1,:]*G[1,ig] + LatVecs[2,:]*G[2,ig] + LatVecs[3,:]*G[3,ig] )/(2*pi)
-        G_crystal[:,ig] = round.(Int64,xx)
-        is_done[ig] = false
+        for ii = 1:3
+            xx = ( LatVecs[1,ii]*G[1,ig] + LatVecs[2,ii]*G[2,ig] + LatVecs[3,ii]*G[3,ig] )/(2*pi)
+            G_crystal[ii,ig] = round(Int64,xx)
+        end
     end
 
     Nsyms = sym_info.Nsyms
@@ -41,10 +42,14 @@ function RhoeSymmetrizer( atoms::Atoms, pw::PWGrid, sym_info::SymmetryInfo )
         Ngs = Ngs + 1
         ng = 0
         for isym = 1:Nsyms
-            sn[:] = s[:,1,isym]*G_crystal[1,ig] + s[:,2,isym]*G_crystal[2,ig] + s[:,3,isym]*G_crystal[3,ig]
+            for ii = 1:3
+                sn[ii] = s[ii,1,isym]*G_crystal[1,ig] + s[ii,2,isym]*G_crystal[2,ig] + s[ii,3,isym]*G_crystal[3,ig]
+            end
             found = false
             for i = 1:ng
-                found = ( sn[:] == sym_gshell[:,i] )
+                found = ( (sn[1] == sym_gshell[1,i]) &&
+                          (sn[2] == sym_gshell[2,i]) &&
+                          (sn[3] == sym_gshell[3,i]) )
                 if found
                     break
                 end
@@ -54,7 +59,9 @@ function RhoeSymmetrizer( atoms::Atoms, pw::PWGrid, sym_info::SymmetryInfo )
                 if( ng > 48)
                     error("This should not happen: ng > 48")
                 end
-                sym_gshell[:,ng] = sn[:]
+                for ii = 1:3
+                    sym_gshell[ii,ng] = sn[ii]
+                end
             end
         end
 
@@ -67,7 +74,9 @@ function RhoeSymmetrizer( atoms::Atoms, pw::PWGrid, sym_info::SymmetryInfo )
                 if is_done[j]
                     continue
                 end
-                found = ( sym_gshell[:,i] == G_crystal[:,j] )
+                found = ( (sym_gshell[1,i] == G_crystal[1,j]) &&
+                          (sym_gshell[2,i] == G_crystal[2,j]) &&
+                          (sym_gshell[3,i] == G_crystal[3,j]) )
                 if found
                     is_done[j] = true
                     shell_G_sym[Ngs][i] = j
