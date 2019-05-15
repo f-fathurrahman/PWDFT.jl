@@ -100,8 +100,13 @@ function sym_rhoe!( Ham, Rhoe, Ngs, shell_G_sym, ft_ )
     ft = sym_info.ft
     non_symmorphic = sym_info.non_symmorphic
 
-    # assuming Nspin = 1
-    RhoeG = R_to_G(pw, Rhoe[:,1])
+    Npoints = prod(pw.Ns)
+    Nspin = Ham.electrons.Nspin
+
+    RhoeG = zeros(ComplexF64,Npoints,Nspin)
+    for ispin = 1:Nspin
+        RhoeG[:,ispin] = R_to_G(pw, Rhoe[:,ispin])
+    end
 
     sg = zeros(Float64,3)
     irot = zeros(Int64,48)
@@ -110,6 +115,8 @@ function sym_rhoe!( Ham, Rhoe, Ngs, shell_G_sym, ft_ )
     is_done_shell = zeros(Bool,48)
 
     trmat = LatVecs'/(2*pi)
+
+    rhosum = zeros(ComplexF64,Nspin)
 
     for igl = 1:Ngs
         
@@ -134,7 +141,9 @@ function sym_rhoe!( Ham, Rhoe, Ngs, shell_G_sym, ft_ )
             
             if !is_done_shell[ig]
                 
-                rhosum = 0.0 + im*0.0
+                for ispin = 1:Nspin
+                    rhosum[ispin] = 0.0 + im*0.0
+                end
 
                 for isym = 1:Nsyms
                     for ii = 1:3
@@ -144,7 +153,6 @@ function sym_rhoe!( Ham, Rhoe, Ngs, shell_G_sym, ft_ )
                     irot[isym] = 0
 
                     for isg = 1:ng
-                        #if all( abs.(sg[:] - g0[:,isg]) .< 1e-5 )
                         if (abs(sg[1] - g0[1,isg]) < 1e-5) &&
                            (abs(sg[2] - g0[2,isg]) < 1e-5) &&
                            (abs(sg[3] - g0[3,isg]) < 1e-5)
@@ -164,15 +172,20 @@ function sym_rhoe!( Ham, Rhoe, Ngs, shell_G_sym, ft_ )
                     if non_symmorphic[isym]
                         arg = pw.gvec.G[1,isg]*ft_[1,isym] + pw.gvec.G[2,isg]*ft_[2,isym] + pw.gvec.G[3,isg]*ft_[3,isym]
                         fact = cos(arg) + im*sin(arg)
-                        # assume Nspin == 1
-                        rhosum = rhosum + RhoeG[ip]*fact
+                        for ispin = 1:Nspin
+                            rhosum[ispin] = rhosum[ispin] + RhoeG[ip,ispin]*fact
+                        end
                     else
-                        rhosum = rhosum + RhoeG[ip]
+                        for ispin = 1:Nspin
+                            rhosum[ispin] = rhosum[ispin] + RhoeG[ip,ispin]
+                        end
                     end
                 
                 end # isym
 
-                rhosum = rhosum/Nsyms
+                for ispin = 1:Nspin
+                    rhosum[ispin] = rhosum[ispin]/Nsyms
+                end
 
                 for isym = 1:Nsyms
                     isg = shell_G_sym[igl][irot[isym]]
@@ -180,9 +193,13 @@ function sym_rhoe!( Ham, Rhoe, Ngs, shell_G_sym, ft_ )
                     if non_symmorphic[isym]
                         arg = pw.gvec.G[1,isg]*ft_[1,isym] + pw.gvec.G[2,isg]*ft_[2,isym] + pw.gvec.G[3,isg]*ft_[3,isym]
                         fact = cos(arg) - im*sin(arg)
-                        RhoeG[ip] = rhosum*fact
+                        for ispin = 1:Nspin
+                            RhoeG[ip,ispin] = rhosum[ispin]*fact
+                        end
                     else
-                        RhoeG[ip] = rhosum
+                        for ispin = 1:Nspin
+                            RhoeG[ip,ispin] = rhosum[ispin]
+                        end
                     end
                     is_done_shell[irot[isym]] = true
                 end
@@ -191,7 +208,9 @@ function sym_rhoe!( Ham, Rhoe, Ngs, shell_G_sym, ft_ )
         end # ng
     end # ngl
 
-    Rhoe[:,1] = real(G_to_R(pw, RhoeG))
+    for ispin = 1:Nspin
+        Rhoe[:,ispin] = real(G_to_R(pw, RhoeG[:,ispin]))
+    end
 
     return
 
