@@ -37,6 +37,10 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
         psiks = rand_BlochWavefunc( Ham )
     end
 
+    if Ham.sym_info.Nsyms > 1
+        rhoe_symmetrizer = RhoeSymmetrizer( Ham )
+    end
+
     #
     # Calculated electron density from this wave function and
     # update Hamiltonian (calculate Hartree and XC potential).
@@ -48,6 +52,11 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
         Rhoe[:,1] = guess_rhoe( Ham )
     else
         calc_rhoe!( Ham, psiks, Rhoe )
+    end
+    
+    # Symmetrize Rhoe is needed
+    if Ham.sym_info.Nsyms > 1
+        symmetrize_rhoe!( Ham, rhoe_symmetrizer, Rhoe )
     end
 
     update!(Ham, Rhoe)
@@ -148,6 +157,11 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
         end # ispin
         
         calc_rhoe!( Ham, psiks, Rhoe )
+        # Symmetrize Rhoe is needed
+        if Ham.sym_info.Nsyms > 1
+            symmetrize_rhoe!( Ham, rhoe_symmetrizer, Rhoe )
+        end
+
         update!(Ham, Rhoe)
 
         for ispin = 1:Nspin
@@ -173,6 +187,10 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
         end
 
         calc_rhoe!( Ham, psiks, Rhoe )
+        # Symmetrize Rhoe is needed
+        if Ham.sym_info.Nsyms > 1
+            symmetrize_rhoe!( Ham, rhoe_symmetrizer, Rhoe )
+        end
         update!(Ham, Rhoe)
 
         Ham.energies = calc_energies( Ham, psiks )
