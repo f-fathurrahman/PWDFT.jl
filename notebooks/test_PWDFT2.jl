@@ -117,7 +117,7 @@ function test_main()
     Rhoe = zeros(Float64,Npoints,Nspin)
     for ispin = 1:Nspin
         idxset = (Nkpt*(ispin-1)+1):(Nkpt*ispin)
-        Rhoe[:,ispin] = calc_rhoe( pw, Focc[:,idxset], psiks[idxset] )
+        Rhoe[:,ispin] = calc_rhoe( Nels, pw, Focc[:,idxset], psiks[idxset], Nspin )
     end
 
     @assert Nspin == 1  # restrict to non spin-polarized
@@ -135,7 +135,7 @@ function test_main()
     E_NN = calc_E_NN(atoms)
     println("E_NN = ", E_NN)
 
-    E_pspcore = calc_PspCore_ene( Ham.atoms, Ham.pspots, Ham.pw.CellVolume )
+    E_pspcore = calc_PspCore_ene( Ham.atoms, Ham.pspots )
     println("E_pspcore = ", E_pspcore)
 
     println("Electrostatic ene (excluding pspcore) = ", Ehartree + E_ps_loc + E_NN)
@@ -155,8 +155,15 @@ function test_main()
     #
     RhoeG_T = RhoeG + Rhoe_aux_G
     #
-    #VHartreeG = Poisson_solve(pw, RhoeG_T)
-    VHartree2 = real( G_to_R( pw, Poisson_solve(pw, RhoeG_T) ) )
+    # Calculate Hartree potential from this total chg + gaussian charge
+    VHartreeG = zeros(ComplexF64,Npoints)
+    VHartreeG[1] = 0.0 + im*0.0
+    for ig = 2:Ng
+        ip = idx_g2r[ig]
+        VHartreeG[ip] = RhoeG_T[ig]/G2[ig]
+    end
+    VHartreeG = 4*pi*VHartreeG
+    VHartree2 = real( G_to_R( pw, VHartreeG ) )
     #
     pspots = Ham.pspots
     Vg = zeros(ComplexF64,Npoints)
@@ -168,6 +175,8 @@ function test_main()
     eta  = 0.5*Gcut^2/gexp
     #
     strf = calc_strfact(atoms, pw)
+    #
+    # Modified V_ps_loc (plus potential correspond to by Gaussian chg)
     #
     for isp = 1:Nspecies
         psp = pspots[isp]
@@ -188,20 +197,25 @@ function test_main()
     for ig = 2:Ng
         ip = idx_g2r[ig]
         #EhartreeG = EhartreeG + 0.5*real(VHartreeG[ip]*conj(RhoeG[ip]))*CellVolume
-        EhartreeG = EhartreeG + 2*pi/G2[ig] * real(RhoeG_T[ip]*conj(RhoeG_T[ip]))*CellVolume
+        EhartreeG = EhartreeG + 2*pi/G2[ig] * real(RhoeG_T[ip]*conj(RhoeG_T[ip]))*CellVolume  # using chgden + gaussian
         #
-        E_ps_locG = E_ps_locG + real(V_Ps_locG[ip]*conj(RhoeG[ip]))*CellVolume
+        E_ps_locG = E_ps_locG + real(V_Ps_locG[ip]*conj(RhoeG[ip]))*CellVolume  # using only the chgden
     end
     
     println("atoms.Zvals = ", atoms.Zvals)
     
-    E_NN_2 = calc_E_NN_mod(pw, atoms)
+    #E_NN_2 = calc_E_NN_mod(pw, atoms)
+    E_NN_2 = calc_E_NN(atoms)  # E_NN_2 contains self energy of Gaussian chgden
 
     println("EhartreeG = ", EhartreeG)
     println("E_ps_locG = ", E_ps_locG)
     println("E_NN_2    = ", E_NN_2)
 
-    println("E Electrostatic v2 = ", EhartreeG + E_ps_locG + E_NN_2 + E_pspcore)
+    println("E ps loc by real space integ = ", sum(Ham.potentials.Ps_loc.*Rhoe_)*dVol)
+
+    println("E Electrostatic v2 = ", EhartreeG + E_ps_locG + E_NN_2 + E_pspcore) # not correct ? gaussian chg contrib is counted two times
+
+    println("E Electrostatic v3 = ", EhartreeG + sum(Ham.potentials.Ps_loc.*Rhoe_)*dVol + E_NN_2 + E_pspcore)
 
 
     # Comparing V_ps_loc + V_Hartree
