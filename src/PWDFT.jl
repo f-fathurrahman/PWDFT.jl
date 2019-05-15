@@ -214,6 +214,10 @@ export rand_Wavefunc, rand_BlochWavefunc, zeros_BlochWavefunc
 include("guess_rhoe.jl")
 export guess_rhoe
 
+include("RhoeSymmetrizer.jl")
+export RhoeSymmetrizer,
+       symmetrize_rhoe!
+
 #
 # KS solvers
 #
