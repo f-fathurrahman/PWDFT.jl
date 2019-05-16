@@ -93,6 +93,8 @@ function write_pwscf( Ham::Hamiltonian; filename="PWINPUT",
     @printf(f, "  nbnd = %d\n", electrons.Nstates)
     if Ham.xcfunc == "VWN"
         @printf(f, "  input_dft = 'slater+vwn'\n")
+    elseif Ham.xcfunc == "PBE"
+        @printf(f, "  input_dft = 'pbe'\n")
     end
 
     # When Nelectrons is odd and no-smearing is used, we must
