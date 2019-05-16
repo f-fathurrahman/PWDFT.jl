@@ -29,7 +29,10 @@ function KS_solve_SCF_potmix!(
         # generate random BlochWavefunc
         psiks = rand_BlochWavefunc( Ham )
     end
-    
+    if Ham.sym_info.Nsyms > 1
+        rhoe_symmetrizer = RhoeSymmetrizer( Ham )
+    end
+
     Rhoe = zeros(Float64,Npoints,Nspin)
     if startingrhoe == :gaussian && startingwfc == :random
         @assert Nspin == 1
@@ -38,10 +41,14 @@ function KS_solve_SCF_potmix!(
         Rhoe[:,:] = calc_rhoe( Ham, psiks )
     end
 
+    # Symmetrize Rhoe is needed
+    if Ham.sym_info.Nsyms > 1
+        symmetrize_rhoe!( Ham, rhoe_symmetrizer, Rhoe )
+    end
+
     Vxc_inp = zeros(Float64,Npoints,Nspin)
     VHa_inp = zeros(Float64,Npoints)
 
-    Rhoe = calc_rhoe(Ham,psiks)
     update!(Ham, Rhoe)
 
     Ham.energies.NN = calc_E_NN(atoms)
@@ -64,6 +71,10 @@ function KS_solve_SCF_potmix!(
         evals = diag_LOBPCG!( Ham, psiks )
         
         Rhoe[:,:] = calc_rhoe( Ham, psiks )
+        # Symmetrize Rhoe is needed
+        if Ham.sym_info.Nsyms > 1
+            symmetrize_rhoe!( Ham, rhoe_symmetrizer, Rhoe )
+        end
 
         # Save the old (input) potential
         Vxc_inp[:,:] = Ham.potentials.XC
