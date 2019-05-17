@@ -6,6 +6,8 @@ struct GVectors
     G::Array{Float64,2}
     G2::Array{Float64,1}
     idx_g2r::Array{Int64,1}
+    G2_shells::Array{Float64,1}
+    idx_g2shells::Array{Int64,1}
 end
 
 """
@@ -178,10 +180,51 @@ function init_gvec( Ns, RecVecs, ecutrho )
 
     # if sorted
     idx_sorted = sortperm(G2)
-    return GVectors( Ng, G[:,idx_sorted], G2[idx_sorted], idx_g2r[idx_sorted] )
-    
-    return GVectors( Ng, G, G2, idx_g2r )
+    G = G[:,idx_sorted]
+    G2 = G2[idx_sorted]
+    idx_g2r = idx_g2r[idx_sorted]
+
+    G2_shells, idx_g2shells = init_Gshells( G2 )
+
+    return GVectors( Ng, G, G2, idx_g2r, G2_shells, idx_g2shells )
+
 end
+
+
+function init_Gshells( G2_sorted::Array{Float64,1} )
+
+    eps8 = 1e-8
+
+    Ng = length(G2_sorted)
+
+    ngl = 1
+    for ig = 2:Ng
+        if G2_sorted[ig] > (G2_sorted[ig-1] + eps8)
+            ngl = ngl + 1
+        end
+    end
+
+    G2_shells = zeros(ngl)
+    idx_g2shells = zeros(Int64,Ng)
+    
+    G2_shells[1] = G2_sorted[1]
+    idx_g2shells[1] = 1
+
+    igl = 1
+    for ig = 2:Ng
+        if G2_sorted[ig] > (G2_sorted[ig-1] + eps8)
+            igl = igl + 1
+            G2_shells[igl] = G2_sorted[ig]
+        end
+        idx_g2shells[ig] = igl
+    end
+
+    return G2_shells, idx_g2shells
+
+end
+
+
+
 
 """
 Creates an instance of `GVectorsW`, given the following inputs
