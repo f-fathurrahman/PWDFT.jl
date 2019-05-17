@@ -6,7 +6,7 @@ const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)), "..")
 const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
 const DIR_STRUCTURES = joinpath(DIR_PWDFT, "structures")
 
-include("atomic_rho.jl")
+include("guess_rhoe_atomic.jl")
 
 function init_Ham_GaAs()
     atoms = Atoms(xyz_string_frac=
@@ -26,7 +26,10 @@ end
 
 function main()
     Ham = init_Ham_GaAs()
-    guess_rhoe_atomic( Ham )
+    Rhoe1 = guess_rhoe_atomic( Ham )
+    Rhoe2 = guess_rhoe( Ham )
+
+    println("diff Rhoe = ", sum(abs.(Rhoe1[:,1] - Rhoe2)))
 end
 
 main()

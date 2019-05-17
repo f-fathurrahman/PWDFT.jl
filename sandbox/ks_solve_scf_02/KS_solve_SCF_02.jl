@@ -1,5 +1,7 @@
 using LinearAlgebra: norm
 
+include("../guess_rhoe_atomic/guess_rhoe_atomic.jl")
+
 function KS_solve_SCF_02!(
     Ham::Hamiltonian ;
     startingwfc=:random, savewfc=false,
@@ -77,8 +79,9 @@ function KS_solve_SCF_02!(
     end
 
     if startingrhoe == :gaussian && startingwfc == :random
-        @assert Nspin == 1
-        Rhoe[:,1] = guess_rhoe( Ham )
+        #@assert Nspin == 1
+        #Rhoe[:,1] = guess_rhoe( Ham )
+        Rhoe = guess_rhoe_atomic( Ham )
     else
         Rhoe[:,:] = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin )
     end
