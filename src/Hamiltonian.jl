@@ -57,17 +57,26 @@ function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
     #
     # Initialize pseudopotentials and local potentials
     #
-    Vg = zeros(ComplexF64, Npoints)
-    V_Ps_loc = zeros(Float64, Npoints)
-
     Pspots = Array{PsPot_GTH}(undef,Nspecies)
+    G2_shells = pw.gvec.G2_shells
+    Ngl = length(G2_shells)
+    Vgl = zeros(Float64, Ngl)
+    idx_g2shells = pw.gvec.idx_g2shells
+    V_Ps_loc = zeros(Float64, Npoints)
+    Vg = zeros(ComplexF64, Npoints)
 
     for isp = 1:Nspecies
         Pspots[isp] = PsPot_GTH( pspfiles[isp] )
         psp = Pspots[isp]
+        #
+        for igl = 1:Ngl
+            Vgl[igl] = eval_Vloc_G( psp, G2_shells[igl] )
+        end
+        #
         for ig = 1:Ng
             ip = idx_g2r[ig]
-            Vg[ip] = strf[ig,isp] * eval_Vloc_G( psp, G2[ig] )
+            igl = idx_g2shells[ig]
+            Vg[ip] = strf[ig,isp] * Vgl[igl]
         end
         #
         V_Ps_loc[:] = V_Ps_loc[:] + real( G_to_R(pw, Vg) ) * Npoints / CellVolume
