@@ -9,6 +9,7 @@ function KS_solve_SCF_potmix!(
     print_final_energies=true,
     savewfc=false,
     use_smearing=false,
+    kT=1e-3,
     ETOT_CONV_THR=1e-6
 )
 
@@ -19,6 +20,10 @@ function KS_solve_SCF_potmix!(
     Nstates = Ham.electrons.Nstates
     atoms = Ham.atoms
     pspots = Ham.pspots
+    electrons = Ham.electrons
+    Focc = copy(electrons.Focc) # make sure to use the copy
+    Nelectrons = Ham.electrons.Nelectrons
+    wk = Ham.pw.gvecw.kpoints.wk
 
     #
     # Initial wave function
@@ -29,6 +34,7 @@ function KS_solve_SCF_potmix!(
         # generate random BlochWavefunc
         psiks = rand_BlochWavefunc( Ham )
     end
+
     if Ham.sym_info.Nsyms > 1
         rhoe_symmetrizer = RhoeSymmetrizer( Ham )
     end
@@ -69,6 +75,13 @@ function KS_solve_SCF_potmix!(
     for iterSCF = 1:NiterMax
         
         evals = diag_LOBPCG!( Ham, psiks )
+
+        if use_smearing
+            Focc, E_fermi = calc_Focc( Nelectrons, wk, kT, evals, Nspin )
+            Entropy = calc_entropy( wk, kT, evals, E_fermi, Nspin )
+            Ham.electrons.Focc = copy(Focc)
+        end
+
         
         Rhoe[:,:] = calc_rhoe( Ham, psiks )
         # Symmetrize Rhoe is needed
@@ -87,7 +100,9 @@ function KS_solve_SCF_potmix!(
         
         # Calculate energies
         Ham.energies = calc_energies(Ham, psiks)
-
+        if use_smearing
+            Ham.energies.mTS = Entropy
+        end
         Etot = sum(Ham.energies)
 
         diffEtot = abs(Etot - Etot_old)
@@ -109,6 +124,14 @@ function KS_solve_SCF_potmix!(
         # Mix potentials (only Hartree and XC)
         Ham.potentials.Hartree = betamix*Ham.potentials.Hartree + (1-betamix)*VHa_inp
         Ham.potentials.XC = betamix*Ham.potentials.XC + (1-betamix)*Vxc_inp
+        
+        # Don't forget to update the total local potential
+        for ispin = 1:Nspin
+            for ip = 1:Npoints
+                Ham.potentials.Total[ip,ispin] = Ham.potentials.Ps_loc[ip] + Ham.potentials.Hartree[ip] +
+                                                 Ham.potentials.XC[ip,ispin]  
+            end
+        end
 
         diffPot = sum(Ham.potentials.Hartree-VHa_inp)/Npoints +
                   sum(Ham.potentials.XC - Vxc_inp)/(Npoints*Nspin)
