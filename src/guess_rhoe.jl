@@ -117,6 +117,10 @@ function guess_rhoe_atomic( Ham::Hamiltonian; starting_magnetization=nothing )
     Nspin = Ham.electrons.Nspin
     rhocg = zeros(ComplexF64,Npoints,Nspin)
 
+    if (Nspin == 2) && starting_magnetization==nothing
+        starting_magnetization = 0.1*ones(Nspecies)
+    end
+
     for isp = 1:Nspecies
 
         for ir = 1:NptsRadial[isp]
