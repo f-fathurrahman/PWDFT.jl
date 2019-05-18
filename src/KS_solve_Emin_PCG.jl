@@ -48,9 +48,9 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
     Rhoe = zeros(Float64,Npoints,Nspin)
 
     if startingrhoe == :gaussian
-        #@assert Nspin == 1
-        #Rhoe[:,1] = guess_rhoe( Ham )
-        Rhoe = guess_rhoe_atomic( Ham )
+        @assert Nspin == 1
+        Rhoe[:,1] = guess_rhoe( Ham )
+        #Rhoe = guess_rhoe_atomic( Ham ) # when smearing is ready this should be preferred
     else
         calc_rhoe!( Ham, psiks, Rhoe )
     end
@@ -67,7 +67,6 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
         evals =
         diag_LOBPCG!( Ham, psiks, verbose=false, verbose_last=false, NiterMax=10 )
     end
-
 
     #
     # Variables for PCG
