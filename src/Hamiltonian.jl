@@ -75,8 +75,9 @@ function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
 
     # other potential terms are set to zero
     V_Hartree = zeros( Float64, Npoints )
-    V_XC = zeros( Float64, Npoints, Nspin )
-    potentials = Potentials( V_Ps_loc, V_Hartree, V_XC )
+    V_xc = zeros( Float64, Npoints, Nspin )
+    V_loc_tot = zeros( Float64, Npoints, Nspin )
+    potentials = Potentials( V_Ps_loc, V_Hartree, V_xc, V_loc_tot )
     #
     energies = Energies()
     #
@@ -144,8 +145,9 @@ function Hamiltonian( atoms::Atoms, ecutwfc::Float64;
 
     # other potentials are set to zero
     V_Hartree = zeros( Float64, Npoints )
-    V_XC = zeros( Float64, Npoints, Nspin )
-    potentials = Potentials( V_Ps_loc, V_Hartree, V_XC )
+    V_xc = zeros( Float64, Npoints, Nspin )
+    V_loc_tot = zeros( Float64, Npoints, Nspin )
+    potentials = Potentials( V_Ps_loc, V_Hartree, V_xc, V_loc_tot )
     #
     energies = Energies()
 
@@ -179,6 +181,11 @@ function update!(Ham::Hamiltonian, rhoe::Array{Float64,1})
     else  # VWN is the default
         Ham.potentials.XC[:,1] = calc_Vxc_VWN( rhoe )
     end
+    Npoints = prod(Ham.pw.Ns)
+    for ip = 1:Npoints
+        Ham.potentials.Total[ip,1] = Ham.potentials.Ps_loc[ip] + Ham.potentials.Hartree[ip] +
+                                     Ham.potentials.XC[ip,1]  
+    end
     return
 end
 
@@ -195,6 +202,13 @@ function update!(Ham::Hamiltonian, rhoe::Array{Float64,2})
         Ham.potentials.XC = calc_Vxc_PBE( Ham.pw, rhoe )
     else  # VWN is the default
         Ham.potentials.XC = calc_Vxc_VWN( rhoe )
+    end
+    Npoints = prod(Ham.pw.Ns)
+    for ispin = 1:Nspin
+        for ip = 1:Npoints
+            Ham.potentials.Total[ip,ispin] = Ham.potentials.Ps_loc[ip] + Ham.potentials.Hartree[ip] +
+                                             Ham.potentials.XC[ip,ispin]  
+        end
     end
     return
 end
