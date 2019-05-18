@@ -35,8 +35,8 @@ function mix_rpulay!( x, gx, beta, X, F, iter, MIXDIM, x_old, f_old )
             X[:,2:MIXDIM] .= 0.0
             F[:,2:MIXDIM] .= 0.0
             #
-            Xk = X[:,1]
-            Fk = F[:,1]
+            Xk = @view X[:,1]
+            Fk = @view F[:,1]
             addv = (Xk + beta*Fk)*inv(Fk'*Fk)*(Fk'*f)
             xnew = x + beta*f - addv
         else
