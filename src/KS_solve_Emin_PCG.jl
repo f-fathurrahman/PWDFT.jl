@@ -48,8 +48,9 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
     Rhoe = zeros(Float64,Npoints,Nspin)
 
     if startingrhoe == :gaussian
-        @assert Nspin == 1
-        Rhoe[:,1] = guess_rhoe( Ham )
+        #@assert Nspin == 1
+        #Rhoe[:,1] = guess_rhoe( Ham )
+        Rhoe = guess_rhoe_atomic( Ham )
     else
         calc_rhoe!( Ham, psiks, Rhoe )
     end

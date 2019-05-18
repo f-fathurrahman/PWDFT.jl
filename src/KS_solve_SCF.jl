@@ -86,6 +86,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
     if startingrhoe == :gaussian && startingwfc == :random
         @assert Nspin == 1
         Rhoe[:,1] = guess_rhoe( Ham )
+        #Rhoe = guess_rhoe_atomic( Ham )
     else
         Rhoe[:,:] = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin )
     end
