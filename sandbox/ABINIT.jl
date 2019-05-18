@@ -73,7 +73,8 @@ function write_abinit( Ham::Hamiltonian;
     if Ham.electrons.Nspin == 2
         @printf(f, "nsppol 2\n")
         @printf(f, "spinat\n")
-        for isp = 1:Ham.atoms.Nspecies
+        for ia = 1:Ham.atoms.Natoms
+            isp = Ham.atoms.atm2species[ia]
             @printf(f, "  0.0 0.0 %f\n", 0.5*Ham.atoms.Zvals[isp])
         end
     end
