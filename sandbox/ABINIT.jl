@@ -63,11 +63,19 @@ function write_abinit( Ham::Hamiltonian;
 
     @printf(f, "ecut %f\n", pw.ecutwfc)
 
-    if use_smearing
+    if use_smearing || (Ham.electrons.Nspin == 2)
         println(f, "occopt 3")
         @printf(f, "tsmear %f\n", kT)
     else
         println(f, "occopt 1")
+    end
+
+    if Ham.electrons.Nspin == 2
+        @printf(f, "nsppol 2\n")
+        @printf(f, "spinat\n")
+        for isp = 1:Ham.atoms.Nspecies
+            @printf(f, "  0.0 0.0 %f\n", 0.5*Ham.atoms.Zvals[isp])
+        end
     end
 
     @printf(f, "nband %d\n", electrons.Nstates)

@@ -106,10 +106,16 @@ function write_pwscf( Ham::Hamiltonian; filename="PWINPUT",
         @printf(f, "  occupations = 'from_input'\n")
     end
     
-    if use_smearing
+    if use_smearing || (Ham.electrons.Nspin == 2)
         @printf(f, "  occupations = 'smearing'\n")
         @printf(f, "  smearing = 'fermi-dirac'\n")
         @printf(f, "  degauss = %18.10f\n", kT*2)
+    end
+    if Ham.electrons.Nspin == 2
+        @printf(f, "  nspin = 2\n")
+        for isp = 1:Ham.atoms.Nspecies
+            @printf(f, "  starting_magnetization(%d) = %f\n", isp, 0.5*Ham.atoms.Zvals[isp]/10)
+        end
     end
     @printf(f, "/\n\n")
 
