@@ -19,7 +19,8 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
                         mixdim=5,
                         print_e_gap=false,
                         etot_conv_thr=1e-6,
-                        ethr_evals_last=1e-5 )
+                        ethr_evals_last=1e-5,
+                        starting_magnetization=nothing )
 
     pw = Ham.pw
     Ngw = pw.gvecw.Ngw
@@ -76,17 +77,12 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
     #
     Rhoe = zeros(Float64,Npoints,Nspin)
 
-    if Nspin == 2
-        idx_HOMO = max(round(Int64,Nstates_occ/2),1)
-        idx_LUMO = idx_HOMO + 1
-        Focc[idx_HOMO,1:Nkpt] = Focc[idx_HOMO,1:Nkpt] .+ 0.5
-        Focc[idx_HOMO,Nkpt+1:2*Nkpt] = Focc[idx_HOMO,Nkpt+1:2*Nkpt] .- 0.5
-    end
-
     if startingrhoe == :gaussian && startingwfc == :random
-        @assert Nspin == 1
-        Rhoe[:,1] = guess_rhoe( Ham )
-        #Rhoe = guess_rhoe_atomic( Ham )
+        if Nspin == 1
+            Rhoe[:,1] = guess_rhoe( Ham )
+        else
+            Rhoe = guess_rhoe_atomic( Ham, starting_magnetization=starting_magnetization )
+        end
     else
         Rhoe[:,:] = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin )
     end
