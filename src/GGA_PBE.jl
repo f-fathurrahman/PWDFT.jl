@@ -172,11 +172,11 @@ function calc_Vxc_PBE( pw::PWGrid, Rhoe::Array{Float64,1} )
     end
     # div ( vgrho * gRhoe )
     divh = op_nabla_dot( pw, h )
-
     #
     for ip = 1:Npoints 
         V_xc[ip] = V_xc[ip] - 2.0*divh[ip]
     end
+
 
     return V_xc
 
@@ -202,14 +202,13 @@ function calc_Vxc_PBE( pw::PWGrid, Rhoe::Array{Float64,2} )
         gRhoe2[3,ip] = dot( gRhoe_dn[:,ip], gRhoe_dn[:,ip] )
     end
 
-    Vg_xc = zeros( Float64, 3, Npoints )
-    V_xc = zeros( Float64, Npoints, 2 )
+    V_xc = zeros(Float64, Npoints, 2)
+    V_x  = zeros(Float64, Npoints*2)
+    V_c  = zeros(Float64, Npoints*2)
     
-    V_x = zeros(Float64, Npoints*2)
-    V_c = zeros(Float64, Npoints*2)
-    
-    Vg_x = zeros(Float64, 3,Npoints)
-    Vg_c = zeros(Float64, 3,Npoints)
+    Vg_xc = zeros(Float64, 3, Npoints)
+    Vg_x  = zeros(Float64, 3, Npoints)
+    Vg_c  = zeros(Float64, 3, Npoints)
     
     Rhoe_tmp = zeros(2,Npoints)
     Rhoe_tmp[1,:] = Rhoe[:,1]
@@ -261,30 +260,32 @@ function calc_Vxc_PBE( pw::PWGrid, Rhoe::Array{Float64,2} )
     # spin up
     #
     for ip = 1:Npoints
-        h[1,ip] = Vg_xc[1,ip] * gRhoe_up[1,ip]
-        h[2,ip] = Vg_xc[2,ip] * gRhoe_up[2,ip]
-        h[3,ip] = Vg_xc[3,ip] * gRhoe_up[3,ip]
+        h[1,ip] = 2*Vg_xc[1,ip]*gRhoe_up[1,ip] + Vg_xc[2,ip]*gRhoe_dn[1,ip]
+        h[2,ip] = 2*Vg_xc[1,ip]*gRhoe_up[2,ip] + Vg_xc[2,ip]*gRhoe_dn[2,ip]
+        h[3,ip] = 2*Vg_xc[1,ip]*gRhoe_up[3,ip] + Vg_xc[2,ip]*gRhoe_dn[3,ip]
     end
 
     divh = op_nabla_dot( pw, h )
+
     # spin up
     for ip = 1:Npoints 
-        V_xc[ip,1] = V_xc[ip,1] - 2.0*divh[ip]
+        V_xc[ip,1] = V_xc[ip,1] - divh[ip]
     end
 
     #
     # Spin down
     #
     for ip = 1:Npoints
-        h[1,ip] = Vg_xc[1,ip] * gRhoe_dn[1,ip]
-        h[2,ip] = Vg_xc[2,ip] * gRhoe_dn[2,ip]
-        h[3,ip] = Vg_xc[3,ip] * gRhoe_dn[3,ip]
+        h[1,ip] = 2*Vg_xc[3,ip]*gRhoe_dn[1,ip] + Vg_xc[2,ip]*gRhoe_up[1,ip]
+        h[2,ip] = 2*Vg_xc[3,ip]*gRhoe_dn[2,ip] + Vg_xc[2,ip]*gRhoe_up[2,ip]
+        h[3,ip] = 2*Vg_xc[3,ip]*gRhoe_dn[3,ip] + Vg_xc[2,ip]*gRhoe_up[3,ip]
     end
+
     #
     divh = op_nabla_dot( pw, h )
     # spin down
     for ip = 1:Npoints 
-        V_xc[ip,2] = V_xc[ip,2] - 2.0*divh[ip]
+        V_xc[ip,2] = V_xc[ip,2] - divh[ip]
     end
 
     return V_xc
