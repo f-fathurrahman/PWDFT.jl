@@ -102,20 +102,23 @@ function calc_energies( Ham::Hamiltonian, psiks::BlochWavefunc )
         Rhoe_tot[:] = Rhoe_tot[:] + Ham.rhoe[:,ispin]
     end
 
-    cRhoeG = conj(R_to_G(pw, Rhoe_tot))/Npoints
-    V_HartreeG = R_to_G(pw, potentials.Hartree)
-    V_Ps_locG = R_to_G(pw, potentials.Ps_loc)
+    E_Hartree = 0.5*dot( potentials.Hartree, Rhoe_tot ) * dVol
+    E_Ps_loc = dot( potentials.Ps_loc, Rhoe_tot ) * dVol
 
-    E_Hartree = 0.0
-    E_Ps_loc = 0.0
-    for ig = 2:pw.gvec.Ng
-        ip = pw.gvec.idx_g2r[ig]
-        E_Hartree = E_Hartree + abs( V_HartreeG[ip]*cRhoeG[ip] )
-        E_Ps_loc = E_Ps_loc + real( V_Ps_locG[ip]*cRhoeG[ip] )
-    end
-    #E_Ps_loc = E_Ps_loc + real( V_Ps_locG[1]*cRhoeG[1] ) # should be the same as pspcore ene)
-    E_Hartree = 0.5*E_Hartree*dVol
-    E_Ps_loc = E_Ps_loc*dVol
+#    cRhoeG = conj(R_to_G(pw, Rhoe_tot))/Npoints
+#    V_HartreeG = R_to_G(pw, potentials.Hartree)
+#    V_Ps_locG = R_to_G(pw, potentials.Ps_loc)
+#
+#    E_Hartree = 0.0
+#    E_Ps_loc = 0.0
+#    for ig = 2:pw.gvec.Ng
+#        ip = pw.gvec.idx_g2r[ig]
+#        E_Hartree = E_Hartree + abs( V_HartreeG[ip]*cRhoeG[ip] )
+#        E_Ps_loc = E_Ps_loc + real( V_Ps_locG[ip]*cRhoeG[ip] )
+#    end
+#    #E_Ps_loc = E_Ps_loc + real( V_Ps_locG[1]*cRhoeG[1] ) # should be the same as pspcore ene)
+#    E_Hartree = 0.5*E_Hartree*dVol
+#    E_Ps_loc = E_Ps_loc*dVol
 
     if Ham.xcfunc == "PBE"
         epsxc = calc_epsxc_PBE( Ham.pw, Ham.rhoe )

@@ -31,7 +31,7 @@ export Atoms,
        init_atoms_xyz_string,
        get_Zatoms
 
-include("gen_lattice_pwscf.jl")
+include("gen_lattice.jl")
 export gen_lattice_fcc, gen_lattice_bcc, gen_lattice_trigonal, gen_lattice_trigonal_v2,
        gen_lattice_cubic, gen_lattice_bcc_v2, gen_lattice_hexagonal,
        gen_lattice_triclinic, gen_lattice_tetragonal_P, gen_lattice_tetragonal_I,
