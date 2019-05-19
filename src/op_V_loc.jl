@@ -49,6 +49,7 @@ end
 # ik must be given to get information about
 # mapping between psi in G-space to real space
 function op_V_loc( ik::Int64, pw::PWGrid, V_loc, psi::Array{ComplexF64,2} )
+
     Ns = pw.Ns
     CellVolume  = pw.CellVolume
     Npoints = prod(Ns)
@@ -60,7 +61,7 @@ function op_V_loc( ik::Int64, pw::PWGrid, V_loc, psi::Array{ComplexF64,2} )
         ctmp[idx,ist] = psi[:,ist]
     end
 
-    # get values of psi in real space grid via forward transform
+    # get values of psi in real space grid
     G_to_R!(pw, ctmp)
 
     for ist = 1:Nstates
@@ -70,6 +71,7 @@ function op_V_loc( ik::Int64, pw::PWGrid, V_loc, psi::Array{ComplexF64,2} )
     end
 
     R_to_G!(pw, ctmp)
+
     return ctmp[idx,:]
 end
 
@@ -95,7 +97,7 @@ function op_V_loc( ik::Int64, pw::PWGrid, V_loc, psi::Array{ComplexF64,1} )
     idx = pw.gvecw.idx_gw2r[ik]
     ctmp[idx] = psi[:]
 
-    # get values of psi in real space grid via forward transform
+    # get values of psi in real space grid
     ctmp = G_to_R( pw, ctmp )
 
     for ip = 1:Npoints
