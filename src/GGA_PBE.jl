@@ -163,6 +163,8 @@ function calc_Vxc_PBE( pw::PWGrid, Rhoe::Array{Float64,1} )
 
     # gradient correction
     h = zeros(Float64,3,Npoints)
+    divh = zeros(Float64,Npoints)
+
     for ip = 1:Npoints
         h[1,ip] = Vg_xc[ip] * gRhoe[1,ip]
         h[2,ip] = Vg_xc[ip] * gRhoe[2,ip]
@@ -253,6 +255,7 @@ function calc_Vxc_PBE( pw::PWGrid, Rhoe::Array{Float64,2} )
     Vg_xc = Vg_x + Vg_c
 
     h = zeros(Float64,3,Npoints)
+    divh = zeros(Float64,Npoints)
 
     #
     # spin up
