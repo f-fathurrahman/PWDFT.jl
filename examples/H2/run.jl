@@ -10,6 +10,8 @@ const DIR_STRUCTURES = joinpath(DIR_PWDFT, "structures")
 
 function main( ; method="SCF" )
 
+    Random.seed!(1234)
+
     # Atoms
     atoms = Atoms( xyz_file=joinpath(DIR_STRUCTURES, "H2.xyz"),
                    LatVecs = gen_lattice_sc(16.0) )
