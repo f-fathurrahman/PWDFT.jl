@@ -6,8 +6,8 @@ using PWDFT
 const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
 const DIR_PSP = joinpath(DIR_PWDFT,"pseudopotentials","pbe_gth")
 
-include("dump_bandstructure.jl")
-include("gen_kpath.jl")
+include("../common/dump_bandstructure.jl")
+include("../common/gen_kpath.jl")
 
 function main()
 
