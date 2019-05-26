@@ -30,7 +30,8 @@ function main()
     KS_solve_SCF!( Ham, mix_method="rpulay" )
 
     # Band structure calculation
-    kpoints, kpt_spec, kpt_spec_labels = gen_kpath(atoms, "WLGXWK", "fcc", Δk=0.05 )
+    #kpoints, kpt_spec, kpt_spec_labels = gen_kpath(atoms, "WLGXWK", "fcc", Δk=0.05 )
+    kpoints, kpt_spec, kpt_spec_labels = gen_kpath(atoms, "L-G-X-G1", "fcc", Δk=0.05 )
 
     # New pw
     pw = PWGrid(ecutwfc, atoms.LatVecs, kpoints=kpoints)
@@ -42,7 +43,7 @@ function main()
 
     # Manually construct Ham.electrons
     Ham.electrons = Electrons( atoms, Ham.pspots, Nspin=1, Nkpt=kpoints.Nkpt,
-                               Nstates_empty=1 )
+                               Nstates_empty=4 )
 
     Nstates = Ham.electrons.Nstates
     ebands = Ham.electrons.ebands

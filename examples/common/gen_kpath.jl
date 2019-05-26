@@ -1,7 +1,8 @@
-function gen_kpath( atoms::Atoms, path_str::String, lattice::String; Δk = 0.02 )
+function gen_kpath( atoms::Atoms, path_str_dash::String, lattice::String; Δk = 0.02 )
     
     dict_spec_kpts = get_special_kpoints(lattice)
 
+    path_str = split(path_str_dash,"-",keepempty=false)
     Nkpt_spec = length(path_str)
     kpt_spec = zeros(3,Nkpt_spec)
     kpt_spec_labels = []
