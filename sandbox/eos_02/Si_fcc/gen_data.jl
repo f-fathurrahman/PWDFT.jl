@@ -52,7 +52,8 @@ function main()
         redirect_stdout(fileout)
     
         Ham = init_Ham_Si_fcc( a, [3,3,3] )
-        KS_solve_SCF_potmix!( Ham )
+        #KS_solve_SCF_potmix!( Ham )
+        KS_solve_SCF!( Ham, mix_method="rpulay" )
 
         run(`rm -fv TEMP_abinit/\*`)
         write_abinit(Ham, prefix_dir="./TEMP_abinit/")
