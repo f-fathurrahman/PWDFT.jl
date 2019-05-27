@@ -29,8 +29,11 @@ function test_plot_bands()
     symb_kpts_spec, x_kpts_spec = read_special_kpts(filebands)
 
     ebands = readdlm(filebands, comments=true)
-    Nbands = size(ebands)[2] - 1
-    ene = ebands[:,1]
+    #Nbands = size(ebands)[2] - 1
+    Nbands = 6
+    kcart = ebands[:,1]
+
+    E_f = maximum(ebands[:,4])
     
     plt_inc = Array{Plot,1}(undef,Nbands)
     for iband = 1:Nbands
@@ -39,7 +42,7 @@ function test_plot_bands()
             mark = "*",
             color = "black",
             mark_options = "fill=cyan",
-        }, Coordinates(ene, ebands[:,iband+1]) )
+        }, Coordinates(kcart, ebands[:,iband+1] .- E_f) )
     end
 
     fig = @pgf Axis( {

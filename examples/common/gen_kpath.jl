@@ -5,11 +5,10 @@ function gen_kpath( atoms::Atoms, path_str_dash::String, lattice::String; Δk = 
     path_str = split(path_str_dash,"-",keepempty=false)
     Nkpt_spec = length(path_str)
     kpt_spec = zeros(3,Nkpt_spec)
-    kpt_spec_labels = []
+    kpt_spec_labels = path_str
     for ik = 1:Nkpt_spec
-        label = string(path_str[ik])
+        label = path_str[ik]
         kvec = dict_spec_kpts[label]
-        append!( kpt_spec_labels,label )
         kpt_spec[:,ik] = kvec
     end
 

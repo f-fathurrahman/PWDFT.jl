@@ -36,7 +36,7 @@ function main()
     #
     # Band structure calculation
     #
-    kpoints, kpt_spec, kpt_spec_labels = gen_kpath(atoms, "WLGXWK", "fcc", Δk=0.05 )
+    kpoints, kpt_spec, kpt_spec_labels = gen_kpath(atoms, "W-L-G-X-W-K", "fcc", Δk=0.05 )
 
     # New pw
     pw = PWGrid(ecutwfc, atoms.LatVecs, kpoints=kpoints)
