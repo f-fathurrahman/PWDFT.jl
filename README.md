@@ -172,7 +172,7 @@ KS_solve_Emin_PCG!( Ham ) # direct minimization using preconditioned conjugate g
 ![Band structure of silicon (fcc)](images/bands_Si_fcc.svg)
 
 Please see
-[bandstructure_Si_fcc.jl](sandbox/bandstructure_01/bandstructure_Si_fcc.jl) as
+[this](examples/bands_Si_fcc/run_bands.jl) as
 an example of how this can be obtained.
 
 ## Some references
