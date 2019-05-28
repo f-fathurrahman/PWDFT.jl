@@ -1,6 +1,7 @@
 using DelimitedFiles
 using DelimitedFiles
 using Printf
+using LaTeXStrings
 using PGFPlotsX
 
 
@@ -15,6 +16,9 @@ function read_special_kpts( filebands::String )
         ll = split( strip(replace(l, "#" => "")) , " " )
         x_kpts_spec[ik] = parse( Float64, ll[1] )
         symb_kpts_spec[ik] = ll[2]
+        if (symb_kpts_spec[ik] == "G") || (symb_kpts_spec[ik] == "G1")
+            symb_kpts_spec[ik] = L"$\Gamma$"
+        end
     end
     close(f)
     println(symb_kpts_spec)
@@ -30,7 +34,7 @@ function test_plot_bands()
 
     ebands = readdlm(filebands, comments=true)
     #Nbands = size(ebands)[2] - 1
-    Nbands = 6
+    Nbands = 5
     kcart = ebands[:,1]
 
     E_f = maximum(ebands[:,4])
@@ -42,12 +46,13 @@ function test_plot_bands()
             mark = "*",
             color = "black",
             mark_options = "fill=cyan",
+            mark_size = "1pt",
         }, Coordinates(kcart, ebands[:,iband+1] .- E_f) )
     end
 
     fig = @pgf Axis( {
-             height = "10cm",
-             width = "8cm",
+             height = "8cm",
+             width = "10cm",
              xtick = x_kpts_spec,
              xticklabels = symb_kpts_spec,
              "xmajorgrids",
