@@ -8,7 +8,7 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
                              skip_initial_diag=false,
                              α_t=3e-5, NiterMax=200, verbose=true,
                              print_final_ebands=false, print_final_energies=true,
-                             I_CG_BETA=2, ETOT_CONV_THR=1e-6 )
+                             i_cg_beta=2, etot_conv_thr=1e-6 )
 
     pw = Ham.pw
     electrons = Ham.electrons
@@ -104,12 +104,12 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
         @printf("-------------------------------------\n")
         @printf("NiterMax  = %d\n", NiterMax)
         @printf("α_t       = %e\n", α_t)
-        @printf("conv_thr  = %e\n", ETOT_CONV_THR)
-        if I_CG_BETA == 1
+        @printf("conv_thr  = %e\n", etot_conv_thr)
+        if i_cg_beta == 1
             @printf("Using Fletcher-Reeves formula for CG_BETA\n")
-        elseif I_CG_BETA == 2
+        elseif i_cg_beta == 2
             @printf("Using Polak-Ribiere formula for CG_BETA\n")
-        elseif I_CG_BETA == 3
+        elseif i_cg_beta == 3
             @printf("Using Hestenes-Stiefeld formula for CG_BETA\n")
         else
             @printf("Using Dai-Yuan formula for CG_BETA\n")
@@ -132,13 +132,13 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
 
             # XXX: define function trace for real(sum(conj(...)))
             if iter != 1
-                if I_CG_BETA == 1
+                if i_cg_beta == 1
                     β[ikspin] =
                     real(sum(conj(g[ikspin]).*Kg[ikspin]))/real(sum(conj(g_old[ikspin]).*Kg_old[ikspin]))
-                elseif I_CG_BETA == 2
+                elseif i_cg_beta == 2
                     β[ikspin] =
                     real(sum(conj(g[ikspin]-g_old[ikspin]).*Kg[ikspin]))/real(sum(conj(g_old[ikspin]).*Kg_old[ikspin]))
-                elseif I_CG_BETA == 3
+                elseif i_cg_beta == 3
                     β[ikspin] =
                     real(sum(conj(g[ikspin]-g_old[ikspin]).*Kg[ikspin]))/real(sum(conj(g[ikspin]-g_old[ikspin]).*d[ikspin]))
                 else
@@ -201,7 +201,7 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
             @printf("CG step %8d = %18.10f %10.7e\n", iter, Etot, diffE)
         end
         
-        if diffE < ETOT_CONV_THR
+        if diffE < etot_conv_thr
             CONVERGED = CONVERGED + 1
         else
             CONVERGED = 0
