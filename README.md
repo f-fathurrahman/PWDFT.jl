@@ -124,19 +124,15 @@ You can do this by typing the following in the Julia console.
 using PWDFT
 ```
 
-Change directory to `examples` and run the following in the terminal.
+Change directory to `examples/Si_fcc` and run the following in the terminal.
 
 ```
-julia run.jl "atom_H/main_H_atom.jl"
+julia run.jl
 ```
-  
-The above command will calculate total energy of hydrogen atom by SCF method.
 
-If you want to use direct minimization method, use the following instead.
+The script will calculate total energy per unit cell of silicon crystal using
+self-consistent field iteration and direct energy minimization.
 
-```
-julia run.jl "atom_H/main_H_atom.jl" Emin
-```
 
 ## Units
 
