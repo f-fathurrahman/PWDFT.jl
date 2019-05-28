@@ -8,7 +8,7 @@ function KS_solve_Emin_PCG_01!( Ham::Hamiltonian;
                              skip_initial_diag=false,
                              α_t=3e-5, NiterMax=200, verbose=true,
                              print_final_ebands=true, print_final_energies=true,
-                             I_CG_BETA=2, ETOT_CONV_THR=1e-6 )
+                             I_CG_BETA=2, etot_conv_thr=1e-6 )
 
     pw = Ham.pw
     electrons = Ham.electrons
@@ -95,7 +95,7 @@ function KS_solve_Emin_PCG_01!( Ham::Hamiltonian;
         @printf("-------------------------------------\n")
         @printf("NiterMax  = %d\n", NiterMax)
         @printf("α_t       = %e\n", α_t)
-        @printf("conv_thr  = %e\n", ETOT_CONV_THR)
+        @printf("conv_thr  = %e\n", etot_conv_thr)
         if I_CG_BETA == 1
             @printf("Using Fletcher-Reeves formula for CG_BETA\n")
         elseif I_CG_BETA == 2
@@ -198,7 +198,7 @@ function KS_solve_Emin_PCG_01!( Ham::Hamiltonian;
             @printf("CG step %8d = %18.10f %10.7e\n", iter, Etot, diffE)
         end
         
-        if diffE < ETOT_CONV_THR
+        if diffE < etot_conv_thr
             CONVERGED = CONVERGED + 1
         else
             CONVERGED = 0

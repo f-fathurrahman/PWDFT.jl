@@ -162,7 +162,7 @@ function test_main()
 
     # Solve the KS problem
     @time KS_solve_SCF!(
-        Ham, ETOT_CONV_THR=1e-6, NiterMax=100, betamix=0.7, update_psi="LOBPCG",
+        Ham, etot_conv_thr=1e-6, NiterMax=100, betamix=0.7, update_psi="LOBPCG",
         mix_method="pulay"
     )
 

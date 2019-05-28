@@ -166,10 +166,10 @@ function test_main()
 
     # Solve the KS problem
     #@time alt1_KS_solve_SCF!(
-    #    Ham, ETOT_CONV_THR=1e-6, NiterMax=50, betamix=0.5, update_psi="LOBPCG"
+    #    Ham, etot_conv_thr=1e-6, NiterMax=50, betamix=0.5, update_psi="LOBPCG"
     #)
     @time alt1_KS_solve_SCF_spinpol!(
-        Ham, ETOT_CONV_THR=1e-6, NiterMax=100, betamix=0.5, update_psi="LOBPCG",
+        Ham, etot_conv_thr=1e-6, NiterMax=100, betamix=0.5, update_psi="LOBPCG",
         use_smearing=true, kT=1e-3
     )
 

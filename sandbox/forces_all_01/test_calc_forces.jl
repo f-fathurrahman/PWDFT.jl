@@ -71,16 +71,16 @@ end
 
 function test_main()
 
-    #Ham = create_Ham_Si_fcc()
-    Ham = create_Ham_GaAs_v1()
+    Ham = create_Ham_Si_fcc()
+    #Ham = create_Ham_GaAs_v1()
     #Ham = create_Ham_GaAs_v2()
 
     println(Ham)
 
     Random.seed!(1234)
     
-    KS_solve_Emin_PCG!(Ham, ETOT_CONV_THR=1e-8, savewfc=true)
-    #KS_solve_SCF!(Ham, mix_method="rpulay", ETOT_CONV_THR=1e-8, savewfc=true)
+    KS_solve_Emin_PCG!(Ham, etot_conv_thr=1e-8, savewfc=true)
+    #KS_solve_SCF!(Ham, mix_method="rpulay", etot_conv_thr=1e-8, savewfc=true)
 
     psiks = read_psiks(Ham)
 

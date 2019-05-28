@@ -30,7 +30,7 @@ function do_calc()
 
     # Solve the KS problem
     #KS_solve_SCF!(
-    #    Ham, ETOT_CONV_THR=1e-6, NiterMax=100, betamix=0.5, mix_method="rpulay",
+    #    Ham, etot_conv_thr=1e-6, NiterMax=100, betamix=0.5, mix_method="rpulay",
     #    savewfc=true
     #)
 
