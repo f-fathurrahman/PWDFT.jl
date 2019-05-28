@@ -26,8 +26,8 @@ function test_Si_fcc()
     println(Ham)
 
     Random.seed!(1234)
-    #KS_solve_Emin_PCG!(Ham, ETOT_CONV_THR=1e-8)
-    #KS_solve_SCF!(Ham, mix_method="rpulay", ETOT_CONV_THR=1e-6, savewfc=true)
+    KS_solve_Emin_PCG!(Ham, etot_conv_thr=1e-8)
+    #KS_solve_SCF!(Ham, mix_method="rpulay", etot_conv_thr=1e-6, savewfc=true)
 
     psiks = read_psiks(Ham)
 
@@ -93,8 +93,8 @@ function test_GaAs_v1()
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3] )
 
     Random.seed!(1234)
-    #KS_solve_Emin_PCG!(Ham, ETOT_CONV_THR=1e-8)
-    KS_solve_SCF!(Ham, mix_method="rpulay", ETOT_CONV_THR=1e-6)
+    #KS_solve_Emin_PCG!(Ham, etot_conv_thr=1e-8)
+    KS_solve_SCF!(Ham, mix_method="rpulay", etot_conv_thr=1e-6)
 
     Natoms = atoms.Natoms
     atsymbs = atoms.atsymbs
@@ -136,8 +136,8 @@ function test_GaAs_v2()
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3] )
 
     Random.seed!(1234)
-    #KS_solve_Emin_PCG!( Ham, ETOT_CONV_THR=1e-8 )
-    KS_solve_SCF!( Ham, mix_method="rpulay", ETOT_CONV_THR=1e-6, savewfc=true )
+    #KS_solve_Emin_PCG!( Ham, etot_conv_thr=1e-8 )
+    KS_solve_SCF!( Ham, mix_method="rpulay", etot_conv_thr=1e-6, savewfc=true )
 
     psiks = read_psiks( Ham )
 
