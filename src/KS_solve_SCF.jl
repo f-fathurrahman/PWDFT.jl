@@ -144,6 +144,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
     CONVERGED = 0
 
     E_fermiSpin = zeros(Nspin)
+    E_fermi = 0.0
 
     for iter = 1:NiterMax
 
@@ -334,6 +335,10 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
     end
 
     Ham.electrons.ebands = evals
+
+    if use_smearing && verbose
+        @printf("\nFermi energy = %18.10f Ha = %18.10f eV\n", E_fermi, E_fermi*2*Ry2eV)
+    end
 
     if verbose && print_final_ebands
         @printf("\n")
