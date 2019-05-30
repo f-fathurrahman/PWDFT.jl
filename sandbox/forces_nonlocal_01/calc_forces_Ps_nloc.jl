@@ -19,6 +19,10 @@ function calc_forces_Ps_nloc(
 
     F_Ps_nloc = zeros(3,Natoms)
 
+    if NbetaNL == 0
+        return F_Ps_nloc
+    end
+
     betaNL_psi = zeros(ComplexF64,Nstates,NbetaNL)
     dbetaNL_psi = zeros(ComplexF64,3,Nstates,NbetaNL)
 
