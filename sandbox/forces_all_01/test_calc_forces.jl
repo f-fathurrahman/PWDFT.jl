@@ -9,73 +9,68 @@ const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
 include("../forces_ewald_01/calc_forces_NN.jl")
 include("../forces_local_01/calc_forces_Ps_loc.jl")
 include("../forces_nonlocal_01/calc_forces_Ps_nloc.jl")
+include("symmetry_atoms.jl")
 
-function create_Ham_Si_fcc()
 
-    atoms = Atoms(xyz_string_frac=
-        """
-        2
+function symmetrize_vector!(pw::PWGrid, sym_info::SymmetryInfo, irt, v::Array{Float64,2})
 
-        Si  0.0  0.0  0.0
-        Si  0.25  0.25  0.25
-        """, in_bohr=true, LatVecs=gen_lattice_fcc(5.431*ANG2BOHR))
+    Nsyms = sym_info.Nsyms
+    LatVecs = pw.LatVecs
+    RecVecs = pw.RecVecs
+    s = sym_info.s
 
-    pspfiles = [joinpath(DIR_PSP, "Si-q4.gth")]
+    if Nsyms == 1
+        return
+    end
 
-    ecutwfc = 15.0
-    return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[8,8,8] )
+    Nvecs = size(v)[2]
+
+    tmp = zeros(3,Nvecs)
+    
+    # bring vector to crystal axis
+    for i = 1:Nvecs
+        tmp[:,i] = v[1,i]*LatVecs[1,:] + v[2,i]*LatVecs[2,:] + v[3,i]*LatVecs[3,:]
+    end
+    
+    println(tmp)
+
+    # symmetrize in crystal axis
+    v[:,:] .= 0.0
+    for i = 1:Nvecs
+        for isym = 1:Nsyms
+            iar = irt[isym,i]
+            v[:,i] = v[:,i] + s[:,1,isym]*tmp[1,iar]
+                            + s[:,2,isym]*tmp[2,iar]
+                            + s[:,3,isym]*tmp[3,iar]
+        end
+        println(v[:,i])
+    end
+    
+    tmp[:,:] = v[:,:]/Nsyms
+    
+    # bring vector back to cartesian axis
+    for i = 1:Nvecs
+        v[:,i] = tmp[1,i]*RecVecs[:,1] + tmp[2,i]*RecVecs[:,2] + tmp[3,i]*RecVecs[:,3]
+    end
+
+    v = v/(2*pi)
+
+    return
 end
 
 
-
-function create_Ham_GaAs_v1()
-
-    LatVecs = zeros(3,3)
-    LatVecs[:,1] = [0.5, 0.5, 0.0]
-    LatVecs[:,2] = [0.5, 0.0, 0.5]
-    LatVecs[:,3] = [0.0, 0.5, 0.5]
-    LatVecs = LatVecs*5.6537*ANG2BOHR
-
-    atoms = Atoms(xyz_string_frac=
-        """
-        2
-
-        Ga  0.0  0.0  0.0
-        As  0.25  0.25  0.25
-        """, in_bohr=true, LatVecs=LatVecs)
-
-    pspfiles = [joinpath(DIR_PSP, "Ga-q3.gth"),
-                joinpath(DIR_PSP, "As-q5.gth")]
-
-    ecutwfc = 15.0
-    return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[8,8,8] )
-end
-
-
-function create_Ham_GaAs_v2()
-    atoms = Atoms(xyz_string_frac=
-        """
-        2
-
-        Ga  0.0  0.0  0.0
-        As  0.25  0.25  0.25
-        """, in_bohr=true, LatVecs=gen_lattice_fcc(5.6537*ANG2BOHR))
-
-    pspfiles = [joinpath(DIR_PSP, "Ga-q3.gth"),
-                joinpath(DIR_PSP, "As-q5.gth")]
-
-    ecutwfc = 15.0
-    return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[8,8,8] )
-end
+include("create_Ham.jl")
 
 
 function test_main()
+
+    #Ham = create_Ham_H2()
 
     Ham = create_Ham_Si_fcc()
     #Ham = create_Ham_GaAs_v1()
     #Ham = create_Ham_GaAs_v2()
 
-    println(Ham)
+    irt = init_irt(Ham.atoms, Ham.sym_info)
 
     Random.seed!(1234)
     
@@ -125,6 +120,15 @@ function test_main()
     @printf("Sum of forces in x-dir: %18.10f\n", sum(F_total[1,:]))
     @printf("Sum of forces in y-dir: %18.10f\n", sum(F_total[2,:]))
     @printf("Sum of forces in z-dir: %18.10f\n", sum(F_total[3,:]))
+
+    symmetrize_vector!( Ham.pw, Ham.sym_info, irt, F_total )
+    println("Total forces:")
+    for ia = 1:Natoms
+        @printf("%s %18.10f %18.10f %18.10f\n", atsymbs[ia],
+                F_total[1,ia], F_total[2,ia], F_total[3,ia] )
+    end
+
+
 end
 
 
