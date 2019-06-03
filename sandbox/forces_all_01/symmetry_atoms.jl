@@ -16,6 +16,7 @@ function symmetrize_vector!(pw::PWGrid, sym_info::SymmetryInfo, irt, v::Array{Fl
     # bring vector to crystal axis
     for i = 1:Nvecs
         tmp[:,i] = v[1,i]*LatVecs[1,:] + v[2,i]*LatVecs[2,:] + v[3,i]*LatVecs[3,:]
+        #tmp[:,i] = v[1,i]*LatVecs[:,1] + v[2,i]*LatVecs[:,2] + v[3,i]*LatVecs[:,3]
     end
     
     println(tmp)
@@ -30,7 +31,7 @@ function symmetrize_vector!(pw::PWGrid, sym_info::SymmetryInfo, irt, v::Array{Fl
                             + s[:,3,isym]*tmp[3,iar]
             println(isym, " ", v[:,i])
         end
-        #println(v[:,i])
+        println(v[:,i])
     end
     
     tmp[:,:] = v[:,:]/Nsyms
@@ -38,9 +39,11 @@ function symmetrize_vector!(pw::PWGrid, sym_info::SymmetryInfo, irt, v::Array{Fl
     # bring vector back to cartesian axis
     for i = 1:Nvecs
         v[:,i] = tmp[1,i]*RecVecs[:,1] + tmp[2,i]*RecVecs[:,2] + tmp[3,i]*RecVecs[:,3]
+        #v[:,i] = tmp[1,i]*RecVecs[1,:] + tmp[2,i]*RecVecs[2,:] + tmp[3,i]*RecVecs[3,:]
+        v[:,i] = v[:,i]/(2*pi)
     end
 
-    v = v/(2*pi)
+    #v[:,:] = v[:,:]/(2*pi)
 
     return
 end
@@ -71,40 +74,45 @@ function init_irt( atoms::Atoms, sym_info::SymmetryInfo )
     irt = zeros(Int64,Nsyms,Natoms)
 
     Nequal = 0
+    
+    println("Nsyms = ", Nsyms)
+
+    continue_outer = false
     for isym = 1:Nsyms
         for ia = 1:Natoms
             rau[:,ia] = s[1,:,isym] * xau[1,ia] + 
                         s[2,:,isym] * xau[2,ia] + 
                         s[3,:,isym] * xau[3,ia]
-        end
-    end
-
-    for isym = 1:Nsyms
-        for ia = 1:Natoms
             for ib = 1:Natoms
                 if atm2species[ia] == atm2species[ib]
-                    is_equal = eqvect( rau[:,ia], xau[:,ib], ft , 1e-5 )
+                    is_equal = eqvect( rau[:,ia], xau[:,ib], -ft[:,isym], 1e-5 )
                     #println("is_equal = ", is_equal)
                     if is_equal
                         Nequal = Nequal + 1
                         #println("is_equal = ", is_equal)
                         irt[isym,ia] = ib
+                        #irt[isym,ib] = ia
+                        continue_outer = true
                         break
                     end
                 end
             end
+            if continue_outer
+                #println("I am continuing")
+                continue
+            else
+                println("isym is not symmetry operation")
+            end
         end
     end
 
-
-
-    #for isym = 1:Nsyms
-    #    for ia = 1:Natoms
-    #        @printf("%d ", irt[isym,ia])
-    #    end
-    #    @printf("\n")
-    #end
-    #println("Nequal = ", Nequal)
+    for isym = 1:Nsyms
+        for ia = 1:Natoms
+            @printf("%d ", irt[isym,ia])
+        end
+        @printf("\n")
+    end
+    println("Nequal = ", Nequal)
 
     return irt
 

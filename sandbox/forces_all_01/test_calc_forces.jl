@@ -5,6 +5,7 @@ using Random
 
 const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
 const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
+const DIR_STRUCTURES = joinpath(DIR_PWDFT, "structures")
 
 include("calc_forces_NN.jl")
 include("calc_forces_Ps_loc.jl")
@@ -17,16 +18,17 @@ include("create_Ham.jl")
 function test_main()
 
     #Ham = create_Ham_H2()
-
-    Ham = create_Ham_Si_fcc()
+    #Ham = create_Ham_Si_fcc()
     #Ham = create_Ham_GaAs_v1()
     #Ham = create_Ham_GaAs_v2()
+    Ham = create_Ham_CO()
+    println(Ham)
 
     irt = init_irt(Ham.atoms, Ham.sym_info)
 
     Random.seed!(1234)
     
-    #KS_solve_Emin_PCG!(Ham, etot_conv_thr=1e-8, savewfc=true)
+    KS_solve_Emin_PCG!(Ham, savewfc=true)
     #KS_solve_SCF!(Ham, mix_method="rpulay", etot_conv_thr=1e-8, savewfc=true)
 
     psiks = read_psiks(Ham)
@@ -60,6 +62,14 @@ function test_main()
         @printf("%s %18.10f %18.10f %18.10f\n", atsymbs[ia],
                 F_Ps_nloc[1,ia], F_Ps_nloc[2,ia], F_Ps_nloc[3,ia] )
     end
+    
+    symmetrize_vector!( Ham.pw, Ham.sym_info, irt, F_Ps_nloc )
+    println("Ps nloc forces symmetrized:")
+    for ia = 1:Natoms
+        @printf("%s %18.10f %18.10f %18.10f\n", atsymbs[ia],
+                F_Ps_nloc[1,ia], F_Ps_nloc[2,ia], F_Ps_nloc[3,ia] )
+    end
+
 
 
     F_total = F_NN + F_Ps_loc + F_Ps_nloc
@@ -73,13 +83,12 @@ function test_main()
     @printf("Sum of forces in y-dir: %18.10f\n", sum(F_total[2,:]))
     @printf("Sum of forces in z-dir: %18.10f\n", sum(F_total[3,:]))
 
-    symmetrize_vector!( Ham.pw, Ham.sym_info, irt, F_total )
-    println("Total forces symmetrized:")
-    for ia = 1:Natoms
-        @printf("%s %18.10f %18.10f %18.10f\n", atsymbs[ia],
-                F_total[1,ia], F_total[2,ia], F_total[3,ia] )
-    end
-
+    #symmetrize_vector!( Ham.pw, Ham.sym_info, irt, F_total )
+    #println("Total forces symmetrized:")
+    #for ia = 1:Natoms
+    #    @printf("%s %18.10f %18.10f %18.10f\n", atsymbs[ia],
+    #            F_total[1,ia], F_total[2,ia], F_total[3,ia] )
+    #end
 
 end
 

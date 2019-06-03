@@ -1,3 +1,15 @@
+function create_Ham_CO()
+    # Atoms
+    atoms = Atoms( xyz_file=joinpath(DIR_STRUCTURES, "CO.xyz"),
+                   LatVecs = gen_lattice_sc(16.0) )
+
+    # Initialize Hamiltonian
+    ecutwfc = 15.0
+    pspfiles = [joinpath(DIR_PSP, "O-q6.gth"),
+                joinpath(DIR_PSP, "C-q4.gth")]
+    return Hamiltonian( atoms, pspfiles, ecutwfc )
+end
+
 function create_Ham_H2()
     atoms = Atoms(xyz_string=
         """
