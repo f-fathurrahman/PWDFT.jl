@@ -22,7 +22,10 @@ include("test_SCF.jl")
 @test test_SCF_v1() == nothing
 @test test_SCF_v2() == nothing
 
+include("test_xc.jl")
+include("test_spglib.jl")
+
+
 println("")
 println("All test successfully run")
 println("")
-

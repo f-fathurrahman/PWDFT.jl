@@ -1,5 +1,9 @@
+using Libxc
+
+# TODO cumulate spin 1,2 as one function or dispatch by julia's type system
+
 function calc_epsxc_PBE( pw::PWGrid, Rhoe::Array{Float64,1} )
-    
+
     Npoints = size(Rhoe)[1]
     Nspin = 1
 
@@ -13,35 +17,20 @@ function calc_epsxc_PBE( pw::PWGrid, Rhoe::Array{Float64,1} )
     eps_x = zeros(Float64,Npoints)
     eps_c = zeros(Float64,Npoints)
 
-    ptr = ccall( (:xc_func_alloc, LIBXC), Ptr{XCFuncType}, () )
+    ptr = Libxc.xc_func_alloc()
+    # exchange part
+    Libxc.xc_func_init(ptr, Libxc.GGA_X_PBE, Nspin)
+    Libxc.xc_gga_exc!(ptr, Npoints, Rhoe, gRhoe2, eps_x)
+    Libxc.xc_func_end(ptr)
 
     #
-    # exchange part 
-    #
-    ccall( (:xc_func_init, LIBXC), Cvoid,
-           (Ptr{XCFuncType}, Cint, Cint),
-            ptr, 101, Nspin)
-    
-    ccall( (:xc_gga_exc, LIBXC), Cvoid,
-           (Ptr{XCFuncType}, Cint, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}),
-           ptr, Npoints, Rhoe, gRhoe2, eps_x )
-    
-    ccall( (:xc_func_end, LIBXC), Cvoid, (Ptr{XCFuncType},), ptr )
+    # correlation part
+    Libxc.xc_func_init(ptr, Libxc.GGA_C_PBE, Nspin)
+    Libxc.xc_gga_exc!(ptr, Npoints, Rhoe, gRhoe2, eps_c)
+    Libxc.xc_func_end(ptr)
 
     #
-    # correlation part 
-    #
-    ccall( (:xc_func_init, LIBXC), Cvoid,
-            ( Ptr{XCFuncType}, Cint, Cint),
-            ptr, 130, Nspin)
-    
-    ccall( (:xc_gga_exc, LIBXC), Cvoid,
-           (Ptr{XCFuncType}, Cint, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}),
-           ptr, Npoints, Rhoe, gRhoe2, eps_c )
-    
-    ccall( (:xc_func_end, LIBXC), Cvoid, (Ptr{XCFuncType},), ptr )
-
-    ccall( (:xc_func_free, LIBXC), Cvoid, (Ref{XCFuncType},), ptr )
+    Libxc.xc_func_free(ptr)
 
     return eps_x + eps_c
 
@@ -73,42 +62,27 @@ function calc_epsxc_PBE( pw::PWGrid, Rhoe::Array{Float64,2} )
     eps_x = zeros(Float64,Npoints)
     eps_c = zeros(Float64,Npoints)
 
-    ptr = ccall( (:xc_func_alloc, LIBXC), Ptr{XCFuncType}, () )
+    ptr = Libxc.xc_func_alloc()
+    # exchange part
+    Libxc.xc_func_init(ptr, Libxc.GGA_X_PBE, Nspin)
+    Libxc.xc_gga_exc!(ptr, Npoints, Rhoe, gRhoe2, eps_x)
+    Libxc.xc_func_end(ptr)
 
     #
-    # exchange part 
-    #
-    ccall( (:xc_func_init, LIBXC), Cvoid,
-           (Ptr{XCFuncType}, Cint, Cint),
-            ptr, 101, Nspin)
-    
-    ccall( (:xc_gga_exc, LIBXC), Cvoid,
-           (Ptr{XCFuncType}, Cint, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}),
-           ptr, Npoints, Rhoe_tmp, gRhoe2, eps_x )
-    
-    ccall( (:xc_func_end, LIBXC), Cvoid, (Ptr{XCFuncType},), ptr )
+    # correlation part
+    Libxc.xc_func_init(ptr, Libxc.GGA_C_PBE, Nspin)
+    Libxc.xc_lda_exc!(ptr, Npoints, Rhoe, gRhoe2, eps_c)
+    Libxc.xc_func_end(ptr)
 
     #
-    # correlation part 
-    #
-    ccall( (:xc_func_init, LIBXC), Cvoid,
-            ( Ptr{XCFuncType}, Cint, Cint),
-            ptr, 130, Nspin)
-    
-    ccall( (:xc_gga_exc, LIBXC), Cvoid,
-           (Ptr{XCFuncType}, Cint, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}),
-           ptr, Npoints, Rhoe_tmp, gRhoe2, eps_c )
-    
-    ccall( (:xc_func_end, LIBXC), Cvoid, (Ptr{XCFuncType},), ptr )
-
-    ccall( (:xc_func_free, LIBXC), Cvoid, (Ref{XCFuncType},), ptr )
+    Libxc.xc_func_free(ptr)
 
     return eps_x + eps_c
 
 end
 
 function calc_Vxc_PBE( pw::PWGrid, Rhoe::Array{Float64,1} )
-    
+
     Npoints = size(Rhoe)[1]
     Nspin = 1
 
@@ -127,36 +101,17 @@ function calc_Vxc_PBE( pw::PWGrid, Rhoe::Array{Float64,1} )
     Vg_c = zeros(Float64,Npoints)
     Vg_xc = zeros(Float64,Npoints)
 
-    ptr = ccall( (:xc_func_alloc, LIBXC), Ptr{XCFuncType}, () )
+    ptr = Libxc.xc_func_alloc()
+    # exchange part
+    Libxc.xc_func_init(ptr, Libxc.GGA_X_PBE, Nspin)
+    Libxc.xc_gga_vxc!(ptr, Npoints, Rhoe, gRhoe2, V_x, Vg_x)
+    Libxc.xc_func_end(ptr)
 
     #
-    # exchange part 
-    #
-    ccall( (:xc_func_init, LIBXC), Cvoid,
-           (Ptr{XCFuncType}, Cint, Cint),
-            ptr, 101, Nspin)
-    
-    ccall( (:xc_gga_vxc, LIBXC), Cvoid,
-           (Ptr{XCFuncType}, Cint, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}),
-           ptr, Npoints, Rhoe, gRhoe2, V_x, Vg_x )
-    
-    ccall( (:xc_func_end, LIBXC), Cvoid, (Ptr{XCFuncType},), ptr )
-
-    #
-    # correlation part 
-    #
-    ccall( (:xc_func_init, LIBXC), Cvoid,
-            ( Ptr{XCFuncType}, Cint, Cint),
-            ptr, 130, Nspin)
-    
-    ccall( (:xc_gga_vxc, LIBXC), Cvoid,
-           (Ptr{XCFuncType}, Cint, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}),
-           ptr, Npoints, Rhoe, gRhoe2, V_c, Vg_c )
-    
-    ccall( (:xc_func_end, LIBXC), Cvoid, (Ptr{XCFuncType},), ptr )
-
-    #
-    ccall( (:xc_func_free, LIBXC), Cvoid, (Ref{XCFuncType},), ptr )
+    # correlation part
+    Libxc.xc_func_init(ptr, Libxc.GGA_C_PBE, Nspin)
+    Libxc.xc_gga_vxc!(ptr, Npoints, Rhoe, gRhoe2, V_c, Vg_c)
+    Libxc.xc_func_end(ptr)
 
     V_xc = V_x + V_c
     Vg_xc = Vg_x + Vg_c
@@ -173,7 +128,7 @@ function calc_Vxc_PBE( pw::PWGrid, Rhoe::Array{Float64,1} )
     # div ( vgrho * gRhoe )
     divh = op_nabla_dot( pw, h )
     #
-    for ip = 1:Npoints 
+    for ip = 1:Npoints
         V_xc[ip] = V_xc[ip] - 2.0*divh[ip]
     end
 
@@ -205,44 +160,26 @@ function calc_Vxc_PBE( pw::PWGrid, Rhoe::Array{Float64,2} )
     V_xc = zeros(Float64, Npoints, 2)
     V_x  = zeros(Float64, Npoints*2)
     V_c  = zeros(Float64, Npoints*2)
-    
+
     Vg_xc = zeros(Float64, 3, Npoints)
     Vg_x  = zeros(Float64, 3, Npoints)
     Vg_c  = zeros(Float64, 3, Npoints)
-    
+
     Rhoe_tmp = zeros(2,Npoints)
     Rhoe_tmp[1,:] = Rhoe[:,1]
     Rhoe_tmp[2,:] = Rhoe[:,2]
 
-    ptr = ccall( (:xc_func_alloc, LIBXC), Ptr{XCFuncType}, () )
+    ptr = Libxc.xc_func_alloc()
+    # exchange part
+    Libxc.xc_func_init(ptr, Libxc.GGA_X_PBE, Nspin)
+    Libxc.xc_gga_vxc!(ptr, Npoints, Rhoe, gRhoe2, V_x, Vg_x)
+    Libxc.xc_func_end(ptr)
 
     #
-    # exchange part 
-    #
-    ccall( (:xc_func_init, LIBXC), Cvoid,
-           (Ptr{XCFuncType}, Cint, Cint),
-            ptr, 101, Nspin)
-    
-    ccall( (:xc_gga_vxc, LIBXC), Cvoid,
-           (Ptr{XCFuncType}, Cint, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}),
-           ptr, Npoints, Rhoe_tmp, gRhoe2, V_x, Vg_x )
-    
-    ccall( (:xc_func_end, LIBXC), Cvoid, (Ptr{XCFuncType},), ptr )
-
-    #
-    # correlation part 
-    #
-    ccall( (:xc_func_init, LIBXC), Cvoid,
-            ( Ptr{XCFuncType}, Cint, Cint),
-            ptr, 130, Nspin)
-    
-    ccall( (:xc_gga_vxc, LIBXC), Cvoid,
-           (Ptr{XCFuncType}, Cint, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}),
-           ptr, Npoints, Rhoe_tmp, gRhoe2, V_c, Vg_c )
-    
-    ccall( (:xc_func_end, LIBXC), Cvoid, (Ptr{XCFuncType},), ptr )
-
-    ccall( (:xc_func_free, LIBXC), Cvoid, (Ref{XCFuncType},), ptr )
+    # correlation part
+    Libxc.xc_func_init(ptr, Libxc.GGA_C_PBE, Nspin)
+    Libxc.xc_gga_vxc!(ptr, Npoints, Rhoe, gRhoe2, V_c, Vg_c)
+    Libxc.xc_func_end(ptr)
 
     ipp = 0
     for ip = 1:2:2*Npoints
@@ -268,7 +205,7 @@ function calc_Vxc_PBE( pw::PWGrid, Rhoe::Array{Float64,2} )
     divh = op_nabla_dot( pw, h )
 
     # spin up
-    for ip = 1:Npoints 
+    for ip = 1:Npoints
         V_xc[ip,1] = V_xc[ip,1] - divh[ip]
     end
 
@@ -284,7 +221,7 @@ function calc_Vxc_PBE( pw::PWGrid, Rhoe::Array{Float64,2} )
     #
     divh = op_nabla_dot( pw, h )
     # spin down
-    for ip = 1:Npoints 
+    for ip = 1:Npoints
         V_xc[ip,2] = V_xc[ip,2] - divh[ip]
     end
 

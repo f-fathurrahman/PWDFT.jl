@@ -1,35 +1,20 @@
+using LibSymspg
+
 function spg_get_symmetry( atoms::Atoms; symprec=1e-5 )
 
     lattice = Matrix(atoms.LatVecs')
     positions = Matrix(inv(atoms.LatVecs))*atoms.positions # convert to fractional coordinates
-    ctypes = Base.cconvert( Array{Int32,1}, atoms.atm2species)
-    num_atom = Base.cconvert( Int32, atoms.Natoms )
 
-    max_size = 50
-    cmax_size = Base.cconvert(Int32, max_size)
-    out_rot = zeros(Int32,3,3,max_size)
-    out_translations = zeros(Float64,3,max_size)
+    rots, trans = LibSymspg.get_symmetry(lattice, positions, atoms.atm2species, symprec)
 
-    Nsyms_ =
-    ccall((:spg_get_symmetry, PWDFT.LIBSYMSPG), Int32,
-          (Ptr{Int32}, Ptr{Float64}, Int32,
-           Ptr{Float64}, Ptr{Float64}, Ptr{Int32}, Int32, Float64),
-           out_rot, out_translations, cmax_size,
-           lattice, positions, ctypes, num_atom, symprec)
-    
-    Nsyms = Base.convert(Int64, Nsyms_)
-
-    s = Base.convert(Array{Int64,3}, out_rot[:,:,1:Nsyms])
-    ft = out_translations[:,1:Nsyms]
-
-    return Nsyms, s, ft
+    return size(trans)[2], rots, trans
 end
 
 
 # This function is now included in the KPoints constructor
 function gen_kgrid_reduced( atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{Int64,1};
                             time_reversal=1 )
-    
+
     @printf("\n")
     @printf("Generating kpoints:\n")
     @printf("mesh     = (%d,%d,%d)\n", mesh[1], mesh[2], mesh[3])
@@ -62,7 +47,7 @@ function gen_kgrid_reduced( atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{
         kred[2,ik] = list_ir_k[ik][2] / mesh[2]
         kred[3,ik] = list_ir_k[ik][3] / mesh[3]
     end
-    
+
     # prepare for
     kcount = zeros(Int64,num_ir)
     for ik = 1:num_ir
@@ -90,21 +75,10 @@ function reduce_atoms( atoms::Atoms; symprec=1e-5 )
     lattice = transpose_m3x3(atoms.LatVecs)
     positions = inv_m3x3(atoms.LatVecs)*atoms.positions # convert to fractional coordinates
 
-    num_atom = Base.cconvert( Int32, atoms.Natoms )
-    types = Base.cconvert(Array{Int32,1}, atoms.atm2species)
-
-    num_primitive_atom =
-    ccall( (:spg_find_primitive,LIBSYMSPG), Int32,
-           ( Ptr{Float64}, Ptr{Float64}, Ptr{Int32}, Int32, Float64 ),
-           lattice, positions, types, num_atom, symprec )
-
-    # Prepare for reduced Atoms
-    Natoms = Base.cconvert( Int64, num_primitive_atom )
-
-    # Transpose back
-    LatVecs = transpose_m3x3(lattice)
-    positions = LatVecs*positions[:,1:num_primitive_atom]
-    atm2species = Base.cconvert( Array{Int64,1}, types[1:num_primitive_atom] )
+    lattice_, positions_, types_, Natoms = LibSymspg.find_primitive(lattice, positions, atoms.atm2species, symprec)
+    LatVecs = transpose_m3x3(lattice_)
+    positions = LatVecs*positions_
+    atm2species = types_
     Nspecies = atoms.Nspecies
     SpeciesSymbols = atoms.SpeciesSymbols
     atsymbs = Array{String}(undef,Natoms)
@@ -127,16 +101,8 @@ function spg_find_primitive( atoms::Atoms; symprec=1e-5)
     lattice = transpose_m3x3(atoms.LatVecs)
     positions = inv_m3x3(atoms.LatVecs)*atoms.positions # convert to fractional coordinates
 
-    num_atom = Base.cconvert( Int32, atoms.Natoms )
-    types = Base.cconvert(Array{Int32,1}, atoms.atm2species)
-
-    num_primitive_atom =
-    ccall( (:spg_find_primitive,LIBSYMSPG), Int32,
-           ( Ptr{Float64}, Ptr{Float64}, Ptr{Int32}, Int32, Float64 ),
-           lattice, positions, types, num_atom, symprec )
-
-    return Base.cconvert(Int64,num_primitive_atom)
-
+    _, _, _, n = LibSymspg.find_primitive(lattice, positions, atoms.atm2species, symprec)
+    return n
 end
 
 
@@ -149,28 +115,7 @@ function spg_get_ir_reciprocal_mesh(
     lattice = transpose_m3x3(atoms.LatVecs)
     positions = inv_m3x3(atoms.LatVecs)*atoms.positions # convert to fractional coordinates
 
-    cmeshk = Base.cconvert( Array{Int32,1}, meshk )
-    cis_shift = Base.cconvert( Array{Int32,1}, is_shift )
-    ctypes = Base.cconvert( Array{Int32,1}, atoms.atm2species)
-    num_atom = Base.cconvert( Int32, atoms.Natoms )
-    is_t_rev = Base.cconvert( Int32, is_time_reversal )
-
-    # Prepare for output
-    Nkpts = prod(meshk)
-    kgrid = zeros(Int32,3,Nkpts)
-    mapping = zeros(Int32,Nkpts)
-
-    num_ir =
-    ccall((:spg_get_ir_reciprocal_mesh, LIBSYMSPG), Int32,
-          (Ptr{Int32}, Ptr{Int32}, Ptr{Int32},
-           Ptr{Int32}, Int32, Ptr{Float64}, Ptr{Float64}, 
-           Ptr{Int32}, Int32, Float64),
-           kgrid, mapping, cmeshk, cis_shift, is_t_rev,
-           lattice, positions, ctypes, num_atom, symprec)
-    
-    return Base.cconvert(Int64, num_ir),
-           Base.cconvert(Array{Int64,2}, kgrid),
-           Base.cconvert(Array{Int64,1}, mapping)
+    return LibSymspg.ir_reciprocal_mesh(meshk, is_shift, is_time_reversal,
+                                    lattice, positions, atoms.atm2species, atoms.Natoms, symprec)
 
 end
-
