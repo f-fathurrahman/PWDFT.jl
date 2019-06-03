@@ -6,59 +6,10 @@ using Random
 const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
 const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
 
-include("../forces_ewald_01/calc_forces_NN.jl")
-include("../forces_local_01/calc_forces_Ps_loc.jl")
-include("../forces_nonlocal_01/calc_forces_Ps_nloc.jl")
+include("calc_forces_NN.jl")
+include("calc_forces_Ps_loc.jl")
+include("calc_forces_Ps_nloc.jl")
 include("symmetry_atoms.jl")
-
-
-function symmetrize_vector!(pw::PWGrid, sym_info::SymmetryInfo, irt, v::Array{Float64,2})
-
-    Nsyms = sym_info.Nsyms
-    LatVecs = pw.LatVecs
-    RecVecs = pw.RecVecs
-    s = sym_info.s
-
-    if Nsyms == 1
-        return
-    end
-
-    Nvecs = size(v)[2]
-
-    tmp = zeros(3,Nvecs)
-    
-    # bring vector to crystal axis
-    for i = 1:Nvecs
-        tmp[:,i] = v[1,i]*LatVecs[1,:] + v[2,i]*LatVecs[2,:] + v[3,i]*LatVecs[3,:]
-    end
-    
-    println(tmp)
-
-    # symmetrize in crystal axis
-    v[:,:] .= 0.0
-    for i = 1:Nvecs
-        for isym = 1:Nsyms
-            iar = irt[isym,i]
-            v[:,i] = v[:,i] + s[:,1,isym]*tmp[1,iar]
-                            + s[:,2,isym]*tmp[2,iar]
-                            + s[:,3,isym]*tmp[3,iar]
-            println(isym, " ", v[:,i])
-        end
-        #println(v[:,i])
-    end
-    
-    tmp[:,:] = v[:,:]/Nsyms
-    
-    # bring vector back to cartesian axis
-    for i = 1:Nvecs
-        v[:,i] = tmp[1,i]*RecVecs[:,1] + tmp[2,i]*RecVecs[:,2] + tmp[3,i]*RecVecs[:,3]
-    end
-
-    v = v/(2*pi)
-
-    return
-end
-
 
 include("create_Ham.jl")
 
