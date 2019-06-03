@@ -42,8 +42,9 @@ function symmetrize_vector!(pw::PWGrid, sym_info::SymmetryInfo, irt, v::Array{Fl
             v[:,i] = v[:,i] + s[:,1,isym]*tmp[1,iar]
                             + s[:,2,isym]*tmp[2,iar]
                             + s[:,3,isym]*tmp[3,iar]
+            println(isym, " ", v[:,i])
         end
-        println(v[:,i])
+        #println(v[:,i])
     end
     
     tmp[:,:] = v[:,:]/Nsyms
@@ -74,7 +75,7 @@ function test_main()
 
     Random.seed!(1234)
     
-    KS_solve_Emin_PCG!(Ham, etot_conv_thr=1e-8, savewfc=true)
+    #KS_solve_Emin_PCG!(Ham, etot_conv_thr=1e-8, savewfc=true)
     #KS_solve_SCF!(Ham, mix_method="rpulay", etot_conv_thr=1e-8, savewfc=true)
 
     psiks = read_psiks(Ham)
@@ -122,7 +123,7 @@ function test_main()
     @printf("Sum of forces in z-dir: %18.10f\n", sum(F_total[3,:]))
 
     symmetrize_vector!( Ham.pw, Ham.sym_info, irt, F_total )
-    println("Total forces:")
+    println("Total forces symmetrized:")
     for ia = 1:Natoms
         @printf("%s %18.10f %18.10f %18.10f\n", atsymbs[ia],
                 F_total[1,ia], F_total[2,ia], F_total[3,ia] )
