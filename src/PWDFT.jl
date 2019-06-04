@@ -145,9 +145,6 @@ export Energies
 include("PsPotNL.jl")
 export PsPotNL, calc_betaNL_psi
 
-include("free_electron_Hamiltonian.jl")
-export free_electron_Hamiltonian
-
 include("Hamiltonian.jl")
 export Hamiltonian, update!
 
