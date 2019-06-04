@@ -104,6 +104,7 @@ function calc_dbetaNL(
                     Sf = cos(GX) - im*sin(GX)
                     dbetaNL[:,igk,ibeta,ik] =
                     (-1.0*im)^l * Ylm_real(l,m,g)*eval_proj_G(psp,l,iprj,Gm,pw.CellVolume)*Sf*im*g[:]
+                    #Ylm_real(l,m,g)*eval_proj_G(psp,l,iprj,Gm,pw.CellVolume)*Sf*im*g[:]
                 end
             end
             end

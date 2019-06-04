@@ -3,7 +3,7 @@ function symmetrize_vector!(pw::PWGrid, sym_info::SymmetryInfo, irt, v::Array{Fl
     Nsyms = sym_info.Nsyms
     LatVecs = pw.LatVecs
     RecVecs = pw.RecVecs
-    s = sym_info.s
+    s = convert(Array{Float64,3}, sym_info.s)
 
     if Nsyms == 1
         return
@@ -24,6 +24,7 @@ function symmetrize_vector!(pw::PWGrid, sym_info::SymmetryInfo, irt, v::Array{Fl
     # symmetrize in crystal axis
     v[:,:] .= 0.0
     for i = 1:Nvecs
+        println("Before = ", tmp[:,i])
         for isym = 1:Nsyms
             iar = irt[isym,i]
             v[:,i] = v[:,i] + s[:,1,isym]*tmp[1,iar]
@@ -31,16 +32,23 @@ function symmetrize_vector!(pw::PWGrid, sym_info::SymmetryInfo, irt, v::Array{Fl
                             + s[:,3,isym]*tmp[3,iar]
             println(isym, " ", v[:,i])
         end
-        println(v[:,i])
+        println("After = ", v[:,i])
     end
     
     tmp[:,:] = v[:,:]/Nsyms
+    println(tmp)
     
+
+    println("RecVecs = ", RecVecs)
+    println("should be identity = ", LatVecs*RecVecs'/(2*pi))
+
+
     # bring vector back to cartesian axis
     for i = 1:Nvecs
         v[:,i] = tmp[1,i]*RecVecs[:,1] + tmp[2,i]*RecVecs[:,2] + tmp[3,i]*RecVecs[:,3]
         #v[:,i] = tmp[1,i]*RecVecs[1,:] + tmp[2,i]*RecVecs[2,:] + tmp[3,i]*RecVecs[3,:]
         v[:,i] = v[:,i]/(2*pi)
+        println("After transformation back = ", v[:,i])
     end
 
     #v[:,:] = v[:,:]/(2*pi)
@@ -79,6 +87,7 @@ function init_irt( atoms::Atoms, sym_info::SymmetryInfo )
 
     continue_outer = false
     for isym = 1:Nsyms
+
         for ia = 1:Natoms
             rau[:,ia] = s[1,:,isym] * xau[1,ia] + 
                         s[2,:,isym] * xau[2,ia] + 

@@ -18,17 +18,18 @@ include("create_Ham.jl")
 function test_main()
 
     #Ham = create_Ham_H2()
-    #Ham = create_Ham_Si_fcc()
+    Ham = create_Ham_Si_fcc()
     #Ham = create_Ham_GaAs_v1()
     #Ham = create_Ham_GaAs_v2()
-    Ham = create_Ham_CO()
+    #Ham = create_Ham_CO()
     println(Ham)
 
+    println(Ham.sym_info)
     irt = init_irt(Ham.atoms, Ham.sym_info)
 
     Random.seed!(1234)
     
-    KS_solve_Emin_PCG!(Ham, savewfc=true)
+    #KS_solve_Emin_PCG!(Ham, savewfc=true)
     #KS_solve_SCF!(Ham, mix_method="rpulay", etot_conv_thr=1e-8, savewfc=true)
 
     psiks = read_psiks(Ham)
@@ -82,6 +83,14 @@ function test_main()
     @printf("Sum of forces in x-dir: %18.10f\n", sum(F_total[1,:]))
     @printf("Sum of forces in y-dir: %18.10f\n", sum(F_total[2,:]))
     @printf("Sum of forces in z-dir: %18.10f\n", sum(F_total[3,:]))
+
+    F_total = 0.5*F_total
+    println("Total forces (Hartree unit):")
+    for ia = 1:Natoms
+        @printf("%s %18.10f %18.10f %18.10f\n", atsymbs[ia],
+                F_total[1,ia], F_total[2,ia], F_total[3,ia] )
+    end
+
 
     #symmetrize_vector!( Ham.pw, Ham.sym_info, irt, F_total )
     #println("Total forces symmetrized:")

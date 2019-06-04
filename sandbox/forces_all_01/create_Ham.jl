@@ -56,7 +56,7 @@ function create_Ham_GaAs_v1()
         """
         2
 
-        Ga  0.0  0.0  0.0
+        Ga  0.0  0.1  0.0
         As  0.25  0.25  0.25
         """, in_bohr=true, LatVecs=LatVecs)
 
@@ -64,7 +64,7 @@ function create_Ham_GaAs_v1()
                 joinpath(DIR_PSP, "As-q5.gth")]
 
     ecutwfc = 15.0
-    return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[8,8,8] )
+    return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3] )
 end
 
 
@@ -73,7 +73,7 @@ function create_Ham_GaAs_v2()
         """
         2
 
-        Ga  0.0  0.0  0.0
+        Ga  0.0  0.1  0.0
         As  0.25  0.25  0.25
         """, in_bohr=true, LatVecs=gen_lattice_fcc(5.6537*ANG2BOHR))
 
@@ -81,5 +81,5 @@ function create_Ham_GaAs_v2()
                 joinpath(DIR_PSP, "As-q5.gth")]
 
     ecutwfc = 15.0
-    return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[8,8,8] )
+    return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3] )
 end
