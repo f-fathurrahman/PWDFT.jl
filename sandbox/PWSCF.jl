@@ -83,6 +83,7 @@ function write_pwscf( Ham::Hamiltonian; filename="PWINPUT",
     @printf(f, "  outdir = './tmp'\n")
     @printf(f, "  verbosity = 'high'\n")
     @printf(f, "  disk_io = 'none'\n")
+    @printf(f, "  tprnfor = .true.\n")
     @printf(f, "/\n\n")
 
     @printf(f, "&SYSTEM\n")
