@@ -23,14 +23,17 @@ function symmetrize_vector!(pw::PWGrid, sym_info::SymmetryInfo, irt, v::Array{Fl
 
     # symmetrize in crystal axis
     v[:,:] .= 0.0
+    dv = zeros(3)
     for i = 1:Nvecs
+        println("")
         println("Before = ", tmp[:,i])
         for isym = 1:Nsyms
             iar = irt[isym,i]
-            v[:,i] = v[:,i] + s[:,1,isym]*tmp[1,iar]
-                            + s[:,2,isym]*tmp[2,iar]
-                            + s[:,3,isym]*tmp[3,iar]
-            println(isym, " ", v[:,i])
+            dv[:] = s[:,1,isym]*tmp[1,iar] +
+                    s[:,2,isym]*tmp[2,iar] +
+                    s[:,3,isym]*tmp[3,iar]
+            v[:,i] = v[:,i] + dv[:]
+            println("dv = ", dv)
         end
         println("After = ", v[:,i])
     end

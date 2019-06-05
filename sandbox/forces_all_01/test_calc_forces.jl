@@ -29,7 +29,7 @@ function test_main()
 
     Random.seed!(1234)
     
-    #KS_solve_Emin_PCG!(Ham, savewfc=true)
+    KS_solve_Emin_PCG!(Ham, savewfc=true)
     #KS_solve_SCF!(Ham, mix_method="rpulay", etot_conv_thr=1e-8, savewfc=true)
 
     psiks = read_psiks(Ham)

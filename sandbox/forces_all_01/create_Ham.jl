@@ -1,7 +1,12 @@
 function create_Ham_CO()
     # Atoms
-    atoms = Atoms( xyz_file=joinpath(DIR_STRUCTURES, "CO.xyz"),
-                   LatVecs = gen_lattice_sc(16.0) )
+    atoms = Atoms(xyz_string=
+        """
+        2
+
+        O    0.000000  -0.073613     0.000000
+        C    0.000000   1.073613     0.000000
+        """, LatVecs=gen_lattice_sc(16.0) )
 
     # Initialize Hamiltonian
     ecutwfc = 15.0
