@@ -92,7 +92,7 @@ push!(LOAD_PATH, expanduser("~/.julia/dev"))
   clone this repository to your computer.
 
   If you download the zip file, extract the zip file under
-  `$HOME/.julia/dev$`. You need to rename the extracted directory
+  `$HOME/.julia/dev`. You need to rename the extracted directory
   to `PWDFT` (with no `.jl` extension).
 
   Alternatively, create symlink under `$HOME/.julia/dev`
