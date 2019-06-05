@@ -31,7 +31,7 @@ function create_Ham_H2()
 end
 
 
-function create_Ham_Si_fcc()
+function create_Ham_Si_fcc( ; xcfunc="VWN" )
 
     atoms = Atoms(xyz_string_frac=
         """
@@ -44,9 +44,12 @@ function create_Ham_Si_fcc()
     pspfiles = [joinpath(DIR_PSP, "Si-q4.gth")]
 
     ecutwfc = 15.0
-    return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3] )
+    if xcfunc == "PBE"
+        return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3], xcfunc="PBE" )
+    else
+        return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3] )
+    end
 end
-
 
 
 function create_Ham_GaAs_v1()
