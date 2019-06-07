@@ -1,4 +1,4 @@
-function my_scf_potmix!( Ham::Hamiltonian; NiterMax=150, betamix=0.2 )
+function my_scf_potmix!( Ham::Hamiltonian; NiterMax=150, betamix=0.2, etot_conv_thr=1e-6 )
 
     Npoints = prod(Ham.pw.Ns)
     Nspin = Ham.electrons.Nspin
@@ -52,7 +52,7 @@ function my_scf_potmix!( Ham::Hamiltonian; NiterMax=150, betamix=0.2 )
         diffEtot = abs(Etot - Etot_old)
 
         @printf("%5d %18.10f %18.10e\n", iterSCF, Etot, diffEtot)
-        if diffEtot <= 1e-6
+        if diffEtot <= etot_conv_thr
             @printf("SCF is converged in %d iterations\n", iterSCF)
             return
         end
@@ -61,6 +61,15 @@ function my_scf_potmix!( Ham::Hamiltonian; NiterMax=150, betamix=0.2 )
         # Mix potentials (only Hartree and XC)
         Ham.potentials.Hartree = betamix*Ham.potentials.Hartree + (1-betamix)*VHa_inp
         Ham.potentials.XC = betamix*Ham.potentials.XC + (1-betamix)*Vxc_inp
+
+        # Don't forget to update the total local potential
+        for ispin = 1:Nspin
+            for ip = 1:Npoints
+                Ham.potentials.Total[ip,ispin] = Ham.potentials.Ps_loc[ip] + Ham.potentials.Hartree[ip] +
+                                                 Ham.potentials.XC[ip,ispin]  
+            end
+        end
+
 
         flush(stdout)
     end
