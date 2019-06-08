@@ -1,14 +1,6 @@
-"""
-An implementation of restarted Pulay mixing as described in
+function mix_rpulay_kerker!( pw::PWGrid, x, gx, beta, X, F, iter, MIXDIM, x_old, f_old )
 
-  Phanisri P. Pratapa and Phanish Suryanarayana.
-  Restarted Pulay mixing for efficient and robust acceleration of
-  fixed-point iterations.
-  Chemical Physics Letters 635 (2015) 69–74.
-"""
-function mix_rpulay!( x, gx, beta, X, F, iter, MIXDIM, x_old, f_old )
-
-    f = gx - x
+    f = precKerker(pw, gx - x)
 
     if iter > 1
         dx = x - x_old
@@ -30,25 +22,25 @@ function mix_rpulay!( x, gx, beta, X, F, iter, MIXDIM, x_old, f_old )
         # Restart, use the last history
         if active_dim == 0
             #
-            X[:,1] = @view X[:,MIXDIM]
-            F[:,1] = @view F[:,MIXDIM]
+            X[:,1] = X[:,MIXDIM]
+            F[:,1] = F[:,MIXDIM]
             X[:,2:MIXDIM] .= 0.0
             F[:,2:MIXDIM] .= 0.0
             #
-            Xk = @view X[:,1]
-            Fk = @view F[:,1]
+            Xk = X[:,1]
+            Fk = F[:,1]
             addv = (Xk + beta*Fk)*inv(Fk'*Fk)*(Fk'*f)
             xnew = x + beta*f - addv
         else
             for i = active_dim:-1:2
-                X[:,i] = @view X[:,i-1]
-                F[:,i] = @view F[:,i-1]
+                X[:,i] = X[:,i-1]
+                F[:,i] = F[:,i-1]
             end
             X[:,1] = dx
             F[:,1] = df
             #
-            Xk = @view X[:,1:active_dim]
-            Fk = @view F[:,1:active_dim]
+            Xk = X[:,1:active_dim]
+            Fk = F[:,1:active_dim]
             addv = (Xk + beta*Fk)*inv(Fk'*Fk)*(Fk'*f)
             xnew = x + beta*f - addv
         end

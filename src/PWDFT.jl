@@ -163,9 +163,6 @@ export calc_rhoe, calc_rhoe!
 include("Kprec.jl")
 export Kprec
 
-include("precKerker.jl")
-export precKerker
-
 include("calc_energies.jl")
 export calc_energies,
        calc_E_xc,

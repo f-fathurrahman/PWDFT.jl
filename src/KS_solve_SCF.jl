@@ -113,7 +113,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
         df = zeros(Float64,Npoints*Nspin, mixdim)
         dv = zeros(Float64,Npoints*Nspin, mixdim)
     
-    elseif mix_method in ("rpulay", "rpulay_kerker", "ppulay", "pulay")
+    elseif mix_method in ("rpulay", "ppulay", "pulay")
         XX = zeros(Float64,Npoints*Nspin, mixdim)
         FF = zeros(Float64,Npoints*Nspin, mixdim)
         x_old = zeros(Float64,Npoints*Nspin)
@@ -126,7 +126,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
     @printf("update_psi = %s\n", update_psi)
     @printf("\n")
     @printf("mix_method = %s\n", mix_method)
-    if mix_method in ("rpulay", "rpulay_kerker", "anderson", "ppulay")
+    if mix_method in ("rpulay", "anderson", "ppulay")
         @printf("mixdim = %d\n", mixdim)
     end
     @printf("Density mixing with betamix = %10.5f\n", betamix)
@@ -218,11 +218,6 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
                 Rhoe[:,ispin] = betamix*Rhoe_new[:,ispin] + (1-betamix)*Rhoe[:,ispin]
             end
 
-        elseif mix_method == "simple_kerker"
-            for ispin = 1:Nspin
-                Rhoe[:,ispin] = Rhoe[:,ispin] + betamix*precKerker(pw, Rhoe_new[:,ispin] - Rhoe[:,ispin])
-            end
-
         elseif mix_method == "pulay"
         
             Rhoe = reshape( mix_pulay!(
@@ -250,17 +245,6 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
             Rhoe = reshape( mix_ppulay!(
                 reshape(Rhoe,(Npoints*Nspin)),
                 reshape(Rhoe_new,(Npoints*Nspin)), betamix, XX, FF, iter, mixdim, 3, x_old, f_old
-                ), (Npoints,Nspin) )
-            
-            if Nspin == 2
-                magn_den = Rhoe[:,1] - Rhoe[:,2]
-            end
-
-        elseif mix_method == "rpulay_kerker"
-        
-            Rhoe = reshape( mix_rpulay_kerker!( pw,
-                reshape(Rhoe,(Npoints*Nspin)),
-                reshape(Rhoe_new,(Npoints*Nspin)), betamix, XX, FF, iter, mixdim, x_old, f_old
                 ), (Npoints,Nspin) )
             
             if Nspin == 2
