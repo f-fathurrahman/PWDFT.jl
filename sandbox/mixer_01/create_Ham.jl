@@ -1,3 +1,43 @@
+function create_Ham_Pt_fcc_smearing()
+    atoms = Atoms(xyz_string_frac=
+        """
+        1
+
+        Pt  0.0  0.0  0.0
+        """, LatVecs=gen_lattice_fcc(3.9231*ANG2BOHR))
+    pspfiles = [joinpath(DIR_PSP, "Pt-q18.gth")]
+    ecutwfc = 30.0
+    Ham = Hamiltonian( atoms, pspfiles, ecutwfc,
+                       meshk=[8,8,8], extra_states=4 )
+end
+
+
+function create_Ham_O2_smearing()
+    atoms = Atoms( xyz_file=joinpath(DIR_STRUCTURES, "O2.xyz"),
+                   LatVecs = gen_lattice_cubic(16.0) )
+    ecutwfc = 15.0
+    pspfiles = [joinpath(DIR_PSP, "O-q6.gth")]
+    return Hamiltonian( atoms, pspfiles, ecutwfc, extra_states=4 )
+end
+
+function create_Ham_NH3()
+    atoms = Atoms(ext_xyz_file="NH3.xyz")
+    ecutwfc = 15.0
+    pspfiles = [joinpath(DIR_PSP, "N-q5.gth"),
+                joinpath(DIR_PSP, "H-q1.gth")]
+    return Hamiltonian( atoms, pspfiles, ecutwfc )
+end
+
+
+function create_Ham_N2()
+    atoms = Atoms( xyz_file=joinpath(DIR_STRUCTURES, "N2.xyz"),
+                   LatVecs=gen_lattice_sc(16.0) )
+    ecutwfc = 15.0
+    pspfiles = [joinpath(DIR_PSP, "N-q5.gth")]
+    return Hamiltonian( atoms, pspfiles, ecutwfc )
+end
+
+
 function create_Ham_CO()
     # Atoms
     atoms = Atoms(xyz_string=

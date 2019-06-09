@@ -9,6 +9,7 @@ function KS_solve_SCF_potmix_v2!(
     print_final_energies=true,
     savewfc=false,
     use_smearing=false,
+    mix_method="simple",
     mixdim=5,
     kT=1e-3,
     etot_conv_thr=1e-6,
@@ -55,14 +56,16 @@ function KS_solve_SCF_potmix_v2!(
         symmetrize_rhoe!( Ham, rhoe_symmetrizer, Rhoe )
     end
 
-    Vxc_inp = zeros(Float64,Npoints,Nspin)
-    VHa_inp = zeros(Float64,Npoints)
+    Vxc_inp = zeros(Float64, Npoints, Nspin)
+    VHa_inp = zeros(Float64, Npoints)
 
-    df_VHa = zeros(Float64,Npoints*Nspin, mixdim)
-    df_Vxc = zeros(Float64,Npoints*Nspin, mixdim)
-
-    dv_VHa = zeros(Float64,Npoints*Nspin, mixdim)
-    dv_Vxc = zeros(Float64,Npoints*Nspin, mixdim)
+    if mix_method == "broyden"
+        df_VHa = zeros(Float64, Npoints*Nspin, mixdim)
+        df_Vxc = zeros(Float64, Npoints*Nspin, mixdim)
+        #
+        dv_VHa = zeros(Float64, Npoints*Nspin, mixdim)
+        dv_Vxc = zeros(Float64, Npoints*Nspin, mixdim)
+    end
 
     update!(Ham, Rhoe)
 
@@ -76,11 +79,18 @@ function KS_solve_SCF_potmix_v2!(
     CONVERGED = 0
 
     @printf("\n")
-    @printf("SCF iteration starts (with potential mixing), betamix = %f\n", betamix)
+    @printf("SCF iteration starts (with potential mixing)\n")
+    @printf("betamix     = %f\n", betamix)
+    @printf("mix_method  = %s\n", mix_method)
+    if mix_method == "broyden"
+        @printf("mixdim      = %d\n", mixdim)
+    end
     @printf("\n")
 
     diffPot = 1.0
     ethr = 0.1
+    diffRhoe = 1.0
+    Rhoe_old = zeros(Float64,Npoints,Nspin)
 
     for iterSCF = 1:NiterMax
 
@@ -128,9 +138,10 @@ function KS_solve_SCF_potmix_v2!(
         end
         Etot = sum(Ham.energies)
 
+        diffRhoe = sum(abs.(Rhoe - Rhoe_old))/(Npoints*Nspin)
         diffEtot = abs(Etot - Etot_old)
 
-        @printf("%5d %18.10f %18.10e %18.10e\n", iterSCF, Etot, diffEtot, diffPot)
+        @printf("%5d %18.10f %18.10e %18.10e %18.10e\n", iterSCF, Etot, diffEtot, diffPot, diffRhoe)
 
         if diffEtot < etot_conv_thr
             CONVERGED = CONVERGED + 1
@@ -142,25 +153,32 @@ function KS_solve_SCF_potmix_v2!(
             @printf("SCF is converged in %d iterations\n", iterSCF)
             break
         end
+        
         Etot_old = Etot
+        Rhoe_old = copy(Rhoe)
 
-        # Mix potentials (only Hartree and XC)
-        #Ham.potentials.Hartree = betamix*Ham.potentials.Hartree + (1-betamix)*VHa_inp
-        #Ham.potentials.XC = betamix*Ham.potentials.XC + (1-betamix)*Vxc_inp
-        
-        mix_broyden!( VHa_inp, Ham.potentials.Hartree, betamix, iterSCF, mixdim, df_VHa, dv_VHa )
-        mix_broyden!( Vxc_inp, Ham.potentials.XC, betamix, iterSCF, mixdim, df_Vxc, dv_Vxc )
-        
+        # Mix potentials (Hartree and XC, separately)
+
+        if mix_method == "broyden"
+            mix_broyden!( VHa_inp, Ham.potentials.Hartree, betamix, iterSCF, mixdim, df_VHa, dv_VHa )
+            mix_broyden!( Vxc_inp, Ham.potentials.XC, betamix, iterSCF, mixdim, df_Vxc, dv_Vxc )
+        else
+            # simple mixing
+            Ham.potentials.Hartree = betamix*Ham.potentials.Hartree + (1-betamix)*VHa_inp
+            Ham.potentials.XC = betamix*Ham.potentials.XC + (1-betamix)*Vxc_inp
+        end
+
+
         # Don't forget to update the total local potential
         for ispin = 1:Nspin
             for ip = 1:Npoints
                 Ham.potentials.Total[ip,ispin] = Ham.potentials.Ps_loc[ip] + Ham.potentials.Hartree[ip] +
-                                                 Ham.potentials.XC[ip,ispin]  
+                                                 Ham.potentials.XC[ip,ispin]
             end
         end
 
-        diffPot = sum(Ham.potentials.Hartree - VHa_inp)/Npoints +
-                  sum(Ham.potentials.XC - Vxc_inp)/(Npoints*Nspin)
+        diffPot = sum(abs.(Ham.potentials.Hartree - VHa_inp))/Npoints +
+                  sum(abs.(Ham.potentials.XC - Vxc_inp))/(Npoints*Nspin)
 
         flush(stdout)
     end
