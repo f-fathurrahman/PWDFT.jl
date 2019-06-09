@@ -10,6 +10,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
                         verbose=true,
                         print_final_ebands=false,
                         print_final_energies=true,
+                        print_integ_rhoe=false,
                         check_rhoe=false,
                         use_smearing=false,
                         kT=1e-3,
@@ -286,18 +287,21 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
 
         if verbose
             if Nspin == 1
-                @printf("\nSCF: %8d %18.10f %18.10e %18.10e\n",
-                        iter, Etot, diffE, diffRhoe[1] )
-                @printf("integ Rhoe = %18.10f\n", sum(Rhoe)*dVol)
+                @printf("SCF: %8d %18.10f %18.10e %18.10e\n",
+                         iter, Etot, diffE, diffRhoe[1] )
+                if print_integ_rhoe
+                    @printf("integ Rhoe = %18.10f\n", sum(Rhoe)*dVol)
+                end
             else
                 @printf("SCF: %8d %18.10f %18.10e %18.10e %18.10e\n",
-                        iter, Etot, diffE, diffRhoe[1], diffRhoe[2] )
-                magn_den = Rhoe[:,1] - Rhoe[:,2]
-                @printf("integ Rhoe spin up = %18.10f\n", sum(Rhoe[:,1])*dVol) 
-                @printf("integ Rhoe spin dn = %18.10f\n", sum(Rhoe[:,2])*dVol) 
-                @printf("integ magn_den = %18.10f\n", sum(magn_den)*dVol) 
-            end
-        
+                         iter, Etot, diffE, diffRhoe[1], diffRhoe[2] )
+                if print_integ_rhoe
+                    magn_den = Rhoe[:,1] - Rhoe[:,2]
+                    @printf("integ Rhoe spin up = %18.10f\n", sum(Rhoe[:,1])*dVol) 
+                    @printf("integ Rhoe spin dn = %18.10f\n", sum(Rhoe[:,2])*dVol) 
+                    @printf("integ magn_den = %18.10f\n", sum(magn_den)*dVol) 
+                end
+            end     
         end
 
         if diffE < etot_conv_thr
