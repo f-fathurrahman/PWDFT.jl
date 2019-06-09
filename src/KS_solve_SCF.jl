@@ -231,11 +231,6 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
             end
 
         elseif mix_method == "rpulay"
-        
-            #Rhoe = reshape( mix_rpulay!(
-            #    reshape(Rhoe,(Npoints*Nspin)),
-            #    reshape(Rhoe_new,(Npoints*Nspin)), betamix, XX, FF, iter, mixdim, x_old, f_old
-            #    ), (Npoints,Nspin) )
             
             mix_rpulay!( Rhoe, Rhoe_new, betamix, XX, FF, iter, mixdim, x_old, f_old )
             # result is in Rhoe
