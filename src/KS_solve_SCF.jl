@@ -312,7 +312,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
 
         if CONVERGED >= 2
             if verbose
-                @printf("SCF is converged: iter: %d , diffE = %10.7e\n", iter, diffE)
+                @printf("\nSCF is converged in iter: %d , diffE = %10.7e\n", iter, diffE)
             end
             break
         end
