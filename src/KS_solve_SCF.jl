@@ -117,8 +117,8 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
     elseif mix_method in ("rpulay", "ppulay", "pulay")
         XX = zeros(Float64,Npoints*Nspin, mixdim)
         FF = zeros(Float64,Npoints*Nspin, mixdim)
-        x_old = zeros(Float64,Npoints*Nspin)
-        f_old = zeros(Float64,Npoints*Nspin)
+        x_old = zeros(Float64,Npoints,Nspin)
+        f_old = zeros(Float64,Npoints,Nspin)
     end
 
 
@@ -232,10 +232,13 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
 
         elseif mix_method == "rpulay"
         
-            Rhoe = reshape( mix_rpulay!(
-                reshape(Rhoe,(Npoints*Nspin)),
-                reshape(Rhoe_new,(Npoints*Nspin)), betamix, XX, FF, iter, mixdim, x_old, f_old
-                ), (Npoints,Nspin) )
+            #Rhoe = reshape( mix_rpulay!(
+            #    reshape(Rhoe,(Npoints*Nspin)),
+            #    reshape(Rhoe_new,(Npoints*Nspin)), betamix, XX, FF, iter, mixdim, x_old, f_old
+            #    ), (Npoints,Nspin) )
+            
+            mix_rpulay!( Rhoe, Rhoe_new, betamix, XX, FF, iter, mixdim, x_old, f_old )
+            # result is in Rhoe
             
             if Nspin == 2
                 magn_den = Rhoe[:,1] - Rhoe[:,2]
