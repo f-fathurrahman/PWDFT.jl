@@ -198,7 +198,7 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
         diffE = abs(Etot-Etot_old)
 
         if verbose
-            @printf("CG step %8d = %18.10f %10.7e\n", iter, Etot, diffE)
+            @printf("Emin_PCG step %8d = %18.10f %10.7e\n", iter, Etot, diffE)
         end
         
         if diffE < etot_conv_thr
@@ -209,7 +209,7 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
 
         if CONVERGED >= 2
             if verbose
-                @printf("CONVERGENCE ACHIEVED\n")
+                @printf("\nEmin_PCG is converged in iter: %d , diffE = %10.7e\n", iter, diffE)
             end
             break
         end
