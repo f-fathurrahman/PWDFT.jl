@@ -2,7 +2,7 @@
 Solves Kohn-Sham problem using traditional self-consistent field (SCF)
 iterations with density mixing.
 """
-function KS_solve_SCF_broyden!( Ham::Hamiltonian ;
+function KS_solve_SCF_rhomix_v2!( Ham::Hamiltonian ;
                         startingwfc=:random, savewfc=false,
                         startingrhoe=:gaussian,
                         betamix=0.2,
@@ -224,7 +224,7 @@ function KS_solve_SCF_broyden!( Ham::Hamiltonian ;
 
         elseif mix_method == "simple_kerker"
             for ispin = 1:Nspin
-                Rhoe[:,ispin] = Rhoe[:,ispin] + betamix*precKerker(pw, Rhoe_new[:,ispin] - Rhoe[:,ispin])
+                Rhoe[:,ispin] = Rhoe[:,ispin] + betamix*precKerker(pw, Nelectrons, Rhoe_new[:,ispin] - Rhoe[:,ispin])
             end
 
         elseif mix_method == "pulay"

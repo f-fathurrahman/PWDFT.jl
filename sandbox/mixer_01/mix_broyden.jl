@@ -1,6 +1,8 @@
-function mix_broyden!( deltaout, deltain, alphamix::Float64, iter::Int64, n_iter::Int64, df, dv )
+function mix_broyden!( deltaout_, deltain, alphamix::Float64, iter::Int64, n_iter::Int64, df, dv )
     # df(ndim,n_iter)
     # dv(ndim,n_iter)
+
+    deltaout = copy(deltaout_)  # do not replace deltaout_
 
     maxter = 8
     wg0 = 0.01
