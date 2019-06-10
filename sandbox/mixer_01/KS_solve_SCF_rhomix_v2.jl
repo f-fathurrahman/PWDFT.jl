@@ -10,6 +10,7 @@ function KS_solve_SCF_rhomix_v2!( Ham::Hamiltonian ;
                         verbose=true,
                         print_final_ebands=false,
                         print_final_energies=true,
+                        print_integ_rhoe=false,
                         check_rhoe=false,
                         use_smearing=false,
                         kT=1e-3,
@@ -92,8 +93,8 @@ function KS_solve_SCF_rhomix_v2!( Ham::Hamiltonian ;
     end
 
     if Nspin == 2
-        @printf("\nInitial integ Rhoe up = %18.10f\n", sum(Rhoe[:,1])*dVol)
-        @printf("\nInitial integ Rhoe dn = %18.10f\n", sum(Rhoe[:,2])*dVol)
+        @printf("\nInitial integ Rhoe up  = %18.10f\n", sum(Rhoe[:,1])*dVol)
+        @printf("\nInitial integ Rhoe dn  = %18.10f\n", sum(Rhoe[:,2])*dVol)
         @printf("\nInitial integ magn_den = %18.10f\n", sum(Rhoe[:,1] - Rhoe[:,2])*dVol)
     end
 
@@ -201,7 +202,7 @@ function KS_solve_SCF_rhomix_v2!( Ham::Hamiltonian ;
         end
 
         for ispin = 1:Nspin
-            diffRhoe[ispin] = norm(Rhoe_new[:,ispin] - Rhoe[:,ispin])
+            diffRhoe[ispin] = sum(abs.(Rhoe_new[:,ispin] - Rhoe[:,ispin]))/Npoints
         end
 
         # check norm of
@@ -222,11 +223,6 @@ function KS_solve_SCF_rhomix_v2!( Ham::Hamiltonian ;
 
             mix_broyden!( Rhoe_new, Rhoe, betamix, iter, mixdim, df, dv )
 
-        elseif mix_method == "simple_kerker"
-            for ispin = 1:Nspin
-                Rhoe[:,ispin] = Rhoe[:,ispin] + betamix*precKerker(pw, Nelectrons, Rhoe_new[:,ispin] - Rhoe[:,ispin])
-            end
-
         elseif mix_method == "pulay"
         
             Rhoe = reshape( mix_pulay!(
@@ -240,10 +236,8 @@ function KS_solve_SCF_rhomix_v2!( Ham::Hamiltonian ;
 
         elseif mix_method == "rpulay"
         
-            Rhoe = reshape( mix_rpulay!(
-                reshape(Rhoe,(Npoints*Nspin)),
-                reshape(Rhoe_new,(Npoints*Nspin)), betamix, XX, FF, iter, mixdim, x_old, f_old
-                ), (Npoints,Nspin) )
+            mix_rpulay!( Rhoe, Rhoe_new, betamix, XX, FF, iter, mixdim, x_old, f_old )
+            # result is in Rhoe
             
             if Nspin == 2
                 magn_den = Rhoe[:,1] - Rhoe[:,2]
@@ -254,17 +248,6 @@ function KS_solve_SCF_rhomix_v2!( Ham::Hamiltonian ;
             Rhoe = reshape( mix_ppulay!(
                 reshape(Rhoe,(Npoints*Nspin)),
                 reshape(Rhoe_new,(Npoints*Nspin)), betamix, XX, FF, iter, mixdim, 3, x_old, f_old
-                ), (Npoints,Nspin) )
-            
-            if Nspin == 2
-                magn_den = Rhoe[:,1] - Rhoe[:,2]
-            end
-
-        elseif mix_method == "rpulay_kerker"
-        
-            Rhoe = reshape( mix_rpulay_kerker!( pw,
-                reshape(Rhoe,(Npoints*Nspin)),
-                reshape(Rhoe_new,(Npoints*Nspin)), betamix, XX, FF, iter, mixdim, x_old, f_old
                 ), (Npoints,Nspin) )
             
             if Nspin == 2
@@ -306,16 +289,20 @@ function KS_solve_SCF_rhomix_v2!( Ham::Hamiltonian ;
 
         if verbose
             if Nspin == 1
-                @printf("\nSCF: %8d %18.10f %18.10e %18.10e\n",
-                        iter, Etot, diffE, diffRhoe[1] )
-                @printf("integ Rhoe = %18.10f\n", sum(Rhoe)*dVol)
+                @printf("SCF: %8d %18.10f %18.10e %18.10e\n",
+                         iter, Etot, diffE, diffRhoe[1] )
+                if print_integ_rhoe
+                    @printf("integ Rhoe = %18.10f\n", sum(Rhoe)*dVol)
+                end
             else
                 @printf("SCF: %8d %18.10f %18.10e %18.10e %18.10e\n",
-                        iter, Etot, diffE, diffRhoe[1], diffRhoe[2] )
-                magn_den = Rhoe[:,1] - Rhoe[:,2]
-                @printf("integ Rhoe spin up = %18.10f\n", sum(Rhoe[:,1])*dVol) 
-                @printf("integ Rhoe spin dn = %18.10f\n", sum(Rhoe[:,2])*dVol) 
-                @printf("integ magn_den = %18.10f\n", sum(magn_den)*dVol) 
+                         iter, Etot, diffE, diffRhoe[1], diffRhoe[2] )
+                if print_integ_rhoe
+                    magn_den = Rhoe[:,1] - Rhoe[:,2]
+                    @printf("integ Rhoe spin up = %18.10f\n", sum(Rhoe[:,1])*dVol) 
+                    @printf("integ Rhoe spin dn = %18.10f\n", sum(Rhoe[:,2])*dVol) 
+                    @printf("integ magn_den = %18.10f\n", sum(magn_den)*dVol)
+                end
             end
         
         end
