@@ -19,6 +19,10 @@ function calc_forces_Ps_nloc(
 
     F_Ps_nloc = zeros(3,Natoms)
 
+    if NbetaNL == 0
+        return F_Ps_nloc
+    end
+
     betaNL_psi = zeros(ComplexF64,Nstates,NbetaNL)
     dbetaNL_psi = zeros(ComplexF64,3,Nstates,NbetaNL)
 
@@ -99,7 +103,8 @@ function calc_dbetaNL(
                     GX = atpos[1,ia]*g[1] + atpos[2,ia]*g[2] + atpos[3,ia]*g[3]
                     Sf = cos(GX) - im*sin(GX)
                     dbetaNL[:,igk,ibeta,ik] =
-                    Ylm_real(l,m,g)*eval_proj_G(psp,l,iprj,Gm,pw.CellVolume)*Sf*im*g[:]
+                    (-1.0*im)^l * Ylm_real(l,m,g)*eval_proj_G(psp,l,iprj,Gm,pw.CellVolume)*Sf*im*g[:]
+                    #Ylm_real(l,m,g)*eval_proj_G(psp,l,iprj,Gm,pw.CellVolume)*Sf*im*g[:]
                 end
             end
             end

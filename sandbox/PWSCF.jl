@@ -61,7 +61,8 @@ Limitation:
 """
 function write_pwscf( Ham::Hamiltonian; filename="PWINPUT",
                       prefix_dir="./",
-                      use_smearing=false, kT=0.001 )
+                      use_smearing=false, kT=0.001,
+                      etot_conv_thr=1e-6 )
     atoms = Ham.atoms
     pw = Ham.pw
     electrons = Ham.electrons
@@ -83,6 +84,7 @@ function write_pwscf( Ham::Hamiltonian; filename="PWINPUT",
     @printf(f, "  outdir = './tmp'\n")
     @printf(f, "  verbosity = 'high'\n")
     @printf(f, "  disk_io = 'none'\n")
+    @printf(f, "  tprnfor = .true.\n")
     @printf(f, "/\n\n")
 
     @printf(f, "&SYSTEM\n")
@@ -122,6 +124,7 @@ function write_pwscf( Ham::Hamiltonian; filename="PWINPUT",
     @printf(f, "&ELECTRONS\n")
     @printf(f, "  electron_maxstep = 150\n")
     @printf(f, "  mixing_beta = 0.1\n")
+    @printf(f, "  conv_thr = %.10e\n", etot_conv_thr)
     @printf(f, "/\n\n")
 
     @printf(f, "ATOMIC_SPECIES\n")

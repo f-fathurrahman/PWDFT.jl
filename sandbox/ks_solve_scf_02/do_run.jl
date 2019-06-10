@@ -36,8 +36,8 @@ function main()
     println(Ham)
 
     KS_solve_SCF_02!( Ham, mix_method="rpulay" )
-    #KS_solve_SCF_potmix!( Ham, ETOT_CONV_THR=1e-10 )
-    #KS_solve_Emin_PCG!( Ham, ETOT_CONV_THR=1e-9, startingwfc=:random )
+    #KS_solve_SCF_potmix!( Ham, etot_conv_thr=1e-10 )
+    #KS_solve_Emin_PCG!( Ham, etot_conv_thr=1e-9, startingwfc=:random )
 
     run(`rm -fv TEMP_abinit/\*`)
     write_abinit(Ham, prefix_dir="./TEMP_abinit/")

@@ -32,7 +32,7 @@ function calc_forces_finite_diff(
         
         Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=meshk )
         
-        KS_solve_SCF!( Ham, mix_method="rpulay", ETOT_CONV_THR=1e-6 )
+        KS_solve_SCF!( Ham, mix_method="rpulay", etot_conv_thr=1e-6 )
         Eplus = sum(Ham.energies)
         energies1 = deepcopy(Ham.energies)
         
@@ -41,7 +41,7 @@ function calc_forces_finite_diff(
 
         Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=meshk )
         #
-        KS_solve_SCF!( Ham, mix_method="rpulay", ETOT_CONV_THR=1e-6 )
+        KS_solve_SCF!( Ham, mix_method="rpulay", etot_conv_thr=1e-6 )
         Eminus = sum(Ham.energies)
         energies2 = deepcopy(Ham.energies)
         #

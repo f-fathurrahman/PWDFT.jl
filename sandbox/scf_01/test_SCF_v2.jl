@@ -30,7 +30,7 @@ function test_main()
     Ham = create_Hamiltonian_Ni_fcc()
 
     @time alt2_KS_solve_SCF!(
-        Ham, ETOT_CONV_THR=1e-6, NiterMax=100, betamix=0.5, update_psi="LOBPCG",
+        Ham, etot_conv_thr=1e-6, NiterMax=100, betamix=0.5, update_psi="LOBPCG",
         mix_method="rpulay", check_rhoe=false,
         use_smearing=true, kT=1e-3
     )

@@ -1,4 +1,4 @@
-function my_scf!( Ham::Hamiltonian; NiterMax=150, betamix=0.2 )
+function my_scf!( Ham::Hamiltonian; NiterMax=150, betamix=0.2, etot_conv_thr=1e-6 )
 
     Npoints = prod(Ham.pw.Ns)
     Nspin = Ham.electrons.Nspin
@@ -29,14 +29,14 @@ function my_scf!( Ham::Hamiltonian; NiterMax=150, betamix=0.2 )
 
     for iterSCF = 1:NiterMax
         evals = diag_LOBPCG!( Ham, psiks )
-        Rhoe_new[:,:] = calc_rhoe( Ham, psiks )
-        Rhoe[:,:] = betamix*Rhoe_new + (1-betamix)*Rhoe
+        Rhoe_new = calc_rhoe( Ham, psiks )
+        Rhoe = betamix*Rhoe_new + (1-betamix)*Rhoe
         update!(Ham, Rhoe)
         Ham.energies = calc_energies(Ham, psiks)
         Etot = sum(Ham.energies)
         diffEtot = abs(Etot - Etot_old)
         @printf("%5d %18.10f %18.10e\n", iterSCF, Etot, diffEtot)
-        if diffEtot <= 1e-6
+        if diffEtot <= etot_conv_thr
             @printf("SCF is converged in %d iterations\n", iterSCF)
             return
         end

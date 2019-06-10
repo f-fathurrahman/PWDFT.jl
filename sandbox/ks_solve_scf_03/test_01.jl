@@ -149,7 +149,7 @@ function main()
 
     betamix = 0.6
 
-    ETOT_CONV_THR = 1e-6
+    etot_conv_thr = 1e-6
 
     
     gcut = 2.0
@@ -316,7 +316,7 @@ function main()
         println("=====================================================")
 
 
-        if diffE < ETOT_CONV_THR
+        if diffE < etot_conv_thr
             CONVERGED = CONVERGED + 1
         else  # reset CONVERGED
             CONVERGED = 0

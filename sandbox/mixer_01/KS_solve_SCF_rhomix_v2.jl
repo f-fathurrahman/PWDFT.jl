@@ -2,7 +2,7 @@
 Solves Kohn-Sham problem using traditional self-consistent field (SCF)
 iterations with density mixing.
 """
-function KS_solve_SCF!( Ham::Hamiltonian ;
+function KS_solve_SCF_rhomix_v2!( Ham::Hamiltonian ;
                         startingwfc=:random, savewfc=false,
                         startingrhoe=:gaussian,
                         betamix=0.2,
@@ -93,8 +93,8 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
     end
 
     if Nspin == 2
-        @printf("\nInitial integ Rhoe up = %18.10f\n", sum(Rhoe[:,1])*dVol)
-        @printf("\nInitial integ Rhoe dn = %18.10f\n", sum(Rhoe[:,2])*dVol)
+        @printf("\nInitial integ Rhoe up  = %18.10f\n", sum(Rhoe[:,1])*dVol)
+        @printf("\nInitial integ Rhoe dn  = %18.10f\n", sum(Rhoe[:,2])*dVol)
         @printf("\nInitial integ magn_den = %18.10f\n", sum(Rhoe[:,1] - Rhoe[:,2])*dVol)
     end
 
@@ -110,15 +110,15 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
 
     ethr = 0.1
     
-    if mix_method == "anderson"
+    if mix_method in ("anderson", "broyden")
         df = zeros(Float64,Npoints*Nspin, mixdim)
         dv = zeros(Float64,Npoints*Nspin, mixdim)
     
-    elseif mix_method in ("rpulay", "ppulay", "pulay")
+    elseif mix_method in ("rpulay", "rpulay_kerker", "ppulay", "pulay")
         XX = zeros(Float64,Npoints*Nspin, mixdim)
         FF = zeros(Float64,Npoints*Nspin, mixdim)
-        x_old = zeros(Float64,Npoints,Nspin)
-        f_old = zeros(Float64,Npoints,Nspin)
+        x_old = zeros(Float64,Npoints*Nspin)
+        f_old = zeros(Float64,Npoints*Nspin)
     end
 
 
@@ -127,7 +127,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
     @printf("update_psi = %s\n", update_psi)
     @printf("\n")
     @printf("mix_method = %s\n", mix_method)
-    if mix_method in ("rpulay", "anderson", "ppulay")
+    if mix_method in ("rpulay", "rpulay_kerker", "anderson", "ppulay")
         @printf("mixdim = %d\n", mixdim)
     end
     @printf("Density mixing with betamix = %10.5f\n", betamix)
@@ -219,6 +219,10 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
                 Rhoe[:,ispin] = betamix*Rhoe_new[:,ispin] + (1-betamix)*Rhoe[:,ispin]
             end
 
+        elseif mix_method == "broyden"
+
+            mix_broyden!( Rhoe_new, Rhoe, betamix, iter, mixdim, df, dv )
+
         elseif mix_method == "pulay"
         
             Rhoe = reshape( mix_pulay!(
@@ -231,7 +235,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
             end
 
         elseif mix_method == "rpulay"
-            
+        
             mix_rpulay!( Rhoe, Rhoe_new, betamix, XX, FF, iter, mixdim, x_old, f_old )
             # result is in Rhoe
             
@@ -297,9 +301,10 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
                     magn_den = Rhoe[:,1] - Rhoe[:,2]
                     @printf("integ Rhoe spin up = %18.10f\n", sum(Rhoe[:,1])*dVol) 
                     @printf("integ Rhoe spin dn = %18.10f\n", sum(Rhoe[:,2])*dVol) 
-                    @printf("integ magn_den = %18.10f\n", sum(magn_den)*dVol) 
+                    @printf("integ magn_den = %18.10f\n", sum(magn_den)*dVol)
                 end
-            end     
+            end
+        
         end
 
         if diffE < etot_conv_thr
@@ -310,7 +315,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
 
         if CONVERGED >= 2
             if verbose
-                @printf("\nSCF is converged in iter: %d , diffE = %10.7e\n", iter, diffE)
+                @printf("SCF is converged: iter: %d , diffE = %10.7e\n", iter, diffE)
             end
             break
         end

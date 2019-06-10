@@ -53,7 +53,7 @@ push!(LOAD_PATH, expanduser("~/.julia/dev"))
   clone this repository to your computer.
 
   If you download the zip file, extract the zip file under
-  `$HOME/.julia/dev$`. You need to rename the extracted directory
+  `$HOME/.julia/dev`. You need to rename the extracted directory
   to `PWDFT` (with no `.jl` extension).
 
   Alternatively, create symlink under `$HOME/.julia/dev`
@@ -80,25 +80,19 @@ You can do this by typing the following in the Julia console.
 using PWDFT
 ```
 
-and running unittest in project directory:
 
-```sh
-$ julia --project=. -e "using Pkg; Pkg.test()"
-```
-
-Change directory to `examples` and run the following in the terminal.
+Change directory to `examples/Si_fcc` and run the following in the terminal.
 
 ```
-julia run.jl "atom_H/main_H_atom.jl"
+julia run.jl
 ```
 
 The above command will calculate total energy of hydrogen atom by SCF method.
 
-If you want to use direct minimization method, use the following instead.
 
-```
-julia run.jl "atom_H/main_H_atom.jl" Emin
-```
+The script will calculate total energy per unit cell of silicon crystal using
+self-consistent field iteration and direct energy minimization.
+
 
 ## Units
 

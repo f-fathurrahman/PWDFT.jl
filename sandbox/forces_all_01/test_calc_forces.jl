@@ -5,82 +5,33 @@ using Random
 
 const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
 const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
+const DIR_STRUCTURES = joinpath(DIR_PWDFT, "structures")
 
-include("../forces_ewald_01/calc_forces_NN.jl")
-include("../forces_local_01/calc_forces_Ps_loc.jl")
-include("../forces_nonlocal_01/calc_forces_Ps_nloc.jl")
+include("calc_forces_NN.jl")
+include("calc_forces_Ps_loc.jl")
+include("calc_forces_Ps_nloc.jl")
+include("symmetry_atoms.jl")
 
-function create_Ham_Si_fcc()
-
-    atoms = Atoms(xyz_string_frac=
-        """
-        2
-
-        Si  0.0  0.0  0.0
-        Si  0.25  0.25  0.25
-        """, in_bohr=true, LatVecs=gen_lattice_fcc(5.431*ANG2BOHR))
-
-    pspfiles = [joinpath(DIR_PSP, "Si-q4.gth")]
-
-    ecutwfc = 15.0
-    return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[8,8,8] )
-end
-
-
-
-function create_Ham_GaAs_v1()
-
-    LatVecs = zeros(3,3)
-    LatVecs[:,1] = [0.5, 0.5, 0.0]
-    LatVecs[:,2] = [0.5, 0.0, 0.5]
-    LatVecs[:,3] = [0.0, 0.5, 0.5]
-    LatVecs = LatVecs*5.6537*ANG2BOHR
-
-    atoms = Atoms(xyz_string_frac=
-        """
-        2
-
-        Ga  0.0  0.0  0.0
-        As  0.25  0.25  0.25
-        """, in_bohr=true, LatVecs=LatVecs)
-
-    pspfiles = [joinpath(DIR_PSP, "Ga-q3.gth"),
-                joinpath(DIR_PSP, "As-q5.gth")]
-
-    ecutwfc = 15.0
-    return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[8,8,8] )
-end
-
-
-function create_Ham_GaAs_v2()
-    atoms = Atoms(xyz_string_frac=
-        """
-        2
-
-        Ga  0.0  0.0  0.0
-        As  0.25  0.25  0.25
-        """, in_bohr=true, LatVecs=gen_lattice_fcc(5.6537*ANG2BOHR))
-
-    pspfiles = [joinpath(DIR_PSP, "Ga-q3.gth"),
-                joinpath(DIR_PSP, "As-q5.gth")]
-
-    ecutwfc = 15.0
-    return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[8,8,8] )
-end
+include("create_Ham.jl")
 
 
 function test_main()
 
+    #Ham = create_Ham_H2()
     #Ham = create_Ham_Si_fcc()
-    Ham = create_Ham_GaAs_v1()
+    Ham = create_Ham_Si_fcc(xcfunc="PBE")
+    #Ham = create_Ham_GaAs_v1()
     #Ham = create_Ham_GaAs_v2()
-
+    #Ham = create_Ham_CO()
     println(Ham)
+
+    println(Ham.sym_info)
+    irt = init_irt(Ham.atoms, Ham.sym_info)
 
     Random.seed!(1234)
     
-    KS_solve_Emin_PCG!(Ham, ETOT_CONV_THR=1e-8, savewfc=true)
-    #KS_solve_SCF!(Ham, mix_method="rpulay", ETOT_CONV_THR=1e-8, savewfc=true)
+    KS_solve_Emin_PCG!(Ham, savewfc=true)
+    #KS_solve_SCF!(Ham, mix_method="rpulay", etot_conv_thr=1e-8, savewfc=true)
 
     psiks = read_psiks(Ham)
 
@@ -113,6 +64,14 @@ function test_main()
         @printf("%s %18.10f %18.10f %18.10f\n", atsymbs[ia],
                 F_Ps_nloc[1,ia], F_Ps_nloc[2,ia], F_Ps_nloc[3,ia] )
     end
+    
+    symmetrize_vector!( Ham.pw, Ham.sym_info, irt, F_Ps_nloc )
+    println("Ps nloc forces symmetrized:")
+    for ia = 1:Natoms
+        @printf("%s %18.10f %18.10f %18.10f\n", atsymbs[ia],
+                F_Ps_nloc[1,ia], F_Ps_nloc[2,ia], F_Ps_nloc[3,ia] )
+    end
+
 
 
     F_total = F_NN + F_Ps_loc + F_Ps_nloc
@@ -125,6 +84,22 @@ function test_main()
     @printf("Sum of forces in x-dir: %18.10f\n", sum(F_total[1,:]))
     @printf("Sum of forces in y-dir: %18.10f\n", sum(F_total[2,:]))
     @printf("Sum of forces in z-dir: %18.10f\n", sum(F_total[3,:]))
+
+    F_total = 0.5*F_total
+    println("Total forces (Hartree unit):")
+    for ia = 1:Natoms
+        @printf("%s %18.10f %18.10f %18.10f\n", atsymbs[ia],
+                F_total[1,ia], F_total[2,ia], F_total[3,ia] )
+    end
+
+
+    #symmetrize_vector!( Ham.pw, Ham.sym_info, irt, F_total )
+    #println("Total forces symmetrized:")
+    #for ia = 1:Natoms
+    #    @printf("%s %18.10f %18.10f %18.10f\n", atsymbs[ia],
+    #            F_total[1,ia], F_total[2,ia], F_total[3,ia] )
+    #end
+
 end
 
 

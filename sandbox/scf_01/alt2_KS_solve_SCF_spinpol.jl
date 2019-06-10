@@ -8,7 +8,7 @@ function alt2_KS_solve_SCF!( Ham::Hamiltonian ;
                         update_psi="LOBPCG", cheby_degree=8,
                         mix_method="simple", MIXDIM=4,
                         print_e_gap=false,
-                        ETOT_CONV_THR=1e-6 )
+                        etot_conv_thr=1e-6 )
 
     pw = Ham.pw
     Ngw = pw.gvecw.Ngw
@@ -308,7 +308,7 @@ function alt2_KS_solve_SCF!( Ham::Hamiltonian ;
         
         end
 
-        if diffE < ETOT_CONV_THR
+        if diffE < etot_conv_thr
             CONVERGED = CONVERGED + 1
         else  # reset CONVERGED
             CONVERGED = 0

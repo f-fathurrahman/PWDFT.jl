@@ -141,9 +141,6 @@ export Energies
 include("PsPotNL.jl")
 export PsPotNL, calc_betaNL_psi
 
-include("free_electron_Hamiltonian.jl")
-export free_electron_Hamiltonian
-
 include("Hamiltonian.jl")
 export Hamiltonian, update!
 
@@ -161,9 +158,6 @@ export calc_rhoe, calc_rhoe!
 
 include("Kprec.jl")
 export Kprec
-
-include("precKerker.jl")
-export precKerker
 
 include("calc_energies.jl")
 export calc_energies,

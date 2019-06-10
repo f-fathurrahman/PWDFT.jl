@@ -3,7 +3,7 @@ function alt1_KS_solve_SCF_spinpol!( Ham::Hamiltonian ;
                              betamix = 0.7, NiterMax=100, verbose=false,
                              check_rhoe_after_mix=true,
                              update_psi="LOBPCG", cheby_degree=8,
-                             ETOT_CONV_THR=1e-6,
+                             etot_conv_thr=1e-6,
                              use_smearing=false,
                              kT=0.01 )
     
@@ -187,7 +187,7 @@ function alt1_KS_solve_SCF_spinpol!( Ham::Hamiltonian ;
             @printf("SCF: %8d %18.10f %18.10e\n", iter, Etot, diffE )
         end
 
-        if diffE < ETOT_CONV_THR
+        if diffE < etot_conv_thr
             CONVERGED = CONVERGED + 1
         else  # reset CONVERGED
             CONVERGED = 0

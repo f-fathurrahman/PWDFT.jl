@@ -38,7 +38,7 @@ function do_calc()
 
     # Solve the KS problem
     @time KS_solve_SCF!(
-        Ham, ETOT_CONV_THR=1e-6, NiterMax=50, betamix=0.5, update_psi="davidson",
+        Ham, etot_conv_thr=1e-6, NiterMax=50, betamix=0.5, update_psi="davidson",
         savewfc=true, startingwfc=psiks
     )
 

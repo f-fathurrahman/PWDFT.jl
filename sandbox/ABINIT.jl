@@ -1,6 +1,6 @@
 function write_abinit( Ham::Hamiltonian;
                        prefix_dir="./",
-                       use_smearing=false, kT=0.001 )
+                       use_smearing=false, kT=0.001, etot_conv_thr=1e-6 )
 
     #TODO: Check if prefix is exist or not
     #TODO: If prefix is exist, check if it is directory or not
@@ -88,7 +88,7 @@ function write_abinit( Ham::Hamiltonian;
     println(f, "shiftk  0.0  0.0  0.0")
 
     println(f, "nstep 100")
-    println(f, "toldfe 1.0d-6")
+    @printf(f, "toldfe %.10e\n", etot_conv_thr)
     println(f, "diemac 12.0")
 
     if Ham.xcfunc == "VWN"    
