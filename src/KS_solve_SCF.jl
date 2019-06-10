@@ -202,7 +202,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
         end
 
         for ispin = 1:Nspin
-            diffRhoe[ispin] = norm(Rhoe_new[:,ispin] - Rhoe[:,ispin])
+            diffRhoe[ispin] = sum(abs.(Rhoe_new[:,ispin] - Rhoe[:,ispin]))/Npoints
         end
 
         # check norm of
