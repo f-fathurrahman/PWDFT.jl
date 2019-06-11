@@ -96,7 +96,7 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
     Ham.energies = energies
     Etot = sum(energies)
 
-    CONVERGED = 0
+    Nconverges = 0
 
     if verbose
         @printf("\n")
@@ -202,12 +202,12 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
         end
         
         if diffE < etot_conv_thr
-            CONVERGED = CONVERGED + 1
+            Nconverges = Nconverges + 1
         else
-            CONVERGED = 0
+            Nconverges = 0
         end
 
-        if CONVERGED >= 2
+        if Nconverges >= 2
             if verbose
                 @printf("\nEmin_PCG is converged in iter: %d , diffE = %10.7e\n", iter, diffE)
             end

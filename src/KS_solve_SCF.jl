@@ -142,7 +142,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
     # calculate PspCore energy
     Ham.energies.PspCore = calc_PspCore_ene( Ham.atoms, Ham.pspots )
 
-    CONVERGED = 0
+    Nconverges = 0
 
     E_fermiSpin = zeros(Nspin)
     E_fermi = 0.0
@@ -303,12 +303,12 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
         end
 
         if diffE < etot_conv_thr
-            CONVERGED = CONVERGED + 1
-        else  # reset CONVERGED
-            CONVERGED = 0
+            Nconverges = Nconverges + 1
+        else
+            Nconverges = 0
         end
 
-        if CONVERGED >= 2
+        if Nconverges >= 2
             if verbose
                 @printf("\nSCF is converged in iter: %d , diffE = %10.7e\n", iter, diffE)
             end
