@@ -55,7 +55,7 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
         calc_rhoe!( Ham, psiks, Rhoe )
     end
     
-    # Symmetrize Rhoe is needed
+    # Symmetrize Rhoe if needed
     if Ham.sym_info.Nsyms > 1
         symmetrize_rhoe!( Ham, rhoe_symmetrizer, Rhoe )
     end
@@ -157,7 +157,7 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
         end # ispin
         
         calc_rhoe!( Ham, psiks, Rhoe )
-        # Symmetrize Rhoe is needed
+        # Symmetrize Rhoe if needed
         if Ham.sym_info.Nsyms > 1
             symmetrize_rhoe!( Ham, rhoe_symmetrizer, Rhoe )
         end
@@ -187,7 +187,7 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
         end
 
         calc_rhoe!( Ham, psiks, Rhoe )
-        # Symmetrize Rhoe is needed
+        # Symmetrize Rhoe if needed
         if Ham.sym_info.Nsyms > 1
             symmetrize_rhoe!( Ham, rhoe_symmetrizer, Rhoe )
         end

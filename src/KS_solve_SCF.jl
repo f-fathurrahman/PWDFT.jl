@@ -87,7 +87,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
     else
         Rhoe[:,:] = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin )
     end
-    # Symmetrize Rhoe is needed
+    # Symmetrize Rhoe if needed
     if Ham.sym_info.Nsyms > 1
         symmetrize_rhoe!( Ham, rhoe_symmetrizer, Rhoe )
     end
