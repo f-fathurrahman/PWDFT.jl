@@ -197,10 +197,12 @@ include("mix_anderson.jl")
 include("mix_pulay.jl")
 include("mix_rpulay.jl")
 include("mix_ppulay.jl")
+include("mix_broyden.jl")
 export mix_anderson!,
        mix_pulay!,
        mix_rpulay!,
-       mix_ppulay!
+       mix_ppulay!,
+       mix_broyden!
 
 include("gen_wavefunc.jl")
 export rand_Wavefunc, rand_BlochWavefunc, zeros_BlochWavefunc
@@ -220,6 +222,9 @@ export KS_solve_Emin_PCG!
 
 include("KS_solve_SCF.jl")
 export KS_solve_SCF!
+
+include("KS_solve_SCF_potmix.jl")
+export KS_solve_SCF_potmix!
 
 include("KS_solve_DCM.jl")
 export KS_solve_DCM!
