@@ -1,12 +1,12 @@
 """
-Solves Kohn-Sham problem using direct constrined minimization (DCM) as described
-by Yang.
+Solves Kohn-Sham problem using direct constrained minimization (DCM) as described
+by Prof. Chao Yang.
 """
 function KS_solve_DCM!( Ham::Hamiltonian;
                         NiterMax = 100, startingwfc=:random,
                         verbose=true,
                         print_final_ebands=false, print_final_energies=true,
-                        savewfc=false, ETOT_CONV_THR=1e-6 )
+                        savewfc=false, etot_conv_thr=1e-6 )
 
 
     pw = Ham.pw
@@ -39,12 +39,23 @@ function KS_solve_DCM!( Ham::Hamiltonian;
         psiks = rand_BlochWavefunc( Ham )
     end
 
+    # Workspace for Rhoe symmetrization is initialized here
+    if Ham.sym_info.Nsyms > 1
+        rhoe_symmetrizer = RhoeSymmetrizer( Ham )
+    end
+
     #
     # Calculated electron density from this wave function and update Hamiltonian
     #
     Rhoe = zeros(Float64,Npoints,Nspin)
 
     Rhoe[:,:] = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin )
+
+    # Symmetrize Rhoe if needed
+    if Ham.sym_info.Nsyms > 1
+        symmetrize_rhoe!( Ham, rhoe_symmetrizer, Rhoe )
+    end
+
     update!(Ham, Rhoe)
 
     Rhoe_old = copy(Rhoe)
@@ -105,6 +116,7 @@ function KS_solve_DCM!( Ham::Hamiltonian;
     set5 = 1:2*Nstates
 
     MaxInnerSCF = 3
+    Nconverges = 0
 
     for iter = 1:NiterMax
         
@@ -215,6 +227,12 @@ function KS_solve_DCM!( Ham::Hamiltonian;
             end 
 
             Rhoe[:,:] = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin )
+
+            # Symmetrize Rhoe is needed
+            if Ham.sym_info.Nsyms > 1
+                symmetrize_rhoe!( Ham, rhoe_symmetrizer, Rhoe )
+            end
+
             update!( Ham, Rhoe )
 
             Rhoe_old = copy(Rhoe)
@@ -240,8 +258,16 @@ function KS_solve_DCM!( Ham::Hamiltonian;
         diffE = abs( Etot - Etot_old )
         @printf("DCM: %5d %18.10f %18.10e\n", iter, Etot, diffE)
 
-        if abs(diffE) < ETOT_CONV_THR
-            @printf("DCM is converged: iter: %d , diffE = %10.7e\n", iter, diffE)
+        if diffE < etot_conv_thr
+            Nconverges = Nconverges + 1
+        else
+            Nconverges = 0
+        end
+
+        if Nconverges >= 2
+            if verbose
+                @printf("\nDCM is converged in iter: %d , diffE = %10.7e\n", iter, diffE)
+            end
             break
         end
 

@@ -1,8 +1,12 @@
+"""
+Solves Kohn-Sham problem using trust-region direct constrained minimization
+(DCM) as described by Prof. Chao Yang.
+"""
 function KS_solve_TRDCM!( Ham::Hamiltonian;
                           NiterMax = 100, startingwfc=:random,
                           verbose=true,
                           print_final_ebands=false, print_final_energies=true,
-                          savewfc=false, ETOT_CONV_THR=1e-6 )
+                          savewfc=false, etot_conv_thr=1e-6 )
 
 
 	pw = Ham.pw
@@ -34,6 +38,10 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
         psiks = rand_BlochWavefunc( Ham )
     end
 
+    # Workspace for Rhoe symmetrization is initialized here
+    if Ham.sym_info.Nsyms > 1
+        rhoe_symmetrizer = RhoeSymmetrizer( Ham )
+    end
 
     #
     # Calculated electron density from this wave function and update Hamiltonian
@@ -41,6 +49,12 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
     Rhoe = zeros(Float64,Npoints,Nspin)
 
     Rhoe[:,:] = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin )
+
+    # Symmetrize Rhoe is needed
+    if Ham.sym_info.Nsyms > 1
+        symmetrize_rhoe!( Ham, rhoe_symmetrizer, Rhoe )
+    end
+
     update!(Ham, Rhoe)
 
     evals = zeros(Float64,Nstates,Nkspin)
@@ -110,7 +124,7 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
     sigma = zeros(Float64,Nkspin)
     gapmax = zeros(Float64,Nkspin)
 
-    CONVERGED = 0
+    Nconverges = 0
 
     for iter = 1:NiterMax
         
@@ -242,6 +256,12 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
             end
 
             Rhoe[:,:] = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin )
+    
+            # Symmetrize Rhoe is needed
+            if Ham.sym_info.Nsyms > 1
+                symmetrize_rhoe!( Ham, rhoe_symmetrizer, Rhoe )
+            end
+
             update!( Ham, Rhoe )
 
             # Calculate energies once again
@@ -277,7 +297,7 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
                         else
                             sigma[ikspin] = 2*sigma[ikspin]
                         end
-                        @printf("fix gap0: ikspin = %d, sigma = %f\n", ikspin, sigma[ikspin])
+                        @printf("fix gap0: ikspin = %d, sigma = %18.10f\n", ikspin, sigma[ikspin])
                         #
                         if iter > 1
                             D[:,ikspin], G[ikspin] = eigen( A[ikspin] - sigma[ikspin]*C[ikspin], B[ikspin] )
@@ -316,6 +336,12 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
                 end
                 #
                 Rhoe[:,:] = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin )
+                
+                # Symmetrize Rhoe if needed
+                if Ham.sym_info.Nsyms > 1
+                    symmetrize_rhoe!( Ham, rhoe_symmetrizer, Rhoe )
+                end
+
                 update!( Ham, Rhoe )
             
                 # Calculate energies once again
@@ -351,13 +377,13 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
         diffE = abs( Etot - Etot_old )
         @printf("TRDCM: %5d %18.10f %18.10e\n", iter, Etot, diffE)
 
-        if diffE < ETOT_CONV_THR
-            CONVERGED = CONVERGED + 1
-        else  # reset CONVERGED
-            CONVERGED = 0
+        if diffE < etot_conv_thr
+            Nconverges = Nconverges + 1
+        else
+            Nconverges = 0
         end
 
-        if CONVERGED >= 2
+        if Nconverges >= 2
             @printf("TRDCM is converged: iter: %d , diffE = %10.7e\n", iter, diffE)
             break
         end
