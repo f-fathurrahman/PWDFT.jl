@@ -85,17 +85,17 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
             Rhoe = guess_rhoe_atomic( Ham, starting_magnetization=starting_magnetization )
         end
     else
-        Rhoe[:,:] = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin )
+        Rhoe = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin )
     end
     # Symmetrize Rhoe if needed
     if Ham.sym_info.Nsyms > 1
         symmetrize_rhoe!( Ham, rhoe_symmetrizer, Rhoe )
     end
 
-    if Nspin == 2
-        @printf("\nInitial integ Rhoe up = %18.10f\n", sum(Rhoe[:,1])*dVol)
-        @printf("\nInitial integ Rhoe dn = %18.10f\n", sum(Rhoe[:,2])*dVol)
-        @printf("\nInitial integ magn_den = %18.10f\n", sum(Rhoe[:,1] - Rhoe[:,2])*dVol)
+    if Nspin == 2 && verbose
+        @printf("Initial integ Rhoe up  = %18.10f\n", sum(Rhoe[:,1])*dVol)
+        @printf("Initial integ Rhoe dn  = %18.10f\n", sum(Rhoe[:,2])*dVol)
+        @printf("Initial integ magn_den = %18.10f\n", sum(Rhoe[:,1] - Rhoe[:,2])*dVol)
     end
 
     update!(Ham, Rhoe)
@@ -144,7 +144,6 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
 
     Nconverges = 0
 
-    E_fermiSpin = zeros(Nspin)
     E_fermi = 0.0
 
     for iter = 1:NiterMax
@@ -324,6 +323,13 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
 
     if use_smearing && verbose
         @printf("\nFermi energy = %18.10f Ha = %18.10f eV\n", E_fermi, E_fermi*2*Ry2eV)
+    end
+
+    if Nspin == 2 && verbose
+        @printf("\n")
+        @printf("Final integ Rhoe up  = %18.10f\n", sum(Rhoe[:,1])*dVol)
+        @printf("Final integ Rhoe dn  = %18.10f\n", sum(Rhoe[:,2])*dVol)
+        @printf("Final integ magn_den = %18.10f\n", sum(Rhoe[:,1] - Rhoe[:,2])*dVol)
     end
 
     if verbose && print_final_ebands
