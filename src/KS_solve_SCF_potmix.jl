@@ -13,7 +13,8 @@ function KS_solve_SCF_potmix!(
     mixdim=5,
     kT=1e-3,
     etot_conv_thr=1e-6,
-    ethr_evals_last=1e-5
+    ethr_evals_last=1e-5,
+    starting_magnetization=nothing 
 )
 
     Npoints = prod(Ham.pw.Ns)
@@ -28,6 +29,7 @@ function KS_solve_SCF_potmix!(
     Nelectrons = Ham.electrons.Nelectrons
     wk = Ham.pw.gvecw.kpoints.wk
     Nstates_occ = electrons.Nstates_occ
+    dVol = Ham.pw.CellVolume/prod(Ham.pw.Ns)
 
     #
     # Initial wave function
@@ -45,10 +47,13 @@ function KS_solve_SCF_potmix!(
 
     Rhoe = zeros(Float64,Npoints,Nspin)
     if startingrhoe == :gaussian && startingwfc == :random
-        @assert Nspin == 1
-        Rhoe[:,1] = guess_rhoe( Ham )
+        if Nspin == 1
+            Rhoe[:,1] = guess_rhoe( Ham )
+        else
+            Rhoe = guess_rhoe_atomic( Ham, starting_magnetization=starting_magnetization )
+        end
     else
-        Rhoe[:,:] = calc_rhoe( Ham, psiks )
+        Rhoe = calc_rhoe( Ham, psiks )
     end
 
     # Symmetrize Rhoe is needed
@@ -56,14 +61,20 @@ function KS_solve_SCF_potmix!(
         symmetrize_rhoe!( Ham, rhoe_symmetrizer, Rhoe )
     end
 
+    if Nspin == 2 && verbose
+        @printf("Initial integ Rhoe up  = %18.10f\n", sum(Rhoe[:,1])*dVol)
+        @printf("Initial integ Rhoe dn  = %18.10f\n", sum(Rhoe[:,2])*dVol)
+        @printf("Initial integ magn_den = %18.10f\n", sum(Rhoe[:,1] - Rhoe[:,2])*dVol)
+    end
+
     Vxc_inp = zeros(Float64, Npoints, Nspin)
     VHa_inp = zeros(Float64, Npoints)
 
     if mix_method == "broyden"
-        df_VHa = zeros(Float64, Npoints*Nspin, mixdim)
+        df_VHa = zeros(Float64, Npoints, mixdim)
         df_Vxc = zeros(Float64, Npoints*Nspin, mixdim)
         #
-        dv_VHa = zeros(Float64, Npoints*Nspin, mixdim)
+        dv_VHa = zeros(Float64, Npoints, mixdim)
         dv_Vxc = zeros(Float64, Npoints*Nspin, mixdim)
     end
 
@@ -91,6 +102,7 @@ function KS_solve_SCF_potmix!(
     diffRhoe = ones(Nspin)
     diffPot = ones(Nspin)
     Rhoe_old = zeros(Float64,Npoints,Nspin)
+    E_fermi = 0.0
 
     for iterSCF = 1:NiterMax
 
@@ -207,6 +219,17 @@ function KS_solve_SCF_potmix!(
     end
 
     Ham.electrons.ebands = evals
+
+    if use_smearing && verbose
+        @printf("\nFermi energy = %18.10f Ha = %18.10f eV\n", E_fermi, E_fermi*2*Ry2eV)
+    end
+
+    if Nspin == 2 && verbose
+        @printf("\n")
+        @printf("Final integ Rhoe up  = %18.10f\n", sum(Rhoe[:,1])*dVol)
+        @printf("Final integ Rhoe dn  = %18.10f\n", sum(Rhoe[:,2])*dVol)
+        @printf("Final integ magn_den = %18.10f\n", sum(Rhoe[:,1] - Rhoe[:,2])*dVol)
+    end
 
     if verbose && print_final_ebands
         @printf("\n")
