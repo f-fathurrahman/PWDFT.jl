@@ -25,49 +25,10 @@ structure package such as Quantum ESPRESSO, ABINIT, VASP, etc.
 
 - [Julia](https://julialang.org/downloads) version >= 0.7:
   with `FFTW` and `SpecialFunctions` packages installed.
-- [LibXC](https://gitlab.com/libxc/libxc) version >= 3.0:
-  which needs to be compiled and and installed separately.
-- [SPGLIB](https://github.com/atztogo/spglib): which needs to be compiled and installed
-  separately.
-- A working C compiler to compile LibXC and SPGLIB. Other development tools
-  such as Cmake and Make are required to compile these libraries.
 
 ## Installation
 
-### Compile and install LibXC and SPGLIB.
-
-Configure and install LibXC
-
-```bash
-cd libxc-3.0.0 # please change according to your LibXC version
-./configure --prefix=/usr/local/libxc-3.0.0 --disable-fortran --enable-shared
-make
-make install # may need root privilege
-```
-
-Configure and install SPGLIB (using Cmake)
-
-```bash
-cd spglib-master
-mkdir build
-cd build
-cmake -D CMAKE_INSTALL_PREFIX=/usr/local/spglib-1.10.4 ../
-make
-make install  # may need root privilege
-```
-
-
-### Install Julia's packages: `FFTW` and `SpecialFunctions`
-
-This can be done by executing the following commands at Julia console.
-
-```julia
-using Pkg
-Pkg.add("FFTW")
-Pkg.add("SpecialFunctions")
-```
-
-### Setup `PWDFT.jl` as Julia package
+## Setup `PWDFT.jl` as Julia package
 
 Currently, this package is not yet registered. So, `Pkg.add("PWDFT")` will not work (yet).
 
@@ -103,17 +64,12 @@ push!(LOAD_PATH, expanduser("~/.julia/dev"))
 ln -fs /path/to/PWDFT.jl $HOME/.julia/dev/PWDFT
 ```
 
-### Edit the `extlibs/extlibs.jl` file
+3. Install PWDFT.jl as local package. Firstly, get into Pkg's REPL mode by tapping `]`, and activate a independent environment `activate .` .
 
-Open the file `extlibs/extlibs.jl` (found under PWDFT.jl directory)
-using text editor. Edit the `LIBXC` and `LIBSYMSPG`
-according to your LibXC and SPGLIB installations.
-These variables should point to the appropriate dynamic libraries
-of LibXC and spglib, respectively. For example:
+Install the PWDFT.jl package in this environment:
 
-```julia
-@checked_lib LIBXC "/usr/local/libxc-3.0.0/lib/libxc.so"
-@checked_lib LIBSYMSPG "/usr/local/spglib-1.10.4/lib/libsymspg.so"
+```sh
+(PWDFT) pkg> develop <path/to/PWDFT.jl>
 ```
 
 To make sure that the package is installed correctly, you can load the package
@@ -124,11 +80,15 @@ You can do this by typing the following in the Julia console.
 using PWDFT
 ```
 
+
 Change directory to `examples/Si_fcc` and run the following in the terminal.
 
 ```
 julia run.jl
 ```
+
+The above command will calculate total energy of hydrogen atom by SCF method.
+
 
 The script will calculate total energy per unit cell of silicon crystal using
 self-consistent field iteration and direct energy minimization.
