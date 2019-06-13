@@ -203,8 +203,6 @@ function calc_Vxc_PBE( pw::PWGrid, Rhoe::Array{Float64,2} )
 
     Vg_xc = reshape(Vg_x + Vg_c, (3,Npoints))
 
-    println()
-
     h = zeros(Float64,3,Npoints)
     divh = zeros(Float64,Npoints)
 
