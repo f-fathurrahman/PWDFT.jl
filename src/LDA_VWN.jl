@@ -39,10 +39,15 @@ function calc_epsxc_VWN( Rhoe::Array{Float64,2} )
         return calc_epsxc_VWN( Rhoe[:,1] )
     end
 
-    # Do transpose manually
-    Rhoe_tmp = zeros(2,Npoints)
-    Rhoe_tmp[1,:] = Rhoe[:,1]
-    Rhoe_tmp[2,:] = Rhoe[:,2]
+    # Do the transpose manually
+    Rhoe_tmp = zeros(2*Npoints)
+    ipp = 0
+    for ip = 1:2:2*Npoints
+        ipp = ipp + 1
+        Rhoe_tmp[ip] = Rhoe[ipp,1]
+        Rhoe_tmp[ip+1] = Rhoe[ipp,2]
+    end
+
 
     eps_x = zeros(Float64,Npoints)
     eps_c = zeros(Float64,Npoints)
@@ -50,13 +55,13 @@ function calc_epsxc_VWN( Rhoe::Array{Float64,2} )
     ptr = Libxc.xc_func_alloc()
     # exchange part
     Libxc.xc_func_init(ptr, Libxc.LDA_X, Nspin)
-    Libxc.xc_lda_exc!(ptr, Npoints, Rhoe, eps_x)
+    Libxc.xc_lda_exc!(ptr, Npoints, Rhoe_tmp, eps_x)
     Libxc.xc_func_end(ptr)
 
     #
     # correlation part
     Libxc.xc_func_init(ptr, Libxc.LDA_C_VWN, Nspin)
-    Libxc.xc_lda_exc!(ptr, Npoints, Rhoe, eps_c)
+    Libxc.xc_lda_exc!(ptr, Npoints, Rhoe_tmp, eps_c)
     Libxc.xc_func_end(ptr)
 
     #
@@ -110,20 +115,24 @@ function calc_Vxc_VWN( Rhoe::Array{Float64,2} )
     V_c = zeros( Float64, 2*Npoints )
 
     # This is the transposed version of Rhoe, use copy
-    Rhoe_tmp = zeros(2,Npoints)
-    Rhoe_tmp[1,:] = Rhoe[:,1]
-    Rhoe_tmp[2,:] = Rhoe[:,2]
+    Rhoe_tmp = zeros(2*Npoints)
+    ipp = 0
+    for ip = 1:2:2*Npoints
+        ipp = ipp + 1
+        Rhoe_tmp[ip] = Rhoe[ipp,1]
+        Rhoe_tmp[ip+1] = Rhoe[ipp,2]
+    end
 
     ptr = Libxc.xc_func_alloc()
     # exchange part
     Libxc.xc_func_init(ptr, Libxc.LDA_X, Nspin)
-    Libxc.xc_lda_vxc!(ptr, Npoints, Rhoe, v_x)
+    Libxc.xc_lda_vxc!(ptr, Npoints, Rhoe_tmp, V_x)
     Libxc.xc_func_end(ptr)
 
     #
     # correlation part
     Libxc.xc_func_init(ptr, Libxc.LDA_C_VWN, Nspin)
-    Libxc.xc_lda_vxc!(ptr, Npoints, Rhoe, v_c)
+    Libxc.xc_lda_vxc!(ptr, Npoints, Rhoe_tmp, V_c)
     Libxc.xc_func_end(ptr)
 
     #
