@@ -1,3 +1,5 @@
+using Libxc
+
 function calc_epsxc_VWN( Rhoe::Array{Float64,1} )
 
     Npoints = size(Rhoe)[1]
@@ -5,36 +7,20 @@ function calc_epsxc_VWN( Rhoe::Array{Float64,1} )
     eps_x = zeros(Float64,Npoints)
     eps_c = zeros(Float64,Npoints)
 
-    ptr = ccall( (:xc_func_alloc, LIBXC), Ptr{XCFuncType}, () )
+    ptr = Libxc.xc_func_alloc()
+    # exchange part
+    Libxc.xc_func_init(ptr, Libxc.LDA_X, Nspin)
+    Libxc.xc_lda_exc!(ptr, Npoints, Rhoe, eps_x)
+    Libxc.xc_func_end(ptr)
 
     #
-    # exchange part 
-    #
-    ccall( (:xc_func_init, LIBXC), Cvoid,
-           (Ptr{XCFuncType}, Cint, Cint),
-            ptr, 1, Nspin)
-    
-    ccall( (:xc_lda_exc, LIBXC), Cvoid,
-           (Ptr{XCFuncType}, Cint, Ptr{Float64}, Ptr{Float64}),
-           ptr, Npoints, Rhoe, eps_x )
-    
-    ccall( (:xc_func_end, LIBXC), Cvoid, (Ptr{XCFuncType},), ptr )
+    # correlation part
+    Libxc.xc_func_init(ptr, Libxc.LDA_C_VWN, Nspin)
+    Libxc.xc_lda_exc!(ptr, Npoints, Rhoe, eps_c)
+    Libxc.xc_func_end(ptr)
 
     #
-    # correlation part 
-    #
-    ccall( (:xc_func_init, LIBXC), Cvoid,
-            ( Ptr{XCFuncType}, Cint, Cint),
-            ptr, 7, Nspin)
-    
-    ccall( (:xc_lda_exc, LIBXC), Cvoid,
-           (Ptr{XCFuncType}, Cint, Ptr{Float64}, Ptr{Float64}),
-           ptr, Npoints, Rhoe, eps_c )
-    
-    ccall( (:xc_func_end, LIBXC), Cvoid, (Ptr{XCFuncType},), ptr )
-
-    #
-    ccall( (:xc_func_free, LIBXC), Cvoid, (Ref{XCFuncType},), ptr )
+    Libxc.xc_func_free(ptr)
 
     return eps_x + eps_c
 
@@ -60,37 +46,21 @@ function calc_epsxc_VWN( Rhoe::Array{Float64,2} )
 
     eps_x = zeros(Float64,Npoints)
     eps_c = zeros(Float64,Npoints)
-    
-    ptr = ccall( (:xc_func_alloc, LIBXC), Ptr{XCFuncType}, () )
+
+    ptr = Libxc.xc_func_alloc()
+    # exchange part
+    Libxc.xc_func_init(ptr, Libxc.LDA_X, Nspin)
+    Libxc.xc_lda_exc!(ptr, Npoints, Rhoe, eps_x)
+    Libxc.xc_func_end(ptr)
 
     #
-    # exchange part 
-    #
-    ccall( (:xc_func_init, LIBXC), Cvoid,
-           (Ptr{XCFuncType}, Cint, Cint),
-            ptr, 1, Nspin)
-    
-    ccall( (:xc_lda_exc, LIBXC), Cvoid,
-           (Ptr{XCFuncType}, Cint, Ptr{Float64}, Ptr{Float64}),
-           ptr, Npoints, Rhoe_tmp, eps_x )
-    
-    ccall( (:xc_func_end, LIBXC), Cvoid, (Ptr{XCFuncType},), ptr )
+    # correlation part
+    Libxc.xc_func_init(ptr, Libxc.LDA_C_VWN, Nspin)
+    Libxc.xc_lda_exc!(ptr, Npoints, Rhoe, eps_c)
+    Libxc.xc_func_end(ptr)
 
     #
-    # correlation part 
-    #
-    ccall( (:xc_func_init, LIBXC), Cvoid,
-            ( Ptr{XCFuncType}, Cint, Cint),
-            ptr, 7, Nspin)
-    
-    ccall( (:xc_lda_exc, LIBXC), Cvoid,
-           (Ptr{XCFuncType}, Cint, Ptr{Float64}, Ptr{Float64}),
-           ptr, Npoints, Rhoe_tmp, eps_c )
-    
-    ccall( (:xc_func_end, LIBXC), Cvoid, (Ptr{XCFuncType},), ptr )
-
-    #
-    ccall( (:xc_func_free, LIBXC), Cvoid, (Ref{XCFuncType},), ptr )
+    Libxc.xc_func_free(ptr)
 
     return eps_x + eps_c
 end
@@ -103,36 +73,20 @@ function calc_Vxc_VWN( Rhoe::Array{Float64,1} )
     v_x = zeros(Float64,Npoints)
     v_c = zeros(Float64,Npoints)
 
-    ptr = ccall( (:xc_func_alloc, LIBXC), Ptr{XCFuncType}, () )
+    ptr = Libxc.xc_func_alloc()
+    # exchange part
+    Libxc.xc_func_init(ptr, Libxc.LDA_X, Nspin)
+    Libxc.xc_lda_vxc!(ptr, Npoints, Rhoe, v_x)
+    Libxc.xc_func_end(ptr)
 
     #
-    # exchange part 
-    #
-    ccall( (:xc_func_init, LIBXC), Cvoid,
-           (Ptr{XCFuncType}, Cint, Cint),
-            ptr, 1, Nspin)
-    
-    ccall( (:xc_lda_vxc, LIBXC), Cvoid,
-           (Ptr{XCFuncType}, Cint, Ptr{Float64}, Ptr{Float64}),
-           ptr, Npoints, Rhoe, v_x )
-    
-    ccall( (:xc_func_end, LIBXC), Cvoid, (Ptr{XCFuncType},), ptr )
+    # correlation part
+    Libxc.xc_func_init(ptr, Libxc.LDA_C_VWN, Nspin)
+    Libxc.xc_lda_vxc!(ptr, Npoints, Rhoe, v_c)
+    Libxc.xc_func_end(ptr)
 
     #
-    # correlation part 
-    #
-    ccall( (:xc_func_init, LIBXC), Cvoid,
-            ( Ptr{XCFuncType}, Cint, Cint),
-            ptr, 7, Nspin)
-    
-    ccall( (:xc_lda_vxc, LIBXC), Cvoid,
-           (Ptr{XCFuncType}, Cint, Ptr{Float64}, Ptr{Float64}),
-           ptr, Npoints, Rhoe, v_c )
-    
-    ccall( (:xc_func_end, LIBXC), Cvoid, (Ptr{XCFuncType},), ptr )
-
-    #
-    ccall( (:xc_func_free, LIBXC), Cvoid, (Ref{XCFuncType},), ptr )
+    Libxc.xc_func_free(ptr)
 
     return v_x + v_c
 
@@ -154,43 +108,26 @@ function calc_Vxc_VWN( Rhoe::Array{Float64,2} )
     Vxc = zeros( Float64, Npoints, 2 )
     V_x = zeros( Float64, 2*Npoints )
     V_c = zeros( Float64, 2*Npoints )
-    
+
     # This is the transposed version of Rhoe, use copy
     Rhoe_tmp = zeros(2,Npoints)
     Rhoe_tmp[1,:] = Rhoe[:,1]
     Rhoe_tmp[2,:] = Rhoe[:,2]
-    
-    ptr = ccall( (:xc_func_alloc, LIBXC), Ptr{XCFuncType}, () )
+
+    ptr = Libxc.xc_func_alloc()
+    # exchange part
+    Libxc.xc_func_init(ptr, Libxc.LDA_X, Nspin)
+    Libxc.xc_lda_vxc!(ptr, Npoints, Rhoe, v_x)
+    Libxc.xc_func_end(ptr)
 
     #
-    # exchange part 
-    #
-    ccall( (:xc_func_init, LIBXC), Cvoid,
-           (Ptr{XCFuncType}, Cint, Cint),
-            ptr, 1, Nspin)
-
-    ccall( (:xc_lda_vxc, LIBXC), Cvoid,
-           (Ptr{XCFuncType}, Cint, Ptr{Float64}, Ptr{Float64}),
-           ptr, Npoints, Rhoe_tmp, V_x )
-
-    ccall( (:xc_func_end, LIBXC), Cvoid, (Ptr{XCFuncType},), ptr )
+    # correlation part
+    Libxc.xc_func_init(ptr, Libxc.LDA_C_VWN, Nspin)
+    Libxc.xc_lda_vxc!(ptr, Npoints, Rhoe, v_c)
+    Libxc.xc_func_end(ptr)
 
     #
-    # correlation part 
-    #
-    ccall( (:xc_func_init, LIBXC), Cvoid,
-           ( Ptr{XCFuncType}, Cint, Cint),
-           ptr, 7, Nspin)
-
-    ccall( (:xc_lda_vxc, LIBXC), Cvoid,
-           (Ptr{XCFuncType}, Cint, Ptr{Float64}, Ptr{Float64}),
-           ptr, Npoints, Rhoe_tmp, V_c )
-
-    ccall( (:xc_func_end, LIBXC), Cvoid, (Ptr{XCFuncType},), ptr )
-
-    #
-    ccall( (:xc_func_free, LIBXC), Cvoid, (Ref{XCFuncType},), ptr )
-
+    Libxc.xc_func_free(ptr)
 
     ipp = 0
     for ip = 1:2:2*Npoints
@@ -200,4 +137,3 @@ function calc_Vxc_VWN( Rhoe::Array{Float64,2} )
     end
     return Vxc
 end
-

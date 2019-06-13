@@ -5,10 +5,6 @@ using LinearAlgebra
 using Random
 using FFTW
 
-# Load library dependencies
-# NOTE: This file must be edited manually
-include("../extlibs/extlibs.jl") 
-
 # constants
 #
 # CODATA: https://physics.nist.gov/cgi-bin/cuu/Value?rydhcev
@@ -125,10 +121,10 @@ export calc_PspCore_ene
 include("calc_E_NN.jl")
 export calc_E_NN
 
-mutable struct XCFuncType
-end
-
-export XCFuncType
+# mutable struct XCFuncType
+# end
+#
+# export XCFuncType
 
 include("LDA_VWN.jl")
 export calc_epsxc_VWN, calc_Vxc_VWN
