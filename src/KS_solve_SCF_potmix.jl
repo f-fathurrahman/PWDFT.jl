@@ -12,6 +12,8 @@ function KS_solve_SCF_potmix!(
     mix_method="simple",
     mixdim=5,
     kT=1e-3,
+    update_psi="LOBPCG",
+    cheby_degree=8,
     etot_conv_thr=1e-6,
     ethr_evals_last=1e-5,
     starting_magnetization=nothing 
@@ -87,22 +89,27 @@ function KS_solve_SCF_potmix!(
 
     Etot_old = 0.0
 
-    CONVERGED = 0
-
-    @printf("\n")
-    @printf("SCF iteration starts (with potential mixing)\n")
-    @printf("betamix     = %f\n", betamix)
-    @printf("mix_method  = %s\n", mix_method)
-    if mix_method == "broyden"
-        @printf("mixdim      = %d\n", mixdim)
-    end
-    @printf("\n")
+    Nconverges = 0
 
     ethr = 0.1
     diffRhoe = ones(Nspin)
     diffPot = ones(Nspin)
     Rhoe_old = zeros(Float64,Npoints,Nspin)
     E_fermi = 0.0
+
+    @printf("\n")
+    @printf("Self-consistent iteration begins ...\n")
+    @printf("update_psi = %s\n", update_psi)
+    @printf("\n")
+    @printf("mix_method = %s\n", mix_method)
+    if mix_method in ("rpulay", "anderson", "ppulay")
+        @printf("mixdim = %d\n", mixdim)
+    end
+    @printf("Potential mixing with betamix = %10.5f\n", betamix)
+    if use_smearing
+        @printf("Smearing = %f\n", kT)
+    end
+    println("") # blank line before SCF iteration info
 
     for iterSCF = 1:NiterMax
 
@@ -114,20 +121,35 @@ function KS_solve_SCF_potmix!(
         else
             ethr = ethr/5.0
             ethr = max( ethr, ethr_evals_last )
-        end        
-        
-        #evals = diag_LOBPCG!( Ham, psiks )
-        evals =
-        diag_LOBPCG!( Ham, psiks, verbose=false, verbose_last=false, tol=ethr,
-                      Nstates_conv=Nstates_occ )
-        #evals =
-        #diag_Emin_PCG!( Ham, psiks, verbose=false, verbose_last=false, tol=ethr,
-        #              Nstates_conv=Nstates_occ )
-        #evals =
-        #diag_davidson!( Ham, psiks, verbose=false, verbose_last=false, tol=ethr,
-        #               Nstates_conv=Nstates_occ )
+        end
 
 
+        if update_psi == "LOBPCG"
+
+            evals =
+            diag_LOBPCG!( Ham, psiks, verbose=false, verbose_last=false, tol=ethr,
+                          Nstates_conv=Nstates_occ )
+
+        elseif update_psi == "davidson"
+
+            evals =
+            diag_davidson!( Ham, psiks, verbose=false, verbose_last=false, tol=ethr,
+                            Nstates_conv=Nstates_occ )                
+
+        elseif update_psi == "PCG"
+
+            evals =
+            diag_Emin_PCG!( Ham, psiks, verbose=false, verbose_last=false, tol=ethr,
+                            Nstates_conv=Nstates_occ )
+
+        elseif update_psi == "CheFSI"
+
+            evals =
+            diag_CheFSI!( Ham, psiks, cheby_degree )
+
+        else
+            error( @sprintf("Unknown method for update_psi = %s\n", update_psi) )
+        end
 
 
         if use_smearing
@@ -173,12 +195,12 @@ function KS_solve_SCF_potmix!(
         end
 
         if diffEtot < etot_conv_thr
-            CONVERGED = CONVERGED + 1
-        else  # reset CONVERGED
-            CONVERGED = 0
+            Nconverges = Nconverges + 1
+        else  # reset Nconverges
+            Nconverges = 0
         end
 
-        if CONVERGED >= 2
+        if Nconverges >= 2
             @printf("SCF is converged in %d iterations\n", iterSCF)
             break
         end
@@ -214,7 +236,7 @@ function KS_solve_SCF_potmix!(
         flush(stdout)
     end
 
-    if CONVERGED < 2
+    if Nconverges < 2
         @printf("WARNING: SCF is not converged after %d iterations\n", NiterMax)
     end
 
