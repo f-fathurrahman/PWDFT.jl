@@ -2,26 +2,28 @@
 Solves Kohn-Sham problem using traditional self-consistent field (SCF)
 iterations with density mixing.
 """
-function KS_solve_SCF!( Ham::Hamiltonian ;
-                        startingwfc=:random, savewfc=false,
-                        startingrhoe=:gaussian,
-                        betamix=0.2,
-                        NiterMax=100,
-                        verbose=true,
-                        print_final_ebands=false,
-                        print_final_energies=true,
-                        print_integ_rhoe=false,
-                        check_rhoe=false,
-                        use_smearing=false,
-                        kT=1e-3,
-                        update_psi="LOBPCG",
-                        cheby_degree=8,
-                        mix_method="simple",
-                        mixdim=5,
-                        print_e_gap=false,
-                        etot_conv_thr=1e-6,
-                        ethr_evals_last=1e-5,
-                        starting_magnetization=nothing )
+function KS_solve_SCF!(
+    Ham::Hamiltonian ;
+    startingwfc=:random, savewfc=false,
+    startingrhoe=:gaussian,
+    betamix=0.2,
+    NiterMax=100,
+    verbose=true,
+    print_final_ebands=false,
+    print_final_energies=true,
+    print_integ_rhoe=false,
+    check_rhoe=false,
+    use_smearing=false,
+    kT=1e-3,
+    update_psi="LOBPCG",
+    cheby_degree=8,
+    mix_method="simple",
+    mixdim=5,
+    print_e_gap=false,
+    etot_conv_thr=1e-6,
+    ethr_evals_last=1e-5,
+    starting_magnetization=nothing
+)
 
     pw = Ham.pw
     Ngw = pw.gvecw.Ngw
@@ -110,7 +112,7 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
 
     ethr = 0.1
     
-    if mix_method == "anderson"
+    if mix_method in ("anderson", "broyden")
         df = zeros(Float64,Npoints*Nspin, mixdim)
         dv = zeros(Float64,Npoints*Nspin, mixdim)
     
@@ -214,9 +216,12 @@ function KS_solve_SCF!( Ham::Hamiltonian ;
         end
 
         if mix_method == "simple"
-            for ispin = 1:Nspin
-                Rhoe[:,ispin] = betamix*Rhoe_new[:,ispin] + (1-betamix)*Rhoe[:,ispin]
-            end
+
+            Rhoe = betamix*Rhoe_new + (1-betamix)*Rhoe
+
+        elseif mix_method == "broyden"
+
+            mix_broyden!( Rhoe_new, Rhoe, betamix, iter, mixdim, df, dv )
 
         elseif mix_method == "pulay"
         
