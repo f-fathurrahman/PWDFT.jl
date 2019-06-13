@@ -48,16 +48,22 @@ function calc_epsxc_PBE( pw::PWGrid, Rhoe::Array{Float64,2} )
     # calculate gRhoe2
     gRhoe_up = op_nabla( pw, Rhoe[:,1] )
     gRhoe_dn = op_nabla( pw, Rhoe[:,2] )
-    gRhoe2 = zeros( Float64, 3, Npoints )
-    for ip = 1:Npoints
-        gRhoe2[1,ip] = dot( gRhoe_up[:,ip], gRhoe_up[:,ip] )
-        gRhoe2[2,ip] = dot( gRhoe_up[:,ip], gRhoe_dn[:,ip] )
-        gRhoe2[3,ip] = dot( gRhoe_dn[:,ip], gRhoe_dn[:,ip] )
+    gRhoe2 = zeros( Float64, 3*Npoints )
+    ipp = 0
+    for ip = 1:3:3*Npoints
+        ipp = ipp + 1
+        gRhoe2[ip]   = dot( gRhoe_up[:,ipp], gRhoe_up[:,ipp] )
+        gRhoe2[ip+1] = dot( gRhoe_up[:,ipp], gRhoe_dn[:,ipp] )
+        gRhoe2[ip+2] = dot( gRhoe_dn[:,ipp], gRhoe_dn[:,ipp] )
     end
 
-    Rhoe_tmp = zeros(2,Npoints)
-    Rhoe_tmp[1,:] = Rhoe[:,1]
-    Rhoe_tmp[2,:] = Rhoe[:,2]
+    Rhoe_tmp = zeros(2*Npoints)
+    ipp = 0
+    for ip = 1:2:2*Npoints
+        ipp = ipp + 1
+        Rhoe_tmp[ip] = Rhoe[ipp,1]
+        Rhoe_tmp[ip+1] = Rhoe[ipp,2]
+    end
 
     eps_x = zeros(Float64,Npoints)
     eps_c = zeros(Float64,Npoints)
@@ -65,13 +71,13 @@ function calc_epsxc_PBE( pw::PWGrid, Rhoe::Array{Float64,2} )
     ptr = Libxc.xc_func_alloc()
     # exchange part
     Libxc.xc_func_init(ptr, Libxc.GGA_X_PBE, Nspin)
-    Libxc.xc_gga_exc!(ptr, Npoints, Rhoe, gRhoe2, eps_x)
+    Libxc.xc_gga_exc!(ptr, Npoints, Rhoe_tmp, gRhoe2, eps_x)
     Libxc.xc_func_end(ptr)
 
     #
     # correlation part
     Libxc.xc_func_init(ptr, Libxc.GGA_C_PBE, Nspin)
-    Libxc.xc_lda_exc!(ptr, Npoints, Rhoe, gRhoe2, eps_c)
+    Libxc.xc_gga_exc!(ptr, Npoints, Rhoe_tmp, gRhoe2, eps_c)
     Libxc.xc_func_end(ptr)
 
     #
@@ -149,12 +155,14 @@ function calc_Vxc_PBE( pw::PWGrid, Rhoe::Array{Float64,2} )
     # calculate gRhoe2
     gRhoe_up = op_nabla( pw, Rhoe[:,1] ) # gRhoe = ∇⋅Rhoe
     gRhoe_dn = op_nabla( pw, Rhoe[:,2] )
-
-    gRhoe2 = zeros( Float64, 3, Npoints )
-    for ip = 1:Npoints
-        gRhoe2[1,ip] = dot( gRhoe_up[:,ip], gRhoe_up[:,ip] )
-        gRhoe2[2,ip] = dot( gRhoe_up[:,ip], gRhoe_dn[:,ip] )
-        gRhoe2[3,ip] = dot( gRhoe_dn[:,ip], gRhoe_dn[:,ip] )
+    #
+    gRhoe2 = zeros( Float64, 3*Npoints )
+    ipp = 0
+    for ip = 1:3:3*Npoints
+        ipp = ipp + 1
+        gRhoe2[ip]   = dot( gRhoe_up[:,ipp], gRhoe_up[:,ipp] )
+        gRhoe2[ip+1] = dot( gRhoe_up[:,ipp], gRhoe_dn[:,ipp] )
+        gRhoe2[ip+2] = dot( gRhoe_dn[:,ipp], gRhoe_dn[:,ipp] )
     end
 
     V_xc = zeros(Float64, Npoints, 2)
@@ -162,23 +170,28 @@ function calc_Vxc_PBE( pw::PWGrid, Rhoe::Array{Float64,2} )
     V_c  = zeros(Float64, Npoints*2)
 
     Vg_xc = zeros(Float64, 3, Npoints)
-    Vg_x  = zeros(Float64, 3, Npoints)
-    Vg_c  = zeros(Float64, 3, Npoints)
+    Vg_x  = zeros(Float64, 3*Npoints)
+    Vg_c  = zeros(Float64, 3*Npoints)
 
-    Rhoe_tmp = zeros(2,Npoints)
-    Rhoe_tmp[1,:] = Rhoe[:,1]
-    Rhoe_tmp[2,:] = Rhoe[:,2]
+    Rhoe_tmp = zeros(2*Npoints)
+    ipp = 0
+    for ip = 1:2:2*Npoints
+        ipp = ipp + 1
+        Rhoe_tmp[ip] = Rhoe[ipp,1]
+        Rhoe_tmp[ip+1] = Rhoe[ipp,2]
+    end
+
 
     ptr = Libxc.xc_func_alloc()
     # exchange part
     Libxc.xc_func_init(ptr, Libxc.GGA_X_PBE, Nspin)
-    Libxc.xc_gga_vxc!(ptr, Npoints, Rhoe, gRhoe2, V_x, Vg_x)
+    Libxc.xc_gga_vxc!(ptr, Npoints, Rhoe_tmp, gRhoe2, V_x, Vg_x)
     Libxc.xc_func_end(ptr)
 
     #
     # correlation part
     Libxc.xc_func_init(ptr, Libxc.GGA_C_PBE, Nspin)
-    Libxc.xc_gga_vxc!(ptr, Npoints, Rhoe, gRhoe2, V_c, Vg_c)
+    Libxc.xc_gga_vxc!(ptr, Npoints, Rhoe_tmp, gRhoe2, V_c, Vg_c)
     Libxc.xc_func_end(ptr)
 
     ipp = 0
@@ -188,7 +201,9 @@ function calc_Vxc_PBE( pw::PWGrid, Rhoe::Array{Float64,2} )
         V_xc[ipp,2] = V_x[ip+1] + V_c[ip+1]
     end
 
-    Vg_xc = Vg_x + Vg_c
+    Vg_xc = reshape(Vg_x + Vg_c, (3,Npoints))
+
+    println()
 
     h = zeros(Float64,3,Npoints)
     divh = zeros(Float64,Npoints)
