@@ -2,10 +2,6 @@ function write_abinit( Ham::Hamiltonian;
                        prefix_dir="./",
                        use_smearing=false, kT=0.001, etot_conv_thr=1e-6 )
 
-    #TODO: Check if prefix is exist or not
-    #TODO: If prefix is exist, check if it is directory or not
-    #TODO: Create prefix if it is
-
     pw = Ham.pw
     atoms = Ham.atoms
     electrons = Ham.electrons
@@ -15,6 +11,10 @@ function write_abinit( Ham::Hamiltonian;
     Natoms = atoms.Natoms
     atm2species = atoms.atm2species
     atpos = atoms.positions
+
+    if !Base.Filesystem.isdir(prefix_dir)
+        Base.Filesystem.mkdir(prefix_dir)
+    end
 
     f = open( prefix_dir*"/FILES", "w" )
 

@@ -75,6 +75,10 @@ function write_pwscf( Ham::Hamiltonian; filename="PWINPUT",
 
     ecutwfc = pw.ecutwfc
 
+    if !Base.Filesystem.isdir(prefix_dir)
+        Base.Filesystem.mkdir(prefix_dir)
+    end
+
     f = open( joinpath(prefix_dir, filename), "w")
 
     @printf(f, "&CONTROL\n")
