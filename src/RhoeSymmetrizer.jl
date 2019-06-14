@@ -13,7 +13,13 @@ function RhoeSymmetrizer( atoms::Atoms, pw::PWGrid, sym_info::SymmetryInfo )
     LatVecs = atoms.LatVecs
     G = pw.gvec.G
 
-    sym_gshell = Array{Int64,2}(undef,3,48)
+    Nsyms = sym_info.Nsyms
+    s = sym_info.s
+    inv_s = sym_info.inv_s
+    ft = sym_info.ft
+    non_symmorphic = sym_info.non_symmorphic
+
+    sym_gshell = Array{Int64,2}(undef,3,Nsyms)
     G_crystal = zeros(Int64,3,pw.gvec.Ng)
     is_done = zeros(Bool,pw.gvec.Ng)
     shell_G_sym = Array{Array{Int64,1},1}(undef,pw.gvec.Ng)
@@ -24,12 +30,6 @@ function RhoeSymmetrizer( atoms::Atoms, pw::PWGrid, sym_info::SymmetryInfo )
             G_crystal[ii,ig] = round(Int64,xx)
         end
     end
-
-    Nsyms = sym_info.Nsyms
-    s = sym_info.s
-    inv_s = sym_info.inv_s
-    ft = sym_info.ft
-    non_symmorphic = sym_info.non_symmorphic
 
     Ngs = 0
     sn = zeros(Int64,3)
@@ -56,8 +56,8 @@ function RhoeSymmetrizer( atoms::Atoms, pw::PWGrid, sym_info::SymmetryInfo )
             end
             if !found
                 ng = ng + 1
-                if( ng > 48)
-                    error("This should not happen: ng > 48")
+                if( ng > Nsyms)
+                    error("This should not happen: ng > Nsyms")
                 end
                 for ii = 1:3
                     sym_gshell[ii,ng] = sn[ii]
@@ -129,10 +129,10 @@ function symmetrize_rhoe!( Ham::Hamiltonian, rhoe_symmetrizer::RhoeSymmetrizer, 
     end
 
     sg = zeros(Float64,3)
-    irot = zeros(Int64,48)
+    irot = zeros(Int64,Nsyms)
 
-    g0 = zeros(3,48)
-    is_done_shell = zeros(Bool,48)
+    g0 = zeros(3,Nsyms)
+    is_done_shell = zeros(Bool,Nsyms)
 
     trmat = LatVecs'/(2*pi)
 
