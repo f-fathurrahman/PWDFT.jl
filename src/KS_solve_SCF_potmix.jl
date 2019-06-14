@@ -1,3 +1,7 @@
+"""
+Solves Kohn-Sham problem using traditional self-consistent field (SCF)
+iterations with potential mixing.
+"""
 function KS_solve_SCF_potmix!(
     Ham::Hamiltonian;
     NiterMax=150,
@@ -100,9 +104,8 @@ function KS_solve_SCF_potmix!(
     @printf("\n")
     @printf("Self-consistent iteration begins ...\n")
     @printf("update_psi = %s\n", update_psi)
-    @printf("\n")
     @printf("mix_method = %s\n", mix_method)
-    if mix_method in ("rpulay", "anderson", "ppulay")
+    if mix_method in ("rpulay", "anderson", "ppulay", "broyden")
         @printf("mixdim = %d\n", mixdim)
     end
     @printf("Potential mixing with betamix = %10.5f\n", betamix)

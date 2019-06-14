@@ -4,7 +4,8 @@ iterations with density mixing.
 """
 function KS_solve_SCF!(
     Ham::Hamiltonian ;
-    startingwfc=:random, savewfc=false,
+    startingwfc=:random,
+    savewfc=false,
     startingrhoe=:gaussian,
     betamix=0.2,
     NiterMax=100,
@@ -127,9 +128,8 @@ function KS_solve_SCF!(
     @printf("\n")
     @printf("Self-consistent iteration begins ...\n")
     @printf("update_psi = %s\n", update_psi)
-    @printf("\n")
     @printf("mix_method = %s\n", mix_method)
-    if mix_method in ("rpulay", "anderson", "ppulay")
+    if mix_method in ("rpulay", "anderson", "ppulay", "broyden")
         @printf("mixdim = %d\n", mixdim)
     end
     @printf("Density mixing with betamix = %10.5f\n", betamix)
