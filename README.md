@@ -47,8 +47,6 @@ Many thanks to @unkcpz for providing `Libxc` and `LibSymspg`.
 
 ## Installation
 
-## Setup `PWDFT.jl` as Julia package
-
 Currently, this package is not yet registered. So, `Pkg.add("PWDFT")` will not work (yet).
 
 We have several alternatives:
@@ -83,7 +81,8 @@ push!(LOAD_PATH, expanduser("~/.julia/dev"))
 ln -fs /path/to/PWDFT.jl $HOME/.julia/dev/PWDFT
 ```
 
-3. Install PWDFT.jl as local package. Firstly, get into Pkg's REPL mode by tapping `]`, and activate a independent environment `activate .` .
+3. Install PWDFT.jl as local package. Firstly, get into Pkg's REPL mode by tapping `]`,
+and activate a independent environment `activate .` .
 
 Install the PWDFT.jl package in this environment:
 
