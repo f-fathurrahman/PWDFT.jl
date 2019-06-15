@@ -1,6 +1,6 @@
 name = "PWDFT"
 uuid = "f0909338-8605-11e9-2ba7-5dc928b678ea"
-authors = [""]
+authors = ["Fadjar Fathurrahman"]
 version = "0.1.0"
 
 [deps]
