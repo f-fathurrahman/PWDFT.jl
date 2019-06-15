@@ -23,8 +23,27 @@ structure package such as Quantum ESPRESSO, ABINIT, VASP, etc.
 
 ## Requirements
 
-- [Julia](https://julialang.org/downloads) version >= 0.7:
-  with `FFTW` and `SpecialFunctions` packages installed.
+- [Julia](https://julialang.org/downloads) version >= 0.7,
+  with the following packages installed:
+  - `FFTW`
+  - `SpecialFunctions`
+  - `Libxc` (a wrapper to [LibXC](https://gitlab.com/libxc/libxc))
+  - `LibSymspg` (a wrapper to [symspg](https://github.com/atztogo/spglib))
+
+These packages are registered so they can be installed by using Julia's package manager.
+
+```julia
+using Pkg
+Pkg.add("FFTW")
+Pkg.add("SpecialFunctions")
+Pkg.add("Libxc")
+Pkg.add("LibSymspg")
+```
+
+These packages should be automatically installed `PWDFT.jl` is installed as
+local package (see below).
+
+Many thanks to @unkcpz for providing `Libxc` and `LibSymspg`.
 
 ## Installation
 
@@ -32,7 +51,7 @@ structure package such as Quantum ESPRESSO, ABINIT, VASP, etc.
 
 Currently, this package is not yet registered. So, `Pkg.add("PWDFT")` will not work (yet).
 
-We have two alternatives:
+We have several alternatives:
 
 1. Using Julia's package manager to install directly from the repository URL:
 
