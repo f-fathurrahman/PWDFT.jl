@@ -1,19 +1,34 @@
 using DelimitedFiles
 import LightXML
+using Printf
 
-function parse_upf(upf_file)
+struct PsPot_UPF
+    Nr::Int64
+    r::Array{Float64,1}
+    rab::Array{Float64,1}
+    V_local::Array{Float64,1}
+    Nproj::Int64
+    proj_l::Array{Int64,1}
+    rcut_l::Array{Float64,1}
+    proj_func::Array{Float64,2}
+    Dij::Array{Float64,2}
+end
+
+function PsPot_UPF( upf_file::String )
     
     xdoc = LightXML.parse_file(upf_file)
 
     # get the root element
     xroot = LightXML.root(xdoc)  # an instance of XMLElement
     
-    pp_mesh = LightXML.get_elements_by_tagname(xroot, "PP_MESH")
-
     pp_header = LightXML.get_elements_by_tagname(xroot, "PP_HEADER")
 
+    atsymb = LightXML.attributes_dict(pp_header[1])["element"]
+    zval = parse( Int64, LightXML.attributes_dict(pp_header[1])["z_valence"] )
+
+    pp_mesh = LightXML.get_elements_by_tagname(xroot, "PP_MESH")
+
     Nr = parse(Int64,LightXML.attributes_dict(pp_mesh[1])["mesh"])
-    println("Nr = ", Nr)
     
     pp_r = LightXML.get_elements_by_tagname(pp_mesh[1], "PP_R")
     pp_r_str = LightXML.content(pp_r[1])
@@ -53,13 +68,19 @@ function parse_upf(upf_file)
     end
 
     Nproj = parse(Int64,LightXML.attributes_dict(pp_header[1])["number_of_proj"])
-    println("Nproj = ", Nproj)
 
     pp_nonlocal = LightXML.get_elements_by_tagname(xroot, "PP_NONLOCAL")
 
     proj_func = zeros(Float64,Nr,Nproj)
+    proj_l = zeros(Int64,Nproj)
+    rcut_l = zeros(Float64,Nproj)
+
     for iprj = 1:Nproj
         pp_beta = LightXML.get_elements_by_tagname(pp_nonlocal[1], "PP_BETA."*string(iprj))
+        #
+        proj_l[iprj] = parse( Int64, LightXML.attributes_dict(pp_beta[1])["angular_momentum"] )
+        rcut_l[iprj] = parse( Float64, LightXML.attributes_dict(pp_beta[1])["cutoff_radius"] )
+        #
         pp_beta_str = LightXML.content(pp_beta[1])
         pp_beta_str = replace(pp_beta_str, "\n" => " ")
         spl_str = split(pp_beta_str, keepempty=false)
@@ -79,14 +100,20 @@ function parse_upf(upf_file)
     for i = 1:Nproj*Nproj
         Dij_temp[i] = parse(Float64,spl_str[i])
     end
-    Dij = reshape(Dij_temp,(Nproj,Nproj))*2
+    Dij = reshape(Dij_temp,(Nproj,Nproj))*2  # convert to Hartree
 
-    display(Dij)
+    return PsPot_UPF(Nr, r, rab, V_local, Nproj, proj_l, rcut_l, proj_func, Dij)
+end
+
+
+import Base: println
+function println(psp::PsPot_UPF)
+    @printf("Nr = %d\n", psp.Nr)
+    for i = 1:psp.Nproj
+        @printf("l=%d rcut=%f\n", psp.proj_l[i], psp.rcut_l[i])
+    end
+    display(psp.Dij)
     println()
-
-    println("Pass here")
-
-    return
 end
 
 using PGFPlotsX
@@ -113,24 +140,12 @@ function plot_func_radial(r, fr, plotfile::String)
 end
 
 
-function parse_gpaw_data(gpaw_data)
-    xdoc = LightXML.parse_file(gpaw_data)
-    # get the root element
-    xroot = LightXML.root(xdoc)  # an instance of XMLElement
-    radial_grid = LightXML.get_elements_by_tagname(xroot, "radial_grid");
-    #pp_r_str = content(get_elements_by_tagname(pp_mesh[1], "PP_R")[1]);
-    #r = readdlm(IOBuffer(pp_r_str))
+function test_main()
+    psp = PsPot_UPF("Pt.pz-hgh.UPF")
+    println(psp)
+    
+    psp = PsPot_UPF("Si.pz-hgh.UPF")
+    println(psp)
 end
 
-#@code_native traverse_upf("Ni.pbe-nd-rrkjus.UPF")
-#traverse_upf("Ni.pbe-nd-rrkjus.UPF")
-#@time traverse_upf("Ni.PBE")
-@time parse_upf("Ni.pbesol-n-kjpaw_psl.0.1.UPF")
-
-@time parse_upf("Pt.pz-hgh.UPF")
-
-#traverse_upf("Si.pz-hgh.UPF")
-
-#parse_upf("Si.pz-hgh.UPF")
-#parse_upf("Ni.pbe-nd-rrkjus.UPF")
-
+test_main()
