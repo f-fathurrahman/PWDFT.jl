@@ -204,7 +204,7 @@ include("gen_wavefunc.jl")
 export rand_Wavefunc, rand_BlochWavefunc, zeros_BlochWavefunc
 
 include("guess_rhoe.jl")
-export guess_rhoe
+export guess_rhoe, guess_rhoe_atomic
 
 include("RhoeSymmetrizer.jl")
 export RhoeSymmetrizer,
