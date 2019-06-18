@@ -131,3 +131,18 @@ function create_Ham_GaAs_v2()
     ecutwfc = 15.0
     return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3] )
 end
+
+function create_Ham_Fe_bcc()
+    
+    atoms = Atoms(xyz_string_frac=
+        """
+        1
+
+        Fe  0.0  0.0  0.0
+        """, in_bohr=true, LatVecs=gen_lattice_bcc(2.856*ANG2BOHR))
+
+    pspfiles = [joinpath(DIR_PSP, "Fe-q8.gth")]
+    ecutwfc = 15.0
+    return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3],
+                        Nspin=2, extra_states=4 )
+end

@@ -16,20 +16,23 @@ include("KS_solve_SCF_potmix_v2.jl")
 function test_main()
 
     #Ham = create_Ham_H2()
-    #Ham = create_Ham_Si_fcc()
+    Ham = create_Ham_Si_fcc()
     #Ham = create_Ham_Si_fcc(xcfunc="PBE")
     #Ham = create_Ham_GaAs_v1()
     #Ham = create_Ham_GaAs_v2()
     #Ham = create_Ham_CO()
     
-    Ham = create_Ham_N2()
+    #Ham = create_Ham_N2()
     #Ham = create_Ham_NH3()
 
     #Random.seed!(1234)
     #@time KS_solve_SCF_rhomix_v2!(Ham, mix_method="broyden", betamix=0.5, mixdim=8)
 
     Random.seed!(1234)
-    @time KS_solve_SCF_potmix_v2!(Ham, mix_method="simple", betamix=0.5, etot_conv_thr=1e-6)
+    @time KS_solve_SCF_potmix!(Ham, mix_method="broyden", betamix=0.5, etot_conv_thr=1e-6)
+
+    #Random.seed!(1234)
+    #@time KS_solve_SCF!(Ham, mix_method="broyden", betamix=0.5, etot_conv_thr=1e-6)
 
     #Random.seed!(1234)
     #@time KS_solve_Emin_PCG!(Ham)
