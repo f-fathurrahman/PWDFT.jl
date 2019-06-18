@@ -95,10 +95,17 @@ function KS_solve_SCF!(
         symmetrize_rhoe!( Ham, rhoe_symmetrizer, Rhoe )
     end
 
+    if Nspin == 2
+        magn_den = zeros(Npoints)
+        for ip in 1:Npoints
+            magn_den[ip] = Rhoe[ip,1] - Rhoe[ip,2]
+        end
+    end
+
     if Nspin == 2 && verbose
         @printf("Initial integ Rhoe up  = %18.10f\n", sum(Rhoe[:,1])*dVol)
         @printf("Initial integ Rhoe dn  = %18.10f\n", sum(Rhoe[:,2])*dVol)
-        @printf("Initial integ magn_den = %18.10f\n", sum(Rhoe[:,1] - Rhoe[:,2])*dVol)
+        @printf("Initial integ magn_den = %18.10f\n", sum(magn_den)*dVol)
     end
 
     update!(Ham, Rhoe)
@@ -229,19 +236,11 @@ function KS_solve_SCF!(
                 reshape(Rhoe,(Npoints*Nspin)),
                 reshape(Rhoe_new,(Npoints*Nspin)), betamix, XX, FF, iter, mixdim, x_old, f_old
                 ), (Npoints,Nspin) )
-            
-            if Nspin == 2
-                magn_den = Rhoe[:,1] - Rhoe[:,2]
-            end
 
         elseif mix_method == "rpulay"
             
             mix_rpulay!( Rhoe, Rhoe_new, betamix, XX, FF, iter, mixdim, x_old, f_old )
             # result is in Rhoe
-            
-            if Nspin == 2
-                magn_den = Rhoe[:,1] - Rhoe[:,2]
-            end
 
         elseif mix_method == "ppulay"
         
@@ -249,10 +248,6 @@ function KS_solve_SCF!(
                 reshape(Rhoe,(Npoints*Nspin)),
                 reshape(Rhoe_new,(Npoints*Nspin)), betamix, XX, FF, iter, mixdim, 3, x_old, f_old
                 ), (Npoints,Nspin) )
-            
-            if Nspin == 2
-                magn_den = Rhoe[:,1] - Rhoe[:,2]
-            end
         
         elseif mix_method == "anderson"
             Rhoe[:,:] = mix_anderson!( Nspin, Rhoe, Rhoe_new, betamix, df, dv, iter, mixdim )
@@ -266,6 +261,10 @@ function KS_solve_SCF!(
             if rho < eps()
                 rho = 0.0
             end
+        end
+
+        if Nspin == 2
+            magn_den = Rhoe[:,1] - Rhoe[:,2]
         end
 
         # renormalize
@@ -334,7 +333,7 @@ function KS_solve_SCF!(
         @printf("\n")
         @printf("Final integ Rhoe up  = %18.10f\n", sum(Rhoe[:,1])*dVol)
         @printf("Final integ Rhoe dn  = %18.10f\n", sum(Rhoe[:,2])*dVol)
-        @printf("Final integ magn_den = %18.10f\n", sum(Rhoe[:,1] - Rhoe[:,2])*dVol)
+        @printf("Final integ magn_den = %18.10f\n", sum(magn_den)*dVol)
     end
 
     if verbose && print_final_ebands
