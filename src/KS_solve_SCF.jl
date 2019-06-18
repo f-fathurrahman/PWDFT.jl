@@ -288,13 +288,13 @@ function KS_solve_SCF!(
 
         if verbose
             if Nspin == 1
-                @printf("SCF: %8d %18.10f %18.10e %18.10e\n",
+                @printf("SCF: %8d %18.10f %12.5e %12.5e\n",
                          iter, Etot, diffE, diffRhoe[1] )
                 if print_integ_rhoe
                     @printf("integ Rhoe = %18.10f\n", sum(Rhoe)*dVol)
                 end
             else
-                @printf("SCF: %8d %18.10f %18.10e %18.10e %18.10e\n",
+                @printf("SCF: %8d %18.10f %12.5e [%12.5e,%12.5e]\n",
                          iter, Etot, diffE, diffRhoe[1], diffRhoe[2] )
                 if print_integ_rhoe
                     magn_den = Rhoe[:,1] - Rhoe[:,2]
@@ -313,7 +313,7 @@ function KS_solve_SCF!(
 
         if Nconverges >= 2
             if verbose
-                @printf("\nSCF is converged in iter: %d , diffE = %10.7e\n", iter, diffE)
+                @printf("\nSCF is converged in iter: %d\n", iter)
             end
             break
         end
