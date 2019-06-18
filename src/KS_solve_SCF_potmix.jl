@@ -161,7 +161,6 @@ function KS_solve_SCF_potmix!(
             Ham.electrons.Focc = copy(Focc)
         end
 
-        
         Rhoe[:,:] = calc_rhoe( Ham, psiks )
         # Symmetrize Rhoe is needed
         if Ham.sym_info.Nsyms > 1
@@ -191,10 +190,10 @@ function KS_solve_SCF_potmix!(
         diffEtot = abs(Etot - Etot_old)
 
         if Nspin == 1
-            @printf("%5d %18.10f %10.5e %10.5e %10.5e\n", iterSCF, Etot, diffEtot, diffPot[1], diffRhoe[1])
+            @printf("%5d %18.10f %12.5e %12.5e\n", iterSCF, Etot, diffEtot, diffRhoe[1])
         else
-            @printf("%5d %18.10f %10.5e [%10.5e,%10.5e] [%10.5e,%10.5e]\n",
-                iterSCF, Etot, diffEtot, diffPot[1], diffPot[2], diffRhoe[1], diffRhoe[2])
+            @printf("%5d %18.10f %12.5e [%12.5e,%12.5e]\n",
+                iterSCF, Etot, diffEtot, diffRhoe[1], diffRhoe[2])
         end
 
         if diffEtot < etot_conv_thr
@@ -229,11 +228,6 @@ function KS_solve_SCF_potmix!(
                 Ham.potentials.Total[ip,ispin] = Ham.potentials.Ps_loc[ip] + Ham.potentials.Hartree[ip] +
                                                  Ham.potentials.XC[ip,ispin]
             end
-        end
-
-        for ispin = 1:Nspin
-            diffPot[ispin] = sum(abs.(Ham.potentials.Hartree - VHa_inp +
-                                      @views Ham.potentials.XC[:,ispin] - Vxc_inp[:,ispin]) )/Npoints
         end
 
         flush(stdout)
