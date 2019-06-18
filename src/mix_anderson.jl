@@ -1,3 +1,6 @@
+#
+# This function is adapted from Anderson mixing function in KSSOLV
+#
 function mix_anderson!( Nspin::Int64,
                         vvin::Array{Float64,2}, vvout::Array{Float64,2},
                         beta::Float64, df::Array{Float64,2}, dv::Array{Float64,2},
