@@ -155,6 +155,18 @@ function KS_solve_SCF!(
 
     E_fermi = 0.0
 
+    if verbose
+        if Nspin == 1
+            @printf("-------------------------------------------------------\n")
+            @printf("       iter            E            ΔE           Δρ\n")
+            @printf("-------------------------------------------------------\n")
+        else
+            @printf("----------------------------------------------------------------------\n")
+            @printf("       iter            E            ΔE                  Δρ\n")
+            @printf("----------------------------------------------------------------------\n")
+        end
+    end
+
     for iter = 1:NiterMax
 
         # determine convergence criteria for diagonalization
@@ -288,13 +300,13 @@ function KS_solve_SCF!(
 
         if verbose
             if Nspin == 1
-                @printf("SCF: %8d %18.10f %12.5e %12.5e\n",
+                @printf("SCF: %5d %18.10f %12.5e %12.5e\n",
                          iter, Etot, diffE, diffRhoe[1] )
                 if print_integ_rhoe
                     @printf("integ Rhoe = %18.10f\n", sum(Rhoe)*dVol)
                 end
             else
-                @printf("SCF: %8d %18.10f %12.5e [%12.5e,%12.5e]\n",
+                @printf("SCF: %5d %18.10f %12.5e [%12.5e,%12.5e]\n",
                          iter, Etot, diffE, diffRhoe[1], diffRhoe[2] )
                 if print_integ_rhoe
                     magn_den = Rhoe[:,1] - Rhoe[:,2]

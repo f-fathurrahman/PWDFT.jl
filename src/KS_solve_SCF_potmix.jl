@@ -114,6 +114,18 @@ function KS_solve_SCF_potmix!(
     end
     println("") # blank line before SCF iteration info
 
+    if verbose
+        if Nspin == 1
+            @printf("--------------------------------------------------------------\n")
+            @printf("              iter            E            ΔE           Δρ\n")
+            @printf("--------------------------------------------------------------\n")
+        else
+            @printf("----------------------------------------------------------------------------\n")
+            @printf("              iter            E            ΔE                  Δρ\n")
+            @printf("----------------------------------------------------------------------------\n")
+        end
+    end
+
     for iterSCF = 1:NiterMax
 
         # determine convergence criteria for diagonalization
@@ -190,9 +202,9 @@ function KS_solve_SCF_potmix!(
         diffEtot = abs(Etot - Etot_old)
 
         if Nspin == 1
-            @printf("%5d %18.10f %12.5e %12.5e\n", iterSCF, Etot, diffEtot, diffRhoe[1])
+            @printf("SCF_potmix: %5d %18.10f %12.5e %12.5e\n", iterSCF, Etot, diffEtot, diffRhoe[1])
         else
-            @printf("%5d %18.10f %12.5e [%12.5e,%12.5e]\n",
+            @printf("SCF_potmix: %5d %18.10f %12.5e [%12.5e,%12.5e]\n",
                 iterSCF, Etot, diffEtot, diffRhoe[1], diffRhoe[2])
         end
 
@@ -203,7 +215,7 @@ function KS_solve_SCF_potmix!(
         end
 
         if Nconverges >= 2
-            @printf("SCF is converged in %d iterations\n", iterSCF)
+            @printf("SCF_potmix is converged in %d iterations\n", iterSCF)
             break
         end
         
