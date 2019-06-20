@@ -240,7 +240,7 @@ function KS_solve_SCF!(
 
         elseif mix_method == "broyden"
 
-            mix_broyden!( Rhoe_new, Rhoe, betamix, iter, mixdim, df, dv )
+            mix_broyden!( Rhoe, Rhoe_new, betamix, iter, mixdim, df, dv )
 
         elseif mix_method == "pulay"
         

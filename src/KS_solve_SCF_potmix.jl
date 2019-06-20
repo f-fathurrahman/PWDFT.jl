@@ -225,8 +225,8 @@ function KS_solve_SCF_potmix!(
         # Mix potentials (Hartree and XC, separately)
 
         if mix_method == "broyden"
-            mix_broyden!( VHa_inp, Ham.potentials.Hartree, betamix, iterSCF, mixdim, df_VHa, dv_VHa )
-            mix_broyden!( Vxc_inp, Ham.potentials.XC, betamix, iterSCF, mixdim, df_Vxc, dv_Vxc )
+            mix_broyden!( Ham.potentials.Hartree, VHa_inp, betamix, iterSCF, mixdim, df_VHa, dv_VHa )
+            mix_broyden!( Ham.potentials.XC, Vxc_inp, betamix, iterSCF, mixdim, df_Vxc, dv_Vxc )
         else
             # simple mixing
             Ham.potentials.Hartree = betamix*Ham.potentials.Hartree + (1-betamix)*VHa_inp

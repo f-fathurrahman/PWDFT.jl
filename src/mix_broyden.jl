@@ -1,7 +1,7 @@
 #
 # Adapted from PWSCF/Yambo
 #
-function mix_broyden!( deltaout, deltain, alphamix::Float64, iter::Int64, n_iter::Int64, df, dv )
+function mix_broyden!( deltain, deltaout, alphamix::Float64, iter::Int64, n_iter::Int64, df, dv )
     # df(ndim,n_iter)
     # dv(ndim,n_iter)
 

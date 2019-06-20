@@ -32,6 +32,12 @@ function test_main()
 
     #Random.seed!(1234)
     #@time KS_solve_SCF_potmix!(Ham, mix_method="simple", betamix=0.5, use_smearing=true)
+    
+    #Random.seed!(1234)
+    #@time KS_solve_SCF_potmix!(Ham, mix_method="simple", betamix=0.5, use_smearing=true, starting_magnetization=[0.5])
+
+    Random.seed!(1234)
+    @time KS_solve_SCF_potmix!(Ham, mix_method="broyden", betamix=0.5, use_smearing=true, starting_magnetization=[0.5])
 
     #Random.seed!(1234)
     #@time KS_solve_SCF!(Ham, mix_method="broyden", betamix=0.1, use_smearing=true)
@@ -45,9 +51,11 @@ function test_main()
     #Random.seed!(1234)
     #@time KS_solve_SCF!(Ham, mix_method="rpulay", betamix=0.5, use_smearing=true, starting_magnetization=[0.5])
 
-    Random.seed!(1234)
-    @time KS_solve_SCF!(Ham, mix_method="ppulay", betamix=0.5, use_smearing=true, starting_magnetization=[0.5])
+    #Random.seed!(1234)
+    #@time KS_solve_SCF!(Ham, mix_method="ppulay", betamix=0.5, use_smearing=true, starting_magnetization=[0.5])
 
+    #Random.seed!(1234)
+    #@time KS_solve_SCF!(Ham, mix_method="broyden", betamix=0.5, use_smearing=true, starting_magnetization=[0.5])
 
 end
 
