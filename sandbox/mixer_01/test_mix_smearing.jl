@@ -29,11 +29,14 @@ function test_main()
     #Random.seed!(1234)
     #@time KS_solve_SCF_potmix_v2!(Ham, mix_method="simple", betamix=0.5, mixdim=8, use_smearing=true)
 
-    Random.seed!(1234)
-    @time KS_solve_SCF_potmix!(Ham, mix_method="simple", betamix=0.5, use_smearing=true)
+    #Random.seed!(1234)
+    #@time KS_solve_SCF_potmix!(Ham, mix_method="simple", betamix=0.5, use_smearing=true)
 
     #Random.seed!(1234)
     #@time KS_solve_SCF!(Ham, mix_method="broyden", betamix=0.1, use_smearing=true)
+
+    Random.seed!(1234)
+    @time KS_solve_SCF!(Ham, mix_method="anderson", betamix=0.1, use_smearing=true)
 
 
 end

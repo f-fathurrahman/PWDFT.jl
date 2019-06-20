@@ -1,20 +1,12 @@
 #
 # This function is adapted from Anderson mixing function in KSSOLV
 #
-function mix_anderson!( Nspin::Int64,
-                        vvin::Array{Float64,2}, vvout::Array{Float64,2},
+# vin is the result
+# vin will be overwritten for next SCF iteration
+function mix_anderson!( vin, vout,
                         beta::Float64, df::Array{Float64,2}, dv::Array{Float64,2},
-                        iter::Int64, mixdim::Int64)
-    
-    @assert( Nspin <= 2 )
-    
-    Npoints = size(vvin)[1]
-
-    vin = reshape(vvin, (Npoints*Nspin,))
-    vout = reshape(vvout, (Npoints*Nspin,))
-    
+                        iter::Int64, mixdim::Int64 )
     # Residual
-    dvout = zeros(Float64,Npoints*Nspin)
     dvout = vout[:] - vin[:]
 
     iterused = min(iter-1,mixdim)
@@ -38,12 +30,11 @@ function mix_anderson!( Nspin::Int64,
 
     inext = iter - floor( Int64, (iter - 1) / mixdim) * mixdim
 
-    df[:,inext] = dvoutsave
-    dv[:,inext] = vinsave
+    df[:,inext] = dvoutsave[:]
+    dv[:,inext] = vinsave[:]
 
-    newv = vin[:] + beta*dvout[:]
+    vin[:] = vin[:] + beta*dvout[:]
 
-    return reshape(newv,(Npoints,Nspin))
-
+    return
 end
 

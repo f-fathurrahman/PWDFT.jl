@@ -255,14 +255,17 @@ function KS_solve_SCF!(
             # result is in Rhoe
 
         elseif mix_method == "ppulay"
-        
+            
+            #XXX We fix the period to be 3 here
+
             Rhoe = reshape( mix_ppulay!(
                 reshape(Rhoe,(Npoints*Nspin)),
                 reshape(Rhoe_new,(Npoints*Nspin)), betamix, XX, FF, iter, mixdim, 3, x_old, f_old
                 ), (Npoints,Nspin) )
         
         elseif mix_method == "anderson"
-            Rhoe[:,:] = mix_anderson!( Nspin, Rhoe, Rhoe_new, betamix, df, dv, iter, mixdim )
+
+            mix_anderson!( Rhoe, Rhoe_new, betamix, df, dv, iter, mixdim )
         
         else
             error(@sprintf("Unknown mix_method = %s\n", mix_method))
