@@ -71,7 +71,7 @@ function create_Ham_H2()
 end
 
 
-function create_Ham_Si_fcc( ; xcfunc="VWN" )
+function create_Ham_Si_fcc( ; xcfunc="VWN", Nspin=1 )
 
     atoms = Atoms(xyz_string_frac=
         """
@@ -85,11 +85,20 @@ function create_Ham_Si_fcc( ; xcfunc="VWN" )
 
     ecutwfc = 15.0
     if xcfunc == "PBE"
-        return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3], xcfunc="PBE" )
+        if Nspin == 2
+            return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3], xcfunc="PBE" )
+        else
+            return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3], xcfunc="PBE", Nspin=2, extra_states=4 )
+        end
     else
-        return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3] )
+        if Nspin == 2
+            return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3], Nspin=2, extra_states=4 )
+        else
+            return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3] )
+        end
     end
 end
+
 
 
 function create_Ham_GaAs_v1()

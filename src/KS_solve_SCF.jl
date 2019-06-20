@@ -244,10 +244,7 @@ function KS_solve_SCF!(
 
         elseif mix_method == "pulay"
         
-            Rhoe = reshape( mix_pulay!(
-                reshape(Rhoe,(Npoints*Nspin)),
-                reshape(Rhoe_new,(Npoints*Nspin)), betamix, XX, FF, iter, mixdim, x_old, f_old
-                ), (Npoints,Nspin) )
+            mix_pulay!( Rhoe, Rhoe_new, betamix, XX, FF, iter, mixdim, x_old, f_old )
 
         elseif mix_method == "rpulay"
             
