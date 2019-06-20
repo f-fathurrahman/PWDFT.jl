@@ -9,14 +9,14 @@ An implementation of periodic Pulay mixing as described in
 function mix_ppulay!( x, gx, beta, X, F, iter, MIXDIM::Int64, k::Int64,
                       x_old, f_old )
 
-    f = gx - x
+    f = gx[:] - x[:]
 
     if iter == 1
         dx = copy(x)
         df = copy(f)
     else
-        dx = x - x_old
-        df = f - f_old
+        dx = x[:] - x_old[:]
+        df = f[:] - f_old[:]
     end
 
     if iter < MIXDIM
@@ -27,8 +27,8 @@ function mix_ppulay!( x, gx, beta, X, F, iter, MIXDIM::Int64, k::Int64,
 
     # shift history
     if iter <= MIXDIM
-        X[:,iter] = dx
-        F[:,iter] = df
+        X[:,iter] = dx[:]
+        F[:,iter] = df[:]
     else
         for i = 1:MIXDIM-1
             X[:,i] = X[:,i+1]
@@ -38,20 +38,21 @@ function mix_ppulay!( x, gx, beta, X, F, iter, MIXDIM::Int64, k::Int64,
 
     # new history, put at the end
     if iter > MIXDIM
-        X[:,MIXDIM] = dx
-        F[:,MIXDIM] = df
+        X[:,MIXDIM] = dx[:]
+        F[:,MIXDIM] = df[:]
     end
+
+    x_old[:] = x[:]
+    f_old[:] = f[:]
 
     if is_pulay
         addv = (X + beta*F)*inv(F'*F)*(F'*f) 
-        xnew = x + beta*f - addv
+        x[:] = x[:] + beta*f - addv
     else
-        xnew = x + beta*f
+        x[:] = x[:] + beta*f
     end
 
-    x_old[:] = x
-    f_old[:] = f
-    return xnew
+    return
 
 end
 

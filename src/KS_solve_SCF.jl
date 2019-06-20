@@ -255,10 +255,8 @@ function KS_solve_SCF!(
             
             #XXX We fix the period to be 3 here
 
-            Rhoe = reshape( mix_ppulay!(
-                reshape(Rhoe,(Npoints*Nspin)),
-                reshape(Rhoe_new,(Npoints*Nspin)), betamix, XX, FF, iter, mixdim, 3, x_old, f_old
-                ), (Npoints,Nspin) )
+            mix_ppulay!( Rhoe, Rhoe_new, betamix, XX, FF, iter, mixdim, 3, x_old, f_old )
+
         
         elseif mix_method == "anderson"
 

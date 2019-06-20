@@ -37,11 +37,14 @@ function test_main()
     #Random.seed!(1234)
     #@time KS_solve_SCF!(Ham, mix_method="anderson", betamix=0.5, etot_conv_thr=1e-6)
 
-    Random.seed!(1234)
-    @time KS_solve_SCF!(Ham, mix_method="pulay", betamix=0.5, etot_conv_thr=1e-6)
+    #Random.seed!(1234)
+    #@time KS_solve_SCF!(Ham, mix_method="pulay", betamix=0.5, etot_conv_thr=1e-6)
 
     Random.seed!(1234)
-    @time KS_solve_Emin_PCG!(Ham)
+    @time KS_solve_SCF!(Ham, mix_method="ppulay", betamix=0.5, etot_conv_thr=1e-6)
+
+    #Random.seed!(1234)
+    #@time KS_solve_Emin_PCG!(Ham)
 
 end
 
