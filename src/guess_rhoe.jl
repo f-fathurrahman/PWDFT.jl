@@ -169,10 +169,6 @@ function guess_rhoe_atomic( Ham::Hamiltonian; starting_magnetization=nothing )
         Rhoe[:,1] = Rhoe_tot
     end
 
-    for ispin = 1:Nspin
-        println("guess rhoe atomic: integ rhoe = ", sum(Rhoe[:,ispin])*CellVolume/Npoints)
-    end
-
     return Rhoe
 end
 
