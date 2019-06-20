@@ -1,27 +1,26 @@
-"""
-Solves Kohn-Sham problem using traditional self-consistent field (SCF)
-iterations with density mixing.
-"""
-function KS_solve_SCF_rhomix_v2!( Ham::Hamiltonian ;
-                        startingwfc=:random, savewfc=false,
-                        startingrhoe=:gaussian,
-                        betamix=0.2,
-                        NiterMax=100,
-                        verbose=true,
-                        print_final_ebands=false,
-                        print_final_energies=true,
-                        print_integ_rhoe=false,
-                        check_rhoe=false,
-                        use_smearing=false,
-                        kT=1e-3,
-                        update_psi="LOBPCG",
-                        cheby_degree=8,
-                        mix_method="simple",
-                        mixdim=5,
-                        print_e_gap=false,
-                        etot_conv_thr=1e-6,
-                        ethr_evals_last=1e-5,
-                        starting_magnetization=nothing )
+function KS_solve_SCF_rhomix_v2!(
+    Ham::Hamiltonian ;
+    startingwfc=:random,
+    savewfc=false,
+    startingrhoe=:gaussian,
+    betamix=0.2,
+    NiterMax=100,
+    verbose=true,
+    print_final_ebands=false,
+    print_final_energies=true,
+    print_integ_rhoe=false,
+    check_rhoe=false,
+    use_smearing=false,
+    kT=1e-3,
+    update_psi="LOBPCG",
+    cheby_degree=8,
+    mix_method="simple",
+    mixdim=5,
+    print_e_gap=false,
+    etot_conv_thr=1e-6,
+    ethr_evals_last=1e-5,
+    starting_magnetization=nothing
+)
 
     pw = Ham.pw
     Ngw = pw.gvecw.Ngw
@@ -85,17 +84,24 @@ function KS_solve_SCF_rhomix_v2!( Ham::Hamiltonian ;
             Rhoe = guess_rhoe_atomic( Ham, starting_magnetization=starting_magnetization )
         end
     else
-        Rhoe[:,:] = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin )
+        Rhoe = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin )
     end
-    # Symmetrize Rhoe is needed
+    # Symmetrize Rhoe if needed
     if Ham.sym_info.Nsyms > 1
         symmetrize_rhoe!( Ham, rhoe_symmetrizer, Rhoe )
     end
 
     if Nspin == 2
-        @printf("\nInitial integ Rhoe up  = %18.10f\n", sum(Rhoe[:,1])*dVol)
-        @printf("\nInitial integ Rhoe dn  = %18.10f\n", sum(Rhoe[:,2])*dVol)
-        @printf("\nInitial integ magn_den = %18.10f\n", sum(Rhoe[:,1] - Rhoe[:,2])*dVol)
+        magn_den = zeros(Npoints)
+        for ip in 1:Npoints
+            magn_den[ip] = Rhoe[ip,1] - Rhoe[ip,2]
+        end
+    end
+
+    if Nspin == 2 && verbose
+        @printf("Initial integ Rhoe up  = %18.10f\n", sum(Rhoe[:,1])*dVol)
+        @printf("Initial integ Rhoe dn  = %18.10f\n", sum(Rhoe[:,2])*dVol)
+        @printf("Initial integ magn_den = %18.10f\n", sum(magn_den)*dVol)
     end
 
     update!(Ham, Rhoe)
@@ -113,21 +119,24 @@ function KS_solve_SCF_rhomix_v2!( Ham::Hamiltonian ;
     if mix_method in ("anderson", "broyden")
         df = zeros(Float64,Npoints*Nspin, mixdim)
         dv = zeros(Float64,Npoints*Nspin, mixdim)
+
+    elseif mix_method == "linear_adaptive"
+        betav = betamix*ones(Float64, Npoints*Nspin)
+        df = zeros(Float64, Npoints*Nspin)
     
-    elseif mix_method in ("rpulay", "rpulay_kerker", "ppulay", "pulay")
+    elseif mix_method in ("rpulay", "ppulay", "pulay")
         XX = zeros(Float64,Npoints*Nspin, mixdim)
         FF = zeros(Float64,Npoints*Nspin, mixdim)
-        x_old = zeros(Float64,Npoints*Nspin)
-        f_old = zeros(Float64,Npoints*Nspin)
+        x_old = zeros(Float64,Npoints,Nspin)
+        f_old = zeros(Float64,Npoints,Nspin)
     end
 
 
     @printf("\n")
     @printf("Self-consistent iteration begins ...\n")
     @printf("update_psi = %s\n", update_psi)
-    @printf("\n")
     @printf("mix_method = %s\n", mix_method)
-    if mix_method in ("rpulay", "rpulay_kerker", "anderson", "ppulay")
+    if mix_method in ("rpulay", "anderson", "ppulay", "broyden")
         @printf("mixdim = %d\n", mixdim)
     end
     @printf("Density mixing with betamix = %10.5f\n", betamix)
@@ -142,10 +151,21 @@ function KS_solve_SCF_rhomix_v2!( Ham::Hamiltonian ;
     # calculate PspCore energy
     Ham.energies.PspCore = calc_PspCore_ene( Ham.atoms, Ham.pspots )
 
-    CONVERGED = 0
+    Nconverges = 0
 
-    E_fermiSpin = zeros(Nspin)
     E_fermi = 0.0
+
+    if verbose
+        if Nspin == 1
+            @printf("-------------------------------------------------------\n")
+            @printf("       iter            E            ΔE           Δρ\n")
+            @printf("-------------------------------------------------------\n")
+        else
+            @printf("----------------------------------------------------------------------\n")
+            @printf("       iter            E            ΔE                  Δρ\n")
+            @printf("----------------------------------------------------------------------\n")
+        end
+    end
 
     for iter = 1:NiterMax
 
@@ -215,47 +235,36 @@ function KS_solve_SCF_rhomix_v2!( Ham::Hamiltonian ;
         end
 
         if mix_method == "simple"
-            for ispin = 1:Nspin
-                Rhoe[:,ispin] = betamix*Rhoe_new[:,ispin] + (1-betamix)*Rhoe[:,ispin]
-            end
+
+            Rhoe = betamix*Rhoe_new + (1-betamix)*Rhoe
+
+        elseif mix_method == "linear_adaptive"
+
+            mix_adaptive!( Rhoe, Rhoe_new, betamix, betav, df )
 
         elseif mix_method == "broyden"
 
-            mix_broyden!( Rhoe_new, Rhoe, betamix, iter, mixdim, df, dv )
+            mix_broyden!( Rhoe, Rhoe_new, betamix, iter, mixdim, df, dv )
 
         elseif mix_method == "pulay"
         
-            Rhoe = reshape( mix_pulay!(
-                reshape(Rhoe,(Npoints*Nspin)),
-                reshape(Rhoe_new,(Npoints*Nspin)), betamix, XX, FF, iter, mixdim, x_old, f_old
-                ), (Npoints,Nspin) )
-            
-            if Nspin == 2
-                magn_den = Rhoe[:,1] - Rhoe[:,2]
-            end
+            mix_pulay!( Rhoe, Rhoe_new, betamix, XX, FF, iter, mixdim, x_old, f_old )
 
         elseif mix_method == "rpulay"
-        
+            
             mix_rpulay!( Rhoe, Rhoe_new, betamix, XX, FF, iter, mixdim, x_old, f_old )
             # result is in Rhoe
-            
-            if Nspin == 2
-                magn_den = Rhoe[:,1] - Rhoe[:,2]
-            end
 
         elseif mix_method == "ppulay"
-        
-            Rhoe = reshape( mix_ppulay!(
-                reshape(Rhoe,(Npoints*Nspin)),
-                reshape(Rhoe_new,(Npoints*Nspin)), betamix, XX, FF, iter, mixdim, 3, x_old, f_old
-                ), (Npoints,Nspin) )
             
-            if Nspin == 2
-                magn_den = Rhoe[:,1] - Rhoe[:,2]
-            end
+            #XXX We fix the period to be 3 here
+
+            mix_ppulay!( Rhoe, Rhoe_new, betamix, XX, FF, iter, mixdim, 3, x_old, f_old )
+
         
         elseif mix_method == "anderson"
-            Rhoe[:,:] = mix_anderson!( Nspin, Rhoe, Rhoe_new, betamix, df, dv, iter, mixdim )
+
+            mix_anderson!( Rhoe, Rhoe_new, betamix, df, dv, iter, mixdim )
         
         else
             error(@sprintf("Unknown mix_method = %s\n", mix_method))
@@ -266,6 +275,10 @@ function KS_solve_SCF_rhomix_v2!( Ham::Hamiltonian ;
             if rho < eps()
                 rho = 0.0
             end
+        end
+
+        if Nspin == 2
+            magn_den = Rhoe[:,1] - Rhoe[:,2]
         end
 
         # renormalize
@@ -289,33 +302,32 @@ function KS_solve_SCF_rhomix_v2!( Ham::Hamiltonian ;
 
         if verbose
             if Nspin == 1
-                @printf("SCF: %8d %18.10f %18.10e %18.10e\n",
+                @printf("SCF: %5d %18.10f %12.5e %12.5e\n",
                          iter, Etot, diffE, diffRhoe[1] )
                 if print_integ_rhoe
                     @printf("integ Rhoe = %18.10f\n", sum(Rhoe)*dVol)
                 end
             else
-                @printf("SCF: %8d %18.10f %18.10e %18.10e %18.10e\n",
+                @printf("SCF: %5d %18.10f %12.5e [%12.5e,%12.5e]\n",
                          iter, Etot, diffE, diffRhoe[1], diffRhoe[2] )
                 if print_integ_rhoe
                     magn_den = Rhoe[:,1] - Rhoe[:,2]
                     @printf("integ Rhoe spin up = %18.10f\n", sum(Rhoe[:,1])*dVol) 
                     @printf("integ Rhoe spin dn = %18.10f\n", sum(Rhoe[:,2])*dVol) 
-                    @printf("integ magn_den = %18.10f\n", sum(magn_den)*dVol)
+                    @printf("integ magn_den = %18.10f\n", sum(magn_den)*dVol) 
                 end
-            end
-        
+            end     
         end
 
         if diffE < etot_conv_thr
-            CONVERGED = CONVERGED + 1
-        else  # reset CONVERGED
-            CONVERGED = 0
+            Nconverges = Nconverges + 1
+        else
+            Nconverges = 0
         end
 
-        if CONVERGED >= 2
+        if Nconverges >= 2
             if verbose
-                @printf("SCF is converged: iter: %d , diffE = %10.7e\n", iter, diffE)
+                @printf("\nSCF is converged in iter: %d\n", iter)
             end
             break
         end
@@ -329,6 +341,13 @@ function KS_solve_SCF_rhomix_v2!( Ham::Hamiltonian ;
 
     if use_smearing && verbose
         @printf("\nFermi energy = %18.10f Ha = %18.10f eV\n", E_fermi, E_fermi*2*Ry2eV)
+    end
+
+    if Nspin == 2 && verbose
+        @printf("\n")
+        @printf("Final integ Rhoe up  = %18.10f\n", sum(Rhoe[:,1])*dVol)
+        @printf("Final integ Rhoe dn  = %18.10f\n", sum(Rhoe[:,2])*dVol)
+        @printf("Final integ magn_den = %18.10f\n", sum(magn_den)*dVol)
     end
 
     if verbose && print_final_ebands
