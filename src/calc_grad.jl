@@ -5,13 +5,11 @@
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     ikspin = ik + (ispin - 1)*Nkpt
     #
-    potentials = Ham.potentials
     Focc = Ham.electrons.Focc
     pw = Ham.pw
     #
     Ngw     = size(psi)[1]
     Nstates = size(psi)[2]
-    CellVolume = pw.CellVolume
     Ns = pw.Ns
     #
     grad = zeros( ComplexF64, Ngw, Nstates )
@@ -68,12 +66,10 @@ function calc_grad_evals( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     ikspin = ik + (ispin - 1)*Nkpt
     #
-    potentials = Ham.potentials
     pw = Ham.pw
     #
     Ngw     = size(psi)[1]
     Nstates = size(psi)[2]
-    CellVolume = pw.CellVolume
     Ns = pw.Ns
     #
     grad = zeros( ComplexF64, Ngw, Nstates )
