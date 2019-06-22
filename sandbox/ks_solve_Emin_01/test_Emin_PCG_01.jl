@@ -85,8 +85,8 @@ function main( ; method="SCF" )
 
     #Ham = create_Ham_Si_fcc()
     #Ham = create_Ham_GaN()
-    #Ham = create_Ham_GaAs()
-    Ham = create_Ham_ZnO()
+    Ham = create_Ham_GaAs()
+    #Ham = create_Ham_ZnO()
 
     Random.seed!(1234)
 
@@ -96,11 +96,14 @@ function main( ; method="SCF" )
     if method == "SCF"
         KS_solve_SCF!( Ham, mix_method="anderson" )
 
+    elseif method == "SCF_potmix"
+        KS_solve_SCF_potmix!( Ham, betamix=0.5 )
+
     elseif method == "Emin"
-        KS_solve_Emin_PCG!( Ham, verbose=true )
+        KS_solve_Emin_PCG!( Ham, skip_initial_diag=true )
 
     elseif method == "Emin_01"
-        KS_solve_Emin_PCG_01!( Ham, verbose=true )
+        KS_solve_Emin_PCG_01!( Ham, skip_initial_diag=true )
 
     elseif method == "DCM"
         KS_solve_DCM!( Ham, NiterMax=15 )
@@ -116,38 +119,5 @@ end
 
 @time main(method="Emin")
 @time main(method="Emin_01")
+@time main(method="SCF_potmix")
 
-#=
-    Kinetic energy  =  3.21045499991613E+00
-    Hartree energy  =  5.76194835366404E-01
-    XC energy       = -2.41016569027563E+00
-    Ewald energy    = -8.39792740071415E+00
-    PspCore energy  = -2.94625629171302E-01
-    Loc. psp. energy= -2.17613632002650E+00
-    NL   psp  energy=  1.58119195731965E+00
-    >>>>>>>>> Etotal= -7.91101324758539E+00
-
-PWDFT.jl:
-Kinetic    energy:       3.2107141913
-Ps_loc     energy:      -2.1756827897
-Ps_nloc    energy:       1.5804698683
-Hartree    energy:       0.5829626011
-XC         energy:      -2.4156830816
-PspCore    energy:      -0.2946256268
--------------------------------------
-Electronic energy:       0.4881551626
-NN         energy:      -8.3979274007
--------------------------------------
-Total      energy:      -7.9097722381
-
-
-QE:
-one-elec   energy:       2.3207092600
-Hartree    energy:       0.5764842900
-XC         energy:      -2.4102748100
--------------------------------------
-Electronic energy:       0.4869187400
-NN         energy:      -8.3979274200
--------------------------------------
-Total      energy:      -7.9110086800
-=#
