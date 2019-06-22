@@ -7,7 +7,7 @@ function create_Ham_Pt_fcc_smearing()
         """, LatVecs=gen_lattice_fcc(3.9231*ANG2BOHR))
     pspfiles = [joinpath(DIR_PSP, "Pt-q18.gth")]
     ecutwfc = 30.0
-    Ham = Hamiltonian( atoms, pspfiles, ecutwfc,
+    return Hamiltonian( atoms, pspfiles, ecutwfc,
                        meshk=[8,8,8], extra_states=4 )
 end
 
