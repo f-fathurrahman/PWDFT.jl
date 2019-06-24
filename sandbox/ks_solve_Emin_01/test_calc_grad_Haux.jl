@@ -30,7 +30,7 @@ function create_Ham_atom_Pt_smearing()
         Pt  0.0  0.0  0.0
         """, LatVecs=gen_lattice_sc(16.0))
     pspfiles = [joinpath(DIR_PSP, "Pt-q10.gth")]
-    ecutwfc = 30.0
+    ecutwfc = 15.0
     return Hamiltonian( atoms, pspfiles, ecutwfc, extra_states=4 )
 end
 
@@ -49,15 +49,26 @@ function create_Ham_Al_fcc_smearing()
 
 end
 
+function create_Ham_atom_Al_smearing()
+    atoms = Atoms(xyz_string_frac=
+        """
+        1
+
+        Al  0.0  0.0  0.0
+        """, LatVecs=gen_lattice_sc(16.0))
+    pspfiles = [joinpath(DIR_PSP, "Al-q3.gth")]
+    ecutwfc = 15.0
+    return Hamiltonian( atoms, pspfiles, ecutwfc, extra_states=4 )
+end
+
 
 function main()
     Random.seed!(1234)
     
     #Ham = create_Ham_Al_fcc_smearing()
     #Ham = create_Ham_Pt_fcc_smearing()
-    Ham = create_Ham_atom_Pt_smearing()
-
-    psiks = rand_BlochWavefunc(Ham)
+    #Ham = create_Ham_atom_Pt_smearing()
+    Ham = create_Ham_atom_Al_smearing()    
 
     # random Haux
     Nstates = Ham.electrons.Nstates
@@ -66,6 +77,16 @@ function main()
     Nkspin = Nkpt*Nspin
     Nelectrons = Ham.electrons.Nelectrons
     wk = Ham.pw.gvecw.kpoints.wk
+    Npoints = prod(Ham.pw.Ns)
+
+    Rhoe = zeros(Float64,Npoints,Nspin)
+
+    @assert Nspin == 1
+    Rhoe[:,1] = guess_rhoe( Ham )
+
+    update!(Ham, Rhoe)
+
+    psiks = rand_BlochWavefunc( Ham )
 
     Haux = Array{Array{ComplexF64,2},1}(undef,Nkspin)
     eta = zeros(Float64,Nstates,Nkspin)
@@ -111,10 +132,12 @@ function main()
 
         Kg_Haux[ikspin] = 0.1*g_Haux[ikspin]
 
-        #println("Real Matrix:")
-        #print_matrix(real(g_Haux[ikspin]))
-        #println("Imag Matrix:")
-        #print_matrix(imag(g_Haux[ikspin]))
+        println("Real Matrix:")
+        print_matrix(real(g_Haux[ikspin]))
+        println("Imag Matrix:")
+        print_matrix(imag(g_Haux[ikspin]))
+
+        println("sum g_Haux = ", sum(g_Haux[ikspin]))
 
         #β[ikspin] =
         #real(sum(conj(g_Haux[ikspin]-g_Haux_old[ikspin]).*Kg_Haux[ikspin]))/
@@ -124,9 +147,9 @@ function main()
         
         Haux_c[ikspin] = Haux[ikspin] + α_t*d_Haux[ikspin]
 
-        println("Real Haux")
+        println("Real Haux c")
         print_matrix(real(Haux_c[ikspin]))
-        println("Imag Haux")
+        println("Imag Haux ")
         print_matrix(imag(Haux_c[ikspin]))
 
         Haux_c[ikspin] = 0.5*(Haux_c[ikspin] + Haux_c[ikspin]') # make the eigenvalues real

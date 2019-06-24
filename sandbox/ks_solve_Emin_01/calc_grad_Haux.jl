@@ -6,6 +6,8 @@ function calc_grad_Haux( Ham::Hamiltonian, psi::Array{ComplexF64,2}, eta::Array{
     ikspin = ik + (ispin - 1)*Nkpt
 
     f = @view Ham.electrons.Focc[:,ikspin]
+
+    #println("f = ", f)
     
     Ngw     = size(psi)[1]
     Nstates = size(psi)[2]
@@ -37,6 +39,10 @@ function calc_grad_Haux( Ham::Hamiltonian, psi::Array{ComplexF64,2}, eta::Array{
     for ist = 1:Nstates
         dmu_deta[ist] = 0.5*f[ist]*(1.0 - 0.5*f[ist])/ss
     end
+
+    #for ist = 1:Nstates
+    #    @printf("dmu_deta = %18.10f, df_deta= %18.10f\n", dmu_deta[ist], df_deta[ist])
+    #end
 
     # diagonal
     for ist = 1:Nstates
