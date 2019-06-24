@@ -75,24 +75,69 @@ function main()
         eta[:,ikspin] = eigvals(Haux[ikspin])
     end
 
+    g_psi = zeros_BlochWavefunc( Ham )
+
+    g_Haux = Array{Array{ComplexF64,2},1}(undef,Nkspin)
+    Kg_Haux = Array{Array{ComplexF64,2},1}(undef,Nkspin)
+    Haux_c = Array{Array{ComplexF64,2},1}(undef,Nkspin)
+    d_Haux = Array{Array{ComplexF64,2},1}(undef,Nkspin)
+    d_Haux_old = Array{Array{ComplexF64,2},1}(undef,Nkspin)
+
+    for ikspin = 1:Nkspin
+        g_Haux[ikspin] = zeros(ComplexF64,Nstates,Nstates)
+        Haux_c[ikspin] = zeros(ComplexF64,Nstates,Nstates)
+        Kg_Haux[ikspin] = zeros(ComplexF64,Nstates,Nstates)
+        d_Haux[ikspin] = zeros(ComplexF64,Nstates,Nstates)
+        d_Haux_old[ikspin] = zeros(ComplexF64,Nstates,Nstates)        
+    end
+
+    β_Haux = zeros(Float64,Nkspin)
+
     kT = 0.001
 
-    @show eta
-    
     Focc, E_fermi = calc_Focc( Nelectrons, wk, kT, eta, Nspin )
-
-    @show Focc
-    @show E_fermi
-
-    Ham.ik = 1
-    Ham.ispin = 1
     Ham.electrons.Focc[:,:] = Focc
 
-    g_psi, g_Haux = calc_grad_Haux( Ham, psiks[1], eta[:,1], kT )
-    
-    println(sum(g_psi))
+    α_t = 3e-5
 
-    @show g_Haux
+    for ispin = 1:Nspin
+    for ik = 1:Nkpt
+        
+        Ham.ik = ik
+        Ham.ispin = ispin
+        ikspin = ik + (ispin - 1)*Nkpt
+
+        g_psi[ikspin], g_Haux[ikspin] = calc_grad_Haux( Ham, psiks[ikspin], eta[:,ikspin], kT )
+
+        Kg_Haux[ikspin] = 0.1*g_Haux[ikspin]
+
+        #println("Real Matrix:")
+        #print_matrix(real(g_Haux[ikspin]))
+        #println("Imag Matrix:")
+        #print_matrix(imag(g_Haux[ikspin]))
+
+        #β[ikspin] =
+        #real(sum(conj(g_Haux[ikspin]-g_Haux_old[ikspin]).*Kg_Haux[ikspin]))/
+        #real(sum(conj(g_Haux_old[ikspin]).*Kg_Haux_old[ikspin]))
+
+        d_Haux[ikspin] = -Kg_Haux[ikspin] + β_Haux[ikspin] * d_Haux_old[ikspin]
+        
+        Haux_c[ikspin] = Haux[ikspin] + α_t*d_Haux[ikspin]
+
+        println("Real Haux")
+        print_matrix(real(Haux_c[ikspin]))
+        println("Imag Haux")
+        print_matrix(imag(Haux_c[ikspin]))
+
+        Haux_c[ikspin] = 0.5*(Haux_c[ikspin] + Haux_c[ikspin]') # make the eigenvalues real
+        eta[:,ikspin] = eigvals(Haux_c[ikspin])
+        println("Eigenvalues")
+        for i = 1:Nstates
+            println( eta[i,ikspin] )
+        end
+
+    end
+    end
 
 end
 
