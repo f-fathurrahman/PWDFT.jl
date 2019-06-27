@@ -208,7 +208,7 @@ function diag_LOBPCG!( Ham::Hamiltonian, X::Array{ComplexF64,2};
         iter = iter + 1
     end
 
-    if !IS_CONVERGED
+    if !IS_CONVERGED && verbose
         @printf("\nWARNING: LOBPCG is not converged after %d iterations\n", NiterMax)
     end
 
