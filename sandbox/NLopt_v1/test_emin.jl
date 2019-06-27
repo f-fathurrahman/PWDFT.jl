@@ -9,6 +9,34 @@ const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
 include("obj_function.jl")
 include("grad_obj_function.jl")
 
+function create_Ham_Si_fcc( ; xcfunc="VWN", Nspin=1 )
+
+    atoms = Atoms(xyz_string_frac=
+        """
+        2
+
+        Si  0.0  0.0  0.0
+        Si  0.25  0.25  0.25
+        """, in_bohr=true, LatVecs=gen_lattice_fcc(5.431*ANG2BOHR))
+
+    pspfiles = [joinpath(DIR_PSP, "Si-q4.gth")]
+
+    ecutwfc = 15.0
+    if xcfunc == "PBE"
+        if Nspin == 2
+            return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3], xcfunc="PBE" )
+        else
+            return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3], xcfunc="PBE", Nspin=2, extra_states=4 )
+        end
+    else
+        if Nspin == 2
+            return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3], Nspin=2, extra_states=4 )
+        else
+            return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3] )
+        end
+    end
+end
+
 function create_Ham_H2()
     atoms = Atoms(xyz_string=
         """
@@ -69,6 +97,9 @@ end
 function calc_beta_CG!( g, g_old, Kg, Kg_old, β )
     for i = 1:length(g)
         β[i] = real(sum(conj(g[i]-g_old[i]).*Kg[i]))/real(sum(conj(g_old[i]).*Kg_old[i]))
+        if β[i] < 0.0
+            β[i] = 0.0
+        end
     end
     return
 end
@@ -98,15 +129,36 @@ function calc_alpha_CG!( α_t, g, gt, d, α )
     return
 end
 
+
 function main_CG()
 
     Random.seed!(1234)
 
-    Ham = create_Ham_H2()
+    #Ham = create_Ham_H2()
     #Ham = create_Ham_H_atom()
+    Ham = create_Ham_Si_fcc()
 
     psiks = rand_BlochWavefunc( Ham )
     Etot_old = obj_function!( Ham, psiks, skip_ortho=true )
+
+    if Ham.sym_info.Nsyms > 1
+        rhoe_symmetrizer = RhoeSymmetrizer( Ham )
+    end
+
+    Npoints = prod(Ham.pw.Ns)
+    Nspin = Ham.electrons.Nspin
+    Rhoe = zeros(Float64,Npoints,Nspin)
+    @assert Nspin == 1
+    Rhoe[:,1] = guess_rhoe( Ham )
+    # Symmetrize Rhoe if needed
+    if Ham.sym_info.Nsyms > 1
+        symmetrize_rhoe!( Ham, rhoe_symmetrizer, Rhoe )
+    end
+    #
+    update!(Ham, Rhoe)
+    # eigenvalues are not needed for this case
+    _ = diag_LOBPCG!( Ham, psiks, verbose=false, verbose_last=false, NiterMax=10 )
+
 
     g = zeros_BlochWavefunc( Ham )
     gt = zeros_BlochWavefunc( Ham )    
@@ -120,21 +172,17 @@ function main_CG()
     β = zeros(length(g))
     α = zeros(length(g))
 
-    # calculate E_NN
     Ham.energies.NN = calc_E_NN( Ham.atoms )
-
-    # calculate PspCore energy
     Ham.energies.PspCore = calc_PspCore_ene( Ham.atoms, Ham.pspots )
 
-
-    α_t = 1e-5
-    etot_conv_thr = 1e-7
+    α_t = 3e-5
+    etot_conv_thr = 1e-6
 
     Nconverges = 0
 
     for iter = 1:50
         
-        grad_obj_function!( Ham, psiks, g )
+        grad_obj_function!( Ham, psiks, g, rhoe_symm=rhoe_symmetrizer )
         precond_grad!( Ham, g, Kg )
         if iter > 1
             calc_beta_CG!( g, g_old, Kg, Kg_old, β )
@@ -145,12 +193,12 @@ function main_CG()
         psic = psiks + α_t*d  # trial wavefunc
 
         # line minimization
-        grad_obj_function!( Ham, psic, gt )
+        grad_obj_function!( Ham, psic, gt, rhoe_symm=rhoe_symmetrizer )
         calc_alpha_CG!( α_t, g, gt, d, α )
 
         psiks = psiks + α .* d
 
-        Etot = obj_function!( Ham, psiks )
+        Etot = obj_function!( Ham, psiks, rhoe_symm=rhoe_symmetrizer )
         diffE = abs(Etot_old - Etot)
         @printf("%8d %18.10f %18.10e\n", iter, Etot, Etot_old - Etot)
 
@@ -174,4 +222,5 @@ function main_CG()
 
 end
 
-main_CG()
+@time main_CG()
+@time main_CG()
