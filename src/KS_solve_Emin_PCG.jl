@@ -156,12 +156,11 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
         end # ik
         end # ispin
         
-        calc_rhoe!( Ham, psiks, Rhoe )
+        calc_rhoe!( Ham, psic, Rhoe )
         # Symmetrize Rhoe if needed
         if Ham.sym_info.Nsyms > 1
             symmetrize_rhoe!( Ham, rhoe_symmetrizer, Rhoe )
         end
-
         update!(Ham, Rhoe)
 
         for ispin = 1:Nspin
