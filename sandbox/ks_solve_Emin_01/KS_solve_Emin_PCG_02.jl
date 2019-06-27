@@ -36,6 +36,47 @@ function KS_solve_Emin_PCG_02!(
     Nkspin = Nkpt*Nspin
 
     #
+    # Variables for PCG
+    #
+    g      = zeros_BlochWavefunc( Ham )
+    d      = zeros_BlochWavefunc( Ham )
+    g_old  = zeros_BlochWavefunc( Ham )
+    d_old  = zeros_BlochWavefunc( Ham )
+    Kg     = zeros_BlochWavefunc( Ham )
+    Kg_old = zeros_BlochWavefunc( Ham )
+    psic   = zeros_BlochWavefunc( Ham )
+    gt     = zeros_BlochWavefunc( Ham )
+
+    β = zeros(Nkspin)
+    α = zeros(Nkspin)
+
+    Hsub = Array{Array{ComplexF64,2},1}(undef,Nkspin)
+    for ikspin = 1:Nkspin
+        Hsub[ikspin] = zeros(ComplexF64,Nstates,Nstates)
+    end
+    Δ_Haux      = copy(Hsub)
+    Δt_Haux     = copy(Hsub)
+    Δ_Haux_old  = copy(Hsub)
+    g_Haux      = copy(Hsub)
+    gt_Haux     = copy(Hsub)    
+    Kg_Haux     = copy(Hsub)
+    g_Haux_old  = copy(Hsub)
+    Kg_Haux_old = copy(Hsub)    
+    Haux_c      = copy(Hsub)
+    d_Haux      = copy(Hsub)
+    d_Haux_old  = copy(Hsub)
+    U_Haux       = copy(Hsub)
+
+    Haux = Array{Array{ComplexF64,2},1}(undef,Nkspin)
+    eta = zeros(Float64,Nstates,Nkspin)
+    for ikspin = 1:Nkspin
+        Haux[ikspin] = rand(ComplexF64, Nstates, Nstates)
+        Haux[ikspin] = 0.5*(Haux[ikspin] + Haux[ikspin]')
+        eta[:,ikspin], U_Haux[ikspin] = eigen(Haux[ikspin])
+        Haux[ikspin] = U_Haux[ikspin]*Haux[ikspin]*U_Haux[ikspin]'
+    end
+
+    #
     # Initial wave function
     #
     if startingwfc == :read
@@ -47,6 +88,11 @@ function KS_solve_Emin_PCG_02!(
 
     if Ham.sym_info.Nsyms > 1
         rhoe_symmetrizer = RhoeSymmetrizer( Ham )
+    end
+
+    # Rotate
+    for i in 1:Nkspin
+        psiks[i] = psiks[i]*U_Haux[i]
     end
 
     #
@@ -72,59 +118,7 @@ function KS_solve_Emin_PCG_02!(
 
     evals = zeros(Nstates,Nkspin)
 
-    #
-    # Variables for PCG
-    #
-    g      = zeros_BlochWavefunc( Ham )
-    d      = zeros_BlochWavefunc( Ham )
-    g_old  = zeros_BlochWavefunc( Ham )
-    d_old  = zeros_BlochWavefunc( Ham )
-    Kg     = zeros_BlochWavefunc( Ham )
-    Kg_old = zeros_BlochWavefunc( Ham )
-    psic   = zeros_BlochWavefunc( Ham )
-    gt     = zeros_BlochWavefunc( Ham )
 
-    β = zeros(Nkspin)
-    α = zeros(Nkspin)
-
-    Haux = Array{Array{ComplexF64,2},1}(undef,Nkspin)
-    eta = zeros(Float64,Nstates,Nkspin)
-    for ikspin = 1:Nkspin
-        Haux[ikspin] = rand(ComplexF64, Nstates, Nstates)
-        Haux[ikspin] = 0.5*(Haux[ikspin] + Haux[ikspin]')
-        eta[:,ikspin] = eigvals(Haux[ikspin])
-    end
-
-    Ham.electrons.Focc[:,:], E_fermi = calc_Focc( Nelectrons, wk, kT, eta, Nspin )
-    println("E_fermi = ", E_fermi)
-    for ist = 1:Nstates
-        println(eta[ist,1], " ", Ham.electrons.Focc[ist,1])
-    end
-
-    Hsub = Array{Array{ComplexF64,2},1}(undef,Nkspin)
-
-    g_Haux = Array{Array{ComplexF64,2},1}(undef,Nkspin)
-    gt_Haux = Array{Array{ComplexF64,2},1}(undef,Nkspin)    
-    Kg_Haux = Array{Array{ComplexF64,2},1}(undef,Nkspin)
-    g_Haux_old = Array{Array{ComplexF64,2},1}(undef,Nkspin)
-    Kg_Haux_old = Array{Array{ComplexF64,2},1}(undef,Nkspin)    
-    Haux_c = Array{Array{ComplexF64,2},1}(undef,Nkspin)
-    d_Haux = Array{Array{ComplexF64,2},1}(undef,Nkspin)
-    d_Haux_old = Array{Array{ComplexF64,2},1}(undef,Nkspin)
-
-    for ikspin = 1:Nkspin
-
-        Hsub[ikspin] = zeros(ComplexF64,Nstates,Nstates)
-
-        g_Haux[ikspin] = zeros(ComplexF64,Nstates,Nstates)
-        gt_Haux[ikspin] = zeros(ComplexF64,Nstates,Nstates)        
-        Kg_Haux[ikspin] = zeros(ComplexF64,Nstates,Nstates)
-        g_Haux_old[ikspin] = zeros(ComplexF64,Nstates,Nstates)
-        Kg_Haux_old[ikspin] = zeros(ComplexF64,Nstates,Nstates)        
-        Haux_c[ikspin] = zeros(ComplexF64,Nstates,Nstates)
-        d_Haux[ikspin] = zeros(ComplexF64,Nstates,Nstates)
-        d_Haux_old[ikspin] = zeros(ComplexF64,Nstates,Nstates)        
-    end
 
     β_Haux = zeros(Nkspin)
     α_Haux = zeros(Nkspin)
@@ -132,6 +126,14 @@ function KS_solve_Emin_PCG_02!(
     α_t_Haux = 1e-3
 
     Etot_old = 0.0
+
+    Ham.electrons.Focc[:,:], E_fermi = calc_Focc( Nelectrons, wk, kT, eta, Nspin )
+    Entropy = calc_entropy( wk, kT, eta, E_fermi, Nspin )
+    
+    println("E_fermi = ", E_fermi)
+    for ist = 1:Nstates
+        println(eta[ist,1], " ", Ham.electrons.Focc[ist,1])
+    end
 
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( Ham.atoms )
@@ -165,7 +167,7 @@ function KS_solve_Emin_PCG_02!(
         @printf("\n")
     end
 
-    Kscalar = 0.1
+    Kscalar = 0.05
 
     for iter = 1:NiterMax
 
@@ -176,7 +178,8 @@ function KS_solve_Emin_PCG_02!(
             Ham.ispin = ispin
             ikspin = ik + (ispin - 1)*Nkpt
 
-            g[ikspin], g_Haux[ikspin] = calc_grad_Haux( Ham, psiks[ikspin], eta[:,ikspin], kT )
+            g[ikspin], g_Haux[ikspin], _, Δ_Haux[ikspin] =
+            calc_grad_Haux( Ham, psiks[ikspin], eta[:,ikspin], kT )
             
             Kg[ikspin] = Kprec( Ham.ik, pw, g[ikspin] )
             
@@ -190,11 +193,16 @@ function KS_solve_Emin_PCG_02!(
                     real(sum(conj(g[ikspin]).*Kg[ikspin]))/real(sum(conj(g_old[ikspin]).*Kg_old[ikspin]))
                 
                 elseif i_cg_beta == 2
+                    
                     β[ikspin] =
                     real(sum(conj(g[ikspin]-g_old[ikspin]).*Kg[ikspin]))/real(sum(conj(g_old[ikspin]).*Kg_old[ikspin]))
+                    
                     #
-                    num1 = real(sum(conj(g_Haux[ikspin]-g_Haux_old[ikspin]).*Kg_Haux[ikspin]))
-                    denum1 = real(sum(conj(g_Haux_old[ikspin]).*Kg_Haux_old[ikspin]))
+                    #num1 = real(sum(conj(g_Haux[ikspin]-g_Haux_old[ikspin]).*Kg_Haux[ikspin]))
+                    #denum1 = real(sum(conj(g_Haux_old[ikspin]).*Kg_Haux_old[ikspin]))
+                    
+                    num1 = real(sum( conj(g_Haux[ikspin]) .* Δ_Haux[ikspin] ) )
+                    denum1 = real(sum( conj(g_Haux_old[ikspin]) .* Δ_Haux_old[ikspin] ) )
                     β_Haux[ikspin] = num1/denum1
 
                     println("num1   = ", num1)
@@ -215,31 +223,41 @@ function KS_solve_Emin_PCG_02!(
 
                 end
             end
+            
             if β[ikspin] < 0.0
                 β[ikspin] = 0.0
             end
+
+            if β_Haux[ikspin] < 0.0
+                β_Haux[ikspin] = 0.0
+            end
+
 
             d[ikspin] = -Kg[ikspin] + β[ikspin] * d_old[ikspin]
             psic[ikspin] = ortho_sqrt(psiks[ikspin] + α_t*d[ikspin])
 
             d_Haux[ikspin] = -Kg_Haux[ikspin] + β_Haux[ikspin] * d_Haux_old[ikspin]
+
             Haux_c[ikspin] = Haux[ikspin] + α_t*d_Haux[ikspin]
 
             Haux_c[ikspin] = 0.5*(Haux_c[ikspin] + Haux_c[ikspin]')
-            eta[:,ikspin] = eigvals(Haux_c[ikspin])
+            eta[:,ikspin], U_Haux[ikspin] = eigen(Haux_c[ikspin])
+            Haux_c[ikspin] = U_Haux[ikspin]*Haux_c[ikspin]*U_Haux[ikspin]'            
+
+            psic[ikspin] = psic[ikspin]*U_Haux[ikspin] # rotate
 
         end # ik
         end # ispin
 
 
         Ham.electrons.Focc[:,:], E_fermi = calc_Focc( Nelectrons, wk, kT, eta, Nspin )
-        
-        calc_rhoe!( Ham, psiks, Rhoe )
+        Entropy = calc_entropy( wk, kT, eta, E_fermi, Nspin )
+
+        calc_rhoe!( Ham, psic, Rhoe )
         # Symmetrize Rhoe if needed
         if Ham.sym_info.Nsyms > 1
             symmetrize_rhoe!( Ham, rhoe_symmetrizer, Rhoe )
         end
-
         update!(Ham, Rhoe)
 
         for ispin = 1:Nspin
@@ -249,10 +267,11 @@ function KS_solve_Emin_PCG_02!(
             Ham.ispin = ispin
             ikspin = ik + (ispin - 1)*Nkpt
 
-            gt[ikspin], gt_Haux[ikspin] = calc_grad_Haux( Ham, psic[ikspin], eta[:,ikspin], kT )
+            gt[ikspin], gt_Haux[ikspin], _, Δt_Haux[ikspin] =
+            calc_grad_Haux( Ham, psic[ikspin], eta[:,ikspin], kT )
 
             denum = real(sum(conj(g[ikspin]-gt[ikspin]).*d[ikspin]))
-            println("denum psi = ", denum)
+            #println("denum psi = ", denum)
             if denum != 0.0
                 α[ikspin] = abs( α_t*real(sum(conj(g[ikspin]).*d[ikspin]))/denum )
             else
@@ -264,23 +283,27 @@ function KS_solve_Emin_PCG_02!(
             psiks[ikspin] = ortho_sqrt(psiks[ikspin])
 
             # Update Haux
-            denum = real(sum(conj(g_Haux[ikspin]-gt_Haux[ikspin]).*d_Haux[ikspin]))
-            println("denum Haux = ", denum)
+            #denum = real(sum(conj(g_Haux[ikspin]-gt_Haux[ikspin]).*d_Haux[ikspin]))
+            denum = real(sum(conj(Δ_Haux[ikspin]-Δt_Haux[ikspin]).*d_Haux[ikspin]))
 
             if abs(denum) > 1e-15
-                α_Haux[ikspin] = abs( α_t*real(sum(conj(g_Haux[ikspin]).*d_Haux[ikspin]))/denum )
+                α_Haux[ikspin] = abs( α_t*real(sum(conj(Δ_Haux[ikspin]).*d_Haux[ikspin]))/denum )
             else
-                #α_Haux[ikspin] = 0.0
-                α_Haux[ikspin] = α_t
+                α_Haux[ikspin] = 0.0
+                #α_Haux[ikspin] = α_t
             end
             Haux[ikspin] = Haux[ikspin] + α_Haux[ikspin]*d_Haux[ikspin]
             Haux[ikspin] = 0.5*(Haux[ikspin] + Haux[ikspin]')
-            eta[:,ikspin] = eigvals(Haux[ikspin])
+            eta[:,ikspin], U_Haux[ikspin] = eigen(Haux[ikspin])
+            Haux[ikspin] = U_Haux[ikspin]*Haux[ikspin]*U_Haux[ikspin]'            
 
+            psiks[ikspin] = psiks[ikspin]*U_Haux[ikspin] # rotate
+            # also rotate Haux ?
         end
         end
 
         Ham.electrons.Focc[:,:], E_fermi = calc_Focc( Nelectrons, wk, kT, eta, Nspin )
+        Entropy = calc_entropy( wk, kT, eta, E_fermi, Nspin )
 
         # Calculate Hsub (for comparison with Haux)
         for ispin = 1:Nspin
@@ -291,7 +314,11 @@ function KS_solve_Emin_PCG_02!(
             #
             Hsub[ikspin] = psiks[ikspin]' * ( Ham*psiks[ikspin] )
 
+            evalsHsub = eigvals(Hsub[ikspin])
+
             println("diff Haux = ", sum(Hsub[ikspin] - Haux[ikspin]))
+            println("diff evals = ", sum(evalsHsub - eta[:,ikspin]))
+
         end
         end
 
@@ -311,6 +338,8 @@ function KS_solve_Emin_PCG_02!(
         update!(Ham, Rhoe)
 
         Ham.energies = calc_energies( Ham, psiks )
+        Ham.energies.mTS = Entropy
+
         Etot = sum(Ham.energies)
         diffE = abs(Etot-Etot_old)
 
@@ -331,26 +360,12 @@ function KS_solve_Emin_PCG_02!(
             break
         end
 
-        # print out some stuffs
-        ikspin = 1
-        println("\nIter = ", iter)
-        println("sum g_Haux      = ", sum(g_Haux[ikspin]))
-        println("sum g_Haux_old  = ", sum(g_Haux_old[ikspin]))
-        println("sum Kg_Haux     = ", sum(Kg_Haux[ikspin]))
-        println("sum Kg_Haux_old = ", sum(Kg_Haux_old[ikspin]))
-        println("sum d_Haux      = ", sum(d_Haux[ikspin]))
-        println("sum d_Haux_old  = ", sum(d_Haux_old[ikspin]))
-        println("sum gt_Haux     = ", sum(gt_Haux[ikspin]))
-        println("real = ")
-        print_matrix(real(g_Haux[ikspin]))
-        println("imag = ")
-        print_matrix(imag(g_Haux[ikspin]))
-
         g_old = copy(g)
         d_old = copy(d)
         Kg_old = copy(Kg)
 
         g_Haux_old = copy(g_Haux)
+        Δ_Haux_old = copy(g_Haux)
         d_Haux_old = copy(d_Haux)
         Kg_Haux_old = copy(Kg_Haux)
 

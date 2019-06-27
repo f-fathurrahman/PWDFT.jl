@@ -173,7 +173,7 @@ function KS_solve_Emin_PCG_01!( Ham::Hamiltonian;
         end
 
         
-        calc_rhoe!( Ham, psiks, Rhoe )
+        calc_rhoe!( Ham, psic, Rhoe )
         
         # Symmetrize Rhoe if needed
         if Ham.sym_info.Nsyms > 1

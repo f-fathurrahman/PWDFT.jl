@@ -12,18 +12,23 @@ function calc_grad_Haux( Ham::Hamiltonian, psi::Array{ComplexF64,2}, eta::Array{
     Ngw     = size(psi)[1]
     Nstates = size(psi)[2]
 
+    # gradients
     g_psi = zeros(ComplexF64, Ngw, Nstates)
     g_Haux = zeros(ComplexF64, Nstates, Nstates)
+
+    # primary search direction
+    Δ_psi = zeros(ComplexF64, Ngw, Nstates)
+    Δ_Haux = zeros(ComplexF64, Nstates, Nstates)
 
     Hpsi = op_H( Ham, psi )
     Hsub = psi' * Hpsi
 
     for ist = 1:Nstates
-        g_psi[:,ist] = Hpsi[:,ist]
+        Δ_psi[:,ist] = Hpsi[:,ist]
         for jst = 1:Nstates
-            g_psi[:,ist] = g_psi[:,ist] - Hsub[jst,ist]*psi[:,jst]
+            Δ_psi[:,ist] = Δ_psi[:,ist] - Hsub[jst,ist]*psi[:,jst]
         end
-        g_psi[:,ist] = f[ist]*g_psi[:,ist]
+        g_psi[:,ist] = f[ist]*Δ_psi[:,ist]
     end
 
     df_deta = zeros(Nstates)
@@ -44,6 +49,9 @@ function calc_grad_Haux( Ham::Hamiltonian, psi::Array{ComplexF64,2}, eta::Array{
     #    @printf("dmu_deta = %18.10f, df_deta= %18.10f\n", dmu_deta[ist], df_deta[ist])
     #end
 
+
+    Δ_Haux[:,:] = copy(Hsub)
+
     # diagonal
     for ist = 1:Nstates
         term1 = ( Hsub[ist,ist] - eta[ist] ) * df_deta[ist]
@@ -52,6 +60,7 @@ function calc_grad_Haux( Ham::Hamiltonian, psi::Array{ComplexF64,2}, eta::Array{
             term2 = term2 + (Hsub[kst,kst] - eta[kst])*df_deta[kst]
         end
         g_Haux[ist,ist] = term1 - dmu_deta[ist]*term2
+        Δ_Haux[ist,ist] = Hsub[ist,ist] - eta[ist]
     end
 
     # off diagonal
@@ -62,5 +71,5 @@ function calc_grad_Haux( Ham::Hamiltonian, psi::Array{ComplexF64,2}, eta::Array{
         end
     end
 
-    return g_psi, g_Haux
+    return g_psi, g_Haux, Δ_psi, Δ_Haux
 end

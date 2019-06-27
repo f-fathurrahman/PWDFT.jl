@@ -70,6 +70,8 @@ function main()
     #Ham = create_Ham_atom_Pt_smearing()
     Ham = create_Ham_atom_Al_smearing()    
 
+    pw = Ham.pw
+
     # random Haux
     Nstates = Ham.electrons.Nstates
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
@@ -97,7 +99,13 @@ function main()
     end
 
     g_psi = zeros_BlochWavefunc( Ham )
+    g_psi_old = zeros_BlochWavefunc( Ham )
+    Δ_psi = zeros_BlochWavefunc( Ham )
+    Δ_psi_old = zeros_BlochWavefunc( Ham )
 
+    Hsub = Array{Array{ComplexF64,2},1}(undef,Nkspin)
+
+    Δ_Haux = Array{Array{ComplexF64,2},1}(undef,Nkspin)
     g_Haux = Array{Array{ComplexF64,2},1}(undef,Nkspin)
     Kg_Haux = Array{Array{ComplexF64,2},1}(undef,Nkspin)
     Haux_c = Array{Array{ComplexF64,2},1}(undef,Nkspin)
@@ -105,6 +113,10 @@ function main()
     d_Haux_old = Array{Array{ComplexF64,2},1}(undef,Nkspin)
 
     for ikspin = 1:Nkspin
+
+        Hsub[ikspin] = zeros(ComplexF64,Nstates,Nstates)
+
+        Δ_Haux[ikspin] = zeros(ComplexF64,Nstates,Nstates)
         g_Haux[ikspin] = zeros(ComplexF64,Nstates,Nstates)
         Haux_c[ikspin] = zeros(ComplexF64,Nstates,Nstates)
         Kg_Haux[ikspin] = zeros(ComplexF64,Nstates,Nstates)
@@ -114,52 +126,95 @@ function main()
 
     β_Haux = zeros(Float64,Nkspin)
 
+    λ_psi = zeros(Float64,Nkspin)
+    λ_Haux = zeros(Float64,Nkspin)
+
     kT = 0.001
 
     Focc, E_fermi = calc_Focc( Nelectrons, wk, kT, eta, Nspin )
     Ham.electrons.Focc[:,:] = Focc
 
-    α_t = 3e-5
+    α_t = 3e-4
+    Etot_old = 1.0
 
-    for ispin = 1:Nspin
-    for ik = 1:Nkpt
+    for iter = 1:50
+
+        for ispin = 1:Nspin
+        for ik = 1:Nkpt
+            
+            Ham.ik = ik
+            Ham.ispin = ispin
+            ikspin = ik + (ispin - 1)*Nkpt
+    
+            g_psi[ikspin], g_Haux[ikspin], Δ_psi[ikspin], Δ_Haux[ikspin] =
+            calc_grad_Haux( Ham, psiks[ikspin], eta[:,ikspin], kT )
+    
+            Δ_psi[ikspin] = -Kprec( Ham.ik, pw, Δ_psi[ikspin] )
+            Δ_Haux[ikspin] = 0.1*Δ_Haux[ikspin]
+
+        #if iter > 1
+        #    λ_psi[ikspin] =
+        #    real(sum(conj(g_psi[ikspin]).*Δ_psi[ikspin]))/
+        #    real(sum(conj(g_psi_old[ikspin])).*Δ_psi_old[ikspin] )
+        #    #
+        #    λ_Haux[ikspin] =
+        #    real(sum(conj(g_Haux[ikspin]).*Δ_Haux[ikspin]))/
+        #    real(sum(conj(g_Haux_old[ikspin])).*Δ_Haux_old[ikspin] )            
+        #end
+#
+#        #d_psi[ikspin] = Δ_psi[ikspin] + λ_psi[ikspin] * d_psi_old[ikspin]
+        #d_Haux[ikspin] = Δ_Haux[ikspin] + λ_Haux[ikspin] * d_Haux_old[ikspin]
+
+        #Haux_c[ikspin] = 0.5*(Haux_c[ikspin] + Haux_c[ikspin]') # make the eigenvalues real
+        #eta[:,ikspin] = eigvals(Haux_c[ikspin])
+
+            psiks[ikspin] = psiks[ikspin] + 1e-5*Δ_psi[ikspin]
+            ortho_sqrt(psiks[ikspin])
+
+            Haux[ikspin] = Haux[ikspin] + 1e-3*Δ_Haux[ikspin]
+            Haux[ikspin] = 0.5*(Haux[ikspin] + Haux[ikspin]') # make the eigenvalues real
+            eta[:,ikspin] = eigvals(Haux[ikspin])
         
-        Ham.ik = ik
-        Ham.ispin = ispin
-        ikspin = ik + (ispin - 1)*Nkpt
+            #println("Eigenvalues")
+            #for i = 1:Nstates
+            #    println( eta[i,ikspin] )
+            #end
 
-        g_psi[ikspin], g_Haux[ikspin] = calc_grad_Haux( Ham, psiks[ikspin], eta[:,ikspin], kT )
+            #Δ_psi_old = copy(Δ_psi)
+            #g_psi_old = copy(g_psi)
 
-        Kg_Haux[ikspin] = 0.1*g_Haux[ikspin]
+        end
+        end
+    
+        Ham.electrons.Focc[:,:], E_fermi = calc_Focc( Nelectrons, wk, kT, eta, Nspin )
+        Entropy = calc_entropy( wk, kT, eta, E_fermi, Nspin )
 
-        println("Real Matrix:")
-        print_matrix(real(g_Haux[ikspin]))
-        println("Imag Matrix:")
-        print_matrix(imag(g_Haux[ikspin]))
+        calc_rhoe!( Ham, psiks, Rhoe )
+        update!(Ham, Rhoe)
 
-        println("sum g_Haux = ", sum(g_Haux[ikspin]))
+        Ham.energies = calc_energies( Ham, psiks )
+        Ham.energies.mTS = Entropy
+        Etot = sum(Ham.energies)
 
-        #β[ikspin] =
-        #real(sum(conj(g_Haux[ikspin]-g_Haux_old[ikspin]).*Kg_Haux[ikspin]))/
-        #real(sum(conj(g_Haux_old[ikspin]).*Kg_Haux_old[ikspin]))
+        # Calculate Hsub (for comparison with Haux)
+        for ispin = 1:Nspin
+        for ik = 1:Nkpt
+            Ham.ik = ik
+            Ham.ispin = ispin
+            ikspin = ik + (ispin - 1)*Nkpt
+            #
+            Hsub[ikspin] = psiks[ikspin]' * ( Ham*psiks[ikspin] )
 
-        d_Haux[ikspin] = -Kg_Haux[ikspin] + β_Haux[ikspin] * d_Haux_old[ikspin]
-        
-        Haux_c[ikspin] = Haux[ikspin] + α_t*d_Haux[ikspin]
-
-        println("Real Haux c")
-        print_matrix(real(Haux_c[ikspin]))
-        println("Imag Haux ")
-        print_matrix(imag(Haux_c[ikspin]))
-
-        Haux_c[ikspin] = 0.5*(Haux_c[ikspin] + Haux_c[ikspin]') # make the eigenvalues real
-        eta[:,ikspin] = eigvals(Haux_c[ikspin])
-        println("Eigenvalues")
-        for i = 1:Nstates
-            println( eta[i,ikspin] )
+            println("diff Haux = ", real(sum(Hsub[ikspin] - Haux[ikspin])))
+        end
         end
 
-    end
+
+
+        @printf("%18.10f %18.10e\n", Etot, Etot_old-Etot)
+
+        Etot_old = Etot
+
     end
 
 end
