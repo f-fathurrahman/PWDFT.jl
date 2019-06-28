@@ -10,6 +10,9 @@ const DIR_STRUCTURES = joinpath(DIR_PWDFT, "structures")
 
 
 function main( ; method="SCF" )
+
+    Random.seed!(1234)
+
     # Atoms
     atoms = Atoms(xyz_string_frac=
         """
