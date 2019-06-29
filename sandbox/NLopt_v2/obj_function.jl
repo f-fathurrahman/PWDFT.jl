@@ -25,11 +25,11 @@ function obj_function!(
     Entropy = calc_entropy( wk, kT, evals, E_fermi, Nspin )
 
     # DEBUG, only for Nkspin=1
-    @printf("E_fermi = %18.10f\n", E_fermi)
-    @printf("eigenvalues, focc = \n")
-    for i in 1:Nstates
-        @printf("%5d %18.10f %18.10f\n", i, evals[i,1], Ham.electrons.Focc[i,1])
-    end
+    #@printf("E_fermi = %18.10f\n", E_fermi)
+    #@printf("eigenvalues, focc = \n")
+    #for i in 1:Nstates
+    #    @printf("%5d %18.10f %18.10f\n", i, evals[i,1], Ham.electrons.Focc[i,1])
+    #end
 
     if !skip_ortho
         for i = 1:length(psiks)

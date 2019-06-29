@@ -80,9 +80,9 @@ function main_SD()
 
     Random.seed!(1234)
 
-    #Ham = create_Ham_atom_Al_smearing()
+    Ham = create_Ham_atom_Al_smearing()
     #Ham = create_Ham_Al_fcc_smearing()
-    Ham = create_Ham_atom_Pt_smearing()
+    #Ham = create_Ham_atom_Pt_smearing()
     
     if Ham.sym_info.Nsyms > 1
         rhoe_symmetrizer = RhoeSymmetrizer( Ham )
@@ -91,6 +91,8 @@ function main_SD()
     psiks = rand_BlochWavefunc( Ham )
 
     Nstates = Ham.electrons.Nstates
+    Nspin = Ham.electrons.Nspin
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     Nkspin = length(psiks)
 
     Haux = Array{Matrix{ComplexF64},1}(undef,Nkspin)
@@ -98,6 +100,8 @@ function main_SD()
         Haux[i] = rand( ComplexF64, Nstates, Nstates )
         Haux[i] = 0.5*( Haux[i] + Haux[i]' )
     end
+
+    Hsub = copy(Haux)
 
     g = zeros_BlochWavefunc( Ham )
     Kg = copy(g)
@@ -126,9 +130,9 @@ function main_SD()
         grad_obj_function!( Ham, psiks, g, Haux, g_Haux, rhoe_symm=rhoe_symmetrizer )
 
         precond_grad!( Ham, g, Kg )
-        Kg_Haux = 0.1*g_Haux
+        Kg_Haux = 0.01*g_Haux
 
-        psiks = psiks - α_t*Kg
+        psiks = psiks - α_t*g
 
         for i = 1:Nkspin
             #println("\nikspin = ", i)
@@ -136,13 +140,33 @@ function main_SD()
             #print_matrix(real(g_Haux[i]))
             #println("\nimag part")
             #print_matrix(imag(g_Haux[i]))
-            Haux[i] = Haux[i] - α_t*Kg_Haux[i]
+            Haux[i] = Haux[i] + α_t*Kg_Haux[i]
             Haux[i] = 0.5*( Haux[i] + Haux[i]' ) # or use previous U_Haux
         end
 
         Etot = obj_function!( Ham, psiks, Haux, rhoe_symm=rhoe_symmetrizer )
 
-        @printf("%8d %18.10f %18.10e\n", iter, Etot, Etot_old - Etot)
+        #@printf("%8d %18.10f %18.10e\n", iter, Etot, Etot_old - Etot)
+
+        # Calculate Hsub (for comparison with Haux)
+        for ispin = 1:Nspin
+        for ik = 1:Nkpt
+            Ham.ik = ik
+            Ham.ispin = ispin
+            ikspin = ik + (ispin - 1)*Nkpt
+            #
+            Hsub[ikspin] = psiks[ikspin]' * ( Ham*psiks[ikspin] )
+
+            evalsHsub = eigvals(Hsub[ikspin])
+            evalsHaux = diag(Haux[ikspin])
+
+            #println("diff Haux = ", sum(Hsub[ikspin] - Haux[ikspin]))
+            println("diff sum evals = ", abs(sum(evalsHaux) - sum(evalsHsub)))
+
+        end
+        end
+
+
         Etot_old = Etot
     end
 
