@@ -24,11 +24,13 @@ function PsPot_UPF( upf_file::String )
     pp_header = LightXML.get_elements_by_tagname(xroot, "PP_HEADER")
 
     atsymb = LightXML.attributes_dict(pp_header[1])["element"]
-    zval = parse( Int64, LightXML.attributes_dict(pp_header[1])["z_valence"] )
+    zval = Int64( parse( Float64, LightXML.attributes_dict(pp_header[1])["z_valence"] ) )
+    lmax = parse( Int64, LightXML.attributes_dict(pp_header[1])["l_max"] )
+    Nr = parse(Int64,LightXML.attributes_dict(pp_header[1])["mesh_size"])
 
     pp_mesh = LightXML.get_elements_by_tagname(xroot, "PP_MESH")
 
-    Nr = parse(Int64,LightXML.attributes_dict(pp_mesh[1])["mesh"])
+    #Nr = parse(Int64,LightXML.attributes_dict(pp_mesh[1])["mesh"])
     
     pp_r = LightXML.get_elements_by_tagname(pp_mesh[1], "PP_R")
     pp_r_str = LightXML.content(pp_r[1])
@@ -146,6 +148,10 @@ function test_main()
     
     psp = PsPot_UPF("Si.pz-hgh.UPF")
     println(psp)
+
+    psp = PsPot_UPF("Si_ONCV_PBE-1.0.upf")
+    println(psp)
+
 end
 
 test_main()
