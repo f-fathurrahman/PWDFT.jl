@@ -81,7 +81,7 @@ function main_SD()
     g = zeros_BlochWavefunc( Ham )
     Kg = zeros_BlochWavefunc( Ham )
 
-    α_t = 1e-5
+    α_t = 3e-5
 
     for iter = 1:50
         grad_obj_function!( Ham, psiks, g, Kg )
