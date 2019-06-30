@@ -171,10 +171,10 @@ function main_SD()
     end
 
 end
-main_SD()
+#main_SD()
 
 
-#=
+
 function calc_beta_CG!( g, g_old, Kg, Kg_old, β )
     for i = 1:length(g)
         β[i] = real(sum(conj(g[i]-g_old[i]).*Kg[i]))/real(sum(conj(g_old[i]).*Kg_old[i]))
@@ -203,17 +203,34 @@ function main_CG()
 
     Random.seed!(1234)
 
-    #Ham = create_Ham_H2()
-    #Ham = create_Ham_H_atom()
-    Ham = create_Ham_Si_fcc()
-
-    psiks = rand_BlochWavefunc( Ham )
-    Etot_old = obj_function!( Ham, psiks, skip_ortho=true )
+    Ham = create_Ham_atom_Al_smearing()
+    #Ham = create_Ham_Al_fcc_smearing()
+    #Ham = create_Ham_atom_Pt_smearing()
 
     if Ham.sym_info.Nsyms > 1
         rhoe_symmetrizer = RhoeSymmetrizer( Ham )
     end
 
+
+    Nstates = Ham.electrons.Nstates
+    Nspin = Ham.electrons.Nspin
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+    Nkspin = Nkpt*Nspin
+
+    Haux = Array{Matrix{ComplexF64},1}(undef,Nkspin)
+    for i in 1:Nkspin
+        Haux[i] = rand( ComplexF64, Nstates, Nstates )
+        Haux[i] = 0.5*( Haux[i] + Haux[i]' )
+    end
+
+    Hsub = copy(Haux)
+
+
+
+
+    psiks = rand_BlochWavefunc( Ham )
+
+    # prepare guess wavefunc
     Npoints = prod(Ham.pw.Ns)
     Nspin = Ham.electrons.Nspin
     Rhoe = zeros(Float64,Npoints,Nspin)
@@ -229,17 +246,38 @@ function main_CG()
     _ = diag_LOBPCG!( Ham, psiks, verbose=false, verbose_last=false, NiterMax=10 )
 
 
-    g = zeros_BlochWavefunc( Ham )
-    gt = zeros_BlochWavefunc( Ham )    
-    Kg = zeros_BlochWavefunc( Ham )
-    g_old = zeros_BlochWavefunc( Ham )
-    Kg_old = zeros_BlochWavefunc( Ham )
-    d = zeros_BlochWavefunc( Ham )
-    d_old = zeros_BlochWavefunc( Ham )
-    psic = zeros_BlochWavefunc( Ham )
+
+    Etot_old = obj_function!( Ham, psiks, Haux, skip_ortho=true )
+
+
+    g  = zeros_BlochWavefunc( Ham )
+    gt = copy(g) 
+    Kg = copy(g)
+    g_old = copy(g)
+    Kg_old = copy(g)
+    d = copy(g)
+    d_old = copy(g)
+    psic = copy(g)
+
+    g_Haux = Array{Matrix{ComplexF64},1}(undef,Nkspin)
+    for i = 1:Nkspin
+        g_Haux[i] = zeros( ComplexF64, Nstates, Nstates )
+    end
+    Kg_Haux     = copy(g_Haux)
+    gt_Haux     = copy(g_Haux) 
+    g_Haux_old  = copy(g_Haux)
+    Kg_Haux_old = copy(g_Haux)
+    d_Haux      = copy(g_Haux)
+    d_Haux_old  = copy(g_Haux)
+    Hauxc       = copy(g_Haux)
 
     β = zeros(length(g))
     α = zeros(length(g))
+
+    β_Haux = zeros(length(g_Haux))
+    α_Haux = zeros(length(g_Haux))
+
+
 
     Ham.energies.NN = calc_E_NN( Ham.atoms )
     Ham.energies.PspCore = calc_PspCore_ene( Ham.atoms, Ham.pspots )
@@ -251,23 +289,40 @@ function main_CG()
 
     for iter = 1:50
         
-        grad_obj_function!( Ham, psiks, g, rhoe_symm=rhoe_symmetrizer )
+        grad_obj_function!( Ham, psiks, g, Haux, g_Haux, rhoe_symm=rhoe_symmetrizer )
         precond_grad!( Ham, g, Kg )
+
+        Kg_Haux = 0.1*g_Haux  # scalar preconditioner
+
         if iter > 1
             calc_beta_CG!( g, g_old, Kg, Kg_old, β )
+            calc_beta_CG!( g_Haux, g_Haux_old, Kg_Haux, Kg_Haux_old, β_Haux )
         end
 
         d = -Kg + β .* d_old
 
+        d_Haux = Kg_Haux + β_Haux .* d_Haux_old
+
         psic = psiks + α_t*d  # trial wavefunc
 
+        Hauxc = Haux + α_t*d_Haux
+        for i in 1:Nkspin
+            Hauxc[i] = 0.5*( Hauxc[i] + Hauxc[i]' )
+        end
+
         # line minimization
-        grad_obj_function!( Ham, psic, gt, rhoe_symm=rhoe_symmetrizer )
+        grad_obj_function!( Ham, psic, gt, Hauxc, gt_Haux, rhoe_symm=rhoe_symmetrizer )
+        
         calc_alpha_CG!( α_t, g, gt, d, α )
+
+        calc_alpha_CG( α_t, g_Haux, gt_Haux, d_Haux, α_Haux )
 
         psiks = psiks + α .* d
 
-        Etot = obj_function!( Ham, psiks, rhoe_symm=rhoe_symmetrizer )
+        Haux = Hauxc + α_Haux .* d_Haux
+
+        Etot = obj_function!( Ham, psiks, Haux, rhoe_symm=rhoe_symmetrizer )
+
         diffE = abs(Etot_old - Etot)
         @printf("%8d %18.10f %18.10e\n", iter, Etot, Etot_old - Etot)
 
@@ -287,10 +342,14 @@ function main_CG()
         Kg_old = copy(Kg)
         d_old = copy(d)
 
+        g_Haux_old = copy(g_Haux)
+        Kg_Haux_old = copy(Kg_Haux)
+        d_Haux_old = copy(d_Haux)
+
+
     end
 
 end
 
 @time main_CG()
-@time main_CG()
-=#
+
