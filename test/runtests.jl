@@ -24,6 +24,8 @@ include("test_SCF.jl")
 
 include("test_xc.jl")
 include("test_spglib.jl")
+include("test_kpoints.jl")
+
 
 
 println("")

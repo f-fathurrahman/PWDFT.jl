@@ -3,7 +3,8 @@ The type for describing Bloch wave vector of electronic states.
 """
 mutable struct KPoints
     Nkpt::Int64
-    mesh::Tuple{Int64,Int64,Int64}
+    mesh::NTuple{3, Int64}
+    is_shift::NTuple{3, Int64}
     k::Array{Float64,2}
     wk::Array{Float64,1}
     RecVecs::Array{Float64,2} # copy of reciprocal vectors
@@ -21,7 +22,7 @@ end
 
 function KPoints( Nkpt::Int64, k::Array{Float64,2},
                   wk::Array{Float64,1}, RecVecs::Array{Float64,2} )
-    return KPoints( Nkpt, (0,0,0), k, wk, RecVecs )
+    return KPoints( Nkpt, (0,0,0), (0,0,0), k, wk, RecVecs )
 end
 
 
@@ -33,14 +34,9 @@ function KPoints( atoms::Atoms )
     k = zeros(3,1)
     wk = [1.0]
     RecVecs = 2*pi*inv(atoms.LatVecs')
-    return KPoints( Nkpt, (0,0,0), k, wk, RecVecs )
+    return KPoints( Nkpt, (0,0,0), (0,0,0), k, wk, RecVecs )
 end
 
-
-function KPoints( atoms::Atoms, mesh::Tuple{Int64,Int64,Int64}, is_shift::Array{Int64,1};
-                  time_reversal=1 )
-    return KPoints( atoms, (mesh[1], mesh[2], mesh[3]), is_shift, time_reversal=time_reversal )
-end
 
 
 """
@@ -61,12 +57,12 @@ Generate an instance of `KPoints` with uniform grid-points reduced by symmetry
 
 - `verbose`: if `true`, additional information will be printed out.
  """
-function KPoints( atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{Int64,1};
-                  time_reversal=1 )
+function KPoints( atoms::Atoms, mesh::Array{T, 1}, is_shift::Array{T, 1};
+                  time_reversal=1 ) where T <: Integer
 
     Nkpt, kgrid, mapping =
     spg_get_ir_reciprocal_mesh( atoms, mesh, is_shift, is_time_reversal=time_reversal )
-    
+
     # search for unique mapping
     umap = unique(mapping)
 
@@ -85,11 +81,11 @@ function KPoints( atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{Int64,1};
 
     kred = zeros(Float64,3,Nkpt)
     for ik = 1:Nkpt
-        kred[1,ik] = list_ir_k[ik][1] / mesh[1]
-        kred[2,ik] = list_ir_k[ik][2] / mesh[2]
-        kred[3,ik] = list_ir_k[ik][3] / mesh[3]
+        kred[1,ik] = (list_ir_k[ik][1] + is_shift[1]/2) / mesh[1]
+        kred[2,ik] = (list_ir_k[ik][2] + is_shift[2]/2) / mesh[2]
+        kred[3,ik] = (list_ir_k[ik][3] + is_shift[3]/2) / mesh[3]
     end
-    
+
     # count for occurence of each unique mapping
     kcount = zeros(Int64,Nkpt)
     for ik = 1:Nkpt
@@ -106,9 +102,22 @@ function KPoints( atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{Int64,1};
     # convert to cartesian unit
     kred = RecVecs*kred
 
-    return KPoints( Nkpt, (mesh[1], mesh[2], mesh[3]), kred, wk, RecVecs )
+    return KPoints( Nkpt, (mesh[1], mesh[2], mesh[3]), (is_shift[1], is_shift[2], is_shift[3]), kred, wk, RecVecs )
 
 end
+
+KPoints( atoms::Atoms, mesh::NTuple{3, T}, is_shift::NTuple{3, T};
+                  time_reversal=1 ) where T <: Integer =
+    KPoints( atoms, [mesh[1], mesh[2], mesh[3]], [is_shift[1], is_shift[2], is_shift[3]], time_reversal=time_reversal )
+
+KPoints( atoms::Atoms, mesh::NTuple{3, T}, is_shift::Array{T,1};
+                  time_reversal=1 ) where T <: Integer =
+    KPoints( atoms, [mesh[1], mesh[2], mesh[3]], [is_shift[1], is_shift[2], is_shift[3]], time_reversal=time_reversal )
+
+KPoints( atoms::Atoms, mesh::Array{T, 1}, is_shift::NTuple{3, T};
+                  time_reversal=1 ) where T <: Integer =
+    KPoints( atoms, [mesh[1], mesh[2], mesh[3]], [is_shift[1], is_shift[2], is_shift[3]], time_reversal=time_reversal )
+
 
 # unit in crystal coord
 function parse_kpts_string(kpts_string::String)
@@ -142,7 +151,7 @@ function kpoints_from_string( atoms::Atoms, kpts_string::String )
     # kpts need to be converted to Cartesian form
     RecVecs = 2*pi*inv(Matrix(atoms.LatVecs'))
     kpt = RecVecs*kred
-    return KPoints(Nkpt, (0,0,0), kpt, wk, RecVecs)
+    return KPoints(Nkpt, (0,0,0), (0,0,0), kpt, wk, RecVecs)
 end
 
 
@@ -165,7 +174,7 @@ function kpoints_from_file( atoms::Atoms, filename::String )
     #
     wk = ones(Nkpt) # not used for non-scf calculations
     #
-    return KPoints(Nkpt, (0,0,0), kpt, wk, RecVecs)
+    return KPoints(Nkpt, (0,0,0), (0,0,0), kpt, wk, RecVecs)
 end
 
 function kpath_from_file( atoms::Atoms, filename::String )
@@ -201,7 +210,7 @@ function kpath_from_file( atoms::Atoms, filename::String )
     #
     wk = ones(Nkpt) # not used for non-scf calculations
     #
-    return KPoints(Nkpt, (0,0,0), kpt, wk, RecVecs), kpt_spec, kpt_spec_labels
+    return KPoints(Nkpt, (0,0,0), (0,0,0), kpt, wk, RecVecs), kpt_spec, kpt_spec_labels
 end
 
 function gen_MonkhorstPack( mesh::Array{Int64,1} )
