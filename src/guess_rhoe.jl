@@ -17,8 +17,6 @@ function guess_rhoe( Ham::Hamiltonian )
 
     strf = calc_strfact( atoms, pw )
 
-    println("Generating Gaussian Rhoe")
-
     for ia = 1:Natoms
         isp = atm2species[ia]
         Zval = pspots[isp].zval
@@ -35,8 +33,6 @@ function guess_rhoe( Ham::Hamiltonian )
 
     intRhoe = sum(Rhoe)*CellVolume/Npoints
     Rhoe = Rhoe*Nelectrons/intRhoe
-    intRhoe = sum(Rhoe)*CellVolume/Npoints
-    @printf("Integrated Gaussian Rhoe: %18.10f\n", intRhoe)
 
     return Rhoe
 end
