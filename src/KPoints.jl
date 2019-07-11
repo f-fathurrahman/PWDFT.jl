@@ -1,7 +1,7 @@
 """
 The type for describing Bloch wave vector of electronic states.
 """
-mutable struct KPoints
+struct KPoints
     Nkpt::Int64
     mesh::Tuple{Int64,Int64,Int64}
     k::Array{Float64,2}
