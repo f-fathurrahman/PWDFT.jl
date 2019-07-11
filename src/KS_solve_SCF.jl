@@ -132,18 +132,20 @@ function KS_solve_SCF!(
     end
 
 
-    @printf("\n")
-    @printf("Self-consistent iteration begins ...\n")
-    @printf("update_psi = %s\n", update_psi)
-    @printf("mix_method = %s\n", mix_method)
-    if mix_method in ("rpulay", "anderson", "ppulay", "broyden")
-        @printf("mixdim = %d\n", mixdim)
+    if verbose
+        @printf("\n")
+        @printf("Self-consistent iteration begins ...\n")
+        @printf("update_psi = %s\n", update_psi)
+        @printf("mix_method = %s\n", mix_method)
+        if mix_method in ("rpulay", "anderson", "ppulay", "broyden")
+            @printf("mixdim = %d\n", mixdim)
+        end
+        @printf("Density mixing with betamix = %10.5f\n", betamix)
+        if use_smearing
+            @printf("Smearing = %f\n", kT)
+        end
+        println("") # blank line before SCF iteration info
     end
-    @printf("Density mixing with betamix = %10.5f\n", betamix)
-    if use_smearing
-        @printf("Smearing = %f\n", kT)
-    end
-    println("") # blank line before SCF iteration info
 
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( Ham.atoms )
