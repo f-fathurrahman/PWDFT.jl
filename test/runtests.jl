@@ -25,6 +25,7 @@ include("test_SCF.jl")
 include("test_xc.jl")
 include("test_spglib.jl")
 
+include("test_KS_solve_SCF.jl")
 
 println("")
 println("All test successfully run")
