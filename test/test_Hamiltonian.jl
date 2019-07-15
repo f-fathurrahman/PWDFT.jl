@@ -1,7 +1,5 @@
 # H atom in a cube with pseudopotential
 function test_Hamiltonian_v1()
-    
-    dir_PWDFT = joinpath( dirname(pathof(PWDFT)), "..")
 
     Ham = Hamiltonian(    
         Atoms( xyz_string="""
@@ -9,10 +7,10 @@ function test_Hamiltonian_v1()
 
         H  0.0  0.0  0.0
         """, LatVecs=gen_lattice_sc(16.0) ),
-        [joinpath(dir_PWDFT, "pseudopotentials/pade_gth/H-q1.gth")],
+        [joinpath(DIR_PWDFT, "pseudopotentials/pade_gth/H-q1.gth")],
         15.0
     )
-    println(Ham)
+
     return nothing
 end
 
@@ -26,6 +24,11 @@ function test_Hamiltonian_v2()
         """, LatVecs=gen_lattice_sc(16.0) ),
         15.0
     )
-    println(Ham)
+
     return nothing
+end
+
+@testset "create Hamiltonian" begin
+    @test test_Hamiltonian_v1() == nothing
+    @test test_Hamiltonian_v2() == nothing
 end

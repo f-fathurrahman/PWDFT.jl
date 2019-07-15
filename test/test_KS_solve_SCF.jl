@@ -1,5 +1,3 @@
-const DIR_PWDFT = joinpath( dirname(pathof(PWDFT)), "..")
-
 Ham = Hamiltonian(    
     Atoms( xyz_string="""
     1
@@ -37,7 +35,7 @@ end
 end
 
 @testset "H atom SCF Rhoe mix rpulay" begin
-    KS_solve_SCF!( Ham, betamix=0.5, mix_method="rpulay", verbose=true )
+    KS_solve_SCF!( Ham, betamix=0.5, mix_method="rpulay", verbose=false )
     Etot = sum(Ham.energies)
     @test Etot ≈ Etot_H_atom atol=1e-5
 end

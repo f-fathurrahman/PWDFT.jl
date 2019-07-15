@@ -1,10 +1,9 @@
 function test_atoms()
-    dir_PWDFT = joinpath( dirname(pathof(PWDFT)), "..")
+
     atoms = init_atoms_xyz(
-        joinpath( dir_PWDFT, "structures/CuSO4.xyz")
+        joinpath( DIR_PWDFT, "structures/CuSO4.xyz")
     )
     atoms.LatVecs = gen_lattice_cubic(10.0)
-    println(atoms)
 
     atoms = init_atoms_xyz_string(
         """
@@ -14,7 +13,10 @@ function test_atoms()
         """
     )
     atoms.LatVecs = gen_lattice_cubic(10.0)
-    println(atoms)
 
     return nothing
+end
+
+@testset "init_atoms function" begin
+    @test test_atoms() == nothing
 end
