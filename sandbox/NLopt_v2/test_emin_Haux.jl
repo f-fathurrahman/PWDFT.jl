@@ -292,7 +292,7 @@ function main_CG()
         grad_obj_function!( Ham, psiks, g, Haux, g_Haux, rhoe_symm=rhoe_symmetrizer )
         precond_grad!( Ham, g, Kg )
 
-        Kg_Haux = 0.1*g_Haux  # scalar preconditioner
+        Kg_Haux = 0.05*g_Haux  # scalar preconditioner
 
         if iter > 1
             calc_beta_CG!( g, g_old, Kg, Kg_old, β )
@@ -314,17 +314,36 @@ function main_CG()
         grad_obj_function!( Ham, psic, gt, Hauxc, gt_Haux, rhoe_symm=rhoe_symmetrizer )
         
         calc_alpha_CG!( α_t, g, gt, d, α )
-
-        calc_alpha_CG( α_t, g_Haux, gt_Haux, d_Haux, α_Haux )
-
         psiks = psiks + α .* d
 
-        Haux = Hauxc + α_Haux .* d_Haux
+        calc_alpha_CG!( α_t, g_Haux, gt_Haux, d_Haux, α_Haux )
+        for i in 1:Nkspin
+            Haux[i] = Haux[i] + α_Haux[i] .* d_Haux[i]
+            Haux[i] = 0.5( Haux[i] + Haux[i]' )
+        end
 
         Etot = obj_function!( Ham, psiks, Haux, rhoe_symm=rhoe_symmetrizer )
 
         diffE = abs(Etot_old - Etot)
         @printf("%8d %18.10f %18.10e\n", iter, Etot, Etot_old - Etot)
+
+        # Calculate Hsub (for comparison with Haux)
+        #=for ispin = 1:Nspin
+        for ik = 1:Nkpt
+            Ham.ik = ik
+            Ham.ispin = ispin
+            ikspin = ik + (ispin - 1)*Nkpt
+            #
+            Hsub[ikspin] = psiks[ikspin]' * ( Ham*psiks[ikspin] )
+
+            evalsHsub = eigvals(Hsub[ikspin])
+            evalsHaux = diag(Haux[ikspin])
+
+            #println("diff Haux = ", sum(Hsub[ikspin] - Haux[ikspin]))
+            println("diff sum evals = ", abs(sum(evalsHaux) - sum(evalsHsub)))
+
+        end
+        end=#
 
         if diffE < etot_conv_thr
             Nconverges = Nconverges + 1
