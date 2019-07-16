@@ -9,25 +9,25 @@ function write_KPoints( f::IOStream, kpoints::KPoints )
 end
 
 function read_KPoints( f::IOStream )
-    
+
     tmpInt = Array{Int64}(undef,1)
-    
+
     read!(f, tmpInt)
     Nkpt = tmpInt[1]
-    
+
     k = Array{Float64}(undef,3,Nkpt)
     wk = Array{Float64}(undef,Nkpt)
     RecVecs = Array{Float64}(undef,3,3)
 
     read!(f, tmpInt)
     mesh1 = tmpInt[1]
-    
+
     read!(f, tmpInt)
     mesh2 = tmpInt[1]
-    
+
     read!(f, tmpInt)
     mesh3 = tmpInt[1]
-    
+
     mesh = (mesh1, mesh2, mesh3)
 
     read!(f, k)
@@ -54,7 +54,8 @@ function println( kpoints::KPoints; header=true )
 
     @printf("\n")
     if kpoints.mesh != (0,0,0)
-        @printf("Mesh: (%4d,%4d,%4d)\n", kpoints.mesh[1], kpoints.mesh[2], kpoints.mesh[3])
+        @printf("Mesh: (%4d,%4d,%4d) ", kpoints.mesh[1], kpoints.mesh[2], kpoints.mesh[3])
+        @printf("Shifted: (%4d,%4d,%4d)\n", kpoints.is_shift[1], kpoints.is_shift[2], kpoints.is_shift[3])
     end
     @printf("Total number of kpoints = %d\n", kpoints.Nkpt )
 
@@ -82,7 +83,20 @@ function println( kpoints::KPoints; header=true )
         @printf("%4d [%14.10f %14.10f %14.10f] %14.10f\n",
                 ik, kcart[1,ik], kcart[2,ik], kcart[3,ik], kpoints.wk[ik])
     end
-    
+
+    # new version pwscf output kpoints in Fractrion coordinate
+    # This is useful for comparison with new version pwscf
+    kcart = copy(kpoints.k)
+    fkred = inv(RecVecs) * kpoints.k
+    @printf("\n")
+    @printf("kpoints in Fraction coordinate\n")
+    @printf("\n")
+
+    for ik = 1:kpoints.Nkpt
+        @printf("%4d [%14.10f %14.10f %14.10f] %14.10f\n",
+                ik, fkred[1,ik], fkred[2,ik], fkred[3,ik], kpoints.wk[ik])
+    end
+
     @printf("\n")
     @printf("sum wk = %f\n", sum(kpoints.wk))
 end

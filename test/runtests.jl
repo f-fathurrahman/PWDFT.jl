@@ -11,6 +11,8 @@ include("test_Hamiltonian.jl")
 
 include("test_xc.jl")
 include("test_spglib.jl")
+include("test_kpoints.jl")
+
 
 include("test_KS_solve_SCF.jl")
 
