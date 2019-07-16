@@ -44,7 +44,7 @@ include("SymmetryInfo.jl")
 export SymmetryInfo
 
 include("KPoints.jl")
-export KPoints, write_KPoints, read_KPoints,
+export KPoints,
        kpoints_from_file,
        kpath_from_file,
        get_special_kpoints
@@ -79,9 +79,9 @@ export good_fft_order
 # Plane wave basis
 #
 include("PWGrid.jl")
-export PWGrid, write_PWGrid, read_PWGrid,
-       GVectors, write_GVectors, read_GVectors,
-       GVectorsW, write_GVectorsW, write_GVectorsW,
+export PWGrid,
+       GVectors,
+       GVectorsW,
        op_nabla, op_nabla_dot
 
 #

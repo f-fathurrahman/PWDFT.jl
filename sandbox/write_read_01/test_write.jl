@@ -1,6 +1,8 @@
 using FFTW
 using PWDFT
 
+include("PWDFT_io.jl")
+
 function test_kpoints()
     atoms = Atoms(xyz_string_frac="""
     2
