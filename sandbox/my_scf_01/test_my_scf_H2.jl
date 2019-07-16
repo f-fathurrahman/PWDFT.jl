@@ -17,7 +17,6 @@ function test_my_scf(β::Float64; mix_what=:density)
         LatVecs=gen_lattice_sc(16.0))
     pspfiles = [joinpath(DIR_PSP, "H-q1.gth")]
     Ham = Hamiltonian( atoms, pspfiles, 15.0 )
-    println(Ham)
 
     if mix_what == :density
         my_scf!(Ham, betamix=β)

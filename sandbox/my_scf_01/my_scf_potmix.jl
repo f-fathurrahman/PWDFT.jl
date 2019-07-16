@@ -33,11 +33,11 @@ function my_scf_potmix!( Ham::Hamiltonian; NiterMax=150, betamix=0.2, etot_conv_
         
         evals = diag_LOBPCG!( Ham, psiks )
         
-        Rhoe[:,:] = calc_rhoe( Ham, psiks )
+        Rhoe = calc_rhoe( Ham, psiks )
 
         # Save the old (input) potential
-        Vxc_inp[:,:] = Ham.potentials.XC
-        VHa_inp[:] = Ham.potentials.Hartree
+        Vxc_inp = copy(Ham.potentials.XC)
+        VHa_inp = copy(Ham.potentials.Hartree)
 
         # Update potentials
         update!(Ham, Rhoe)
