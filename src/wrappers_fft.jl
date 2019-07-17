@@ -1,3 +1,7 @@
+## TODO:
+## for in-place FFT we should use plan_fft! and plan_fft! instead
+## Probably in-place FFT is better than out-of-place FFT
+
 #
 # Using plan_fft and plan_ifft
 #
