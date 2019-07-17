@@ -1,6 +1,7 @@
 using CuArrays
 using FFTW
 
+#CuArrays.allowscalar(false)
 
 function simple_test()
 
