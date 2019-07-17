@@ -87,8 +87,8 @@ function PWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2}; kpoints=nothing, N
 
     gvecw = init_gvecw( ecutwfc, gvec, kpoints )
 
-    planfw = plan_fft( zeros(Ns) )
-    planbw = plan_ifft( zeros(Ns) )
+    planfw = plan_fft( zeros(ComplexF64,Ns) )
+    planbw = plan_ifft( zeros(ComplexF64,Ns) )
 
     return PWGrid( ecutwfc, ecutrho, Ns, LatVecs, RecVecs, CellVolume, r, gvec, gvecw,
                    planfw, planbw )
