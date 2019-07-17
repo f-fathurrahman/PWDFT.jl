@@ -61,7 +61,6 @@ function op_K( Ham::Hamiltonian, psi::Array{ComplexF64,1} )
 
     for igk = 1:Ngw[ik]
         ig = idx_gw2g[igk]
-        Gw[:] = pw.gvec.G[:,ig] + k[:]
         Gw2 = (G[1,ig] + k[1])^2 + (G[2,ig] + k[2])^2 + (G[3,ig] + k[3])^2
         out[igk] = psi[igk]*Gw2
     end
