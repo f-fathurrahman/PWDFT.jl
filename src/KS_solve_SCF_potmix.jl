@@ -39,6 +39,21 @@ function KS_solve_SCF_potmix!(
     Nstates_occ = electrons.Nstates_occ
     dVol = Ham.pw.CellVolume/prod(Ham.pw.Ns)
 
+    if verbose
+        @printf("\n")
+        @printf("Self-consistent iteration begins ...\n")
+        @printf("update_psi = %s\n", update_psi)
+        @printf("mix_method = %s\n", mix_method)
+        if mix_method in ("rpulay", "anderson", "ppulay", "broyden")
+            @printf("mixdim = %d\n", mixdim)
+        end
+        @printf("Potential mixing with betamix = %10.5f\n", betamix)
+        if use_smearing
+            @printf("Smearing = %f\n", kT)
+        end
+        println("") # blank line before SCF iteration info
+    end
+
     #
     # Initial wave function
     #
@@ -73,6 +88,7 @@ function KS_solve_SCF_potmix!(
         @printf("Initial integ Rhoe up  = %18.10f\n", sum(Rhoe[:,1])*dVol)
         @printf("Initial integ Rhoe dn  = %18.10f\n", sum(Rhoe[:,2])*dVol)
         @printf("Initial integ magn_den = %18.10f\n", sum(Rhoe[:,1] - Rhoe[:,2])*dVol)
+        println("")
     end
 
     Vxc_inp = zeros(Float64, Npoints, Nspin)
@@ -102,21 +118,6 @@ function KS_solve_SCF_potmix!(
     diffPot = ones(Nspin)
     Rhoe_old = zeros(Float64,Npoints,Nspin)
     E_fermi = 0.0
-
-    if verbose
-        @printf("\n")
-        @printf("Self-consistent iteration begins ...\n")
-        @printf("update_psi = %s\n", update_psi)
-        @printf("mix_method = %s\n", mix_method)
-        if mix_method in ("rpulay", "anderson", "ppulay", "broyden")
-            @printf("mixdim = %d\n", mixdim)
-        end
-        @printf("Potential mixing with betamix = %10.5f\n", betamix)
-        if use_smearing
-            @printf("Smearing = %f\n", kT)
-        end
-        println("") # blank line before SCF iteration info
-    end
 
     if verbose
         if Nspin == 1

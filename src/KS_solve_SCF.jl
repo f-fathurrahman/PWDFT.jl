@@ -46,8 +46,22 @@ function KS_solve_SCF!(
     Nspin = electrons.Nspin
     #
     Nkspin = Nkpt*Nspin
-
     Nstates_occ = electrons.Nstates_occ
+
+    if verbose
+        @printf("\n")
+        @printf("Self-consistent iteration begins ...\n")
+        @printf("update_psi = %s\n", update_psi)
+        @printf("mix_method = %s\n", mix_method)
+        if mix_method in ("rpulay", "anderson", "ppulay", "broyden")
+            @printf("mixdim = %d\n", mixdim)
+        end
+        @printf("Density mixing with betamix = %10.5f\n", betamix)
+        if use_smearing
+            @printf("Smearing = %f\n", kT)
+        end
+        println("")
+    end
 
     #
     # Initial wave function
@@ -106,6 +120,7 @@ function KS_solve_SCF!(
         @printf("Initial integ Rhoe up  = %18.10f\n", sum(Rhoe[:,1])*dVol)
         @printf("Initial integ Rhoe dn  = %18.10f\n", sum(Rhoe[:,2])*dVol)
         @printf("Initial integ magn_den = %18.10f\n", sum(magn_den)*dVol)
+        println("")
     end
 
     update!(Ham, Rhoe)
@@ -129,22 +144,6 @@ function KS_solve_SCF!(
         FF = zeros(Float64,Npoints*Nspin, mixdim)
         x_old = zeros(Float64,Npoints,Nspin)
         f_old = zeros(Float64,Npoints,Nspin)
-    end
-
-
-    if verbose
-        @printf("\n")
-        @printf("Self-consistent iteration begins ...\n")
-        @printf("update_psi = %s\n", update_psi)
-        @printf("mix_method = %s\n", mix_method)
-        if mix_method in ("rpulay", "anderson", "ppulay", "broyden")
-            @printf("mixdim = %d\n", mixdim)
-        end
-        @printf("Density mixing with betamix = %10.5f\n", betamix)
-        if use_smearing
-            @printf("Smearing = %f\n", kT)
-        end
-        println("") # blank line before SCF iteration info
     end
 
     # calculate E_NN
