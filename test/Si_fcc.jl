@@ -16,6 +16,7 @@ const Etot_Si_fcc = -7.9110087934 # ABINIT
 
 
 @testset "Si fcc SCF Rhoe mix simple" begin
+    Random.seed!(1234)
     Ham = init_Ham_Si_fcc()
     KS_solve_SCF!( Ham, betamix=0.5, verbose=true )
     println("")
@@ -24,6 +25,7 @@ const Etot_Si_fcc = -7.9110087934 # ABINIT
 end
 
 @testset "Si fcc SCF Rhoe mix linear_adaptive" begin
+    Random.seed!(1234)
     Ham = init_Ham_Si_fcc()
     KS_solve_SCF!( Ham, betamix=0.1, mix_method="linear_adaptive", verbose=true )
     println("")
@@ -32,6 +34,7 @@ end
 end
 
 @testset "Si fcc SCF Rhoe mix anderson" begin
+    Random.seed!(1234)
     Ham = init_Ham_Si_fcc()
     KS_solve_SCF!( Ham, betamix=0.5, mix_method="anderson", verbose=true )
     println("")
@@ -41,6 +44,7 @@ end
 
 
 @testset "Si fcc SCF Rhoe mix pulay" begin
+    Random.seed!(1234)
     Ham = init_Ham_Si_fcc()
     KS_solve_SCF!( Ham, betamix=0.5, mix_method="pulay", verbose=true )
     println("")
@@ -50,6 +54,7 @@ end
 
 
 @testset "Si fcc SCF Rhoe mix ppulay" begin
+    Random.seed!(1234)
     Ham = init_Ham_Si_fcc()
     KS_solve_SCF!( Ham, betamix=0.5, mix_method="ppulay", verbose=true )
     println("")
@@ -58,6 +63,7 @@ end
 end
 
 @testset "Si fcc SCF Rhoe mix rpulay" begin
+    Random.seed!(1234)
     Ham = init_Ham_Si_fcc()
     KS_solve_SCF!( Ham, betamix=0.5, mix_method="rpulay", verbose=true )
     println("")
@@ -66,6 +72,7 @@ end
 end
 
 @testset "Si fcc SCF Rhoe mix broyden" begin
+    Random.seed!(1234)
     Ham = init_Ham_Si_fcc()
     KS_solve_SCF!( Ham, betamix=0.5, mix_method="broyden", verbose=true )
     println("")
@@ -75,6 +82,7 @@ end
 
 
 @testset "Si fcc SCF potential mix simple" begin
+    Random.seed!(1234)
     Ham = init_Ham_Si_fcc()
     KS_solve_SCF_potmix!( Ham, betamix=0.5, mix_method="simple", verbose=true )
     println("")
@@ -83,6 +91,7 @@ end
 end
 
 @testset "Si fcc SCF potential mix linear_adaptive" begin
+    Random.seed!(1234)
     Ham = init_Ham_Si_fcc()
     KS_solve_SCF_potmix!( Ham, betamix=0.1, mix_method="linear_adaptive", verbose=true )
     println("")
@@ -91,6 +100,7 @@ end
 end
 
 @testset "Si fcc SCF potential mix broyden" begin
+    Random.seed!(1234)
     Ham = init_Ham_Si_fcc()
     KS_solve_SCF_potmix!( Ham, betamix=0.5, mix_method="broyden", verbose=true )
     println("")
@@ -99,23 +109,38 @@ end
 end
 
 
-# Test fail for i_cg_beta=1
+@testset "H atom Emin PCG Fletcher-Reeves" begin
+    Random.seed!(1234)
+    Ham = init_Ham_Si_fcc()
+    KS_solve_Emin_PCG!( Ham, i_cg_beta=1, verbose=true )
+    println("")
+    Etot = sum(Ham.energies)
+    @test Etot ≈ Etot_Si_fcc atol=1e-5
+end
 
 @testset "Si fcc Emin PCG Polak-Ribiere" begin
+    Random.seed!(1234)
     Ham = init_Ham_Si_fcc()
-    KS_solve_Emin_PCG!( Ham, i_cg_beta=2 )
+    KS_solve_Emin_PCG!( Ham, i_cg_beta=2, verbose=true )
     println("")
     Etot = sum(Ham.energies)
     @test Etot ≈ Etot_Si_fcc atol=1e-5
 end
 
 @testset "H atom Emin PCG Hestenes-Stiefeld" begin
+    Random.seed!(1234)
     Ham = init_Ham_Si_fcc()
-    KS_solve_Emin_PCG!( Ham, i_cg_beta=3 )
+    KS_solve_Emin_PCG!( Ham, i_cg_beta=3, verbose=true )
     println("")
     Etot = sum(Ham.energies)
     @test Etot ≈ Etot_Si_fcc atol=1e-5
 end
 
-# Probably similar problem with i_cg_beta=1
-# i_cg_beta=4 is skipped
+@testset "H atom Emin PCG Dai-Yuan" begin
+    Random.seed!(1234)
+    Ham = init_Ham_Si_fcc()
+    KS_solve_Emin_PCG!( Ham, i_cg_beta=4, verbose=true )
+    println("")
+    Etot = sum(Ham.energies)
+    @test Etot ≈ Etot_Si_fcc atol=1e-5
+end
