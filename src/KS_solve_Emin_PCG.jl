@@ -135,6 +135,9 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
                 if i_cg_beta == 1
                     β[ikspin] =
                     real(sum(conj(g[ikspin]).*Kg[ikspin]))/real(sum(conj(g_old[ikspin]).*Kg_old[ikspin]))
+                    if abs(β[ikspin] - 1.0) < 0.2
+                        β[ikspin] = 0.0
+                    end
                 elseif i_cg_beta == 2
                     β[ikspin] =
                     real(sum(conj(g[ikspin]-g_old[ikspin]).*Kg[ikspin]))/real(sum(conj(g_old[ikspin]).*Kg_old[ikspin]))
@@ -144,6 +147,9 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
                 else
                     β[ikspin] =
                     real(sum(conj(g[ikspin]).*Kg[ikspin]))/real(sum((g[ikspin]-g_old[ikspin]).*conj(d_old[ikspin])))
+                    if abs(β[ikspin] - 1.0) < 0.2
+                        β[ikspin] = 0.0
+                    end                    
                 end
             end
             if β[ikspin] < 0.0
