@@ -14,7 +14,7 @@ end
 
 const Etot_Si_fcc = -7.9110087934 # ABINIT
 
-#=
+
 @testset "Si fcc SCF Rhoe mix simple" begin
     Ham = init_Ham_Si_fcc()
     KS_solve_SCF!( Ham, betamix=0.5, verbose=true )
@@ -72,11 +72,19 @@ end
     Etot = sum(Ham.energies)
     @test Etot ≈ Etot_Si_fcc atol=1e-5
 end
-=#
 
-@testset "Si fcc SCF potential mix broyden" begin
+
+@testset "Si fcc SCF potential mix simple" begin
     Ham = init_Ham_Si_fcc()
     KS_solve_SCF_potmix!( Ham, betamix=0.5, mix_method="simple", verbose=true )
+    println("")
+    Etot = sum(Ham.energies)
+    @test Etot ≈ Etot_Si_fcc atol=1e-5
+end
+
+@testset "Si fcc SCF potential mix linear_adaptive" begin
+    Ham = init_Ham_Si_fcc()
+    KS_solve_SCF_potmix!( Ham, betamix=0.1, mix_method="linear_adaptive", verbose=true )
     println("")
     Etot = sum(Ham.energies)
     @test Etot ≈ Etot_Si_fcc atol=1e-5
@@ -90,7 +98,6 @@ end
     @test Etot ≈ Etot_Si_fcc atol=1e-5
 end
 
-#=
 
 # Test fail for i_cg_beta=1
 
@@ -109,8 +116,6 @@ end
     Etot = sum(Ham.energies)
     @test Etot ≈ Etot_Si_fcc atol=1e-5
 end
-
-=#
 
 # Probably similar problem with i_cg_beta=1
 # i_cg_beta=4 is skipped

@@ -72,11 +72,35 @@ end
 end
 =#
 
+@testset "H atom SCF potential mix simple" begin
+    Ham = init_Ham_H_atom()
+    KS_solve_SCF_potmix!( Ham, betamix=0.5, mix_method="simple", verbose=true )
+    println("")
+    Etot = sum(Ham.energies)
+    @test Etot ≈ Etot_H_atom atol=1e-5
+end
+
+@testset "H atom SCF potential mix linear_adaptive" begin
+    Ham = init_Ham_H_atom()
+    KS_solve_SCF_potmix!( Ham, betamix=0.1, mix_method="linear_adaptive", verbose=true )
+    println("")
+    Etot = sum(Ham.energies)
+    @test Etot ≈ Etot_H_atom atol=1e-5
+end
+
+@testset "H atom SCF potential mix broyden" begin
+    Ham = init_Ham_H_atom()
+    KS_solve_SCF_potmix!( Ham, betamix=0.5, mix_method="broyden", verbose=true )
+    println("")
+    Etot = sum(Ham.energies)
+    @test Etot ≈ Etot_H_atom atol=1e-5
+end
+
 
 # H atom Emin PCG using Fletcher-Reeves does not pass (early convergence problem)
 # might be related to line minimization
 
-
+#=
 @testset "H atom Emin PCG Polak-Ribiere" begin
     Ham = init_Ham_H_atom()
     KS_solve_Emin_PCG!( Ham, i_cg_beta=2, verbose=false )
@@ -100,3 +124,4 @@ end
     Etot = sum(Ham.energies)
     @test Etot ≈ Etot_H_atom atol=1e-5
 end
+=#
