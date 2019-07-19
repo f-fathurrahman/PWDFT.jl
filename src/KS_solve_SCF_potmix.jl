@@ -100,6 +100,13 @@ function KS_solve_SCF_potmix!(
         #
         dv_VHa = zeros(Float64, Npoints, mixdim)
         dv_Vxc = zeros(Float64, Npoints*Nspin, mixdim)
+
+    elseif mix_method == "linear_adaptive"
+        betav_Vxc = betamix*ones(Float64, Npoints*Nspin)
+        df_Vxc = zeros(Float64, Npoints*Nspin)
+        #
+        betav_VHa = betamix*ones(Float64, Npoints)
+        df_VHa = zeros(Float64, Npoints)
     end
 
     update!(Ham, Rhoe)
@@ -206,11 +213,13 @@ function KS_solve_SCF_potmix!(
 
         diffEtot = abs(Etot - Etot_old)
 
-        if Nspin == 1
-            @printf("SCF_potmix: %5d %18.10f %12.5e %12.5e\n", iterSCF, Etot, diffEtot, diffRhoe[1])
-        else
-            @printf("SCF_potmix: %5d %18.10f %12.5e [%12.5e,%12.5e]\n",
-                iterSCF, Etot, diffEtot, diffRhoe[1], diffRhoe[2])
+        if verbose
+            if Nspin == 1
+                @printf("SCF_potmix: %5d %18.10f %12.5e %12.5e\n", iterSCF, Etot, diffEtot, diffRhoe[1])
+            else
+                @printf("SCF_potmix: %5d %18.10f %12.5e [%12.5e,%12.5e]\n",
+                    iterSCF, Etot, diffEtot, diffRhoe[1], diffRhoe[2])
+            end
         end
 
         if diffEtot < etot_conv_thr
@@ -219,8 +228,10 @@ function KS_solve_SCF_potmix!(
             Nconverges = 0
         end
 
-        if Nconverges >= 2
-            @printf("SCF_potmix is converged in %d iterations\n", iterSCF)
+        if (Nconverges >= 2)
+            if verbose
+                @printf("SCF_potmix is converged in %d iterations\n", iterSCF)
+            end
             break
         end
         
@@ -232,6 +243,11 @@ function KS_solve_SCF_potmix!(
         if mix_method == "broyden"
             mix_broyden!( Ham.potentials.Hartree, VHa_inp, betamix, iterSCF, mixdim, df_VHa, dv_VHa )
             mix_broyden!( Ham.potentials.XC, Vxc_inp, betamix, iterSCF, mixdim, df_Vxc, dv_Vxc )
+
+        elseif mix_method == "linear_adaptive"
+            mix_adaptive!( Ham.potentials.Hartree, VHa_inp, betamix, betav_VHa, df_VHa )
+            mix_adaptive!( Ham.potentials.XC, Vxc_inp, betamix, betav_Vxc, df_Vxc )
+
         else
             # simple mixing
             Ham.potentials.Hartree = betamix*Ham.potentials.Hartree + (1-betamix)*VHa_inp
