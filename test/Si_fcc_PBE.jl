@@ -16,6 +16,7 @@ const Etot_Si_fcc_PBE = -7.8539427130 # ABINIT
 
 
 @testset "Si fcc PBE SCF Rhoe mix simple" begin
+    Random.seed!(1234)
     Ham = init_Ham_Si_fcc_PBE()
     KS_solve_SCF!( Ham, betamix=0.5, verbose=true )
     println("")
@@ -24,6 +25,7 @@ const Etot_Si_fcc_PBE = -7.8539427130 # ABINIT
 end
 
 @testset "Si fcc PBE SCF Rhoe mix linear_adaptive" begin
+    Random.seed!(1234)
     Ham = init_Ham_Si_fcc_PBE()
     KS_solve_SCF!( Ham, betamix=0.1, mix_method="linear_adaptive", verbose=true )
     println("")
@@ -32,49 +34,52 @@ end
 end
 
 @testset "Si fcc PBE SCF Rhoe mix anderson" begin
+    Random.seed!(1234)
     Ham = init_Ham_Si_fcc_PBE()
-    KS_solve_SCF!( Ham, betamix=0.5, mix_method="anderson", verbose=true )
+    KS_solve_SCF!( Ham, betamix=0.2, mix_method="anderson", verbose=true )
     println("")
     Etot = sum(Ham.energies)
     @test Etot ≈ Etot_Si_fcc_PBE atol=1e-5
 end
-
 
 @testset "Si fcc PBE SCF Rhoe mix pulay" begin
+    Random.seed!(1234)
     Ham = init_Ham_Si_fcc_PBE()
-    KS_solve_SCF!( Ham, betamix=0.5, mix_method="pulay", verbose=true )
+    KS_solve_SCF!( Ham, betamix=0.2, mix_method="pulay", verbose=true )
     println("")
     Etot = sum(Ham.energies)
     @test Etot ≈ Etot_Si_fcc_PBE atol=1e-5
 end
 
-
 @testset "Si fcc PBE SCF Rhoe mix ppulay" begin
+    Random.seed!(1234)
     Ham = init_Ham_Si_fcc_PBE()
-    KS_solve_SCF!( Ham, betamix=0.5, mix_method="ppulay", verbose=true )
+    KS_solve_SCF!( Ham, betamix=0.2, mix_method="ppulay", verbose=true )
     println("")
     Etot = sum(Ham.energies)
     @test Etot ≈ Etot_Si_fcc_PBE atol=1e-5
 end
 
 @testset "Si fcc PBE SCF Rhoe mix rpulay" begin
+    Random.seed!(1234)
     Ham = init_Ham_Si_fcc_PBE()
-    KS_solve_SCF!( Ham, betamix=0.5, mix_method="rpulay", verbose=true )
+    KS_solve_SCF!( Ham, betamix=0.2, mix_method="rpulay", verbose=true )
     println("")
     Etot = sum(Ham.energies)
     @test Etot ≈ Etot_Si_fcc_PBE atol=1e-5
 end
 
 @testset "Si fcc PBE SCF Rhoe mix broyden" begin
+    Random.seed!(1234)
     Ham = init_Ham_Si_fcc_PBE()
-    KS_solve_SCF!( Ham, betamix=0.5, mix_method="broyden", verbose=true )
+    KS_solve_SCF!( Ham, betamix=0.1, mix_method="broyden", verbose=true )
     println("")
     Etot = sum(Ham.energies)
     @test Etot ≈ Etot_Si_fcc_PBE atol=1e-5
 end
 
-
 @testset "Si fcc PBE SCF potential mix simple" begin
+    Random.seed!(1234)
     Ham = init_Ham_Si_fcc_PBE()
     KS_solve_SCF_potmix!( Ham, betamix=0.5, mix_method="simple", verbose=true )
     println("")
@@ -83,6 +88,7 @@ end
 end
 
 @testset "Si fcc PBE SCF potential mix linear_adaptive" begin
+    Random.seed!(1234)
     Ham = init_Ham_Si_fcc_PBE()
     KS_solve_SCF_potmix!( Ham, betamix=0.1, mix_method="linear_adaptive", verbose=true )
     println("")
@@ -91,17 +97,26 @@ end
 end
 
 @testset "Si fcc PBE SCF potential mix broyden" begin
+    Random.seed!(1234)
     Ham = init_Ham_Si_fcc_PBE()
-    KS_solve_SCF_potmix!( Ham, betamix=0.5, mix_method="broyden", verbose=true )
+    KS_solve_SCF_potmix!( Ham, betamix=0.1, mix_method="broyden", verbose=true )
     println("")
     Etot = sum(Ham.energies)
     @test Etot ≈ Etot_Si_fcc_PBE atol=1e-5
 end
 
 
-# Test fail for i_cg_beta=1
+@testset "Si fcc Emin PCG Fletcher-Reeves" begin
+    Random.seed!(1234)
+    Ham = init_Ham_Si_fcc_PBE()
+    KS_solve_Emin_PCG!( Ham, i_cg_beta=2 )
+    println("")
+    Etot = sum(Ham.energies)
+    @test Etot ≈ Etot_Si_fcc_PBE atol=1e-5
+end
 
 @testset "Si fcc Emin PCG Polak-Ribiere" begin
+    Random.seed!(1234)
     Ham = init_Ham_Si_fcc_PBE()
     KS_solve_Emin_PCG!( Ham, i_cg_beta=2 )
     println("")
@@ -110,12 +125,19 @@ end
 end
 
 @testset "H atom Emin PCG Hestenes-Stiefeld" begin
+    Random.seed!(1234)
     Ham = init_Ham_Si_fcc_PBE()
-    KS_solve_Emin_PCG!( Ham, i_cg_beta=3 )
+    KS_solve_Emin_PCG!( Ham, i_cg_beta=3, verbose=true )
     println("")
     Etot = sum(Ham.energies)
     @test Etot ≈ Etot_Si_fcc_PBE atol=1e-5
 end
 
-# Probably similar problem with i_cg_beta=1
-# i_cg_beta=4 is skipped
+@testset "H atom Emin PCG Dai-Yuan" begin
+    Random.seed!(1234)
+    Ham = init_Ham_Si_fcc_PBE()
+    KS_solve_Emin_PCG!( Ham, i_cg_beta=4, verbose=true )
+    println("")
+    Etot = sum(Ham.energies)
+    @test Etot ≈ Etot_Si_fcc_PBE atol=1e-5
+end
