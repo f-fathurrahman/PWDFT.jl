@@ -17,6 +17,7 @@ const Etot_Pt_fcc = -26.2945054360 # ABINIT
     Random.seed!(1234)
     Ham = init_Ham_Pt_fcc()
     KS_solve_SCF!( Ham, mix_method="simple", betamix=0.5, use_smearing=true, verbose=true )
+    println("")
     Etot = sum(Ham.energies)
     @test Etot ≈ Etot_Pt_fcc atol=1e-5
 end
@@ -25,6 +26,7 @@ end
     Random.seed!(1234)
     Ham = init_Ham_Pt_fcc()
     KS_solve_SCF!( Ham, mix_method="anderson", betamix=0.2, use_smearing=true, verbose=true )
+    println("")
     Etot = sum(Ham.energies)
     @test Etot ≈ Etot_Pt_fcc atol=1e-5
 end
@@ -33,6 +35,7 @@ end
     Random.seed!(1234)
     Ham = init_Ham_Pt_fcc()
     KS_solve_SCF!( Ham, mix_method="pulay", betamix=0.2, use_smearing=true, verbose=true )
+    println("")
     Etot = sum(Ham.energies)
     @test Etot ≈ Etot_Pt_fcc atol=1e-5
 end
@@ -41,6 +44,7 @@ end
     Random.seed!(1234)
     Ham = init_Ham_Pt_fcc()
     KS_solve_SCF!( Ham, mix_method="ppulay", betamix=0.2, use_smearing=true, verbose=true )
+    println("")
     Etot = sum(Ham.energies)
     @test Etot ≈ Etot_Pt_fcc atol=1e-5
 end
@@ -49,6 +53,7 @@ end
     Random.seed!(1234)
     Ham = init_Ham_Pt_fcc()
     KS_solve_SCF!( Ham, mix_method="rpulay", betamix=0.2, use_smearing=true, verbose=true )
+    println("")
     Etot = sum(Ham.energies)
     @test Etot ≈ Etot_Pt_fcc atol=1e-5
 end
@@ -56,8 +61,8 @@ end
 @testset "Pt fcc Rhoe mix broyden" begin
     Random.seed!(1234)
     Ham = init_Ham_Pt_fcc()
-    KS_solve_SCF!( Ham, mix_method="broyden", betamix=0.2, use_smearing=true,
-                   starting_magnetization=[0.5], verbose=true )
+    KS_solve_SCF!( Ham, mix_method="broyden", betamix=0.2, use_smearing=true, verbose=true )
+    println("")
     Etot = sum(Ham.energies)
     @test Etot ≈ Etot_Pt_fcc atol=1e-5
 end
@@ -66,6 +71,7 @@ end
     Random.seed!(1234)
     Ham = init_Ham_Pt_fcc()
     KS_solve_SCF_potmix!( Ham, mix_method="simple", betamix=0.2, use_smearing=true, verbose=true )
+    println("")
     Etot = sum(Ham.energies)
     @test Etot ≈ Etot_Pt_fcc atol=1e-5
 end
@@ -74,6 +80,7 @@ end
     Random.seed!(1234)
     Ham = init_Ham_Pt_fcc()
     KS_solve_SCF_potmix!( Ham, mix_method="linear_adaptive", betamix=0.2, use_smearing=true, verbose=true )
+    println("")
     Etot = sum(Ham.energies)
     @test Etot ≈ Etot_Pt_fcc atol=1e-5
 end
@@ -82,6 +89,7 @@ end
     Random.seed!(1234)
     Ham = init_Ham_Pt_fcc()
     KS_solve_SCF_potmix!( Ham, mix_method="broyden", betamix=0.2, use_smearing=true, verbose=true )
+    println("")
     Etot = sum(Ham.energies)
     @test Etot ≈ Etot_Pt_fcc atol=1e-5
 end

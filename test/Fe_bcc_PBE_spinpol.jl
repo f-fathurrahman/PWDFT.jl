@@ -19,6 +19,7 @@ const Etot_Fe_bcc_PBE_spinpol = -116.5421659437 # ABINIT
     Ham = init_Ham_Fe_bcc_PBE()
     KS_solve_SCF!( Ham, mix_method="simple", betamix=0.5, use_smearing=true,
                    starting_magnetization=[0.5], verbose=true )
+    println("")
     Etot = sum(Ham.energies)
     @test Etot ≈ Etot_Fe_bcc_PBE_spinpol atol=1e-5
 end
@@ -28,6 +29,7 @@ end
     Ham = init_Ham_Fe_bcc_PBE()
     KS_solve_SCF!( Ham, mix_method="anderson", betamix=0.2, use_smearing=true,
                    starting_magnetization=[0.5], verbose=true )
+    println("")
     Etot = sum(Ham.energies)
     @test Etot ≈ Etot_Fe_bcc_PBE_spinpol atol=1e-5
 end
@@ -37,6 +39,7 @@ end
     Ham = init_Ham_Fe_bcc_PBE()
     KS_solve_SCF!( Ham, mix_method="pulay", betamix=0.2, use_smearing=true,
                    starting_magnetization=[0.5], verbose=true )
+    println("")
     Etot = sum(Ham.energies)
     @test Etot ≈ Etot_Fe_bcc_PBE_spinpol atol=1e-5
 end
@@ -46,6 +49,7 @@ end
     Ham = init_Ham_Fe_bcc_PBE()
     KS_solve_SCF!( Ham, mix_method="ppulay", betamix=0.2, use_smearing=true,
                    starting_magnetization=[0.5], verbose=true )
+    println("")
     Etot = sum(Ham.energies)
     @test Etot ≈ Etot_Fe_bcc_PBE_spinpol atol=1e-5
 end
@@ -55,6 +59,7 @@ end
     Ham = init_Ham_Fe_bcc_PBE()
     KS_solve_SCF!( Ham, mix_method="rpulay", betamix=0.2, use_smearing=true,
                    starting_magnetization=[0.5], verbose=true )
+    println("")
     Etot = sum(Ham.energies)
     @test Etot ≈ Etot_Fe_bcc_PBE_spinpol atol=1e-5
 end
@@ -64,6 +69,7 @@ end
     Ham = init_Ham_Fe_bcc_PBE()
     KS_solve_SCF!( Ham, mix_method="broyden", betamix=0.2, use_smearing=true,
                    starting_magnetization=[0.5], verbose=true )
+    println("")
     Etot = sum(Ham.energies)
     @test Etot ≈ Etot_Fe_bcc_PBE_spinpol atol=1e-5
 end
@@ -73,6 +79,7 @@ end
     Ham = init_Ham_Fe_bcc_PBE()
     KS_solve_SCF_potmix!( Ham, mix_method="simple", betamix=0.2, use_smearing=true,
                    starting_magnetization=[0.5], verbose=true )
+    println("")
     Etot = sum(Ham.energies)
     @test Etot ≈ Etot_Fe_bcc_PBE_spinpol atol=1e-5
 end
@@ -82,6 +89,7 @@ end
     Ham = init_Ham_Fe_bcc_PBE()
     KS_solve_SCF_potmix!( Ham, mix_method="linear_adaptive", betamix=0.2, use_smearing=true,
                    starting_magnetization=[0.5], verbose=true )
+    println("")
     Etot = sum(Ham.energies)
     @test Etot ≈ Etot_Fe_bcc_PBE_spinpol atol=1e-5
 end
@@ -91,6 +99,7 @@ end
     Ham = init_Ham_Fe_bcc_PBE()
     KS_solve_SCF_potmix!( Ham, mix_method="broyden", betamix=0.2, use_smearing=true,
                    starting_magnetization=[0.5], verbose=true )
+    println("")
     Etot = sum(Ham.energies)
     @test Etot ≈ Etot_Fe_bcc_PBE_spinpol atol=1e-5
 end
