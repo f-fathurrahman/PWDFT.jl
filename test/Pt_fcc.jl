@@ -13,6 +13,25 @@ end
 
 const Etot_Pt_fcc = -26.2945054360 # ABINIT
 
+@testset "Pt fcc SCF davidson" begin
+    Random.seed!(1234)
+    Ham = init_Ham_Pt_fcc()
+    KS_solve_SCF!( Ham, mix_method="simple", update_psi="davidson", betamix=0.5, use_smearing=true, verbose=true )
+    println("")
+    Etot = sum(Ham.energies)
+    @test Etot ≈ Etot_Pt_fcc atol=1e-5
+end
+
+@testset "Pt fcc SCF PCG" begin
+    Random.seed!(1234)
+    Ham = init_Ham_Pt_fcc()
+    KS_solve_SCF!( Ham, mix_method="simple", update_psi="PCG", betamix=0.5, use_smearing=true, verbose=true )
+    println("")
+    Etot = sum(Ham.energies)
+    @test Etot ≈ Etot_Pt_fcc atol=1e-5
+end
+
+
 @testset "Pt fcc Rhoe mix simple" begin
     Random.seed!(1234)
     Ham = init_Ham_Pt_fcc()
