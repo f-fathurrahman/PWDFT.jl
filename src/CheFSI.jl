@@ -35,8 +35,8 @@ function chebyfilt(
     Ham::Hamiltonian,
     X::Array{ComplexF64,2},
     degree::Int64,
-    lb::Int64, 
-    ub::Int64
+    lb::Float64, 
+    ub::Float64
 )
 
     Ngw_ik  = size(X)[1]
