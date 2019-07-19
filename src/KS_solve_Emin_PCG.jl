@@ -179,12 +179,11 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
 
             # Update wavefunction
             psiks[ikspin] = psiks[ikspin] + α[ikspin]*d[ikspin]
-
-            # Update potentials
             psiks[ikspin] = ortho_sqrt(psiks[ikspin])
         end
         end
 
+        # Update Rhoe and potentials
         calc_rhoe!( Ham, psiks, Rhoe )
         # Symmetrize Rhoe if needed
         if Ham.sym_info.Nsyms > 1
