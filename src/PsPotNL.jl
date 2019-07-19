@@ -149,4 +149,14 @@ function calc_betaNL_psi( ik::Int64, betaNL::Array{ComplexF64,3}, psi::Array{Com
     return betaNL_psi
 end
 
+function calc_betaNL_psi( ik::Int64, betaNL::Array{ComplexF64,3}, psi::Array{ComplexF64,1} )
+    NbetaNL = size(betaNL)[2]
+    Ngw_ik = size(psi)[1]
+    betaNL_psi = zeros( ComplexF64, NbetaNL )
+    for ibeta = 1:NbetaNL
+        betaNL_psi[ibeta] = dot( betaNL[1:Ngw_ik,ibeta,ik], psi )
+    end
+    return betaNL_psi
+end
+
 include("PsPotNL_io.jl")
