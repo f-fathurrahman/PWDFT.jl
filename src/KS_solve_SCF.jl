@@ -139,6 +139,10 @@ function KS_solve_SCF!(
         df = zeros(Float64,Npoints*Nspin, mixdim)
         dv = zeros(Float64,Npoints*Nspin, mixdim)
     
+    elseif mix_method == "linear_adaptive"
+        betav = betamix*ones(Float64, Npoints*Nspin)
+        df = zeros(Float64, Npoints*Nspin)
+    
     elseif mix_method in ("rpulay", "ppulay", "pulay")
         XX = zeros(Float64,Npoints*Nspin, mixdim)
         FF = zeros(Float64,Npoints*Nspin, mixdim)
@@ -238,6 +242,10 @@ function KS_solve_SCF!(
         if mix_method == "simple"
 
             Rhoe = betamix*Rhoe_new + (1-betamix)*Rhoe
+
+        elseif mix_method == "linear_adaptive"
+
+            mix_adaptive!( Rhoe, Rhoe_new, betamix, betav, df )
 
         elseif mix_method == "broyden"
 
