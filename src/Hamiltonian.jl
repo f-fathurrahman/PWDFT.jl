@@ -6,6 +6,7 @@ mutable struct Hamiltonian
     electrons::Electrons
     atoms::Atoms
     sym_info::SymmetryInfo
+    rhoe_symmetrizer::RhoeSymmetrizer
     pspots::Array{PsPot_GTH,1}
     pspotNL::PsPotNL
     xcfunc::String
@@ -102,8 +103,16 @@ function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
 
     ik = 1
     ispin = 1
+
+    if sym_info.Nsyms > 1
+        rhoe_symmetrizer = RhoeSymmetrizer( atoms, pw, sym_info )
+    else
+        rhoe_symmetrizer = RhoeSymmetrizer() # dummy rhoe_symmetrizer
+    end
+
     return Hamiltonian( pw, potentials, energies, rhoe,
-                        electrons, atoms, sym_info, Pspots, pspotNL, xcfunc, ik, ispin )
+                        electrons, atoms, sym_info, rhoe_symmetrizer,
+                        Pspots, pspotNL, xcfunc, ik, ispin )
 end
 
 
@@ -173,8 +182,17 @@ function Hamiltonian( atoms::Atoms, ecutwfc::Float64;
     
     ik = 1
     ispin = 1
+
+    if sym_info.Nsyms > 1
+        rhoe_symmetrizer = RhoeSymmetrizer( atoms, pw, sym_info )
+    else
+        rhoe_symmetrizer = RhoeSymmetrizer() # dummy rhoe_symmetrizer
+    end
+
+
     return Hamiltonian( pw, potentials, energies, rhoe,
-                        electrons, atoms, sym_info, Pspots, pspotNL, xcfunc, ik, ispin )
+                        electrons, atoms, sym_info, rhoe_symmetrizer,
+                        Pspots, pspotNL, xcfunc, ik, ispin )
 end
 
 

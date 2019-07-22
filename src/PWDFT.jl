@@ -141,6 +141,10 @@ export Energies
 include("PsPotNL.jl")
 export PsPotNL, calc_betaNL_psi
 
+include("RhoeSymmetrizer.jl")
+export RhoeSymmetrizer,
+       symmetrize_rhoe!
+
 include("Hamiltonian.jl")
 export Hamiltonian, update!
 
@@ -207,10 +211,6 @@ export rand_Wavefunc, rand_BlochWavefunc, zeros_BlochWavefunc
 
 include("guess_rhoe.jl")
 export guess_rhoe, guess_rhoe_atomic
-
-include("RhoeSymmetrizer.jl")
-export RhoeSymmetrizer,
-       symmetrize_rhoe!
 
 #
 # KS solvers

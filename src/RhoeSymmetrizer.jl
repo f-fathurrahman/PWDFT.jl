@@ -4,8 +4,11 @@ struct RhoeSymmetrizer
     fts::Array{Float64,2}
 end
 
-function RhoeSymmetrizer( Ham::Hamiltonian )
-    return RhoeSymmetrizer( Ham.atoms, Ham.pw, Ham.sym_info )
+# dummy RhoeSymmetrizer
+function RhoeSymmetrizer()
+    shell_G_sym = Array{Array{Int64,1},1}(undef,1)
+    fts = zeros(1,1)
+    return RhoeSymmetrizer(0, shell_G_sym, fts)
 end
 
 function RhoeSymmetrizer( atoms::Atoms, pw::PWGrid, sym_info::SymmetryInfo )
@@ -105,14 +108,16 @@ end
 
 
 
-function symmetrize_rhoe!( Ham::Hamiltonian, rhoe_symmetrizer::RhoeSymmetrizer, Rhoe::Array{Float64,2} )
+function symmetrize_rhoe!(
+    pw::PWGrid,
+    sym_info::SymmetryInfo,
+    rhoe_symmetrizer::RhoeSymmetrizer,
+    Rhoe::Array{Float64,2}
+)
 
     Ngs = rhoe_symmetrizer.Ngs
     shell_G_sym = rhoe_symmetrizer.shell_G_sym
     fts = rhoe_symmetrizer.fts
-
-    pw = Ham.pw
-    sym_info = Ham.sym_info
 
     LatVecs = pw.LatVecs
     Nsyms = sym_info.Nsyms
@@ -121,7 +126,7 @@ function symmetrize_rhoe!( Ham::Hamiltonian, rhoe_symmetrizer::RhoeSymmetrizer, 
     non_symmorphic = sym_info.non_symmorphic
 
     Npoints = prod(pw.Ns)
-    Nspin = Ham.electrons.Nspin
+    Nspin = size(Rhoe)[2]
 
     RhoeG = zeros(ComplexF64,Npoints,Nspin)
     for ispin = 1:Nspin

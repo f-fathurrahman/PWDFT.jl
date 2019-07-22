@@ -39,22 +39,12 @@ function KS_solve_DCM!( Ham::Hamiltonian;
         psiks = rand_BlochWavefunc( Ham )
     end
 
-    # Workspace for Rhoe symmetrization is initialized here
-    if Ham.sym_info.Nsyms > 1
-        rhoe_symmetrizer = RhoeSymmetrizer( Ham )
-    end
-
     #
     # Calculated electron density from this wave function and update Hamiltonian
     #
     Rhoe = zeros(Float64,Npoints,Nspin)
 
-    Rhoe[:,:] = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin )
-
-    # Symmetrize Rhoe if needed
-    if Ham.sym_info.Nsyms > 1
-        symmetrize_rhoe!( Ham, rhoe_symmetrizer, Rhoe )
-    end
+    calc_rhoe!( Ham, psiks, Rhoe )
 
     update!(Ham, Rhoe)
 
@@ -226,12 +216,7 @@ function KS_solve_DCM!( Ham::Hamiltonian;
             end
             end 
 
-            Rhoe[:,:] = calc_rhoe( Nelectrons, pw, Focc, psiks, Nspin )
-
-            # Symmetrize Rhoe is needed
-            if Ham.sym_info.Nsyms > 1
-                symmetrize_rhoe!( Ham, rhoe_symmetrizer, Rhoe )
-            end
+            calc_rhoe!( Ham, psiks, Rhoe )
 
             update!( Ham, Rhoe )
 

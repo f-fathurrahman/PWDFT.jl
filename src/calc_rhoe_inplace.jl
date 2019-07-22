@@ -1,19 +1,9 @@
-function calc_rhoe!( Ham::Hamiltonian, psiks::BlochWavefunc, Rhoe::Array{Float64,2} )
-    calc_rhoe!(
-        Rhoe,
-        Ham.electrons.Nelectrons,
-        Ham.pw, Ham.electrons.Focc, 
-        psiks, Ham.electrons.Nspin )
-end
+function calc_rhoe!( Ham::Hamiltonian, psiks::BlochWavefunc, Rhoe::Array{Float64,2}; renormalize=true)
 
-# in-place version
-function calc_rhoe!(
-    Rhoe::Array{Float64,2},
-    Nelectrons_true::Float64,
-    pw::PWGrid, Focc::Array{Float64,2},
-    psiks::BlochWavefunc, Nspin::Int64;
-    renormalize=true
-)
+    pw = Ham.pw
+    Focc = Ham.electrons.Focc
+    Nspin = Ham.electrons.Nspin
+    Nelectrons_true = Ham.electrons.Nelectrons
 
     CellVolume  = pw.CellVolume
     Ns = pw.Ns
@@ -66,7 +56,14 @@ function calc_rhoe!(
     # renormalize
     if renormalize
         integ_rho = sum(Rhoe)*CellVolume/Npoints
-        Rhoe = Nelectrons_true/integ_rho * Rhoe
+        for ip in eachindex(Rhoe)
+            Rhoe[ip] = Nelectrons_true/integ_rho * Rhoe[ip]
+        end
+    end
+
+    # Symmetrize Rhoe if needed
+    if Ham.sym_info.Nsyms > 1
+        symmetrize_rhoe!( Ham.pw, Ham.sym_info, Ham.rhoe_symmetrizer, Rhoe )
     end
 
     return
