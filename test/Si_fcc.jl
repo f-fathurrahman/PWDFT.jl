@@ -14,38 +14,6 @@ end
 
 const Etot_Si_fcc = -7.9110087934 # ABINIT
 
-@testset "Si fcc SCF CheFSI" begin
-    Random.seed!(1234)
-    Ham = init_Ham_Si_fcc()
-    KS_solve_SCF!( Ham, betamix=0.5, update_psi="CheFSI", verbose=true )
-    #KS_solve_SCF!( Ham, betamix=0.2, mix_method="rpulay", update_psi="CheFSI", verbose=true )
-    #KS_solve_SCF_potmix!( Ham, betamix=0.1, mix_method="linear_adaptive",
-    #                      update_psi="CheFSI", verbose=true )
-    println("")
-    Etot = sum(Ham.energies)
-    @test Etot ≈ Etot_Si_fcc atol=1e-5
-end
-
-@testset "Si fcc SCF davidson" begin
-    Random.seed!(1234)
-    Ham = init_Ham_Si_fcc()
-    KS_solve_SCF!( Ham, betamix=0.5, update_psi="davidson", verbose=true )
-    println("")
-    Etot = sum(Ham.energies)
-    @test Etot ≈ Etot_Si_fcc atol=1e-5
-end
-
-@testset "Si fcc SCF PCG" begin
-    Random.seed!(1234)
-    Ham = init_Ham_Si_fcc()
-    #KS_solve_SCF!( Ham, betamix=0.5, update_psi="PCG", verbose=true )
-    KS_solve_SCF_potmix!( Ham, betamix=0.5, update_psi="PCG", verbose=true )
-    println("")
-    Etot = sum(Ham.energies)
-    @test Etot ≈ Etot_Si_fcc atol=1e-5
-end
-
-
 @testset "Si fcc SCF Rhoe mix simple" begin
     Random.seed!(1234)
     Ham = init_Ham_Si_fcc()
@@ -106,6 +74,37 @@ end
     Random.seed!(1234)
     Ham = init_Ham_Si_fcc()
     KS_solve_SCF!( Ham, betamix=0.5, mix_method="broyden", verbose=true )
+    println("")
+    Etot = sum(Ham.energies)
+    @test Etot ≈ Etot_Si_fcc atol=1e-5
+end
+
+@testset "Si fcc SCF CheFSI" begin
+    Random.seed!(1234)
+    Ham = init_Ham_Si_fcc()
+    #KS_solve_SCF!( Ham, betamix=0.5, update_psi="CheFSI", verbose=true )
+    KS_solve_SCF!( Ham, betamix=0.2, mix_method="rpulay", update_psi="CheFSI", verbose=true )
+    #KS_solve_SCF_potmix!( Ham, betamix=0.1, mix_method="linear_adaptive",
+    #                      update_psi="CheFSI", verbose=true )
+    println("")
+    Etot = sum(Ham.energies)
+    @test Etot ≈ Etot_Si_fcc atol=1e-5
+end
+
+@testset "Si fcc SCF davidson" begin
+    Random.seed!(1234)
+    Ham = init_Ham_Si_fcc()
+    KS_solve_SCF!( Ham, betamix=0.5, update_psi="davidson", verbose=true )
+    println("")
+    Etot = sum(Ham.energies)
+    @test Etot ≈ Etot_Si_fcc atol=1e-5
+end
+
+@testset "Si fcc SCF PCG" begin
+    Random.seed!(1234)
+    Ham = init_Ham_Si_fcc()
+    #KS_solve_SCF!( Ham, betamix=0.5, update_psi="PCG", verbose=true )
+    KS_solve_SCF_potmix!( Ham, betamix=0.5, update_psi="PCG", verbose=true )
     println("")
     Etot = sum(Ham.energies)
     @test Etot ≈ Etot_Si_fcc atol=1e-5
