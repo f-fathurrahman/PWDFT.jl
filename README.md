@@ -141,6 +141,124 @@ KS_solve_SCF!( Ham, betamix=0.2 )  # using SCF (self-consistent field) method
 KS_solve_Emin_PCG!( Ham ) # direct minimization using preconditioned conjugate gradient
 ```
 
+## More examples on creating an instance of `Atoms`
+
+GaAs crystal (primitive unit cell), using keyword `xyz_string_frac`:
+```
+# Atoms
+atoms = Atoms( xyz_string_frac=
+    """
+    2
+
+    Ga  0.0   0.0   0.0
+    As  0.25  0.25  0.25
+    """,
+    in_bohr=true,
+    LatVecs = gen_lattice_fcc(10.6839444516)
+)
+```
+
+
+Hydrazine molecule in extended xyz file
+```
+atoms = Atoms(ext_xyz_file="N2H4.xyz")
+```
+with the following `N2H4.xyz` file:
+```
+6
+Lattice="11.896428 0.0 0.0 0.0 12.185504 0.0 0.0 0.0 11.151965" Properties=species:S:1:pos:R:3:Z:I:1 pbc="T T T"
+N       5.94821400       6.81171100       5.22639100        7 
+N       5.94821400       5.37379300       5.22639100        7 
+H       6.15929600       7.18550400       6.15196500        1 
+H       5.00000000       7.09777800       5.00000000        1 
+H       5.73713200       5.00000000       6.15196500        1 
+H       6.89642800       5.08772600       5.00000000        1 
+```
+Lattice vectors information is taken from the xyz file.
+
+
+## More examples on creating an instance of `Hamiltonian`
+
+Using 3x3x3 Monkhorst-Pack kpoint grid (usually used for crystalline systems):
+```
+Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3] )
+```
+
+Include 4 extra states:
+```
+Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3], extra_states=4 )
+```
+
+Using spin-polarized (`Nspin=2 `):
+```
+Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3],
+    Nspin=2, extra_states=4 )
+```
+
+NOTES: Currently spin-polarized calculations are only supported by
+specifying calculations with smearing scheme (no fixed magnetization), so `extra_states`
+is usually should also be specified.
+
+
+Using PBE exchange-correlation functional:
+```
+Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3],
+    Nspin=2, extra_states=4, xcfunc="PBE" )
+```
+Currently, only two XC functional is supported, namely `xcfunc="VWN"` (default) and
+`xcfunc="PBE"`. Future developments should support all functionals included in LibXC.
+
+
+## More examples on solving the Kohn-Sham problem
+
+Several solvers are available:
+
+- `KS_solve_SCF!`: SCF algorithm with density mixing
+
+- `KS_solve_SCF_potmix!`: SCF algorithm with XC and Hartree potential mixing
+
+- `KS_solve_Emin_PCG!`: using direct total energy minimization by preconditioned conjugate
+  gradient method (proposed by Prof. Arias, et al.). Only
+  the version which works with systems with band gap is implemented.
+
+Stopping criteria is based on difference in total energy.
+
+
+The following example will use `Emin_PCG`.
+It will stop if the difference in total energy is less than
+`etot_conv_thr` and it occurs twice in a row.
+```
+KS_solve_Emin_PCG( Ham, etot_conv_thr=1e-6, NiterMax=150 )
+```
+
+Using SCF with `betamix` (mixing parameter) 0.1:
+```
+KS_solve_SCF!( Ham, betamix=0.1 )
+```
+Smaller `betamix` usually will lead to slower convergence but more stable.
+Larger `betamix` will give faster convergence but might result in unstable
+SCF.
+
+Several mixing methods are available in `KS_solve_SCF!`:
+```
+- `simple` or linear mixing
+- `linear_adaptive`
+- `broyden`
+- `pulay`
+- `anderson`
+- `ppulay` (periodic Pulay mixing)
+- `rpulay` (restarted Pulay mixing)
+```
+
+For metallic system, we use Fermi smearing scheme for occupation numbers of electrons.
+This is activated by setting `use_smearing=true` and specifying a small smearing parameter `kT`
+(in Hartree, default `kT=0.001`).
+
+```
+KS_solve_SCF!( Ham, mix_method="rpulay", use_smearing=true, kT=0.001 )
+```
+
+
 ## Band structure calculations
 
 ![Band structure of silicon (fcc)](images/bands_Si_fcc.svg)
