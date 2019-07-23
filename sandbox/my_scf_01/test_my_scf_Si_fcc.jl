@@ -10,7 +10,7 @@ include("my_scf_potmix.jl")
 const DIR_PWDFT = joinpath( dirname(pathof(PWDFT)), "..")
 const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
 
-function test_my_scf(β::Float64; mix_what=:density)
+function test_my_scf(β::Float64; mix_what=:density, log_file="scf_history.dat")
 
     atoms = Atoms(xyz_string_frac=
         """
@@ -22,12 +22,12 @@ function test_my_scf(β::Float64; mix_what=:density)
 
     # Initialize Hamiltonian
     pspfiles = [joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth", "Si-q4.gth")]
-    ecutwfc = 20.0
-    Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[4,4,4] )
+    ecutwfc = 15.0
+    Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3] )
     #println(Ham)
 
     if mix_what == :density
-        my_scf!(Ham, betamix=β)
+        my_scf!(Ham, betamix=β, log_file=log_file)
     elseif mix_what == :potential
         my_scf_potmix!(Ham, betamix=β)
     else
@@ -44,5 +44,5 @@ test_my_scf(0.4, mix_what=:density)
 test_my_scf(0.4, mix_what=:potential)
 
 #for β in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
-#    test_my_scf(β)
+#    test_my_scf(β, log_file="Si_fcc_scf_history_betamix_"*string(β)*".dat")
 #end
