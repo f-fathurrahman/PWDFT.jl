@@ -41,7 +41,8 @@ if Nargs == 0
         "time_calc_rhoe.jl",
         "time_Hamiltonian_H.jl",
         "time_Hamiltonian_Pt.jl",
-        "time_op_kpt_1.jl"
+        "time_op_kpt.jl",
+        "time_op_kpt_PBE.jl",        
     ]    
     for fil in FILELIST
         include(joinpath(DIR_TIMING, fil))

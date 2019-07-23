@@ -1,9 +1,9 @@
-function time_op_kpt_1()
+function time_op_kpt_PBE()
 
     @printf("\n")
-    @printf("-------------------------------------\n")
-    @printf("Timing Hamiltonian operators (Nkpt=1)\n")
-    @printf("-------------------------------------\n")
+    @printf("------------------------------------------------\n")
+    @printf("Timing Hamiltonian operators (meshk=[8,8,8]) PBE\n")
+    @printf("------------------------------------------------\n")
     @printf("\n")
 
     atoms = Atoms(xyz_string_frac=
@@ -13,10 +13,10 @@ function time_op_kpt_1()
         Pt  0.0  0.0  0.0
         """, LatVecs=gen_lattice_fcc(3.9231*ANG2BOHR))
     
-    pspfiles = ["../pseudopotentials/pade_gth/Pt-q18.gth"]
+    pspfiles = [joinpath(DIR_PWDFT, "pseudopotentials", "pbe_gth", "Pt-q18.gth")]
     ecutwfc = 15.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc,
-                       meshk=[8,8,8], extra_states=4 )
+                       meshk=[8,8,8], extra_states=4, xcfunc="PBE" )
         
     # Shortcuts
     pw = Ham.pw
@@ -24,7 +24,7 @@ function time_op_kpt_1()
     CellVolume = pw.CellVolume
     Ns = pw.Ns
 
-    Random.seed!(4321)
+    Random.seed!(1234)
     psiks = rand_BlochWavefunc( Ham )
 
     Rhoe = calc_rhoe( Ham, psiks )
@@ -55,4 +55,4 @@ function time_op_kpt_1()
 
 end
 
-time_op_kpt_1()
+time_op_kpt_PBE()
