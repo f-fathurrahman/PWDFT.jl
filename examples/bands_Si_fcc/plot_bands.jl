@@ -1,9 +1,8 @@
 using DelimitedFiles
-using DelimitedFiles
 using Printf
 using LaTeXStrings
 using PGFPlotsX
-
+using PWDFT: Ry2eV
 
 function read_special_kpts( filebands::String )
     f = open(filebands, "r")
@@ -33,7 +32,6 @@ function test_plot_bands()
     symb_kpts_spec, x_kpts_spec = read_special_kpts(filebands)
 
     ebands = readdlm(filebands, comments=true)
-    #Nbands = size(ebands)[2] - 1
     Nbands = 5
     kcart = ebands[:,1]
 
@@ -47,16 +45,24 @@ function test_plot_bands()
             color = "black",
             mark_options = "fill=cyan",
             mark_size = "1pt",
-        }, Coordinates(kcart, ebands[:,iband+1] .- E_f) )
+        }, Coordinates(kcart, (ebands[:,iband+1] .- E_f)*2*Ry2eV) )
     end
 
+    #kmin = mininum(kcart)
+    kmin = 0.0
+    kmax = maximum(kcart)
+
     fig = @pgf Axis( {
-             height = "8cm",
-             width = "10cm",
+             title = "Si band structure",
+             ylabel = "Energy (eV)",
+             height = "10cm",
+             width = "8cm",
              xtick = x_kpts_spec,
              xticklabels = symb_kpts_spec,
              "xmajorgrids",
              "ymajorgrids",
+             xmin=kmin,
+             xmax=kmax,
           },
           plt_inc...)
     pgfsave("TEMP_bands.tex", fig)
