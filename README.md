@@ -240,15 +240,21 @@ Larger `betamix` will give faster convergence but might result in unstable
 SCF.
 
 Several mixing methods are available in `KS_solve_SCF!`:
-```
+
 - `simple` or linear mixing
+
 - `linear_adaptive`
-- `broyden`
-- `pulay`
+
 - `anderson`
+
+- `broyden`
+
+- `pulay`
+
 - `ppulay` (periodic Pulay mixing)
+
 - `rpulay` (restarted Pulay mixing)
-```
+
 
 For metallic system, we use Fermi smearing scheme for occupation numbers of electrons.
 This is activated by setting `use_smearing=true` and specifying a small smearing parameter `kT`
