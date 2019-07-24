@@ -22,14 +22,17 @@ function read_special_kpts( filebands::String )
     return symb_kpts_spec, x_kpts_spec
 end
 
-function test_plot_bands()
+function test_plot_bands(; Nspin=1)
 
     filebands = "TEMP_bands.dat"
 
     symb_kpts_spec, x_kpts_spec = read_special_kpts(filebands)
 
     ebands = readdlm(filebands, comments=true)
-    Nbands = size(ebands)[2] - 1
+    Nkspin = size(ebands)[2] - 1
+
+    Nbands = round(Int64, Nkspin/Nspin)
+    
     ene = ebands[:,1]
     
     plt_inc = Array{Plot,1}(undef,Nbands)

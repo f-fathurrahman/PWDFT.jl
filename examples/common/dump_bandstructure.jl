@@ -3,6 +3,9 @@ function dump_bandstructure( evals, kpath, kpt_spec, kpt_spec_labels;
     Nkpt = size(kpath)[2]
     Nstates = size(evals)[1]
 
+    Nspin = round( Int64, size(evals,2)/Nkpt )
+    Nkspin = Nkpt*Nspin
+
     Xcoords = Array{Float64}(undef,Nkpt)
     Xcoords[1] = 0.0
     
@@ -34,10 +37,11 @@ function dump_bandstructure( evals, kpath, kpt_spec, kpt_spec_labels;
         @printf(f, "#%18.10f %s\n", Xticks[ik], kpt_spec_labels[ik])
     end
     
-    for ik = 1:Nkpt
+    for ispin in 1:Nspin, ik in 1:Nkpt
+        ikspin = ik + (ispin -1)*Nkpt
         @printf(f, "%18.10f ", Xcoords[ik])
-        for ist = 1:Nstates
-            @printf(f, "%18.10f ", evals[ist,ik])
+        for ist in 1:Nstates
+            @printf(f, "%18.10f ", evals[ist,ikspin])
         end
         @printf(f, "\n")
     end

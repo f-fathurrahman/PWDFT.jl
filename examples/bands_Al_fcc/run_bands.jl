@@ -9,6 +9,8 @@ const DIR_PSP = joinpath(DIR_PWDFT,"pseudopotentials","pade_gth")
 include("../common/dump_bandstructure.jl")
 include("../common/gen_kpath.jl")
 
+include("system_def.jl")
+
 function main()
 
     Random.seed!(1234)
