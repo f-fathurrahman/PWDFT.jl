@@ -2,6 +2,7 @@ using Printf
 using LinearAlgebra
 using Random
 using PWDFT
+import Serialization
 
 const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
 const DIR_PSP = joinpath(DIR_PWDFT,"pseudopotentials","pade_gth")
@@ -9,36 +10,20 @@ const DIR_PSP = joinpath(DIR_PWDFT,"pseudopotentials","pade_gth")
 include("../common/dump_bandstructure.jl")
 include("../common/gen_kpath.jl")
 
-include("system_def.jl")
-
 function main()
 
     Random.seed!(1234)
 
-    # Atoms
-    atoms = Atoms( xyz_string_frac=
-        """
-        1
+    Ham = Serialization.deserialize("Ham.data")
 
-        Al  0.0  0.0  0.0
-        """, in_bohr=true,
-        LatVecs=gen_lattice_fcc(4.0495*ANG2BOHR) )
+    atoms = Ham.atoms
+    ecutwfc = Ham.pw.ecutwfc
+    Nspin = Ham.electrons.Nspin
 
-    # Initialize Hamiltonian
-    pspfiles = [joinpath(DIR_PSP,"Al-q3.gth")]
-    ecutwfc = 15.0
-    Ham = Hamiltonian( atoms, pspfiles, ecutwfc,
-                       meshk=[8,8,8], extra_states=4 )
-    println(Ham)
-
-    # Solve the KS problem
-    KS_solve_SCF!( Ham, betamix=0.2, mix_method="rpulay", use_smearing=true, kT=0.001 )
-
-
-    #
     # Band structure calculation
-    #
     kpoints, kpt_spec, kpt_spec_labels = gen_kpath(atoms, "W-L-G-X-W-K", "fcc", Δk=0.05 )
+    #kpoints, kpt_spec, kpt_spec_labels = gen_kpath(atoms, "L-G-X-G1", "fcc", Δk=0.05 )
+    #kpoints, kpt_spec, kpt_spec_labels = gen_kpath(atoms, "G-X-W-K-G-L-U-W-L-K", "fcc", Δk=0.05 )
 
     # New pw
     pw = PWGrid(ecutwfc, atoms.LatVecs, kpoints=kpoints)
@@ -49,7 +34,7 @@ function main()
     k = Ham.pw.gvecw.kpoints.k
 
     # Manually construct Ham.electrons
-    Ham.electrons = Electrons( atoms, Ham.pspots, Nspin=1, Nkpt=kpoints.Nkpt,
+    Ham.electrons = Electrons( atoms, Ham.pspots, Nspin=Nspin, Nkpt=kpoints.Nkpt,
                                Nstates_empty=4 )
 
     Nstates = Ham.electrons.Nstates
@@ -78,8 +63,7 @@ function main()
     end
     end
 
-    dump_bandstructure( evals, kpoints.k, kpt_spec, kpt_spec_labels,
-                        filename="TEMP_bands.dat" )
+    dump_bandstructure( evals, kpoints.k, kpt_spec, kpt_spec_labels, filename="TEMP_bands.dat" )
 
 end
 
