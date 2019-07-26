@@ -228,7 +228,7 @@ The following example will use `Emin_PCG`.
 It will stop if the difference in total energy is less than
 `etot_conv_thr` and it occurs twice in a row.
 ```
-KS_solve_Emin_PCG( Ham, etot_conv_thr=1e-6, NiterMax=150 )
+KS_solve_Emin_PCG!( Ham, etot_conv_thr=1e-6, NiterMax=150 )
 ```
 
 Using SCF with `betamix` (mixing parameter) 0.1:
