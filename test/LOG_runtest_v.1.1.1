@@ -1,0 +1,4306 @@
+Test Summary: | Pass  Total
+gen_lattice   |    2      2
+Test Summary:       | Pass  Total
+init_atoms function |    1      1
+Test Summary:      | Pass  Total
+create Hamiltonian |    2      2
+Test Summary: | Pass  Total
+LDA_VWN xc    |    2      2
+Test Summary: | Pass  Total
+spglib.jl     |    6      6
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = simple
+Density mixing with betamix =    0.70000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1      -0.4495012438  4.49501e-01  8.71245e-05
+SCF:     2      -0.4429800708  6.52117e-03  3.27129e-05
+SCF:     3      -0.4405254161  2.45465e-03  1.06690e-05
+SCF:     4      -0.4398220243  7.03392e-04  3.45399e-06
+SCF:     5      -0.4398181752  3.84913e-06  1.05072e-06
+SCF:     6      -0.4399038606  8.56854e-05  3.33625e-07
+SCF:     7      -0.4399764014  7.25408e-05  1.05588e-07
+SCF:     8      -0.4400110435  3.46421e-05  3.44804e-08
+SCF:     9      -0.4400262306  1.51870e-05  1.14756e-08
+SCF:    10      -0.4400317040  5.47339e-06  3.80821e-09
+SCF:    11      -0.4400334612  1.75720e-06  1.30646e-09
+SCF:    12      -0.4400339432  4.82034e-07  4.70924e-10
+SCF:    13      -0.4400340406  9.74205e-08  1.71898e-10
+
+SCF is converged in iter: 13
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       0.4032277690
+Ps_loc     energy:      -0.7173718834
+Ps_nloc    energy:       0.0000000000
+Hartree    energy:       0.1919618066
+XC         energy:      -0.2291858697
+PspCore    energy:      -0.0000003169
+-------------------------------------
+Electronic energy:      -0.3513684944
+NN         energy:      -0.0886655462
+-------------------------------------
+Total      energy:      -0.4400340406
+
+Test Summary:              | Pass  Total
+H atom SCF Rhoe mix simple |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = linear_adaptive
+Density mixing with betamix =    0.10000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1      -0.4686783749  4.68678e-01  8.71245e-05
+SCF:     2      -0.4632778913  5.40048e-03  7.52616e-05
+SCF:     3      -0.4545452434  8.73265e-03  5.44230e-05
+SCF:     4      -0.4464122570  8.13299e-03  3.31087e-05
+SCF:     5      -0.4411866627  5.22559e-03  1.63499e-05
+SCF:     6      -0.4395934250  1.59324e-03  6.22518e-06
+SCF:     7      -0.4397242528  1.30828e-04  1.82802e-06
+SCF:     8      -0.4398559861  1.31733e-04  4.05287e-07
+SCF:     9      -0.4399674178  1.11432e-04  1.06118e-07
+SCF:    10      -0.4400132046  4.57868e-05  3.53836e-08
+SCF:    11      -0.4400291237  1.59191e-05  1.04875e-08
+SCF:    12      -0.4400331680  4.04433e-06  2.89800e-09
+SCF:    13      -0.4400339092  7.41204e-07  8.08785e-10
+SCF:    14      -0.4400340789  1.69653e-07  3.18233e-10
+
+SCF is converged in iter: 14
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       0.4032277633
+Ps_loc     energy:      -0.7173718924
+Ps_nloc    energy:       0.0000000000
+Hartree    energy:       0.1919617307
+XC         energy:      -0.2291858175
+PspCore    energy:      -0.0000003169
+-------------------------------------
+Electronic energy:      -0.3513685326
+NN         energy:      -0.0886655462
+-------------------------------------
+Total      energy:      -0.4400340789
+
+Test Summary:                       | Pass  Total
+H atom SCF Rhoe mix linear adaptive |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = anderson
+mixdim = 5
+Density mixing with betamix =    0.70000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1      -0.4495012438  4.49501e-01  8.71245e-05
+SCF:     2      -0.4393056753  1.01956e-02  3.27129e-05
+SCF:     3      -0.4394040713  9.83960e-05  1.83298e-06
+SCF:     4      -0.4404052468  1.00118e-03  6.01952e-07
+SCF:     5      -0.4400578583  3.47389e-04  1.55118e-07
+SCF:     6      -0.4400373730  2.04854e-05  4.54849e-08
+SCF:     7      -0.4400331132  4.25976e-06  2.86106e-08
+SCF:     8      -0.4400351469  2.03370e-06  2.40715e-09
+SCF:     9      -0.4400355249  3.77974e-07  1.92183e-09
+SCF:    10      -0.4400337686  1.75625e-06  1.89198e-09
+SCF:    11      -0.4400341575  3.88888e-07  5.77297e-10
+SCF:    12      -0.4400340628  9.47327e-08  1.74613e-10
+
+SCF is converged in iter: 12
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       0.4032277586
+Ps_loc     energy:      -0.7173718869
+Ps_nloc    energy:       0.0000000000
+Hartree    energy:       0.1919617822
+XC         energy:      -0.2291858535
+PspCore    energy:      -0.0000003169
+-------------------------------------
+Electronic energy:      -0.3513685165
+NN         energy:      -0.0886655462
+-------------------------------------
+Total      energy:      -0.4400340628
+
+Test Summary:                | Pass  Total
+H atom SCF Rhoe mix anderson |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = pulay
+Density mixing with betamix =    0.50000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1      -0.4570814514  4.57081e-01  8.71245e-05
+SCF:     2      -0.4498087253  7.27273e-03  4.98198e-05
+SCF:     3      -0.4445395298  5.26920e-03  2.59313e-05
+SCF:     4      -0.4413912314  3.14830e-03  1.31845e-05
+SCF:     5      -0.4399978612  1.39337e-03  6.48548e-06
+SCF:     6      -0.4409316914  9.33830e-04  3.16278e-06
+SCF:     7      -0.4401825747  7.49117e-04  2.30176e-07
+SCF:     8      -0.4400419457  1.40629e-04  2.16001e-08
+SCF:     9      -0.4400358956  6.05013e-06  1.35024e-08
+SCF:    10      -0.4400271624  8.73321e-06  7.02559e-09
+SCF:    11      -0.4400372491  1.00868e-05  5.51588e-09
+SCF:    12      -0.4400344930  2.75614e-06  1.65306e-09
+SCF:    13      -0.4400326660  1.82702e-06  9.51741e-10
+SCF:    14      -0.4400360493  3.38329e-06  8.77685e-10
+SCF:    15      -0.4400335264  2.52284e-06  1.08600e-09
+SCF:    16      -0.4400338273  3.00896e-07  4.25573e-10
+SCF:    17      -0.4400338331  5.80384e-09  1.00574e-10
+
+SCF is converged in iter: 17
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       0.4032277824
+Ps_loc     energy:      -0.7173716568
+Ps_nloc    energy:       0.0000000000
+Hartree    energy:       0.1919616898
+XC         energy:      -0.2291857854
+PspCore    energy:      -0.0000003169
+-------------------------------------
+Electronic energy:      -0.3513682869
+NN         energy:      -0.0886655462
+-------------------------------------
+Total      energy:      -0.4400338331
+
+Test Summary:             | Pass  Total
+H atom SCF Rhoe mix pulay |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = ppulay
+mixdim = 5
+Density mixing with betamix =    0.50000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1      -0.4570814514  4.57081e-01  8.71245e-05
+SCF:     2      -0.4498087253  7.27273e-03  4.98198e-05
+SCF:     3      -0.4445395298  5.26920e-03  2.59313e-05
+SCF:     4      -0.4413912314  3.14830e-03  1.31845e-05
+SCF:     5      -0.4399978612  1.39337e-03  6.48548e-06
+SCF:     6      -0.4409316914  9.33830e-04  3.16278e-06
+SCF:     7      -0.4402879449  6.43746e-04  2.30176e-07
+SCF:     8      -0.4400757219  2.12223e-04  3.52426e-08
+SCF:     9      -0.4400481140  2.76079e-05  8.40043e-09
+SCF:    10      -0.4400305018  1.76122e-05  2.34987e-09
+SCF:    11      -0.4400279581  2.54369e-06  5.15897e-09
+SCF:    12      -0.4400295682  1.61008e-06  3.80283e-09
+SCF:    13      -0.4400314344  1.86617e-06  2.46152e-09
+SCF:    14      -0.4400327272  1.29286e-06  1.25952e-09
+SCF:    15      -0.4400333504  6.23152e-07  5.73033e-10
+SCF:    16      -0.4400337590  4.08640e-07  2.57152e-10
+
+SCF is converged in iter: 16
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       0.4032278671
+Ps_loc     energy:      -0.7173716731
+Ps_nloc    energy:       0.0000000000
+Hartree    energy:       0.1919617081
+XC         energy:      -0.2291857980
+PspCore    energy:      -0.0000003169
+-------------------------------------
+Electronic energy:      -0.3513682128
+NN         energy:      -0.0886655462
+-------------------------------------
+Total      energy:      -0.4400337590
+
+Test Summary:              | Pass  Total
+H atom SCF Rhoe mix ppulay |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = rpulay
+mixdim = 5
+Density mixing with betamix =    0.50000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1      -0.4570814514  4.57081e-01  8.71245e-05
+SCF:     2      -0.4383216516  1.87598e-02  4.98198e-05
+SCF:     3      -0.4372735867  1.04806e-03  3.88629e-06
+SCF:     4      -0.4424825622  5.20898e-03  1.41462e-06
+SCF:     5      -0.4402916785  2.19088e-03  1.13261e-06
+SCF:     6      -0.4400647915  2.26887e-04  8.39106e-08
+SCF:     7      -0.4400103868  5.44047e-05  5.48234e-08
+SCF:     8      -0.4400182921  7.90528e-06  2.21215e-08
+SCF:     9      -0.4400403829  2.20909e-05  1.08297e-08
+SCF:    10      -0.4400346573  5.72564e-06  4.01690e-09
+SCF:    11      -0.4400348256  1.68333e-07  5.87333e-10
+SCF:    12      -0.4400342240  6.01581e-07  4.22800e-10
+
+SCF is converged in iter: 12
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       0.4032275441
+Ps_loc     energy:      -0.7173718329
+Ps_nloc    energy:       0.0000000000
+Hartree    energy:       0.1919617754
+XC         energy:      -0.2291858477
+PspCore    energy:      -0.0000003169
+-------------------------------------
+Electronic energy:      -0.3513686778
+NN         energy:      -0.0886655462
+-------------------------------------
+Total      energy:      -0.4400342240
+
+Test Summary:              | Pass  Total
+H atom SCF Rhoe mix rpulay |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = broyden
+mixdim = 5
+Density mixing with betamix =    0.50000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1      -0.4570814514  4.57081e-01  8.71245e-05
+SCF:     2      -0.4383227907  1.87587e-02  4.98198e-05
+SCF:     3      -0.4372747952  1.04800e-03  3.88355e-06
+SCF:     4      -0.4424723732  5.19758e-03  1.41413e-06
+SCF:     5      -0.4402847258  2.18765e-03  1.12683e-06
+SCF:     6      -0.4401246163  1.60109e-04  8.25798e-08
+SCF:     7      -0.4400990821  2.55343e-05  2.31911e-08
+SCF:     8      -0.4400406586  5.84234e-05  1.88099e-08
+SCF:     9      -0.4400311692  9.48945e-06  3.93945e-09
+SCF:    10      -0.4400357833  4.61414e-06  2.52482e-09
+SCF:    11      -0.4400352163  5.67067e-07  5.50360e-10
+SCF:    12      -0.4400342415  9.74795e-07  4.48277e-10
+
+SCF is converged in iter: 12
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       0.4032274245
+Ps_loc     energy:      -0.7173717151
+Ps_nloc    energy:       0.0000000000
+Hartree    energy:       0.1919617170
+XC         energy:      -0.2291858047
+PspCore    energy:      -0.0000003169
+-------------------------------------
+Electronic energy:      -0.3513686952
+NN         energy:      -0.0886655462
+-------------------------------------
+Total      energy:      -0.4400342415
+
+Test Summary:               | Pass  Total
+H atom SCF Rhoe mix broyden |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = simple
+Potential mixing with betamix =    0.50000
+
+--------------------------------------------------------------
+              iter            E            ΔE           Δρ
+--------------------------------------------------------------
+SCF_potmix:     1      -0.4382913337  4.38291e-01  2.44141e-04
+SCF_potmix:     2      -0.4398598495  1.56852e-03  7.13516e-06
+SCF_potmix:     3      -0.4400025671  1.42718e-04  1.71005e-06
+SCF_potmix:     4      -0.4400274734  2.49063e-05  8.72596e-07
+SCF_potmix:     5      -0.4400324591  4.98572e-06  4.10141e-07
+SCF_potmix:     6      -0.4400336524  1.19330e-06  1.99727e-07
+SCF_potmix:     7      -0.4400339436  2.91196e-07  1.03504e-07
+SCF_potmix:     8      -0.4400340176  7.40383e-08  5.10746e-08
+SCF_potmix is converged in 8 iterations
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       0.4031664694
+Ps_loc     energy:      -0.7173130819
+Ps_nloc    energy:       0.0000000000
+Hartree    energy:       0.1919636777
+XC         energy:      -0.2291852198
+PspCore    energy:      -0.0000003169
+-------------------------------------
+Electronic energy:      -0.3513684714
+NN         energy:      -0.0886655462
+-------------------------------------
+Total      energy:      -0.4400340176
+
+Test Summary:                   | Pass  Total
+H atom SCF potential mix simple |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = linear_adaptive
+Potential mixing with betamix =    0.10000
+
+--------------------------------------------------------------
+              iter            E            ΔE           Δρ
+--------------------------------------------------------------
+SCF_potmix:     1      -0.4382913337  4.38291e-01  2.44141e-04
+SCF_potmix:     2      -0.4399114979  1.62016e-03  8.29870e-06
+SCF_potmix:     3      -0.4400205434  1.09045e-04  1.45089e-06
+SCF_potmix:     4      -0.4400323159  1.17725e-05  5.24484e-07
+SCF_potmix:     5      -0.4400337540  1.43812e-06  1.72246e-07
+SCF_potmix:     6      -0.4400339790  2.24977e-07  6.61118e-08
+SCF_potmix:     7      -0.4400340211  4.20933e-08  2.82294e-08
+SCF_potmix is converged in 7 iterations
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       0.4031786802
+Ps_loc     energy:      -0.7173256188
+Ps_nloc    energy:       0.0000000000
+Hartree    energy:       0.1919658239
+XC         energy:      -0.2291870433
+PspCore    energy:      -0.0000003169
+-------------------------------------
+Electronic energy:      -0.3513684749
+NN         energy:      -0.0886655462
+-------------------------------------
+Total      energy:      -0.4400340211
+
+Test Summary:                            | Pass  Total
+H atom SCF potential mix linear_adaptive |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = broyden
+mixdim = 5
+Potential mixing with betamix =    0.50000
+
+--------------------------------------------------------------
+              iter            E            ΔE           Δρ
+--------------------------------------------------------------
+SCF_potmix:     1      -0.4382913337  4.38291e-01  2.44141e-04
+SCF_potmix:     2      -0.4398598495  1.56852e-03  7.13516e-06
+SCF_potmix:     3      -0.4400084516  1.48602e-04  2.47725e-06
+SCF_potmix:     4      -0.4400318893  2.34377e-05  1.78534e-06
+SCF_potmix:     5      -0.4400338207  1.93140e-06  2.81757e-07
+SCF_potmix:     6      -0.4400339744  1.53713e-07  7.60272e-08
+SCF_potmix:     7      -0.4400340208  4.64030e-08  1.74711e-07
+SCF_potmix is converged in 7 iterations
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       0.4033560987
+Ps_loc     energy:      -0.7175135604
+Ps_nloc    energy:       0.0000000000
+Hartree    energy:       0.1920145472
+XC         energy:      -0.2292252432
+PspCore    energy:      -0.0000003169
+-------------------------------------
+Electronic energy:      -0.3513684746
+NN         energy:      -0.0886655462
+-------------------------------------
+Total      energy:      -0.4400340208
+
+Test Summary:                    | Pass  Total
+H atom SCF potential mix broyden |    1      1
+
+Minimizing Kohn-Sham energy using PCG
+-------------------------------------
+NiterMax  = 200
+α_t       = 3.000000e-05
+conv_thr  = 1.000000e-06
+Using Fletcher-Reeves formula for CG_BETA
+
+Emin_PCG step        1 =      -0.4398286729 4.3982867e-01
+Emin_PCG step        2 =      -0.4398327884 4.1155544e-06
+Emin_PCG step        3 =      -0.4400310991 1.9831066e-04
+Emin_PCG step        4 =      -0.4400339147 2.8156374e-06
+Emin_PCG step        5 =      -0.4400340368 1.2208608e-07
+Emin_PCG step        6 =      -0.4400340433 6.4880051e-09
+
+Emin_PCG is converged in iter: 6 , diffE = 6.4880051e-09
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       0.4032275720
+Ps_loc     energy:      -0.7173714255
+Ps_nloc    energy:       0.0000000000
+Hartree    energy:       0.1919610442
+XC         energy:      -0.2291853709
+PspCore    energy:      -0.0000003169
+-------------------------------------
+Electronic energy:      -0.3513684971
+NN         energy:      -0.0886655462
+-------------------------------------
+Total      energy:      -0.4400340433
+
+Test Summary:                   | Pass  Total
+H atom Emin PCG Fletcher-Reeves |    1      1
+
+Minimizing Kohn-Sham energy using PCG
+-------------------------------------
+NiterMax  = 200
+α_t       = 3.000000e-05
+conv_thr  = 1.000000e-06
+Using Polak-Ribiere formula for CG_BETA
+
+Emin_PCG step        1 =      -0.4398286729 4.3982867e-01
+Emin_PCG step        2 =      -0.4398327943 4.1214261e-06
+Emin_PCG step        3 =      -0.4400310987 1.9830439e-04
+Emin_PCG step        4 =      -0.4400339015 2.8028027e-06
+Emin_PCG step        5 =      -0.4400340367 1.3518583e-07
+Emin_PCG step        6 =      -0.4400340433 6.5913915e-09
+
+Emin_PCG is converged in iter: 6 , diffE = 6.5913915e-09
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       0.4032250991
+Ps_loc     energy:      -0.7173688485
+Ps_nloc    energy:       0.0000000000
+Hartree    energy:       0.1919604877
+XC         energy:      -0.2291849185
+PspCore    energy:      -0.0000003169
+-------------------------------------
+Electronic energy:      -0.3513684971
+NN         energy:      -0.0886655462
+-------------------------------------
+Total      energy:      -0.4400340433
+
+Test Summary:                 | Pass  Total
+H atom Emin PCG Polak-Ribiere |    1      1
+
+Minimizing Kohn-Sham energy using PCG
+-------------------------------------
+NiterMax  = 200
+α_t       = 3.000000e-05
+conv_thr  = 1.000000e-06
+Using Hestenes-Stiefeld formula for CG_BETA
+
+Emin_PCG step        1 =      -0.4398286729 4.3982867e-01
+Emin_PCG step        2 =      -0.4400312476 2.0257473e-04
+Emin_PCG step        3 =      -0.4400339360 2.6883514e-06
+Emin_PCG step        4 =      -0.4400340395 1.0351039e-07
+Emin_PCG step        5 =      -0.4400340435 4.0143787e-09
+
+Emin_PCG is converged in iter: 5 , diffE = 4.0143787e-09
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       0.4032247222
+Ps_loc     energy:      -0.7173684372
+Ps_nloc    energy:       0.0000000000
+Hartree    energy:       0.1919603001
+XC         energy:      -0.2291847655
+PspCore    energy:      -0.0000003169
+-------------------------------------
+Electronic energy:      -0.3513684973
+NN         energy:      -0.0886655462
+-------------------------------------
+Total      energy:      -0.4400340435
+
+Test Summary:                     | Pass  Total
+H atom Emin PCG Hestenes-Stiefeld |    1      1
+
+Minimizing Kohn-Sham energy using PCG
+-------------------------------------
+NiterMax  = 200
+α_t       = 3.000000e-05
+conv_thr  = 1.000000e-06
+Using Dai-Yuan formula for CG_BETA
+
+Emin_PCG step        1 =      -0.4398286729 4.3982867e-01
+Emin_PCG step        2 =      -0.4400312476 2.0257473e-04
+Emin_PCG step        3 =      -0.4400339499 2.7022860e-06
+Emin_PCG step        4 =      -0.4400340396 8.9658460e-08
+Emin_PCG step        5 =      -0.4400340435 3.9524879e-09
+
+Emin_PCG is converged in iter: 5 , diffE = 3.9524879e-09
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       0.4032272500
+Ps_loc     energy:      -0.7173710892
+Ps_nloc    energy:       0.0000000000
+Hartree    energy:       0.1919609232
+XC         energy:      -0.2291852645
+PspCore    energy:      -0.0000003169
+-------------------------------------
+Electronic energy:      -0.3513684973
+NN         energy:      -0.0886655462
+-------------------------------------
+Total      energy:      -0.4400340435
+
+Test Summary:            | Pass  Total
+H atom Emin PCG Dai-Yuan |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = simple
+Density mixing with betamix =    0.70000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1      -0.4599381460  4.59938e-01  8.46156e-05
+SCF:     2      -0.4532218889  6.71626e-03  3.14039e-05
+SCF:     3      -0.4515761550  1.64573e-03  9.91107e-06
+SCF:     4      -0.4515956091  1.94541e-05  3.23469e-06
+SCF:     5      -0.4522438926  6.48283e-04  1.02541e-06
+SCF:     6      -0.4525749848  3.31092e-04  3.56474e-07
+SCF:     7      -0.4527539871  1.79002e-04  1.24046e-07
+SCF:     8      -0.4528223153  6.83283e-05  4.49973e-08
+SCF:     9      -0.4528484090  2.60937e-05  1.61937e-08
+SCF:    10      -0.4528568957  8.48662e-06  6.04519e-09
+SCF:    11      -0.4528592961  2.40041e-06  2.22706e-09
+SCF:    12      -0.4528598923  5.96260e-07  8.58419e-10
+SCF:    13      -0.4528600084  1.16044e-07  3.17962e-10
+
+SCF is converged in iter: 13
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       0.4235625575
+Ps_loc     energy:      -0.7390228642
+Ps_nloc    energy:       0.0000000000
+Hartree    energy:       0.1986807300
+XC         energy:      -0.2474145532
+PspCore    energy:      -0.0000003322
+-------------------------------------
+Electronic energy:      -0.3641944621
+NN         energy:      -0.0886655462
+-------------------------------------
+Total      energy:      -0.4528600084
+
+Test Summary:              | Pass  Total
+H atom SCF Rhoe mix simple |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = linear_adaptive
+Density mixing with betamix =    0.10000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1      -0.4753044186  4.75304e-01  8.46156e-05
+SCF:     2      -0.4706407387  4.66368e-03  7.31928e-05
+SCF:     3      -0.4625117436  8.12900e-03  5.23778e-05
+SCF:     4      -0.4544377529  8.07399e-03  3.14497e-05
+SCF:     5      -0.4509974152  3.44034e-03  1.52010e-05
+SCF:     6      -0.4511807218  1.83307e-04  5.95801e-06
+SCF:     7      -0.4521193387  9.38617e-04  1.86322e-06
+SCF:     8      -0.4525458345  4.26496e-04  4.80960e-07
+SCF:     9      -0.4527623404  2.16506e-04  1.37788e-07
+SCF:    10      -0.4528352021  7.28617e-05  4.35052e-08
+SCF:    11      -0.4528552222  2.00201e-05  1.34418e-08
+SCF:    12      -0.4528595179  4.29568e-06  4.26077e-09
+SCF:    13      -0.4528601678  6.49894e-07  1.47941e-09
+SCF:    14      -0.4528602621  9.43831e-08  6.77242e-10
+
+SCF is converged in iter: 14
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       0.4235626741
+Ps_loc     energy:      -0.7390232607
+Ps_nloc    energy:       0.0000000000
+Hartree    energy:       0.1986808591
+XC         energy:      -0.2474146562
+PspCore    energy:      -0.0000003322
+-------------------------------------
+Electronic energy:      -0.3641947159
+NN         energy:      -0.0886655462
+-------------------------------------
+Total      energy:      -0.4528602621
+
+Test Summary:                       | Pass  Total
+H atom SCF Rhoe mix linear adaptive |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = anderson
+mixdim = 5
+Density mixing with betamix =    0.70000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1      -0.4599381460  4.59938e-01  8.46156e-05
+SCF:     2      -0.4525775443  7.36060e-03  3.14039e-05
+SCF:     3      -0.4529284193  3.50875e-04  3.03834e-06
+SCF:     4      -0.4532678861  3.39467e-04  5.89907e-07
+SCF:     5      -0.4529172207  3.50665e-04  1.55803e-07
+SCF:     6      -0.4529404529  2.32322e-05  5.60262e-08
+SCF:     7      -0.4528417760  9.86769e-05  1.90050e-08
+SCF:     8      -0.4528686218  2.68458e-05  1.32434e-08
+SCF:     9      -0.4528772878  8.66599e-06  3.38964e-09
+SCF:    10      -0.4528544235  2.28643e-05  6.97377e-09
+SCF:    11      -0.4528616492  7.22575e-06  3.61577e-09
+SCF:    12      -0.4528598805  1.76869e-06  8.65613e-10
+SCF:    13      -0.4528598819  1.37674e-09  5.35771e-11
+SCF:    14      -0.4528600831  2.01212e-07  6.29700e-11
+
+SCF is converged in iter: 14
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       0.4235625846
+Ps_loc     energy:      -0.7390229499
+Ps_nloc    energy:       0.0000000000
+Hartree    energy:       0.1986807033
+XC         energy:      -0.2474145427
+PspCore    energy:      -0.0000003322
+-------------------------------------
+Electronic energy:      -0.3641945369
+NN         energy:      -0.0886655462
+-------------------------------------
+Total      energy:      -0.4528600831
+
+Test Summary:                | Pass  Total
+H atom SCF Rhoe mix anderson |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = pulay
+Density mixing with betamix =    0.50000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1      -0.4659937506  4.65994e-01  8.46156e-05
+SCF:     2      -0.4584593983  7.53435e-03  4.80863e-05
+SCF:     3      -0.4535445728  4.91483e-03  2.46067e-05
+SCF:     4      -0.4508314496  2.71312e-03  1.22665e-05
+SCF:     5      -0.4508633577  3.19081e-05  5.98452e-06
+SCF:     6      -0.4533807018  2.51734e-03  3.00467e-06
+SCF:     7      -0.4529576407  4.23061e-04  4.48331e-08
+SCF:     8      -0.4528816627  7.59780e-05  2.91111e-08
+SCF:     9      -0.4528718686  9.79406e-06  1.12865e-08
+SCF:    10      -0.4528521976  1.96710e-05  3.89360e-09
+SCF:    11      -0.4528414417  1.07560e-05  6.78499e-09
+SCF:    12      -0.4528298894  1.15523e-05  1.06274e-08
+SCF:    13      -0.4528460819  1.61925e-05  1.42015e-08
+SCF:    14      -0.4528257816  2.03003e-05  5.26632e-09
+SCF:    15      -0.4528535334  2.77518e-05  1.65558e-08
+SCF:    16      -0.4528595019  5.96849e-06  5.10176e-10
+SCF:    17      -0.4528605187  1.01680e-06  2.04624e-10
+SCF:    18      -0.4528607760  2.57355e-07  3.02316e-10
+SCF:    19      -0.4528600357  7.40337e-07  2.83854e-10
+
+SCF is converged in iter: 19
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       0.4235624990
+Ps_loc     energy:      -0.7390227915
+Ps_nloc    energy:       0.0000000000
+Hartree    energy:       0.1986805999
+XC         energy:      -0.2474144646
+PspCore    energy:      -0.0000003322
+-------------------------------------
+Electronic energy:      -0.3641944895
+NN         energy:      -0.0886655462
+-------------------------------------
+Total      energy:      -0.4528600357
+
+Test Summary:             | Pass  Total
+H atom SCF Rhoe mix pulay |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = ppulay
+mixdim = 5
+Density mixing with betamix =    0.50000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1      -0.4659937506  4.65994e-01  8.46156e-05
+SCF:     2      -0.4584593983  7.53435e-03  4.80863e-05
+SCF:     3      -0.4535445728  4.91483e-03  2.46067e-05
+SCF:     4      -0.4508314496  2.71312e-03  1.22665e-05
+SCF:     5      -0.4508633577  3.19081e-05  5.98452e-06
+SCF:     6      -0.4533807018  2.51734e-03  3.00467e-06
+SCF:     7      -0.4528672706  5.13431e-04  4.48331e-08
+SCF:     8      -0.4527761191  9.11515e-05  6.48432e-08
+SCF:     9      -0.4528831299  1.07011e-04  4.82956e-08
+SCF:    10      -0.4528692919  1.38380e-05  5.67489e-09
+SCF:    11      -0.4528620427  7.24923e-06  1.88414e-09
+SCF:    12      -0.4528584943  3.54838e-06  9.32804e-10
+SCF:    13      -0.4528588609  3.66589e-07  1.16624e-09
+SCF:    14      -0.4528594534  5.92565e-07  5.52362e-10
+
+SCF is converged in iter: 14
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       0.4235627859
+Ps_loc     energy:      -0.7390224915
+Ps_nloc    energy:       0.0000000000
+Hartree    energy:       0.1986805395
+XC         energy:      -0.2474144089
+PspCore    energy:      -0.0000003322
+-------------------------------------
+Electronic energy:      -0.3641939072
+NN         energy:      -0.0886655462
+-------------------------------------
+Total      energy:      -0.4528594534
+
+Test Summary:              | Pass  Total
+H atom SCF Rhoe mix ppulay |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = rpulay
+mixdim = 5
+Density mixing with betamix =    0.50000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1      -0.4659937506  4.65994e-01  8.46156e-05
+SCF:     2      -0.4515600045  1.44337e-02  4.80863e-05
+SCF:     3      -0.4481340462  3.42596e-03  5.87869e-06
+SCF:     4      -0.4566442272  8.51018e-03  2.16950e-06
+SCF:     5      -0.4531118805  3.53235e-03  2.05726e-06
+SCF:     6      -0.4527490194  3.62861e-04  1.27789e-07
+SCF:     7      -0.4527640091  1.49897e-05  9.22808e-08
+SCF:     8      -0.4529371194  1.73110e-04  5.57398e-08
+SCF:     9      -0.4528427464  9.43730e-05  4.69665e-08
+SCF:    10      -0.4528545907  1.18443e-05  9.44415e-09
+SCF:    11      -0.4528594222  4.83150e-06  2.97595e-09
+SCF:    12      -0.4528600229  6.00722e-07  2.07790e-10
+SCF:    13      -0.4528599536  6.93803e-08  6.87944e-11
+
+SCF is converged in iter: 13
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       0.4235626337
+Ps_loc     energy:      -0.7390228605
+Ps_nloc    energy:       0.0000000000
+Hartree    energy:       0.1986806630
+XC         energy:      -0.2474145113
+PspCore    energy:      -0.0000003322
+-------------------------------------
+Electronic energy:      -0.3641944073
+NN         energy:      -0.0886655462
+-------------------------------------
+Total      energy:      -0.4528599536
+
+Test Summary:              | Pass  Total
+H atom SCF Rhoe mix rpulay |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = broyden
+mixdim = 5
+Density mixing with betamix =    0.50000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1      -0.4659937506  4.65994e-01  8.46156e-05
+SCF:     2      -0.4515606726  1.44331e-02  4.80863e-05
+SCF:     3      -0.4481263939  3.43428e-03  5.87605e-06
+SCF:     4      -0.4566463971  8.52000e-03  2.17385e-06
+SCF:     5      -0.4530781697  3.56823e-03  2.05749e-06
+SCF:     6      -0.4528061347  2.72035e-04  1.41592e-07
+SCF:     7      -0.4529246162  1.18481e-04  6.03628e-08
+SCF:     8      -0.4528327620  9.18541e-05  1.91589e-08
+SCF:     9      -0.4528659560  3.31940e-05  2.03358e-08
+SCF:    10      -0.4528617689  4.18710e-06  3.11193e-09
+SCF:    11      -0.4528603505  1.41836e-06  7.35779e-10
+SCF:    12      -0.4528601439  2.06679e-07  1.52806e-10
+SCF:    13      -0.4528600374  1.06488e-07  7.31112e-11
+
+SCF is converged in iter: 13
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       0.4235625070
+Ps_loc     energy:      -0.7390228189
+Ps_nloc    energy:       0.0000000000
+Hartree    energy:       0.1986806591
+XC         energy:      -0.2474145061
+PspCore    energy:      -0.0000003322
+-------------------------------------
+Electronic energy:      -0.3641944911
+NN         energy:      -0.0886655462
+-------------------------------------
+Total      energy:      -0.4528600374
+
+Test Summary:               | Pass  Total
+H atom SCF Rhoe mix broyden |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = simple
+Potential mixing with betamix =    0.50000
+
+--------------------------------------------------------------
+              iter            E            ΔE           Δρ
+--------------------------------------------------------------
+SCF_potmix:     1      -0.4510960252  4.51096e-01  2.44141e-04
+SCF_potmix:     2      -0.4526044358  1.50841e-03  6.90569e-06
+SCF_potmix:     3      -0.4528023799  1.97944e-04  2.04642e-06
+SCF_potmix:     4      -0.4528470764  4.46965e-05  1.26892e-06
+SCF_potmix:     5      -0.4528566401  9.56364e-06  5.40955e-07
+SCF_potmix:     6      -0.4528592003  2.56019e-06  2.99178e-07
+SCF_potmix:     7      -0.4528597991  5.98845e-07  1.33812e-07
+SCF_potmix:     8      -0.4528599691  1.69966e-07  7.42623e-08
+SCF_potmix is converged in 8 iterations
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       0.4234457398
+Ps_loc     energy:      -0.7389134180
+Ps_nloc    energy:       0.0000000000
+Hartree    energy:       0.1986799640
+XC         energy:      -0.2474063765
+PspCore    energy:      -0.0000003322
+-------------------------------------
+Electronic energy:      -0.3641944228
+NN         energy:      -0.0886655462
+-------------------------------------
+Total      energy:      -0.4528599691
+
+Test Summary:                   | Pass  Total
+H atom SCF potential mix simple |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = linear_adaptive
+Potential mixing with betamix =    0.10000
+
+--------------------------------------------------------------
+              iter            E            ΔE           Δρ
+--------------------------------------------------------------
+SCF_potmix:     1      -0.4510960252  4.51096e-01  2.44141e-04
+SCF_potmix:     2      -0.4527240936  1.62807e-03  8.35217e-06
+SCF_potmix:     3      -0.4528440875  1.19994e-04  1.70516e-06
+SCF_potmix:     4      -0.4528578324  1.37448e-05  6.89599e-07
+SCF_potmix:     5      -0.4528595819  1.74953e-06  2.00014e-07
+SCF_potmix:     6      -0.4528598995  3.17570e-07  8.63326e-08
+SCF_potmix:     7      -0.4528599684  6.89056e-08  3.27939e-08
+SCF_potmix is converged in 7 iterations
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       0.4234441005
+Ps_loc     energy:      -0.7389116860
+Ps_nloc    energy:       0.0000000000
+Hartree    energy:       0.1986800540
+XC         energy:      -0.2474065585
+PspCore    energy:      -0.0000003322
+-------------------------------------
+Electronic energy:      -0.3641944221
+NN         energy:      -0.0886655462
+-------------------------------------
+Total      energy:      -0.4528599684
+
+Test Summary:                            | Pass  Total
+H atom SCF potential mix linear_adaptive |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = broyden
+mixdim = 5
+Potential mixing with betamix =    0.50000
+
+--------------------------------------------------------------
+              iter            E            ΔE           Δρ
+--------------------------------------------------------------
+SCF_potmix:     1      -0.4510960252  4.51096e-01  2.44141e-04
+SCF_potmix:     2      -0.4526044358  1.50841e-03  6.90569e-06
+SCF_potmix:     3      -0.4528111348  2.06699e-04  3.87489e-06
+SCF_potmix:     4      -0.4528571079  4.59731e-05  2.17784e-06
+SCF_potmix:     5      -0.4528593024  2.19453e-06  3.17598e-07
+SCF_potmix:     6      -0.4528599330  6.30583e-07  2.26309e-07
+SCF_potmix:     7      -0.4528599332  1.64175e-10  7.55063e-08
+SCF_potmix is converged in 7 iterations
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       0.4233838110
+Ps_loc     energy:      -0.7388179315
+Ps_nloc    energy:       0.0000000000
+Hartree    energy:       0.1985741962
+XC         energy:      -0.2473341304
+PspCore    energy:      -0.0000003322
+-------------------------------------
+Electronic energy:      -0.3641943869
+NN         energy:      -0.0886655462
+-------------------------------------
+Total      energy:      -0.4528599332
+
+Test Summary:                    | Pass  Total
+H atom SCF potential mix broyden |    1      1
+
+Minimizing Kohn-Sham energy using PCG
+-------------------------------------
+NiterMax  = 200
+α_t       = 3.000000e-05
+conv_thr  = 1.000000e-06
+Using Fletcher-Reeves formula for CG_BETA
+
+Emin_PCG step        1 =      -0.4523978620 4.5239786e-01
+Emin_PCG step        2 =      -0.4524024041 4.5421359e-06
+Emin_PCG step        3 =      -0.4528497703 4.4736616e-04
+Emin_PCG step        4 =      -0.4528595938 9.8235747e-06
+Emin_PCG step        5 =      -0.4528600202 4.2637345e-07
+Emin_PCG step        6 =      -0.4528600299 9.6542296e-09
+
+Emin_PCG is converged in iter: 6 , diffE = 9.6542296e-09
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       0.4235620852
+Ps_loc     energy:      -0.7390219864
+Ps_nloc    energy:       0.0000000000
+Hartree    energy:       0.1986796801
+XC         energy:      -0.2474139304
+PspCore    energy:      -0.0000003322
+-------------------------------------
+Electronic energy:      -0.3641944836
+NN         energy:      -0.0886655462
+-------------------------------------
+Total      energy:      -0.4528600299
+
+Test Summary:                   | Pass  Total
+H atom Emin PCG Fletcher-Reeves |    1      1
+
+Minimizing Kohn-Sham energy using PCG
+-------------------------------------
+NiterMax  = 200
+α_t       = 3.000000e-05
+conv_thr  = 1.000000e-06
+Using Polak-Ribiere formula for CG_BETA
+
+Emin_PCG step        1 =      -0.4523978620 4.5239786e-01
+Emin_PCG step        2 =      -0.4524024064 4.5444662e-06
+Emin_PCG step        3 =      -0.4528421273 4.3972085e-04
+Emin_PCG step        4 =      -0.4528588368 1.6709546e-05
+Emin_PCG step        5 =      -0.4528599620 1.1251637e-06
+Emin_PCG step        6 =      -0.4528600264 6.4412849e-08
+Emin_PCG step        7 =      -0.4528600303 3.8459287e-09
+
+Emin_PCG is converged in iter: 7 , diffE = 3.8459287e-09
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       0.4235576743
+Ps_loc     energy:      -0.7390178791
+Ps_nloc    energy:       0.0000000000
+Hartree    energy:       0.1986794126
+XC         energy:      -0.2474133595
+PspCore    energy:      -0.0000003322
+-------------------------------------
+Electronic energy:      -0.3641944840
+NN         energy:      -0.0886655462
+-------------------------------------
+Total      energy:      -0.4528600303
+
+Test Summary:                 | Pass  Total
+H atom Emin PCG Polak-Ribiere |    1      1
+
+Minimizing Kohn-Sham energy using PCG
+-------------------------------------
+NiterMax  = 200
+α_t       = 3.000000e-05
+conv_thr  = 1.000000e-06
+Using Hestenes-Stiefeld formula for CG_BETA
+
+Emin_PCG step        1 =      -0.4523978620 4.5239786e-01
+Emin_PCG step        2 =      -0.4528497033 4.5184134e-04
+Emin_PCG step        3 =      -0.4528593809 9.6775572e-06
+Emin_PCG step        4 =      -0.4528600194 6.3851558e-07
+Emin_PCG step        5 =      -0.4528600299 1.0506583e-08
+
+Emin_PCG is converged in iter: 5 , diffE = 1.0506583e-08
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       0.4235632640
+Ps_loc     energy:      -0.7390231910
+Ps_nloc    energy:       0.0000000000
+Hartree    energy:       0.1986798998
+XC         energy:      -0.2474141243
+PspCore    energy:      -0.0000003322
+-------------------------------------
+Electronic energy:      -0.3641944837
+NN         energy:      -0.0886655462
+-------------------------------------
+Total      energy:      -0.4528600299
+
+Test Summary:                     | Pass  Total
+H atom Emin PCG Hestenes-Stiefeld |    1      1
+
+Minimizing Kohn-Sham energy using PCG
+-------------------------------------
+NiterMax  = 200
+α_t       = 3.000000e-05
+conv_thr  = 1.000000e-06
+Using Dai-Yuan formula for CG_BETA
+
+Emin_PCG step        1 =      -0.4523978620 4.5239786e-01
+Emin_PCG step        2 =      -0.4528497033 4.5184134e-04
+Emin_PCG step        3 =      -0.4528595866 9.8833109e-06
+Emin_PCG step        4 =      -0.4528600211 4.3444961e-07
+Emin_PCG step        5 =      -0.4528600300 8.8928815e-09
+
+Emin_PCG is converged in iter: 5 , diffE = 8.8928815e-09
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       0.4235620886
+Ps_loc     energy:      -0.7390219723
+Ps_nloc    energy:       0.0000000000
+Hartree    energy:       0.1986796128
+XC         energy:      -0.2474138806
+PspCore    energy:      -0.0000003322
+-------------------------------------
+Electronic energy:      -0.3641944837
+NN         energy:      -0.0886655462
+-------------------------------------
+Total      energy:      -0.4528600300
+
+Test Summary:            | Pass  Total
+H atom Emin PCG Dai-Yuan |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = simple
+Density mixing with betamix =    0.50000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1      -8.3668590080  8.36686e+00  7.08224e-03
+SCF:     2      -8.2463495553  1.20509e-01  4.72467e-03
+SCF:     3      -8.1029425983  1.43407e-01  2.11191e-03
+SCF:     4      -8.0195542061  8.33884e-02  9.07067e-04
+SCF:     5      -7.9674894367  5.20648e-02  4.27430e-04
+SCF:     6      -7.9408195989  2.66698e-02  1.94321e-04
+SCF:     7      -7.9262694817  1.45501e-02  9.36186e-05
+SCF:     8      -7.9188321846  7.43730e-03  4.47433e-05
+SCF:     9      -7.9150134780  3.81871e-03  2.19091e-05
+SCF:    10      -7.9130361997  1.97728e-03  1.06411e-05
+SCF:    11      -7.9120456105  9.90589e-04  5.28337e-06
+SCF:    12      -7.9115282999  5.17311e-04  2.61655e-06
+SCF:    13      -7.9112746058  2.53694e-04  1.32639e-06
+SCF:    14      -7.9111409350  1.33671e-04  6.86432e-07
+SCF:    15      -7.9110765479  6.43871e-05  3.66156e-07
+SCF:    16      -7.9110423147  3.42331e-05  1.99142e-07
+SCF:    17      -7.9110260638  1.62510e-05  1.10590e-07
+SCF:    18      -7.9110173167  8.74713e-06  6.21620e-08
+SCF:    19      -7.9110132273  4.08934e-06  3.55903e-08
+SCF:    20      -7.9110109813  2.24601e-06  2.04599e-08
+SCF:    21      -7.9110099527  1.02857e-06  1.21217e-08
+SCF:    22      -7.9110093681  5.84628e-07  7.19905e-09
+SCF:    23      -7.9110091083  2.59855e-07  4.44285e-09
+
+SCF is converged in iter: 23
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       3.2104539347
+Ps_loc     energy:      -2.1761282488
+Ps_nloc    energy:       1.5811898971
+Hartree    energy:       0.5761937396
+XC         energy:      -2.4101654034
+PspCore    energy:      -0.2946256268
+-------------------------------------
+Electronic energy:       0.4869182924
+NN         energy:      -8.3979274007
+-------------------------------------
+Total      energy:      -7.9110091083
+
+Test Summary:              | Pass  Total
+Si fcc SCF Rhoe mix simple |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = linear_adaptive
+Density mixing with betamix =    0.10000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1      -8.7315958870  8.73160e+00  7.08224e-03
+SCF:     2      -8.6113916432  1.20204e-01  7.02151e-03
+SCF:     3      -8.3597184954  2.51673e-01  4.69910e-03
+SCF:     4      -8.1604660087  1.99252e-01  2.54694e-03
+SCF:     5      -8.0201789043  1.40287e-01  1.15565e-03
+SCF:     6      -7.9480539835  7.21249e-02  3.93321e-04
+SCF:     7      -7.9187182297  2.93358e-02  1.19255e-04
+SCF:     8      -7.9126887306  6.02950e-03  2.27209e-05
+SCF:     9      -7.9113589353  1.32980e-03  5.80359e-06
+SCF:    10      -7.9111005893  2.58346e-04  2.42694e-06
+SCF:    11      -7.9110447496  5.58397e-05  1.38510e-06
+SCF:    12      -7.9110185844  2.61652e-05  7.99180e-07
+SCF:    13      -7.9110109318  7.65256e-06  3.80872e-07
+SCF:    14      -7.9110090612  1.87061e-06  1.92480e-07
+SCF:    15      -7.9110093645  3.03276e-07  1.03031e-07
+SCF:    16      -7.9110092943  7.02089e-08  6.51370e-08
+
+SCF is converged in iter: 16
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       3.2104581243
+Ps_loc     energy:      -2.1761363660
+Ps_nloc    energy:       1.5811908897
+Hartree    energy:       0.5761983242
+XC         energy:      -2.4101672390
+PspCore    energy:      -0.2946256268
+-------------------------------------
+Electronic energy:       0.4869181064
+NN         energy:      -8.3979274007
+-------------------------------------
+Total      energy:      -7.9110092943
+
+Test Summary:                       | Pass  Total
+Si fcc SCF Rhoe mix linear_adaptive |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = anderson
+mixdim = 5
+Density mixing with betamix =    0.50000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1      -8.3668590080  8.36686e+00  7.08224e-03
+SCF:     2      -7.8590599345  5.07799e-01  4.72467e-03
+SCF:     3      -7.9895842252  1.30524e-01  1.01120e-03
+SCF:     4      -7.9195140721  7.00702e-02  2.72722e-04
+SCF:     5      -7.9100108288  9.50324e-03  2.95926e-05
+SCF:     6      -7.9115347866  1.52396e-03  2.85093e-05
+SCF:     7      -7.9110656950  4.69092e-04  1.13466e-06
+SCF:     8      -7.9110188378  4.68572e-05  2.31350e-07
+SCF:     9      -7.9110203238  1.48599e-06  1.79059e-07
+SCF:    10      -7.9110097790  1.05448e-05  5.91456e-08
+SCF:    11      -7.9110121158  2.33680e-06  6.54237e-08
+SCF:    12      -7.9110075168  4.59894e-06  3.35990e-08
+SCF:    13      -7.9110092766  1.75983e-06  2.64330e-08
+SCF:    14      -7.9110088563  4.20320e-07  1.04294e-08
+SCF:    15      -7.9110094699  6.13591e-07  1.21182e-08
+
+SCF is converged in iter: 15
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       3.2104538260
+Ps_loc     energy:      -2.1761281740
+Ps_nloc    energy:       1.5811896899
+Hartree    energy:       0.5761935323
+XC         energy:      -2.4101653165
+PspCore    energy:      -0.2946256268
+-------------------------------------
+Electronic energy:       0.4869179308
+NN         energy:      -8.3979274007
+-------------------------------------
+Total      energy:      -7.9110094699
+
+Test Summary:                | Pass  Total
+Si fcc SCF Rhoe mix anderson |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = pulay
+Density mixing with betamix =    0.50000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1      -8.3668590080  8.36686e+00  7.08224e-03
+SCF:     2      -8.2463495553  1.20509e-01  4.72467e-03
+SCF:     3      -8.1029425983  1.43407e-01  2.11191e-03
+SCF:     4      -8.0195542061  8.33884e-02  9.07067e-04
+SCF:     5      -7.9674894367  5.20648e-02  4.27430e-04
+SCF:     6      -7.9102474290  5.72420e-02  1.94321e-04
+SCF:     7      -7.9107624806  5.15052e-04  1.01726e-05
+SCF:     8      -7.9109664203  2.03940e-04  3.86549e-06
+SCF:     9      -7.9108087001  1.57720e-04  1.57463e-06
+SCF:    10      -7.9109314154  1.22715e-04  1.80063e-06
+SCF:    11      -7.9110310258  9.96105e-05  2.41676e-07
+SCF:    12      -7.9110415944  1.05685e-05  3.86548e-07
+SCF:    13      -7.9110617658  2.01715e-05  7.48896e-07
+SCF:    14      -7.9110856568  2.38910e-05  6.87088e-07
+SCF:    15      -7.9110884403  2.78355e-06  1.51725e-06
+SCF:    16      -7.9110345090  5.39313e-05  1.00183e-06
+SCF:    17      -7.9110074954  2.70136e-05  9.31355e-08
+SCF:    18      -7.9110068188  6.76629e-07  6.28955e-08
+SCF:    19      -7.9110084483  1.62952e-06  8.79516e-09
+SCF:    20      -7.9110089544  5.06050e-07  5.74269e-09
+SCF:    21      -7.9110088683  8.61174e-08  4.23555e-09
+
+SCF is converged in iter: 21
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       3.2104538887
+Ps_loc     energy:      -2.1761278689
+Ps_nloc    energy:       1.5811898424
+Hartree    energy:       0.5761936894
+XC         energy:      -2.4101653923
+PspCore    energy:      -0.2946256268
+-------------------------------------
+Electronic energy:       0.4869185324
+NN         energy:      -8.3979274007
+-------------------------------------
+Total      energy:      -7.9110088683
+
+Test Summary:             | Pass  Total
+Si fcc SCF Rhoe mix pulay |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = ppulay
+mixdim = 5
+Density mixing with betamix =    0.50000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1      -8.3668590080  8.36686e+00  7.08224e-03
+SCF:     2      -8.2463495553  1.20509e-01  4.72467e-03
+SCF:     3      -8.1029425983  1.43407e-01  2.11191e-03
+SCF:     4      -8.0195542061  8.33884e-02  9.07067e-04
+SCF:     5      -7.9674894367  5.20648e-02  4.27430e-04
+SCF:     6      -7.9102474290  5.72420e-02  1.94321e-04
+SCF:     7      -7.9113079594  1.06053e-03  1.01726e-05
+SCF:     8      -7.9111619292  1.46030e-04  6.57352e-06
+SCF:     9      -7.9111685655  6.63629e-06  4.34089e-06
+SCF:    10      -7.9110637531  1.04812e-04  1.89816e-06
+SCF:    11      -7.9110414159  2.23372e-05  1.19072e-06
+SCF:    12      -7.9110173910  2.40249e-05  7.19834e-07
+SCF:    13      -7.9110106291  6.76187e-06  4.58299e-08
+SCF:    14      -7.9110104057  2.23424e-07  4.88206e-08
+SCF:    15      -7.9110079998  2.40591e-06  5.35016e-08
+SCF:    16      -7.9110076321  3.67712e-07  2.60655e-08
+SCF:    17      -7.9110088767  1.24458e-06  6.08575e-09
+SCF:    18      -7.9110085220  3.54670e-07  8.43758e-09
+SCF:    19      -7.9110086765  1.54494e-07  3.68898e-09
+
+SCF is converged in iter: 19
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       3.2104542682
+Ps_loc     energy:      -2.1761282743
+Ps_nloc    energy:       1.5811899242
+Hartree    energy:       0.5761939183
+XC         energy:      -2.4101654853
+PspCore    energy:      -0.2946256268
+-------------------------------------
+Electronic energy:       0.4869187242
+NN         energy:      -8.3979274007
+-------------------------------------
+Total      energy:      -7.9110086765
+
+Test Summary:              | Pass  Total
+Si fcc SCF Rhoe mix ppulay |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = rpulay
+mixdim = 5
+Density mixing with betamix =    0.50000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1      -8.3668590080  8.36686e+00  7.08224e-03
+SCF:     2      -7.8590599345  5.07799e-01  4.72467e-03
+SCF:     3      -7.9895842252  1.30524e-01  1.01120e-03
+SCF:     4      -7.9195140721  7.00702e-02  2.72722e-04
+SCF:     5      -7.9100108288  9.50324e-03  2.95926e-05
+SCF:     6      -7.9115347866  1.52396e-03  2.85093e-05
+SCF:     7      -7.9111425376  3.92249e-04  1.13466e-06
+SCF:     8      -7.9110417540  1.00784e-04  5.21322e-07
+SCF:     9      -7.9110174069  2.43472e-05  2.66443e-07
+SCF:    10      -7.9110052799  1.21269e-05  9.47773e-08
+SCF:    11      -7.9110098351  4.55522e-06  4.31460e-08
+SCF:    12      -7.9110094063  4.28788e-07  2.04761e-08
+SCF:    13      -7.9110093546  5.17062e-08  3.76788e-08
+
+SCF is converged in iter: 13
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       3.2104540172
+Ps_loc     energy:      -2.1761278425
+Ps_nloc    energy:       1.5811891645
+Hartree    energy:       0.5761937616
+XC         energy:      -2.4101654280
+PspCore    energy:      -0.2946256268
+-------------------------------------
+Electronic energy:       0.4869180461
+NN         energy:      -8.3979274007
+-------------------------------------
+Total      energy:      -7.9110093546
+
+Test Summary:              | Pass  Total
+Si fcc SCF Rhoe mix rpulay |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = broyden
+mixdim = 5
+Density mixing with betamix =    0.50000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1      -8.3668590080  8.36686e+00  7.08224e-03
+SCF:     2      -7.8590986193  5.07760e-01  4.72467e-03
+SCF:     3      -7.9895807466  1.30482e-01  1.01094e-03
+SCF:     4      -7.9195497038  7.00310e-02  2.72671e-04
+SCF:     5      -7.9100189023  9.53080e-03  2.96203e-05
+SCF:     6      -7.9115301111  1.51121e-03  2.85100e-05
+SCF:     7      -7.9110614522  4.68659e-04  1.18155e-06
+SCF:     8      -7.9110183073  4.31448e-05  2.36472e-07
+SCF:     9      -7.9110199936  1.68629e-06  1.76114e-07
+SCF:    10      -7.9110096835  1.03102e-05  5.72175e-08
+SCF:    11      -7.9110120481  2.36463e-06  6.42313e-08
+SCF:    12      -7.9110073491  4.69896e-06  3.29563e-08
+SCF:    13      -7.9110092522  1.90302e-06  2.44699e-08
+SCF:    14      -7.9110087795  4.72650e-07  1.03262e-08
+SCF:    15      -7.9110095239  7.44379e-07  1.21101e-08
+
+SCF is converged in iter: 15
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       3.2104538213
+Ps_loc     energy:      -2.1761282435
+Ps_nloc    energy:       1.5811896698
+Hartree    energy:       0.5761936019
+XC         energy:      -2.4101653459
+PspCore    energy:      -0.2946256268
+-------------------------------------
+Electronic energy:       0.4869178768
+NN         energy:      -8.3979274007
+-------------------------------------
+Total      energy:      -7.9110095239
+
+Test Summary:               | Pass  Total
+Si fcc SCF Rhoe mix broyden |    1      1
+
+Self-consistent iteration begins ...
+update_psi = CheFSI
+mix_method = rpulay
+mixdim = 5
+Density mixing with betamix =    0.20000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1       8.2546037118  8.25460e+00  1.12976e-02
+SCF:     2      -2.9095187951  1.11641e+01  3.20013e-03
+SCF:     3      -9.1323955065  6.22288e+00  5.23820e-03
+SCF:     4     -10.3100903144  1.17769e+00  6.63233e-03
+SCF:     5     -10.1181389100  1.91951e-01  7.15685e-03
+SCF:     6     -10.3775937903  2.59455e-01  7.36466e-03
+SCF:     7      -9.8110463053  5.66547e-01  7.64009e-03
+SCF:     8      -7.3881503655  2.42290e+00  6.21272e-03
+SCF:     9      -7.5668842403  1.78734e-01  9.24755e-04
+SCF:    10      -7.6693833891  1.02499e-01  6.00165e-04
+SCF:    11      -7.7314265524  6.20432e-02  9.32878e-05
+SCF:    12      -7.7945207275  6.30942e-02  1.16230e-04
+SCF:    13      -7.8001916173  5.67089e-03  2.64091e-04
+SCF:    14      -7.7809443763  1.92472e-02  2.27252e-04
+SCF:    15      -7.8159016140  3.49572e-02  1.17492e-04
+SCF:    16      -7.8238107971  7.90918e-03  1.28171e-04
+SCF:    17      -7.8189128719  4.89793e-03  1.69904e-04
+SCF:    18      -7.8235536031  4.64073e-03  2.20601e-04
+SCF:    19      -7.8447810708  2.12275e-02  3.51006e-04
+SCF:    20      -7.7955646093  4.92165e-02  3.93500e-04
+SCF:    21      -7.8291356985  3.35711e-02  5.97587e-04
+SCF:    22      -7.8319099142  2.77422e-03  6.33028e-04
+SCF:    23      -7.8388493838  6.93947e-03  6.65121e-04
+SCF:    24      -7.8378808589  9.68525e-04  6.72354e-04
+SCF:    25      -7.6789057291  1.58975e-01  1.38905e-03
+SCF:    26      -7.9878385799  3.08933e-01  1.88429e-03
+SCF:    27      -8.1306728197  1.42834e-01  1.10431e-03
+SCF:    28      -7.9157633968  2.14909e-01  1.39491e-03
+SCF:    29      -7.9146155838  1.14781e-03  2.25973e-04
+SCF:    30      -7.9111705472  3.44504e-03  3.44060e-04
+SCF:    31      -7.8842259979  2.69445e-02  1.56279e-04
+SCF:    32      -7.8870933936  2.86740e-03  3.48539e-05
+SCF:    33      -7.8924884223  5.39503e-03  5.46512e-05
+SCF:    34      -7.9009638060  8.47538e-03  7.67172e-05
+SCF:    35      -7.8996766751  1.28713e-03  1.40780e-04
+SCF:    36      -7.8977216197  1.95506e-03  2.38744e-04
+SCF:    37      -7.9096537819  1.19322e-02  7.85169e-05
+SCF:    38      -7.9099029323  2.49150e-04  7.04397e-05
+SCF:    39      -7.9241780590  1.42751e-02  7.19996e-05
+SCF:    40      -7.9045131980  1.96649e-02  2.53829e-04
+SCF:    41      -7.9056481082  1.13491e-03  3.58346e-05
+SCF:    42      -7.9064386778  7.90570e-04  8.95850e-06
+SCF:    43      -7.9046942518  1.74443e-03  3.37259e-05
+SCF:    44      -7.9055076390  8.13387e-04  7.12080e-06
+SCF:    45      -7.9077276486  2.22001e-03  6.71341e-06
+SCF:    46      -7.9093155062  1.58786e-03  5.30681e-06
+SCF:    47      -7.9086756417  6.39865e-04  1.44361e-05
+SCF:    48      -7.9093497053  6.74064e-04  8.52471e-06
+SCF:    49      -7.9101878936  8.38188e-04  7.94857e-06
+SCF:    50      -7.9094811811  7.06712e-04  9.43006e-06
+SCF:    51      -7.9099917470  5.10566e-04  2.29038e-05
+SCF:    52      -7.9105572089  5.65462e-04  2.36034e-05
+SCF:    53      -7.9106222037  6.49948e-05  2.41199e-05
+SCF:    54      -7.9108182863  1.96083e-04  2.56459e-05
+SCF:    55      -7.9094470449  1.37124e-03  2.72574e-05
+SCF:    56      -7.9124744836  3.02744e-03  4.23935e-05
+SCF:    57      -7.9130085763  5.34093e-04  1.35497e-05
+SCF:    58      -7.9110718566  1.93672e-03  4.70079e-05
+SCF:    59      -7.9116912266  6.19370e-04  2.57653e-06
+SCF:    60      -7.9089608464  2.73038e-03  1.88665e-05
+SCF:    61      -7.9077102516  1.25059e-03  2.95099e-05
+SCF:    62      -7.9079646265  2.54375e-04  1.34320e-05
+SCF:    63      -7.9112372794  3.27265e-03  1.04107e-05
+SCF:    64      -7.9109309735  3.06306e-04  4.56450e-06
+SCF:    65      -7.9109977656  6.67921e-05  9.90912e-07
+SCF:    66      -7.9109814916  1.62740e-05  1.01490e-06
+SCF:    67      -7.9110881674  1.06676e-04  2.58781e-06
+SCF:    68      -7.9110958365  7.66909e-06  9.77122e-07
+SCF:    69      -7.9107840998  3.11737e-04  7.88258e-07
+SCF:    70      -7.9109111100  1.27010e-04  1.44509e-06
+SCF:    71      -7.9109480060  3.68960e-05  3.18447e-07
+SCF:    72      -7.9109626047  1.45988e-05  1.14539e-06
+SCF:    73      -7.9110116970  4.90923e-05  1.15318e-06
+SCF:    74      -7.9110206572  8.96027e-06  2.33688e-07
+SCF:    75      -7.9110181898  2.46742e-06  2.59175e-07
+SCF:    76      -7.9109558902  6.22996e-05  1.79631e-07
+SCF:    77      -7.9109748478  1.89576e-05  1.81128e-07
+SCF:    78      -7.9109997906  2.49427e-05  1.52662e-07
+SCF:    79      -7.9110151586  1.53680e-05  8.32926e-07
+SCF:    80      -7.9110182589  3.10027e-06  1.08943e-07
+SCF:    81      -7.9109924091  2.58498e-05  1.05120e-07
+SCF:    82      -7.9109920978  3.11260e-07  1.38530e-07
+SCF:    83      -7.9109896109  2.48689e-06  3.64146e-08
+SCF:    84      -7.9109962714  6.66052e-06  8.99179e-08
+SCF:    85      -7.9109989128  2.64132e-06  4.47876e-08
+SCF:    86      -7.9110010152  2.10241e-06  2.90144e-08
+SCF:    87      -7.9110024560  1.44083e-06  2.32101e-08
+SCF:    88      -7.9110060543  3.59833e-06  1.04848e-07
+SCF:    89      -7.9110032678  2.78657e-06  1.92657e-07
+SCF:    90      -7.9110044120  1.14419e-06  1.00797e-07
+SCF:    91      -7.9110058283  1.41634e-06  1.10527e-07
+SCF:    92      -7.9110089727  3.14442e-06  1.86909e-07
+SCF:    93      -7.9110099402  9.67487e-07  1.98701e-08
+SCF:    94      -7.9110084646  1.47561e-06  3.44558e-08
+SCF:    95      -7.9110050987  3.36588e-06  8.25013e-08
+SCF:    96      -7.9110065833  1.48456e-06  2.41140e-08
+SCF:    97      -7.9110070297  4.46445e-07  3.04424e-08
+SCF:    98      -7.9110075253  4.95586e-07  3.73406e-09
+
+SCF is converged in iter: 98
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       3.2104547346
+Ps_loc     energy:      -2.1761292840
+Ps_nloc    energy:       1.5811922307
+Hartree    energy:       0.5761927559
+XC         energy:      -2.4101649350
+PspCore    energy:      -0.2946256268
+-------------------------------------
+Electronic energy:       0.4869198754
+NN         energy:      -8.3979274007
+-------------------------------------
+Total      energy:      -7.9110075253
+
+Test Summary:     | Pass  Total
+Si fcc SCF CheFSI |    1      1
+
+Self-consistent iteration begins ...
+update_psi = davidson
+mix_method = simple
+Density mixing with betamix =    0.50000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1      -8.3408389617  8.34084e+00  4.66483e-03
+SCF:     2      -8.1116060875  2.29233e-01  5.90693e-03
+SCF:     3      -8.0603440498  5.12620e-02  2.81243e-03
+SCF:     4      -8.0070443554  5.32997e-02  1.25109e-03
+SCF:     5      -7.9670320689  4.00123e-02  5.58202e-04
+SCF:     6      -7.9414550893  2.55770e-02  2.56382e-04
+SCF:     7      -7.9269168552  1.45382e-02  1.22403e-04
+SCF:     8      -7.9192549002  7.66196e-03  5.87711e-05
+SCF:     9      -7.9152417474  4.01315e-03  2.84466e-05
+SCF:    10      -7.9131678070  2.07394e-03  1.38184e-05
+SCF:    11      -7.9121109180  1.05689e-03  6.77784e-06
+SCF:    12      -7.9115657221  5.45196e-04  3.33921e-06
+SCF:    13      -7.9112927740  2.72948e-04  1.66216e-06
+SCF:    14      -7.9111510772  1.41697e-04  8.33560e-07
+SCF:    15      -7.9110815175  6.95597e-05  4.25714e-07
+SCF:    16      -7.9110450741  3.64434e-05  2.21364e-07
+SCF:    17      -7.9110274406  1.76335e-05  1.19085e-07
+SCF:    18      -7.9110181151  9.32547e-06  6.49703e-08
+SCF:    19      -7.9110136304  4.48470e-06  3.73530e-08
+SCF:    20      -7.9110112414  2.38904e-06  2.15718e-08
+SCF:    21      -7.9110100866  1.15481e-06  1.29808e-08
+SCF:    22      -7.9110094601  6.26478e-07  7.83579e-09
+SCF:    23      -7.9110091634  2.96675e-07  5.37149e-09
+
+SCF is converged in iter: 23
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       3.2104540929
+Ps_loc     energy:      -2.1761285996
+Ps_nloc    energy:       1.5811899534
+Hartree    energy:       0.5761938714
+XC         energy:      -2.4101654541
+PspCore    energy:      -0.2946256268
+-------------------------------------
+Electronic energy:       0.4869182373
+NN         energy:      -8.3979274007
+-------------------------------------
+Total      energy:      -7.9110091634
+
+Test Summary:       | Pass  Total
+Si fcc SCF davidson |    1      1
+
+Self-consistent iteration begins ...
+update_psi = PCG
+mix_method = simple
+Potential mixing with betamix =    0.50000
+
+--------------------------------------------------------------
+              iter            E            ΔE           Δρ
+--------------------------------------------------------------
+SCF_potmix:     1      -7.6443877708  7.64439e+00  2.96015e-02
+SCF_potmix:     2      -7.9027322440  2.58344e-01  2.91507e-03
+SCF_potmix:     3      -7.9079353561  5.20311e-03  5.31058e-04
+SCF_potmix:     4      -7.9104064491  2.47109e-03  1.92009e-04
+SCF_potmix:     5      -7.9109498582  5.43409e-04  1.57754e-04
+SCF_potmix:     6      -7.9109784083  2.85501e-05  4.78472e-05
+SCF_potmix:     7      -7.9109913147  1.29064e-05  1.34751e-05
+SCF_potmix:     8      -7.9109977034  6.38870e-06  2.02810e-06
+SCF_potmix:     9      -7.9110016316  3.92816e-06  1.72669e-06
+SCF_potmix:    10      -7.9110041013  2.46972e-06  1.19321e-06
+SCF_potmix:    11      -7.9110056935  1.59223e-06  8.35911e-07
+SCF_potmix:    12      -7.9110067297  1.03617e-06  7.03013e-07
+SCF_potmix:    13      -7.9110074116  6.81896e-07  5.34044e-07
+SCF_potmix:    14      -7.9110078631  4.51467e-07  4.36010e-07
+SCF_potmix is converged in 14 iterations
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       3.2104303519
+Ps_loc     energy:      -2.1762112675
+Ps_nloc    energy:       1.5812920270
+Hartree    energy:       0.5761999606
+XC         energy:      -2.4101659075
+PspCore    energy:      -0.2946256268
+-------------------------------------
+Electronic energy:       0.4869195377
+NN         energy:      -8.3979274007
+-------------------------------------
+Total      energy:      -7.9110078631
+
+Test Summary:  | Pass  Total
+Si fcc SCF PCG |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = simple
+Potential mixing with betamix =    0.50000
+
+--------------------------------------------------------------
+              iter            E            ΔE           Δρ
+--------------------------------------------------------------
+SCF_potmix:     1      -7.7563780063  7.75638e+00  2.96015e-02
+SCF_potmix:     2      -7.9069809266  1.50603e-01  1.65328e-03
+SCF_potmix:     3      -7.9098346370  2.85371e-03  3.33388e-04
+SCF_potmix:     4      -7.9108669557  1.03232e-03  1.88219e-04
+SCF_potmix:     5      -7.9109530711  8.61154e-05  3.42358e-05
+SCF_potmix:     6      -7.9110025459  4.94748e-05  2.70924e-05
+SCF_potmix:     7      -7.9110062843  3.73839e-06  6.51259e-06
+SCF_potmix:     8      -7.9110076853  1.40104e-06  4.02940e-06
+SCF_potmix:     9      -7.9110082589  5.73541e-07  1.61995e-06
+SCF_potmix:    10      -7.9110085192  2.60319e-07  1.02848e-06
+SCF_potmix is converged in 10 iterations
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       3.2104499297
+Ps_loc     energy:      -2.1761230984
+Ps_nloc    energy:       1.5811767725
+Hartree    energy:       0.5762165161
+XC         energy:      -2.4101756116
+PspCore    energy:      -0.2946256268
+-------------------------------------
+Electronic energy:       0.4869188815
+NN         energy:      -8.3979274007
+-------------------------------------
+Total      energy:      -7.9110085192
+
+Test Summary:                   | Pass  Total
+Si fcc SCF potential mix simple |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = linear_adaptive
+Potential mixing with betamix =    0.10000
+
+--------------------------------------------------------------
+              iter            E            ΔE           Δρ
+--------------------------------------------------------------
+SCF_potmix:     1      -7.7563780063  7.75638e+00  2.96015e-02
+SCF_potmix:     2      -7.9079406654  1.51563e-01  1.44391e-03
+SCF_potmix:     3      -7.9100498453  2.10918e-03  2.08684e-04
+SCF_potmix:     4      -7.9105538849  5.04040e-04  2.97583e-05
+SCF_potmix:     5      -7.9109525231  3.98638e-04  2.45214e-05
+SCF_potmix:     6      -7.9110058021  5.32791e-05  3.19272e-06
+SCF_potmix:     7      -7.9110076285  1.82640e-06  7.98538e-07
+SCF_potmix:     8      -7.9110082963  6.67729e-07  4.61156e-07
+SCF_potmix:     9      -7.9110085626  2.66370e-07  2.32311e-07
+SCF_potmix is converged in 9 iterations
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       3.2104303958
+Ps_loc     energy:      -2.1761176210
+Ps_nloc    energy:       1.5811999963
+Hartree    energy:       0.5761994574
+XC         energy:      -2.4101677637
+PspCore    energy:      -0.2946256268
+-------------------------------------
+Electronic energy:       0.4869188381
+NN         energy:      -8.3979274007
+-------------------------------------
+Total      energy:      -7.9110085626
+
+Test Summary:                            | Pass  Total
+Si fcc SCF potential mix linear_adaptive |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = broyden
+mixdim = 5
+Potential mixing with betamix =    0.50000
+
+--------------------------------------------------------------
+              iter            E            ΔE           Δρ
+--------------------------------------------------------------
+SCF_potmix:     1      -7.7563780063  7.75638e+00  2.96015e-02
+SCF_potmix:     2      -7.9069809266  1.50603e-01  1.65328e-03
+SCF_potmix:     3      -7.9075823134  6.01387e-04  1.42087e-03
+SCF_potmix:     4      -7.9108447765  3.26246e-03  8.01430e-04
+SCF_potmix:     5      -7.9109460793  1.01303e-04  3.88250e-05
+SCF_potmix:     6      -7.9110005873  5.45080e-05  4.23756e-05
+SCF_potmix:     7      -7.9110049674  4.38013e-06  1.30968e-06
+SCF_potmix:     8      -7.9110068006  1.83323e-06  1.59838e-06
+SCF_potmix:     9      -7.9110077089  9.08255e-07  8.66373e-07
+SCF_potmix:    10      -7.9110081876  4.78744e-07  3.74676e-07
+SCF_potmix is converged in 10 iterations
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       3.2104559738
+Ps_loc     energy:      -2.1761292321
+Ps_nloc    energy:       1.5811906758
+Hartree    energy:       0.5761919482
+XC         energy:      -2.4101645259
+PspCore    energy:      -0.2946256268
+-------------------------------------
+Electronic energy:       0.4869192131
+NN         energy:      -8.3979274007
+-------------------------------------
+Total      energy:      -7.9110081876
+
+Test Summary:                    | Pass  Total
+Si fcc SCF potential mix broyden |    1      1
+
+Minimizing Kohn-Sham energy using PCG
+-------------------------------------
+NiterMax  = 200
+α_t       = 3.000000e-05
+conv_thr  = 1.000000e-06
+Using Fletcher-Reeves formula for CG_BETA
+
+Emin_PCG step        1 =      -7.9055972562 7.9055973e+00
+Emin_PCG step        2 =      -7.9058510596 2.5380341e-04
+Emin_PCG step        3 =      -7.9104983123 4.6472527e-03
+Emin_PCG step        4 =      -7.9109056677 4.0735541e-04
+Emin_PCG step        5 =      -7.9109874933 8.1825612e-05
+Emin_PCG step        6 =      -7.9110034117 1.5918410e-05
+Emin_PCG step        7 =      -7.9110072974 3.8857223e-06
+Emin_PCG step        8 =      -7.9110083654 1.0679888e-06
+Emin_PCG step        9 =      -7.9110086415 2.7605533e-07
+Emin_PCG step       10 =      -7.9110087435 1.0208561e-07
+
+Emin_PCG is converged in iter: 10 , diffE = 1.0208561e-07
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       3.2104555316
+Ps_loc     energy:      -2.1761077449
+Ps_nloc    energy:       1.5811706983
+Hartree    energy:       0.5761900025
+XC         energy:      -2.4101642036
+PspCore    energy:      -0.2946256268
+-------------------------------------
+Electronic energy:       0.4869186572
+NN         energy:      -8.3979274007
+-------------------------------------
+Total      energy:      -7.9110087435
+
+Test Summary:                   | Pass  Total
+H atom Emin PCG Fletcher-Reeves |    1      1
+
+Minimizing Kohn-Sham energy using PCG
+-------------------------------------
+NiterMax  = 200
+α_t       = 3.000000e-05
+conv_thr  = 1.000000e-06
+Using Polak-Ribiere formula for CG_BETA
+
+Emin_PCG step        1 =      -7.9055972562 7.9055973e+00
+Emin_PCG step        2 =      -7.9058548090 2.5755281e-04
+Emin_PCG step        3 =      -7.9104840556 4.6292466e-03
+Emin_PCG step        4 =      -7.9109000628 4.1600723e-04
+Emin_PCG step        5 =      -7.9109888639 8.8801169e-05
+Emin_PCG step        6 =      -7.9110043710 1.5507044e-05
+Emin_PCG step        7 =      -7.9110076036 3.2325715e-06
+Emin_PCG step        8 =      -7.9110085219 9.1828627e-07
+Emin_PCG step        9 =      -7.9110087086 1.8676695e-07
+
+Emin_PCG is converged in iter: 9 , diffE = 1.8676695e-07
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       3.2104110065
+Ps_loc     energy:      -2.1761072018
+Ps_nloc    energy:       1.5812204881
+Hartree    energy:       0.5761795695
+XC         energy:      -2.4101595434
+PspCore    energy:      -0.2946256268
+-------------------------------------
+Electronic energy:       0.4869186921
+NN         energy:      -8.3979274007
+-------------------------------------
+Total      energy:      -7.9110087086
+
+Test Summary:                 | Pass  Total
+Si fcc Emin PCG Polak-Ribiere |    1      1
+
+Minimizing Kohn-Sham energy using PCG
+-------------------------------------
+NiterMax  = 200
+α_t       = 3.000000e-05
+conv_thr  = 1.000000e-06
+Using Hestenes-Stiefeld formula for CG_BETA
+
+Emin_PCG step        1 =      -7.9055972562 7.9055973e+00
+Emin_PCG step        2 =      -7.9103411271 4.7438709e-03
+Emin_PCG step        3 =      -7.9108755313 5.3440419e-04
+Emin_PCG step        4 =      -7.9109751122 9.9580935e-05
+Emin_PCG step        5 =      -7.9109972764 2.2164239e-05
+Emin_PCG step        6 =      -7.9110053893 8.1128218e-06
+Emin_PCG step        7 =      -7.9110079750 2.5857760e-06
+Emin_PCG step        8 =      -7.9110085066 5.3152635e-07
+Emin_PCG step        9 =      -7.9110087070 2.0046880e-07
+
+Emin_PCG is converged in iter: 9 , diffE = 2.0046880e-07
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       3.2104658962
+Ps_loc     energy:      -2.1760897548
+Ps_nloc    energy:       1.5811445836
+Hartree    energy:       0.5761869307
+XC         energy:      -2.4101633352
+PspCore    energy:      -0.2946256268
+-------------------------------------
+Electronic energy:       0.4869186937
+NN         energy:      -8.3979274007
+-------------------------------------
+Total      energy:      -7.9110087070
+
+Test Summary:                     | Pass  Total
+H atom Emin PCG Hestenes-Stiefeld |    1      1
+
+Minimizing Kohn-Sham energy using PCG
+-------------------------------------
+NiterMax  = 200
+α_t       = 3.000000e-05
+conv_thr  = 1.000000e-06
+Using Dai-Yuan formula for CG_BETA
+
+Emin_PCG step        1 =      -7.9055972562 7.9055973e+00
+Emin_PCG step        2 =      -7.9103411077 4.7438515e-03
+Emin_PCG step        3 =      -7.9107812093 4.4010166e-04
+Emin_PCG step        4 =      -7.9109693308 1.8812147e-04
+Emin_PCG step        5 =      -7.9109968264 2.7495558e-05
+Emin_PCG step        6 =      -7.9110044926 7.6662900e-06
+Emin_PCG step        7 =      -7.9110075086 3.0159158e-06
+Emin_PCG step        8 =      -7.9110083255 8.1695760e-07
+Emin_PCG step        9 =      -7.9110086012 2.7568231e-07
+
+Emin_PCG is converged in iter: 9 , diffE = 2.7568231e-07
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       3.2104714023
+Ps_loc     energy:      -2.1761440254
+Ps_nloc    energy:       1.5811865635
+Hartree    energy:       0.5761969598
+XC         energy:      -2.4101664739
+PspCore    energy:      -0.2946256268
+-------------------------------------
+Electronic energy:       0.4869187995
+NN         energy:      -8.3979274007
+-------------------------------------
+Total      energy:      -7.9110086012
+
+Test Summary:            | Pass  Total
+H atom Emin PCG Dai-Yuan |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = simple
+Density mixing with betamix =    0.50000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1      -8.2791786803  8.27918e+00  6.11882e-03
+SCF:     2      -8.1115558882  1.67623e-01  5.23373e-03
+SCF:     3      -8.0051582969  1.06398e-01  2.41972e-03
+SCF:     4      -7.9461838785  5.89744e-02  1.07155e-03
+SCF:     5      -7.9035189306  4.26649e-02  5.21684e-04
+SCF:     6      -7.8811775137  2.23414e-02  2.46325e-04
+SCF:     7      -7.8681381805  1.30393e-02  1.21957e-04
+SCF:     8      -7.8613128421  6.82534e-03  6.10574e-05
+SCF:     9      -7.8577213628  3.59148e-03  3.08956e-05
+SCF:    10      -7.8558860003  1.83536e-03  1.57701e-05
+SCF:    11      -7.8549324703  9.53530e-04  8.10321e-06
+SCF:    12      -7.8544500217  4.82449e-04  4.20637e-06
+SCF:    13      -7.8542007950  2.49227e-04  2.20815e-06
+SCF:    14      -7.8540753076  1.25487e-04  1.19152e-06
+SCF:    15      -7.8540105849  6.47227e-05  6.59631e-07
+SCF:    16      -7.8539781030  3.24819e-05  3.77745e-07
+SCF:    17      -7.8539611756  1.69273e-05  2.20486e-07
+SCF:    18      -7.8539526229  8.55276e-06  1.34326e-07
+SCF:    19      -7.8539480238  4.59909e-06  8.39391e-08
+SCF:    20      -7.8539457068  2.31704e-06  5.44036e-08
+SCF:    21      -7.8539443918  1.31496e-06  3.60156e-08
+SCF:    22      -7.8539437292  6.62619e-07  2.46607e-08
+SCF:    23      -7.8539433194  4.09751e-07  1.71466e-08
+
+SCF is converged in iter: 23
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       3.1938247323
+Ps_loc     energy:      -2.1493161546
+Ps_nloc    energy:       1.5608465719
+Hartree    energy:       0.5765247087
+XC         energy:      -2.4280048103
+PspCore    energy:      -0.2098909668
+-------------------------------------
+Electronic energy:       0.5439840813
+NN         energy:      -8.3979274007
+-------------------------------------
+Total      energy:      -7.8539433194
+
+Test Summary:                  | Pass  Total
+Si fcc PBE SCF Rhoe mix simple |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = linear_adaptive
+Density mixing with betamix =    0.10000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1      -8.6713368022  8.67134e+00  6.11882e-03
+SCF:     2      -8.4850689564  1.86268e-01  7.11214e-03
+SCF:     3      -8.2502152244  2.34854e-01  4.83171e-03
+SCF:     4      -8.0716598727  1.78555e-01  2.70012e-03
+SCF:     5      -7.9487984582  1.22861e-01  1.29501e-03
+SCF:     6      -7.8873265484  6.14719e-02  4.74399e-04
+SCF:     7      -7.8612538955  2.60727e-02  1.39665e-04
+SCF:     8      -7.8555459601  5.70794e-03  3.12874e-05
+SCF:     9      -7.8542687266  1.27723e-03  8.46575e-06
+SCF:    10      -7.8540591905  2.09536e-04  3.44936e-06
+SCF:    11      -7.8539758194  8.33711e-05  1.87028e-06
+SCF:    12      -7.8539593512  1.64682e-05  1.00647e-06
+SCF:    13      -7.8539423836  1.69676e-05  5.56202e-07
+SCF:    14      -7.8539449651  2.58153e-06  2.98914e-07
+SCF:    15      -7.8539428679  2.09720e-06  1.94155e-07
+SCF:    16      -7.8539439856  1.11766e-06  1.21247e-07
+SCF:    17      -7.8539432977  6.87856e-07  8.56718e-08
+SCF:    18      -7.8539434811  1.83394e-07  5.73027e-08
+
+SCF is converged in iter: 18
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       3.1938293495
+Ps_loc     energy:      -2.1493241286
+Ps_nloc    energy:       1.5608473464
+Hartree    energy:       0.5765290020
+XC         energy:      -2.4280066829
+PspCore    energy:      -0.2098909668
+-------------------------------------
+Electronic energy:       0.5439839196
+NN         energy:      -8.3979274007
+-------------------------------------
+Total      energy:      -7.8539434811
+
+Test Summary:                           | Pass  Total
+Si fcc PBE SCF Rhoe mix linear_adaptive |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = anderson
+mixdim = 5
+Density mixing with betamix =    0.20000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1      -8.6713368022  8.67134e+00  6.11882e-03
+SCF:     2      -8.7963692955  1.25032e-01  7.11214e-03
+SCF:     3      -7.7796558098  1.01671e+00  7.49349e-03
+SCF:     4      -7.9046710006  1.25015e-01  5.80311e-04
+SCF:     5      -7.8706364431  3.40346e-02  4.54194e-04
+SCF:     6      -7.8551474309  1.54890e-02  1.10680e-04
+SCF:     7      -7.8519769816  3.17045e-03  1.69907e-05
+SCF:     8      -7.8540481308  2.07115e-03  1.20005e-05
+SCF:     9      -7.8540842223  3.60915e-05  2.34571e-06
+SCF:    10      -7.8539318574  1.52365e-04  8.16695e-07
+SCF:    11      -7.8539219944  9.86299e-06  4.87900e-07
+SCF:    12      -7.8539262324  4.23796e-06  1.38718e-07
+SCF:    13      -7.8539322109  5.97856e-06  8.61301e-08
+SCF:    14      -7.8539295005  2.71037e-06  6.31847e-08
+SCF:    15      -7.8539379188  8.41824e-06  2.74291e-08
+SCF:    16      -7.8539417120  3.79324e-06  4.05952e-08
+SCF:    17      -7.8539475742  5.86221e-06  4.52633e-08
+SCF:    18      -7.8539460074  1.56680e-06  7.36181e-08
+SCF:    19      -7.8539492208  3.21340e-06  8.40865e-08
+SCF:    20      -7.8539495382  3.17330e-07  9.62805e-08
+SCF:    21      -7.8539505320  9.93834e-07  1.09872e-07
+
+SCF is converged in iter: 21
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       3.1938242909
+Ps_loc     energy:      -2.1493241590
+Ps_nloc    energy:       1.5608454078
+Hartree    energy:       0.5765290121
+XC         energy:      -2.4280067162
+PspCore    energy:      -0.2098909668
+-------------------------------------
+Electronic energy:       0.5439768687
+NN         energy:      -8.3979274007
+-------------------------------------
+Total      energy:      -7.8539505320
+
+Test Summary:                    | Pass  Total
+Si fcc PBE SCF Rhoe mix anderson |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = pulay
+Density mixing with betamix =    0.20000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1      -8.6713368022  8.67134e+00  6.11882e-03
+SCF:     2      -8.5744555366  9.68813e-02  7.11214e-03
+SCF:     3      -8.4442901868  1.30165e-01  5.59559e-03
+SCF:     4      -8.3442423309  1.00048e-01  4.35167e-03
+SCF:     5      -8.2554429080  8.87994e-02  3.41258e-03
+SCF:     6      -7.8083842945  4.47059e-01  2.65911e-03
+SCF:     7      -7.8511044420  4.27201e-02  8.44108e-05
+SCF:     8      -7.8549235810  3.81914e-03  4.69056e-05
+SCF:     9      -7.8540893020  8.34279e-04  1.71605e-05
+SCF:    10      -7.8534676079  6.21694e-04  1.43924e-05
+SCF:    11      -7.8538782788  4.10671e-04  8.66073e-06
+SCF:    12      -7.8539344490  5.61702e-05  1.03075e-06
+SCF:    13      -7.8539338103  6.38729e-07  5.29979e-07
+SCF:    14      -7.8540960788  1.62269e-04  5.98917e-07
+SCF:    15      -7.8539318372  1.64242e-04  2.06620e-06
+SCF:    16      -7.8537871831  1.44654e-04  5.87675e-07
+SCF:    17      -7.8537132515  7.39317e-05  1.51579e-06
+SCF:    18      -7.8537210342  7.78277e-06  1.81093e-06
+SCF:    19      -7.8539567396  2.35705e-04  1.68568e-06
+SCF:    20      -7.8538894143  6.73253e-05  7.11313e-07
+SCF:    21      -7.8539043822  1.49679e-05  9.97262e-07
+SCF:    22      -7.8539407786  3.63964e-05  4.73079e-07
+SCF:    23      -7.8539570273  1.62487e-05  7.89634e-08
+SCF:    24      -7.8539412358  1.57915e-05  5.87140e-08
+SCF:    25      -7.8539408714  3.64423e-07  4.49138e-08
+SCF:    26      -7.8539421003  1.22892e-06  1.02262e-08
+SCF:    27      -7.8539430702  9.69881e-07  5.17371e-09
+SCF:    28      -7.8539434994  4.29176e-07  1.20523e-08
+
+SCF is converged in iter: 28
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       3.1938244097
+Ps_loc     energy:      -2.1493156536
+Ps_nloc    energy:       1.5608463835
+Hartree    energy:       0.5765244273
+XC         energy:      -2.4280046988
+PspCore    energy:      -0.2098909668
+-------------------------------------
+Electronic energy:       0.5439839013
+NN         energy:      -8.3979274007
+-------------------------------------
+Total      energy:      -7.8539434994
+
+Test Summary:                 | Pass  Total
+Si fcc PBE SCF Rhoe mix pulay |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = ppulay
+mixdim = 5
+Density mixing with betamix =    0.20000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1      -8.6713368022  8.67134e+00  6.11882e-03
+SCF:     2      -8.5744555366  9.68813e-02  7.11214e-03
+SCF:     3      -8.4442901868  1.30165e-01  5.59559e-03
+SCF:     4      -8.3442423309  1.00048e-01  4.35167e-03
+SCF:     5      -8.2554429080  8.87994e-02  3.41258e-03
+SCF:     6      -7.8083842945  4.47059e-01  2.65911e-03
+SCF:     7      -7.8508374473  4.24532e-02  8.44108e-05
+SCF:     8      -7.8507469023  9.05449e-05  6.97240e-05
+SCF:     9      -7.8591386941  8.39179e-03  5.92035e-05
+SCF:    10      -7.8584053120  7.33382e-04  2.78535e-05
+SCF:    11      -7.8573463242  1.05899e-03  2.20600e-05
+SCF:    12      -7.8540315283  3.31480e-03  1.76277e-05
+SCF:    13      -7.8535240287  5.07500e-04  3.73702e-06
+SCF:    14      -7.8536447978  1.20769e-04  2.81856e-06
+SCF:    15      -7.8538846710  2.39873e-04  2.18646e-06
+SCF:    16      -7.8539615443  7.68733e-05  1.82813e-07
+SCF:    17      -7.8539594549  2.08940e-06  2.10069e-07
+SCF:    18      -7.8539576919  1.76305e-06  2.33132e-07
+SCF:    19      -7.8539555856  2.10625e-06  2.62799e-07
+SCF:    20      -7.8539544260  1.15957e-06  2.34183e-07
+SCF:    21      -7.8539449319  9.49418e-06  2.00036e-07
+SCF:    22      -7.8539417973  3.13460e-06  2.00815e-08
+SCF:    23      -7.8539423073  5.10016e-07  1.01602e-08
+SCF:    24      -7.8539426587  3.51416e-07  3.49381e-09
+
+SCF is converged in iter: 24
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       3.1938250283
+Ps_loc     energy:      -2.1493158700
+Ps_nloc    energy:       1.5608466840
+Hartree    energy:       0.5765246990
+XC         energy:      -2.4280048325
+PspCore    energy:      -0.2098909668
+-------------------------------------
+Electronic energy:       0.5439847420
+NN         energy:      -8.3979274007
+-------------------------------------
+Total      energy:      -7.8539426587
+
+Test Summary:                  | Pass  Total
+Si fcc PBE SCF Rhoe mix ppulay |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = rpulay
+mixdim = 5
+Density mixing with betamix =    0.20000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1      -8.6713368022  8.67134e+00  6.11882e-03
+SCF:     2      -8.7963692955  1.25032e-01  7.11214e-03
+SCF:     3      -7.7796558098  1.01671e+00  7.49349e-03
+SCF:     4      -7.9046710006  1.25015e-01  5.80311e-04
+SCF:     5      -7.8706364431  3.40346e-02  4.54194e-04
+SCF:     6      -7.8551474309  1.54890e-02  1.10680e-04
+SCF:     7      -7.8516367686  3.51066e-03  1.69907e-05
+SCF:     8      -7.8522186880  5.81919e-04  1.71697e-05
+SCF:     9      -7.8530627110  8.44023e-04  1.30611e-05
+SCF:    10      -7.8539302040  8.67493e-04  5.34095e-06
+SCF:    11      -7.8539481393  1.79352e-05  4.93249e-07
+SCF:    12      -7.8539472583  8.81001e-07  3.46175e-07
+SCF:    13      -7.8539478277  5.69381e-07  1.21526e-07
+
+SCF is converged in iter: 13
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       3.1938385920
+Ps_loc     energy:      -2.1493420179
+Ps_nloc    energy:       1.5608483126
+Hartree    energy:       0.5765344840
+XC         energy:      -2.4280088309
+PspCore    energy:      -0.2098909668
+-------------------------------------
+Electronic energy:       0.5439795731
+NN         energy:      -8.3979274007
+-------------------------------------
+Total      energy:      -7.8539478277
+
+Test Summary:                  | Pass  Total
+Si fcc PBE SCF Rhoe mix rpulay |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = broyden
+mixdim = 5
+Density mixing with betamix =    0.10000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1      -8.8019804963  8.80198e+00  6.11882e-03
+SCF:     2      -8.9932915503  1.91311e-01  7.74610e-03
+SCF:     3      -7.8097539129  1.18354e+00  8.69349e-03
+SCF:     4      -7.9458985685  1.36145e-01  8.34391e-04
+SCF:     5      -7.8879892747  5.79093e-02  7.64405e-04
+SCF:     6      -7.8582487719  2.97405e-02  2.35873e-04
+SCF:     7      -7.8486919588  9.55681e-03  3.81370e-05
+SCF:     8      -7.8547983142  6.10636e-03  4.42311e-05
+SCF:     9      -7.8541479466  6.50368e-04  7.20131e-06
+SCF:    10      -7.8539498448  1.98102e-04  1.84924e-06
+SCF:    11      -7.8540764126  1.26568e-04  2.11539e-06
+SCF:    12      -7.8541250461  4.86335e-05  3.42746e-06
+SCF:    13      -7.8541344845  9.43842e-06  3.45996e-06
+SCF:    14      -7.8541190623  1.54222e-05  3.77407e-06
+SCF:    15      -7.8541173927  1.66959e-06  3.82412e-06
+SCF:    16      -7.8539986405  1.18752e-04  3.43345e-06
+SCF:    17      -7.8539482099  5.04306e-05  9.60122e-07
+SCF:    18      -7.8539565383  8.32847e-06  3.82210e-07
+SCF:    19      -7.8539488928  7.64558e-06  3.80608e-07
+SCF:    20      -7.8539088344  4.00584e-05  3.95672e-07
+SCF:    21      -7.8539016111  7.22326e-06  2.17393e-07
+SCF:    22      -7.8538997393  1.87186e-06  2.02474e-07
+SCF:    23      -7.8539024133  2.67403e-06  1.95093e-07
+SCF:    24      -7.8539227768  2.03635e-05  1.82849e-07
+SCF:    25      -7.8539264160  3.63921e-06  8.83923e-08
+SCF:    26      -7.8539255403  8.75676e-07  7.10456e-08
+SCF:    27      -7.8539414035  1.58632e-05  6.71104e-08
+SCF:    28      -7.8539400048  1.39866e-06  2.44214e-08
+SCF:    29      -7.8539386594  1.34540e-06  1.55152e-08
+SCF:    30      -7.8539395835  9.24062e-07  1.78379e-08
+SCF:    31      -7.8539405002  9.16721e-07  1.03629e-08
+
+SCF is converged in iter: 31
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       3.1938244089
+Ps_loc     energy:      -2.1493125046
+Ps_nloc    energy:       1.5608466179
+Hartree    energy:       0.5765239423
+XC         energy:      -2.4280045972
+PspCore    energy:      -0.2098909668
+-------------------------------------
+Electronic energy:       0.5439869005
+NN         energy:      -8.3979274007
+-------------------------------------
+Total      energy:      -7.8539405002
+
+Test Summary:                   | Pass  Total
+Si fcc PBE SCF Rhoe mix broyden |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = simple
+Potential mixing with betamix =    0.50000
+
+--------------------------------------------------------------
+              iter            E            ΔE           Δρ
+--------------------------------------------------------------
+SCF_potmix:     1      -7.6324657184  7.63247e+00  2.96015e-02
+SCF_potmix:     2      -7.8477307342  2.15265e-01  2.53057e-03
+SCF_potmix:     3      -7.8520232997  4.29257e-03  2.87748e-04
+SCF_potmix:     4      -7.8538369330  1.81363e-03  2.12193e-04
+SCF_potmix:     5      -7.8539023985  6.54656e-05  3.71461e-05
+SCF_potmix:     6      -7.8539368568  3.44583e-05  3.39558e-05
+SCF_potmix:     7      -7.8539399759  3.11904e-06  7.38133e-06
+SCF_potmix:     8      -7.8539413375  1.36159e-06  4.41568e-06
+SCF_potmix:     9      -7.8539419789  6.41424e-07  2.06033e-06
+SCF_potmix:    10      -7.8539423106  3.31701e-07  1.18149e-06
+SCF_potmix is converged in 10 iterations
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       3.1938517589
+Ps_loc     energy:      -2.1494121792
+Ps_nloc    energy:       1.5608880184
+Hartree    energy:       0.5765721346
+XC         energy:      -2.4280236758
+PspCore    energy:      -0.2098909668
+-------------------------------------
+Electronic energy:       0.5439850901
+NN         energy:      -8.3979274007
+-------------------------------------
+Total      energy:      -7.8539423106
+
+Test Summary:                       | Pass  Total
+Si fcc PBE SCF potential mix simple |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = linear_adaptive
+Potential mixing with betamix =    0.10000
+
+--------------------------------------------------------------
+              iter            E            ΔE           Δρ
+--------------------------------------------------------------
+SCF_potmix:     1      -7.6324657184  7.63247e+00  2.96015e-02
+SCF_potmix:     2      -7.8484464655  2.15981e-01  2.39734e-03
+SCF_potmix:     3      -7.8523448614  3.89840e-03  3.36245e-04
+SCF_potmix:     4      -7.8538506416  1.50578e-03  1.04542e-04
+SCF_potmix:     5      -7.8539166948  6.60532e-05  8.10394e-06
+SCF_potmix:     6      -7.8539394694  2.27746e-05  9.00796e-06
+SCF_potmix:     7      -7.8539409999  1.53053e-06  1.28368e-06
+SCF_potmix:     8      -7.8539417531  7.53141e-07  6.04328e-07
+SCF_potmix:     9      -7.8539421623  4.09242e-07  5.12297e-07
+SCF_potmix is converged in 9 iterations
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       3.1937431761
+Ps_loc     energy:      -2.1496003401
+Ps_nloc    energy:       1.5611955986
+Hartree    energy:       0.5765290449
+XC         energy:      -2.4279912744
+PspCore    energy:      -0.2098909668
+-------------------------------------
+Electronic energy:       0.5439852384
+NN         energy:      -8.3979274007
+-------------------------------------
+Total      energy:      -7.8539421623
+
+Test Summary:                                | Pass  Total
+Si fcc PBE SCF potential mix linear_adaptive |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = broyden
+mixdim = 5
+Potential mixing with betamix =    0.10000
+
+--------------------------------------------------------------
+              iter            E            ΔE           Δρ
+--------------------------------------------------------------
+SCF_potmix:     1      -7.6324657184  7.63247e+00  2.96015e-02
+SCF_potmix:     2      -7.8485370582  2.16071e-01  2.35210e-03
+SCF_potmix:     3      -7.8516377620  3.10070e-03  9.99584e-04
+SCF_potmix:     4      -7.8536270034  1.98924e-03  4.28287e-04
+SCF_potmix:     5      -7.8539077156  2.80712e-04  1.54699e-04
+SCF_potmix:     6      -7.8539367140  2.89983e-05  1.26334e-05
+SCF_potmix:     7      -7.8539396693  2.95537e-06  6.33447e-06
+SCF_potmix:     8      -7.8539410324  1.36310e-06  1.85939e-06
+SCF_potmix:     9      -7.8539417475  7.15006e-07  1.33114e-06
+SCF_potmix:    10      -7.8539421441  3.96645e-07  5.26440e-07
+SCF_potmix is converged in 10 iterations
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       3.1937968499
+Ps_loc     energy:      -2.1492499395
+Ps_nloc    energy:       1.5608257575
+Hartree    energy:       0.5764963467
+XC         energy:      -2.4279927912
+PspCore    energy:      -0.2098909668
+-------------------------------------
+Electronic energy:       0.5439852566
+NN         energy:      -8.3979274007
+-------------------------------------
+Total      energy:      -7.8539421441
+
+Test Summary:                        | Pass  Total
+Si fcc PBE SCF potential mix broyden |    1      1
+
+Minimizing Kohn-Sham energy using PCG
+-------------------------------------
+NiterMax  = 200
+α_t       = 3.000000e-05
+conv_thr  = 1.000000e-06
+Using Polak-Ribiere formula for CG_BETA
+
+Emin_PCG step        1 =      -7.8507060549 7.8507061e+00
+Emin_PCG step        2 =      -7.8509393436 2.3328865e-04
+Emin_PCG step        3 =      -7.8535661023 2.6267588e-03
+Emin_PCG step        4 =      -7.8538402630 2.7416064e-04
+Emin_PCG step        5 =      -7.8539231974 8.2934391e-05
+Emin_PCG step        6 =      -7.8539384382 1.5240851e-05
+Emin_PCG step        7 =      -7.8539412598 2.8215367e-06
+Emin_PCG step        8 =      -7.8539423355 1.0757752e-06
+Emin_PCG step        9 =      -7.8539426109 2.7539360e-07
+Emin_PCG step       10 =      -7.8539426770 6.6052748e-08
+
+Emin_PCG is converged in iter: 10 , diffE = 6.6052748e-08
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       3.1938141363
+Ps_loc     energy:      -2.1492617197
+Ps_nloc    energy:       1.5608093267
+Hartree    energy:       0.5765167196
+XC         energy:      -2.4280027724
+PspCore    energy:      -0.2098909668
+-------------------------------------
+Electronic energy:       0.5439847237
+NN         energy:      -8.3979274007
+-------------------------------------
+Total      energy:      -7.8539426770
+
+Test Summary:                   | Pass  Total
+Si fcc Emin PCG Fletcher-Reeves |    1      1
+
+Minimizing Kohn-Sham energy using PCG
+-------------------------------------
+NiterMax  = 200
+α_t       = 3.000000e-05
+conv_thr  = 1.000000e-06
+Using Polak-Ribiere formula for CG_BETA
+
+Emin_PCG step        1 =      -7.8507060549 7.8507061e+00
+Emin_PCG step        2 =      -7.8509393436 2.3328865e-04
+Emin_PCG step        3 =      -7.8535661023 2.6267588e-03
+Emin_PCG step        4 =      -7.8538402630 2.7416064e-04
+Emin_PCG step        5 =      -7.8539231974 8.2934391e-05
+Emin_PCG step        6 =      -7.8539384382 1.5240851e-05
+Emin_PCG step        7 =      -7.8539412598 2.8215367e-06
+Emin_PCG step        8 =      -7.8539423355 1.0757752e-06
+Emin_PCG step        9 =      -7.8539426109 2.7539360e-07
+Emin_PCG step       10 =      -7.8539426770 6.6052748e-08
+
+Emin_PCG is converged in iter: 10 , diffE = 6.6052748e-08
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       3.1938141363
+Ps_loc     energy:      -2.1492617197
+Ps_nloc    energy:       1.5608093267
+Hartree    energy:       0.5765167196
+XC         energy:      -2.4280027724
+PspCore    energy:      -0.2098909668
+-------------------------------------
+Electronic energy:       0.5439847237
+NN         energy:      -8.3979274007
+-------------------------------------
+Total      energy:      -7.8539426770
+
+Test Summary:                 | Pass  Total
+Si fcc Emin PCG Polak-Ribiere |    1      1
+
+Minimizing Kohn-Sham energy using PCG
+-------------------------------------
+NiterMax  = 200
+α_t       = 3.000000e-05
+conv_thr  = 1.000000e-06
+Using Hestenes-Stiefeld formula for CG_BETA
+
+Emin_PCG step        1 =      -7.8507060549 7.8507061e+00
+Emin_PCG step        2 =      -7.8504248618 2.8119311e-04
+Emin_PCG step        3 =      -7.8522467364 1.8218746e-03
+Emin_PCG step        4 =      -7.8537123299 1.4655935e-03
+Emin_PCG step        5 =      -7.8539046097 1.9227984e-04
+Emin_PCG step        6 =      -7.8539327759 2.8166119e-05
+Emin_PCG step        7 =      -7.8539385923 5.8164913e-06
+Emin_PCG step        8 =      -7.8539416437 3.0514027e-06
+Emin_PCG step        9 =      -7.8539424039 7.6018406e-07
+Emin_PCG step       10 =      -7.8539426067 2.0277517e-07
+
+Emin_PCG is converged in iter: 10 , diffE = 2.0277517e-07
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       3.1938405760
+Ps_loc     energy:      -2.1492337781
+Ps_nloc    energy:       1.5607511417
+Hartree    energy:       0.5765266769
+XC         energy:      -2.4280088558
+PspCore    energy:      -0.2098909668
+-------------------------------------
+Electronic energy:       0.5439847940
+NN         energy:      -8.3979274007
+-------------------------------------
+Total      energy:      -7.8539426067
+
+Test Summary:                     | Pass  Total
+H atom Emin PCG Hestenes-Stiefeld |    1      1
+
+Minimizing Kohn-Sham energy using PCG
+-------------------------------------
+NiterMax  = 200
+α_t       = 3.000000e-05
+conv_thr  = 1.000000e-06
+Using Dai-Yuan formula for CG_BETA
+
+Emin_PCG step        1 =      -7.8507060549 7.8507061e+00
+Emin_PCG step        2 =      -7.8504079297 2.9812518e-04
+Emin_PCG step        3 =      -7.8515976556 1.1897258e-03
+Emin_PCG step        4 =      -7.8536122140 2.0145585e-03
+Emin_PCG step        5 =      -7.8538503608 2.3814679e-04
+Emin_PCG step        6 =      -7.8539224063 7.2045526e-05
+Emin_PCG step        7 =      -7.8539368147 1.4408389e-05
+Emin_PCG step        8 =      -7.8539402231 3.4083506e-06
+Emin_PCG step        9 =      -7.8539417520 1.5288961e-06
+Emin_PCG step       10 =      -7.8539422842 5.3224336e-07
+Emin_PCG step       11 =      -7.8539425235 2.3926390e-07
+
+Emin_PCG is converged in iter: 11 , diffE = 2.3926390e-07
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       3.1938143176
+Ps_loc     energy:      -2.1492212895
+Ps_nloc    energy:       1.5607684557
+Hartree    energy:       0.5765207371
+XC         energy:      -2.4280063768
+PspCore    energy:      -0.2098909668
+-------------------------------------
+Electronic energy:       0.5439848772
+NN         energy:      -8.3979274007
+-------------------------------------
+Total      energy:      -7.8539425235
+
+Test Summary:            | Pass  Total
+H atom Emin PCG Dai-Yuan |    1      1
+
+Self-consistent iteration begins ...
+update_psi = davidson
+mix_method = simple
+Density mixing with betamix =    0.50000
+Smearing = 0.001000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1     -25.5249088530  2.55249e+01  4.06359e-02
+SCF:     2     -26.0390509321  5.14142e-01  1.18923e-02
+SCF:     3     -26.1754647428  1.36414e-01  3.89566e-03
+SCF:     4     -26.2364863794  6.10216e-02  1.57364e-03
+SCF:     5     -26.2660540693  2.95677e-02  7.46516e-04
+SCF:     6     -26.2806535341  1.45995e-02  3.72484e-04
+SCF:     7     -26.2876869484  7.03341e-03  1.91810e-04
+SCF:     8     -26.2912179993  3.53105e-03  1.00706e-04
+SCF:     9     -26.2928980058  1.68001e-03  5.23217e-05
+SCF:    10     -26.2937323348  8.34329e-04  2.74697e-05
+SCF:    11     -26.2941288390  3.96504e-04  1.42550e-05
+SCF:    12     -26.2943248580  1.96019e-04  7.49103e-06
+SCF:    13     -26.2944176625  9.28045e-05  3.89355e-06
+SCF:    14     -26.2944635564  4.58939e-05  2.05281e-06
+SCF:    15     -26.2944851348  2.15784e-05  1.06829e-06
+SCF:    16     -26.2944958251  1.06903e-05  5.65106e-07
+SCF:    17     -26.2945007969  4.97179e-06  2.94676e-07
+SCF:    18     -26.2945032589  2.46202e-06  1.56381e-07
+SCF:    19     -26.2945043884  1.12954e-06  8.16805e-08
+SCF:    20     -26.2945049592  5.70762e-07  4.35819e-08
+SCF:    21     -26.2945052148  2.55668e-07  2.26868e-08
+
+SCF is converged in iter: 21
+
+Fermi energy =      -0.0148842322 Ha =      -0.4050205877 eV
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:      19.2060140731
+Ps_loc     energy:      -3.5178517592
+Ps_nloc    energy:     -14.7734350216
+Hartree    energy:       1.8623453874
+XC         energy:      -4.4748717329
+PspCore    energy:       6.3258423493
+-TS              :      -0.0005158875
+-------------------------------------
+Electronic energy:       4.6275274085
+NN         energy:     -30.9220326233
+-------------------------------------
+Total free energy:     -26.2945052148
+
+Total energy (extrapolated to T=0):     -26.2942472711
+
+Test Summary:       | Pass  Total
+Pt fcc SCF davidson |    1      1
+
+Self-consistent iteration begins ...
+update_psi = PCG
+mix_method = simple
+Density mixing with betamix =    0.50000
+Smearing = 0.001000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1     -24.9205180919  2.49205e+01  2.56510e-02
+SCF:     2     -25.8932282859  9.72710e-01  3.05740e-02
+SCF:     3     -26.1540070952  2.60779e-01  3.36910e-03
+SCF:     4     -26.2293656363  7.53585e-02  2.56912e-03
+SCF:     5     -26.2617834135  3.24178e-02  8.34415e-04
+SCF:     6     -26.2765451826  1.47618e-02  3.55230e-04
+SCF:     7     -26.2856640987  9.11892e-03  1.81383e-04
+SCF:     8     -26.2900318072  4.36771e-03  9.39406e-05
+SCF:     9     -26.2923038163  2.27201e-03  4.66352e-05
+SCF:    10     -26.2933826075  1.07879e-03  2.67243e-05
+SCF:    11     -26.2939802172  5.97610e-04  1.26389e-05
+SCF:    12     -26.2942204852  2.40268e-04  9.00350e-06
+SCF:    13     -26.2943860078  1.65523e-04  4.48599e-06
+SCF:    14     -26.2944234818  3.74739e-05  4.30609e-06
+SCF:    15     -26.2944811901  5.77083e-05  2.78501e-06
+SCF:    16     -26.2944733884  7.80174e-06  2.82648e-06
+SCF:    17     -26.2945028678  2.94794e-05  2.24539e-06
+SCF:    18     -26.2944871443  1.57235e-05  2.18894e-06
+SCF:    19     -26.2945075118  2.03675e-05  1.88346e-06
+SCF:    20     -26.2944922466  1.52651e-05  1.80523e-06
+SCF:    21     -26.2945082579  1.60113e-05  1.58185e-06
+SCF:    22     -26.2944950541  1.32038e-05  1.50821e-06
+SCF:    23     -26.2945081136  1.30594e-05  1.32656e-06
+SCF:    24     -26.2944970669  1.10467e-05  1.26398e-06
+SCF:    25     -26.2945077572  1.06903e-05  1.11059e-06
+SCF:    26     -26.2944986805  9.07673e-06  1.05786e-06
+SCF:    27     -26.2945073622  8.68170e-06  9.28525e-07
+SCF:    28     -26.2944999951  7.36710e-06  8.84297e-07
+SCF:    29     -26.2945069944  6.99926e-06  7.76661e-07
+SCF:    30     -26.2945010737  5.92069e-06  7.39769e-07
+SCF:    31     -26.2945066649  5.59121e-06  6.51041e-07
+SCF:    32     -26.2945019768  4.68807e-06  6.19742e-07
+SCF:    33     -26.2945063514  4.37463e-06  5.46572e-07
+SCF:    34     -26.2945027183  3.63317e-06  5.19984e-07
+SCF:    35     -26.2945060871  3.36884e-06  4.59903e-07
+SCF:    36     -26.2945033277  2.75938e-06  4.37116e-07
+SCF:    37     -26.2945058666  2.53891e-06  3.87713e-07
+SCF:    38     -26.2945038313  2.03537e-06  3.68111e-07
+SCF:    39     -26.2945056751  1.84384e-06  3.29562e-07
+SCF:    40     -26.2945042531  1.42206e-06  3.12664e-07
+SCF:    41     -26.2945055084  1.25535e-06  2.81829e-07
+SCF:    42     -26.2945045843  9.24124e-07  2.67147e-07
+SCF:    43     -26.2945053754  7.91097e-07  2.42723e-07
+
+SCF is converged in iter: 43
+
+Fermi energy =      -0.0148847031 Ha =      -0.4050334014 eV
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:      19.2060603662
+Ps_loc     energy:      -3.5178490884
+Ps_nloc    energy:     -14.7734825054
+Hartree    energy:       1.8623430853
+XC         energy:      -4.4748710714
+PspCore    energy:       6.3258423493
+-TS              :      -0.0005158876
+-------------------------------------
+Electronic energy:       4.6275272479
+NN         energy:     -30.9220326233
+-------------------------------------
+Total free energy:     -26.2945053754
+
+Total energy (extrapolated to T=0):     -26.2942474316
+
+Test Summary:  | Pass  Total
+Pt fcc SCF PCG |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = simple
+Density mixing with betamix =    0.50000
+Smearing = 0.001000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1     -25.5382042386  2.55382e+01  5.40224e-02
+SCF:     2     -26.0402245271  5.02020e-01  4.35801e-03
+SCF:     3     -26.1712056362  1.30981e-01  2.31942e-03
+SCF:     4     -26.2346800426  6.34744e-02  1.31792e-03
+SCF:     5     -26.2652045240  3.05245e-02  7.12220e-04
+SCF:     6     -26.2804045332  1.52000e-02  3.63143e-04
+SCF:     7     -26.2876387249  7.23419e-03  1.92629e-04
+SCF:     8     -26.2912228009  3.58408e-03  9.83843e-05
+SCF:     9     -26.2929093490  1.68655e-03  5.24359e-05
+SCF:    10     -26.2937481492  8.38800e-04  2.70148e-05
+SCF:    11     -26.2941369404  3.88791e-04  1.44710e-05
+SCF:    12     -26.2943322944  1.95354e-04  7.48601e-06
+SCF:    13     -26.2944211149  8.88205e-05  4.02523e-06
+SCF:    14     -26.2944661032  4.49883e-05  2.08132e-06
+SCF:    15     -26.2944862291  2.01259e-05  1.11676e-06
+SCF:    16     -26.2944964471  1.02181e-05  5.73566e-07
+SCF:    17     -26.2945010038  4.55666e-06  3.05715e-07
+SCF:    18     -26.2945033206  2.31682e-06  1.55658e-07
+SCF:    19     -26.2945043798  1.05922e-06  8.18689e-08
+SCF:    20     -26.2945049110  5.31130e-07  4.10216e-08
+SCF:    21     -26.2945051736  2.62603e-07  2.11294e-08
+
+SCF is converged in iter: 21
+
+Fermi energy =      -0.0148841799 Ha =      -0.4050191638 eV
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:      19.2060145721
+Ps_loc     energy:      -3.5178518583
+Ps_nloc    energy:     -14.7734355800
+Hartree    energy:       1.8623456543
+XC         energy:      -4.4748718002
+PspCore    energy:       6.3258423493
+-TS              :      -0.0005158875
+-------------------------------------
+Electronic energy:       4.6275274497
+NN         energy:     -30.9220326233
+-------------------------------------
+Total free energy:     -26.2945051736
+
+Total energy (extrapolated to T=0):     -26.2942472298
+
+Test Summary:          | Pass  Total
+Pt fcc Rhoe mix simple |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = anderson
+mixdim = 5
+Density mixing with betamix =    0.20000
+Smearing = 0.001000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1     -25.1715246760  2.51715e+01  5.40224e-02
+SCF:     2     -25.7899566804  6.18432e-01  3.16365e-02
+SCF:     3     -25.9936879492  2.03731e-01  4.12860e-03
+SCF:     4     -26.2942334521  3.00546e-01  2.80089e-03
+SCF:     5     -26.2975056935  3.27224e-03  1.04163e-03
+SCF:     6     -26.2945090895  2.99660e-03  4.80813e-04
+SCF:     7     -26.2939114957  5.97594e-04  5.81419e-04
+SCF:     8     -26.2944171872  5.05692e-04  1.59005e-05
+SCF:     9     -26.2944876771  7.04898e-05  6.53954e-06
+SCF:    10     -26.2943953788  9.22983e-05  8.26058e-06
+SCF:    11     -26.2944024175  7.03873e-06  1.67811e-05
+SCF:    12     -26.2944575319  5.51144e-05  1.34671e-05
+SCF:    13     -26.2944734032  1.58712e-05  7.25379e-06
+SCF:    14     -26.2944994295  2.60263e-05  5.80229e-06
+SCF:    15     -26.2945051726  5.74315e-06  1.73644e-06
+SCF:    16     -26.2945048189  3.53714e-07  2.97416e-07
+SCF:    17     -26.2945049482  1.29289e-07  9.12077e-08
+
+SCF is converged in iter: 17
+
+Fermi energy =      -0.0148846480 Ha =      -0.4050319029 eV
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:      19.2060215333
+Ps_loc     energy:      -3.5178505714
+Ps_nloc    energy:     -14.7734425979
+Hartree    energy:       1.8623443326
+XC         energy:      -4.4748714832
+PspCore    energy:       6.3258423493
+-TS              :      -0.0005158876
+-------------------------------------
+Electronic energy:       4.6275276751
+NN         energy:     -30.9220326233
+-------------------------------------
+Total free energy:     -26.2945049482
+
+Total energy (extrapolated to T=0):     -26.2942470044
+
+Test Summary:            | Pass  Total
+Pt fcc Rhoe mix anderson |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = pulay
+Density mixing with betamix =    0.20000
+Smearing = 0.001000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1     -25.1715246760  2.51715e+01  5.40224e-02
+SCF:     2     -25.5432299438  3.71705e-01  3.16365e-02
+SCF:     3     -25.7531739295  2.09944e-01  1.75262e-02
+SCF:     4     -25.8698064654  1.16633e-01  1.22162e-02
+SCF:     5     -25.9586138696  8.88074e-02  8.47383e-03
+SCF:     6     -26.2921815985  3.33568e-01  5.99568e-03
+SCF:     7     -26.2965088342  4.32724e-03  3.34230e-04
+SCF:     8     -26.2977650237  1.25619e-03  1.03169e-03
+SCF:     9     -26.2987182775  9.53254e-04  5.02260e-04
+SCF:    10     -26.2947254662  3.99281e-03  3.58753e-04
+SCF:    11     -26.2947040991  2.13671e-05  3.48335e-04
+SCF:    12     -26.2936529157  1.05118e-03  6.13747e-05
+SCF:    13     -26.2946623617  1.00945e-03  3.81995e-05
+SCF:    14     -26.2945290160  1.33346e-04  5.22558e-06
+SCF:    15     -26.2945258771  3.13895e-06  1.22078e-06
+SCF:    16     -26.2945184254  7.45161e-06  7.51661e-07
+SCF:    17     -26.2945029707  1.54547e-05  5.02881e-07
+SCF:    18     -26.2945039387  9.68010e-07  1.90808e-07
+SCF:    19     -26.2945051295  1.19076e-06  5.41177e-08
+SCF:    20     -26.2945048794  2.50098e-07  8.59344e-08
+SCF:    21     -26.2945051677  2.88279e-07  2.83220e-08
+
+SCF is converged in iter: 21
+
+Fermi energy =      -0.0148842188 Ha =      -0.4050202234 eV
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:      19.2060143499
+Ps_loc     energy:      -3.5178519757
+Ps_nloc    energy:     -14.7734353014
+Hartree    energy:       1.8623458013
+XC         energy:      -4.4748718803
+PspCore    energy:       6.3258423493
+-TS              :      -0.0005158875
+-------------------------------------
+Electronic energy:       4.6275274557
+NN         energy:     -30.9220326233
+-------------------------------------
+Total free energy:     -26.2945051677
+
+Total energy (extrapolated to T=0):     -26.2942472239
+
+Test Summary:         | Pass  Total
+Pt fcc Rhoe mix pulay |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = ppulay
+mixdim = 5
+Density mixing with betamix =    0.20000
+Smearing = 0.001000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1     -25.1715246760  2.51715e+01  5.40224e-02
+SCF:     2     -25.5432299438  3.71705e-01  3.16365e-02
+SCF:     3     -25.7531739295  2.09944e-01  1.75262e-02
+SCF:     4     -25.8698064654  1.16633e-01  1.22162e-02
+SCF:     5     -25.9586138696  8.88074e-02  8.47383e-03
+SCF:     6     -26.2921815985  3.33568e-01  5.99568e-03
+SCF:     7     -26.2990034128  6.82181e-03  3.34230e-04
+SCF:     8     -26.2980104871  9.92926e-04  2.25674e-04
+SCF:     9     -26.2947617472  3.24874e-03  1.54345e-04
+SCF:    10     -26.2945708496  1.90898e-04  1.03515e-05
+SCF:    11     -26.2945826441  1.17945e-05  7.18654e-06
+SCF:    12     -26.2945063374  7.63067e-05  5.13599e-06
+SCF:    13     -26.2945061839  1.53472e-07  1.76356e-06
+SCF:    14     -26.2945059823  2.01601e-07  1.19364e-06
+
+SCF is converged in iter: 14
+
+Fermi energy =      -0.0148791059 Ha =      -0.4048810935 eV
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:      19.2059123939
+Ps_loc     energy:      -3.5178693823
+Ps_nloc    energy:     -14.7733336806
+Hartree    energy:       1.8623687847
+XC         energy:      -4.4748779380
+PspCore    energy:       6.3258423493
+-TS              :      -0.0005158861
+-------------------------------------
+Electronic energy:       4.6275266410
+NN         energy:     -30.9220326233
+-------------------------------------
+Total free energy:     -26.2945059823
+
+Total energy (extrapolated to T=0):     -26.2942480393
+
+Test Summary:          | Pass  Total
+Pt fcc Rhoe mix ppulay |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = rpulay
+mixdim = 5
+Density mixing with betamix =    0.20000
+Smearing = 0.001000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1     -25.1715246760  2.51715e+01  5.40224e-02
+SCF:     2     -25.7899566804  6.18432e-01  3.16365e-02
+SCF:     3     -25.9936879492  2.03731e-01  4.12860e-03
+SCF:     4     -26.2942334521  3.00546e-01  2.80089e-03
+SCF:     5     -26.2975056935  3.27224e-03  1.04163e-03
+SCF:     6     -26.2945090895  2.99660e-03  4.80813e-04
+SCF:     7     -26.2988149280  4.30584e-03  5.81419e-04
+SCF:     8     -26.2990803920  2.65464e-04  1.31501e-04
+SCF:     9     -26.2945942134  4.48618e-03  4.52229e-05
+SCF:    10     -26.2944809792  1.13234e-04  2.99014e-05
+SCF:    11     -26.2945001429  1.91636e-05  5.32299e-06
+SCF:    12     -26.2945271575  2.70146e-05  3.85280e-06
+SCF:    13     -26.2945406027  1.34452e-05  2.27888e-06
+SCF:    14     -26.2945378854  2.71726e-06  7.79415e-07
+SCF:    15     -26.2945093326  2.85528e-05  6.08516e-07
+SCF:    16     -26.2945055042  3.82838e-06  2.10042e-07
+SCF:    17     -26.2945055273  2.30849e-08  3.13421e-08
+SCF:    18     -26.2945055093  1.79936e-08  5.46580e-08
+
+SCF is converged in iter: 18
+
+Fermi energy =      -0.0148839820 Ha =      -0.4050137789 eV
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:      19.2060109821
+Ps_loc     energy:      -3.5178528290
+Ps_nloc    energy:     -14.7734320296
+Hartree    energy:       1.8623466287
+XC         energy:      -4.4748721001
+PspCore    energy:       6.3258423493
+-TS              :      -0.0005158874
+-------------------------------------
+Electronic energy:       4.6275271140
+NN         energy:     -30.9220326233
+-------------------------------------
+Total free energy:     -26.2945055093
+
+Total energy (extrapolated to T=0):     -26.2942475656
+
+Test Summary:          | Pass  Total
+Pt fcc Rhoe mix rpulay |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = broyden
+mixdim = 5
+Density mixing with betamix =    0.20000
+Smearing = 0.001000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1     -25.1715246760  2.51715e+01  5.40224e-02
+SCF:     2     -25.7899337189  6.18409e-01  3.16365e-02
+SCF:     3     -25.9936625238  2.03729e-01  4.12937e-03
+SCF:     4     -26.2941848138  3.00522e-01  2.80107e-03
+SCF:     5     -26.2977989287  3.61411e-03  1.04244e-03
+SCF:     6     -26.2949318304  2.86710e-03  2.74357e-04
+SCF:     7     -26.2939565772  9.75253e-04  4.66472e-04
+SCF:     8     -26.2944635718  5.06995e-04  2.75140e-05
+SCF:     9     -26.2944905484  2.69765e-05  5.37046e-06
+SCF:    10     -26.2944017262  8.88222e-05  7.87843e-06
+SCF:    11     -26.2943998121  1.91407e-06  2.58368e-05
+SCF:    12     -26.2944238026  2.39905e-05  2.28956e-05
+SCF:    13     -26.2944213955  2.40709e-06  1.74783e-05
+SCF:    14     -26.2944274537  6.05824e-06  1.74556e-05
+SCF:    15     -26.2945080965  8.06428e-05  1.51533e-05
+SCF:    16     -26.2945097669  1.67042e-06  1.55771e-06
+SCF:    17     -26.2945087904  9.76499e-07  7.20201e-07
+SCF:    18     -26.2945085360  2.54399e-07  5.20187e-07
+
+SCF is converged in iter: 18
+
+Fermi energy =      -0.0148861857 Ha =      -0.4050737446 eV
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:      19.2060570979
+Ps_loc     energy:      -3.5178474215
+Ps_nloc    energy:     -14.7734784571
+Hartree    energy:       1.8623357762
+XC         energy:      -4.4748693692
+PspCore    energy:       6.3258423493
+-TS              :      -0.0005158882
+-------------------------------------
+Electronic energy:       4.6275240873
+NN         energy:     -30.9220326233
+-------------------------------------
+Total free energy:     -26.2945085360
+
+Total energy (extrapolated to T=0):     -26.2942505919
+
+Test Summary:           | Pass  Total
+Pt fcc Rhoe mix broyden |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = simple
+Potential mixing with betamix =    0.20000
+Smearing = 0.001000
+
+--------------------------------------------------------------
+              iter            E            ΔE           Δρ
+--------------------------------------------------------------
+SCF_potmix:     1     -25.8483517856  2.58484e+01  9.81692e-02
+SCF_potmix:     2     -26.1634062294  3.15054e-01  1.21769e-02
+SCF_potmix:     3     -26.2709324011  1.07526e-01  8.37465e-03
+SCF_potmix:     4     -26.2847010680  1.37687e-02  1.93908e-03
+SCF_potmix:     5     -26.2909537403  6.25267e-03  1.39400e-03
+SCF_potmix:     6     -26.2932415629  2.28782e-03  8.53324e-04
+SCF_potmix:     7     -26.2939829398  7.41377e-04  4.67784e-04
+SCF_potmix:     8     -26.2942846221  3.01682e-04  2.96818e-04
+SCF_potmix:     9     -26.2944112766  1.26654e-04  1.93118e-04
+SCF_potmix:    10     -26.2944649239  5.36473e-05  1.24391e-04
+SCF_potmix:    11     -26.2944868865  2.19626e-05  7.84410e-05
+SCF_potmix:    12     -26.2944966803  9.79375e-06  5.09281e-05
+SCF_potmix:    13     -26.2945008974  4.21711e-06  3.21436e-05
+SCF_potmix:    14     -26.2945030047  2.10732e-06  2.16389e-05
+SCF_potmix:    15     -26.2945040469  1.04223e-06  1.41172e-05
+SCF_potmix:    16     -26.2945046205  5.73587e-07  9.68779e-06
+SCF_potmix:    17     -26.2945049293  3.08736e-07  6.48343e-06
+SCF_potmix is converged in 17 iterations
+
+Fermi energy =      -0.0148972786 Ha =      -0.4053755979 eV
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:      19.2064118284
+Ps_loc     energy:      -3.5188310898
+Ps_nloc    energy:     -14.7732171903
+Hartree    energy:       1.8628650376
+XC         energy:      -4.4750273300
+PspCore    energy:       6.3258423493
+-TS              :      -0.0005159111
+-------------------------------------
+Electronic energy:       4.6275276941
+NN         energy:     -30.9220326233
+-------------------------------------
+Total free energy:     -26.2945049293
+
+Total energy (extrapolated to T=0):     -26.2942469737
+
+Test Summary:               | Pass  Total
+Pt fcc potential mix simple |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = linear_adaptive
+Potential mixing with betamix =    0.20000
+Smearing = 0.001000
+
+--------------------------------------------------------------
+              iter            E            ΔE           Δρ
+--------------------------------------------------------------
+SCF_potmix:     1     -25.8483517856  2.58484e+01  9.81692e-02
+SCF_potmix:     2     -26.2663209505  4.17969e-01  3.11712e-02
+SCF_potmix:     3     -26.2926922304  2.63713e-02  6.52658e-03
+SCF_potmix:     4     -26.2943698378  1.67761e-03  1.37448e-03
+SCF_potmix:     5     -26.2944779755  1.08138e-04  2.90365e-04
+SCF_potmix:     6     -26.2945003477  2.23721e-05  1.17367e-04
+SCF_potmix:     7     -26.2945028977  2.55008e-06  4.43043e-05
+SCF_potmix:     8     -26.2945044473  1.54960e-06  2.43313e-05
+SCF_potmix:     9     -26.2945046754  2.28079e-07  6.98247e-06
+SCF_potmix:    10     -26.2945050132  3.37731e-07  5.36732e-06
+SCF_potmix is converged in 10 iterations
+
+Fermi energy =      -0.0149100016 Ha =      -0.4057218080 eV
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:      19.2077586290
+Ps_loc     energy:      -3.5178410377
+Ps_nloc    energy:     -14.7755606092
+Hartree    energy:       1.8628069648
+XC         energy:      -4.4749627823
+PspCore    energy:       6.3258423493
+-TS              :      -0.0005159037
+-------------------------------------
+Electronic energy:       4.6275276102
+NN         energy:     -30.9220326233
+-------------------------------------
+Total free energy:     -26.2945050132
+
+Total energy (extrapolated to T=0):     -26.2942470613
+
+Test Summary:                        | Pass  Total
+Pt fcc potential mix linear_adaptive |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = broyden
+mixdim = 5
+Potential mixing with betamix =    0.20000
+Smearing = 0.001000
+
+--------------------------------------------------------------
+              iter            E            ΔE           Δρ
+--------------------------------------------------------------
+SCF_potmix:     1     -25.8483517856  2.58484e+01  9.81692e-02
+SCF_potmix:     2     -26.1373744630  2.89023e-01  4.02315e-02
+SCF_potmix:     3     -26.2928249433  1.55450e-01  1.29790e-02
+SCF_potmix:     4     -26.2944065543  1.58161e-03  1.74579e-03
+SCF_potmix:     5     -26.2944919606  8.54063e-05  1.92775e-04
+SCF_potmix:     6     -26.2945048965  1.29359e-05  1.22201e-04
+SCF_potmix:     7     -26.2945053388  4.42273e-07  1.04909e-06
+SCF_potmix:     8     -26.2945054141  7.53795e-08  3.89749e-06
+SCF_potmix is converged in 8 iterations
+
+Fermi energy =      -0.0148680378 Ha =      -0.4045799158 eV
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:      19.2059430407
+Ps_loc     energy:      -3.5178543807
+Ps_nloc    energy:     -14.7733548392
+Hartree    energy:       1.8623367189
+XC         energy:      -4.4748697945
+PspCore    energy:       6.3258423493
+-TS              :      -0.0005158853
+-------------------------------------
+Electronic energy:       4.6275272092
+NN         energy:     -30.9220326233
+-------------------------------------
+Total free energy:     -26.2945054141
+
+Total energy (extrapolated to T=0):     -26.2942474715
+
+Test Summary:                | Pass  Total
+Pt fcc potential mix broyden |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = simple
+Density mixing with betamix =    0.50000
+Smearing = 0.001000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1     -25.5530997829  2.55531e+01  5.40085e-02
+SCF:     2     -25.9667007552  4.13601e-01  4.35058e-03
+SCF:     3     -26.1044474795  1.37747e-01  2.39019e-03
+SCF:     4     -26.1716222982  6.71748e-02  1.36707e-03
+SCF:     5     -26.2030499238  3.14276e-02  7.49698e-04
+SCF:     6     -26.2184539064  1.54040e-02  3.96152e-04
+SCF:     7     -26.2258205988  7.36669e-03  2.15653e-04
+SCF:     8     -26.2294421960  3.62160e-03  1.14167e-04
+SCF:     9     -26.2311581362  1.71594e-03  6.23174e-05
+SCF:    10     -26.2320058337  8.47698e-04  3.32039e-05
+SCF:    11     -26.2324008934  3.95060e-04  1.81785e-05
+SCF:    12     -26.2325966518  1.95758e-04  9.70945e-06
+SCF:    13     -26.2326857788  8.91270e-05  5.32540e-06
+SCF:    14     -26.2327300547  4.42760e-05  2.84658e-06
+SCF:    15     -26.2327496435  1.95888e-05  1.56223e-06
+SCF:    16     -26.2327592492  9.60573e-06  8.37243e-07
+SCF:    17     -26.2327634488  4.19957e-06  4.57737e-07
+SCF:    18     -26.2327653445  1.89571e-06  2.45942e-07
+SCF:    19     -26.2327662729  9.28424e-07  1.32167e-07
+SCF:    20     -26.2327665847  3.11732e-07  7.39285e-08
+
+SCF is converged in iter: 20
+
+Fermi energy =      -0.0141595252 Ha =      -0.3853003065 eV
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:      19.4251557038
+Ps_loc     energy:      -3.3153683688
+Ps_nloc    energy:     -15.2401861824
+Hartree    energy:       1.9080296311
+XC         energy:      -4.5171271493
+PspCore    energy:       6.4292813721
+-TS              :      -0.0005189679
+-------------------------------------
+Electronic energy:       4.6892660386
+NN         energy:     -30.9220326233
+-------------------------------------
+Total free energy:     -26.2327665847
+
+Total energy (extrapolated to T=0):     -26.2325071007
+
+Test Summary:              | Pass  Total
+Pt fcc PBE Rhoe mix simple |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = anderson
+mixdim = 5
+Density mixing with betamix =    0.20000
+Smearing = 0.001000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1     -25.2369182957  2.52369e+01  5.40085e-02
+SCF:     2     -25.7788121569  5.41894e-01  3.19148e-02
+SCF:     3     -25.9189548104  1.40143e-01  4.04200e-03
+SCF:     4     -26.2290452378  3.10090e-01  2.82265e-03
+SCF:     5     -26.2363884077  7.34317e-03  1.02724e-03
+SCF:     6     -26.2323539596  4.03445e-03  2.96513e-04
+SCF:     7     -26.2337636630  1.40970e-03  7.16025e-04
+SCF:     8     -26.2327489823  1.01468e-03  2.02456e-05
+SCF:     9     -26.2328604248  1.11443e-04  9.81251e-06
+SCF:    10     -26.2328543660  6.05884e-06  1.02663e-05
+SCF:    11     -26.2327507953  1.03571e-04  2.92976e-06
+SCF:    12     -26.2327542389  3.44354e-06  3.63686e-06
+SCF:    13     -26.2327645857  1.03468e-05  4.47203e-07
+SCF:    14     -26.2327661622  1.57656e-06  2.99634e-07
+SCF:    15     -26.2327658256  3.36659e-07  1.82596e-07
+SCF:    16     -26.2327646174  1.20816e-06  2.40593e-07
+SCF:    17     -26.2327654508  8.33365e-07  1.86644e-07
+SCF:    18     -26.2327657670  3.16219e-07  1.28965e-07
+
+SCF is converged in iter: 18
+
+Fermi energy =      -0.0141593821 Ha =      -0.3852964117 eV
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:      19.4251474212
+Ps_loc     energy:      -3.3153692138
+Ps_nloc    energy:     -15.2401779150
+Hartree    energy:       1.9080321475
+XC         energy:      -4.5171279884
+PspCore    energy:       6.4292813721
+-TS              :      -0.0005189673
+-------------------------------------
+Electronic energy:       4.6892668563
+NN         energy:     -30.9220326233
+-------------------------------------
+Total free energy:     -26.2327657670
+
+Total energy (extrapolated to T=0):     -26.2325062834
+
+Test Summary:                | Pass  Total
+Pt fcc PBE Rhoe mix anderson |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = pulay
+Density mixing with betamix =    0.20000
+Smearing = 0.001000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1     -25.2369182957  2.52369e+01  5.40085e-02
+SCF:     2     -25.5533262062  3.16408e-01  3.19148e-02
+SCF:     3     -25.7209342177  1.67608e-01  1.77817e-02
+SCF:     4     -25.8237566323  1.02822e-01  1.24040e-02
+SCF:     5     -25.9026648648  7.89082e-02  8.48815e-03
+SCF:     6     -26.2386769359  3.36012e-01  6.11461e-03
+SCF:     7     -26.2426943256  4.01739e-03  4.39394e-04
+SCF:     8     -26.2441396328  1.44531e-03  1.55059e-03
+SCF:     9     -26.2428282998  1.31133e-03  8.69834e-04
+SCF:    10     -26.2343407548  8.48755e-03  6.90385e-04
+SCF:    11     -26.2332208526  1.11990e-03  1.62421e-04
+SCF:    12     -26.2321186844  1.10217e-03  4.49907e-05
+SCF:    13     -26.2327863438  6.67659e-04  2.08187e-05
+SCF:    14     -26.2327774592  8.88467e-06  3.53599e-06
+SCF:    15     -26.2328007671  2.33079e-05  3.25793e-06
+SCF:    16     -26.2327923002  8.46687e-06  1.64362e-06
+SCF:    17     -26.2327931228  8.22552e-07  9.57774e-07
+SCF:    18     -26.2327738005  1.93223e-05  7.04183e-07
+SCF:    19     -26.2327704644  3.33605e-06  2.32688e-07
+SCF:    20     -26.2327683759  2.08848e-06  1.60254e-07
+SCF:    21     -26.2327680404  3.35560e-07  1.16865e-07
+SCF:    22     -26.2327669780  1.06234e-06  9.87040e-08
+SCF:    23     -26.2327667005  2.77539e-07  3.36009e-08
+SCF:    24     -26.2327661945  5.05988e-07  2.43611e-08
+
+SCF is converged in iter: 24
+
+Fermi energy =      -0.0141599208 Ha =      -0.3853110695 eV
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:      19.4251576833
+Ps_loc     energy:      -3.3153679662
+Ps_nloc    energy:     -15.2401882011
+Hartree    energy:       1.9080298653
+XC         energy:      -4.5171273570
+PspCore    energy:       6.4292813721
+-TS              :      -0.0005189677
+-------------------------------------
+Electronic energy:       4.6892664288
+NN         energy:     -30.9220326233
+-------------------------------------
+Total free energy:     -26.2327661945
+
+Total energy (extrapolated to T=0):     -26.2325067107
+
+Test Summary:             | Pass  Total
+Pt fcc PBE Rhoe mix pulay |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = ppulay
+mixdim = 5
+Density mixing with betamix =    0.20000
+Smearing = 0.001000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1     -25.2369182957  2.52369e+01  5.40085e-02
+SCF:     2     -25.5533262062  3.16408e-01  3.19148e-02
+SCF:     3     -25.7209342177  1.67608e-01  1.77817e-02
+SCF:     4     -25.8237566323  1.02822e-01  1.24040e-02
+SCF:     5     -25.9026648648  7.89082e-02  8.48815e-03
+SCF:     6     -26.2386769359  3.36012e-01  6.11461e-03
+SCF:     7     -26.2395292121  8.52276e-04  4.39394e-04
+SCF:     8     -26.2377399806  1.78923e-03  2.91301e-04
+SCF:     9     -26.2327486661  4.99131e-03  1.99508e-04
+SCF:    10     -26.2323665864  3.82080e-04  4.84681e-05
+SCF:    11     -26.2325325889  1.66003e-04  3.32992e-05
+SCF:    12     -26.2326962132  1.63624e-04  2.12237e-05
+SCF:    13     -26.2327510418  5.48286e-05  1.64407e-06
+SCF:    14     -26.2327536183  2.57655e-06  1.09361e-06
+SCF:    15     -26.2327693428  1.57245e-05  8.40545e-07
+SCF:    16     -26.2327677103  1.63249e-06  5.81444e-07
+SCF:    17     -26.2327677127  2.39977e-09  3.87457e-07
+SCF:    18     -26.2327668338  8.78871e-07  2.59623e-07
+
+SCF is converged in iter: 18
+
+Fermi energy =      -0.0141588712 Ha =      -0.3852825095 eV
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:      19.4251358145
+Ps_loc     energy:      -3.3153666427
+Ps_nloc    energy:     -15.2401658739
+Hartree    energy:       1.9080265046
+XC         energy:      -4.5171264176
+PspCore    energy:       6.4292813721
+-TS              :      -0.0005189675
+-------------------------------------
+Electronic energy:       4.6892657895
+NN         energy:     -30.9220326233
+-------------------------------------
+Total free energy:     -26.2327668338
+
+Total energy (extrapolated to T=0):     -26.2325073501
+
+Test Summary:              | Pass  Total
+Pt fcc PBE Rhoe mix ppulay |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = rpulay
+mixdim = 5
+Density mixing with betamix =    0.20000
+Smearing = 0.001000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1     -25.2369182957  2.52369e+01  5.40085e-02
+SCF:     2     -25.7788121569  5.41894e-01  3.19148e-02
+SCF:     3     -25.9189548104  1.40143e-01  4.04200e-03
+SCF:     4     -26.2290452378  3.10090e-01  2.82265e-03
+SCF:     5     -26.2363884077  7.34317e-03  1.02724e-03
+SCF:     6     -26.2323539596  4.03445e-03  2.96513e-04
+SCF:     7     -26.2372583272  4.90437e-03  7.16025e-04
+SCF:     8     -26.2372883565  3.00293e-05  1.65303e-04
+SCF:     9     -26.2335469353  3.74142e-03  3.87454e-05
+SCF:    10     -26.2327270552  8.19880e-04  3.21498e-05
+SCF:    11     -26.2326218778  1.05177e-04  4.38754e-06
+SCF:    12     -26.2327550782  1.33200e-04  4.28836e-06
+SCF:    13     -26.2327884823  3.34041e-05  3.11512e-06
+SCF:    14     -26.2327816795  6.80275e-06  9.46993e-07
+SCF:    15     -26.2327675427  1.41368e-05  7.24059e-07
+SCF:    16     -26.2327676185  7.57649e-08  2.34924e-07
+SCF:    17     -26.2327671475  4.70933e-07  9.35921e-08
+
+SCF is converged in iter: 17
+
+Fermi energy =      -0.0141595459 Ha =      -0.3853008694 eV
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:      19.4251529405
+Ps_loc     energy:      -3.3153696726
+Ps_nloc    energy:     -15.2401834132
+Hartree    energy:       1.9080309426
+XC         energy:      -4.5171277266
+PspCore    energy:       6.4292813721
+-TS              :      -0.0005189672
+-------------------------------------
+Electronic energy:       4.6892654758
+NN         energy:     -30.9220326233
+-------------------------------------
+Total free energy:     -26.2327671475
+
+Total energy (extrapolated to T=0):     -26.2325076640
+
+Test Summary:              | Pass  Total
+Pt fcc PBE Rhoe mix rpulay |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = broyden
+mixdim = 5
+Density mixing with betamix =    0.20000
+Smearing = 0.001000
+
+-------------------------------------------------------
+       iter            E            ΔE           Δρ
+-------------------------------------------------------
+SCF:     1     -25.2369182957  2.52369e+01  5.40085e-02
+SCF:     2     -25.7787912623  5.41873e-01  3.19148e-02
+SCF:     3     -25.9189396059  1.40148e-01  4.04270e-03
+SCF:     4     -26.2289969448  3.10057e-01  2.82279e-03
+SCF:     5     -26.2360897220  7.09278e-03  1.02815e-03
+SCF:     6     -26.2327994663  3.29026e-03  2.02100e-04
+SCF:     7     -26.2337522436  9.52777e-04  5.13183e-04
+SCF:     8     -26.2326752034  1.07704e-03  1.54926e-05
+SCF:     9     -26.2328201754  1.44972e-04  1.04654e-05
+SCF:    10     -26.2328739877  5.38122e-05  8.83018e-06
+SCF:    11     -26.2327492216  1.24766e-04  5.79465e-06
+SCF:    12     -26.2327206362  2.85854e-05  4.78048e-06
+SCF:    13     -26.2327377702  1.71340e-05  5.96515e-06
+SCF:    14     -26.2327577673  1.99971e-05  3.48106e-06
+SCF:    15     -26.2327625167  4.74940e-06  7.90307e-07
+SCF:    16     -26.2327587135  3.80320e-06  7.03321e-07
+SCF:    17     -26.2327640185  5.30505e-06  8.89406e-07
+SCF:    18     -26.2327678443  3.82575e-06  2.98746e-07
+SCF:    19     -26.2327659050  1.93926e-06  1.22257e-07
+SCF:    20     -26.2327643210  1.58406e-06  5.68785e-08
+SCF:    21     -26.2327661055  1.78450e-06  1.27646e-07
+SCF:    22     -26.2327665879  4.82417e-07  1.66504e-08
+SCF:    23     -26.2327670630  4.75141e-07  1.16170e-08
+
+SCF is converged in iter: 23
+
+Fermi energy =      -0.0141599191 Ha =      -0.3853110234 eV
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:      19.4251551833
+Ps_loc     energy:      -3.3153677364
+Ps_nloc    energy:     -15.2401856281
+Hartree    energy:       1.9080282389
+XC         energy:      -4.5171269018
+PspCore    energy:       6.4292813721
+-TS              :      -0.0005189678
+-------------------------------------
+Electronic energy:       4.6892655603
+NN         energy:     -30.9220326233
+-------------------------------------
+Total free energy:     -26.2327670630
+
+Total energy (extrapolated to T=0):     -26.2325075791
+
+Test Summary:               | Pass  Total
+Pt fcc PBE Rhoe mix broyden |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = simple
+Potential mixing with betamix =    0.20000
+Smearing = 0.001000
+
+--------------------------------------------------------------
+              iter            E            ΔE           Δρ
+--------------------------------------------------------------
+SCF_potmix:     1     -25.8007803637  2.58008e+01  9.81692e-02
+SCF_potmix:     2     -26.1010124433  3.00232e-01  1.17186e-02
+SCF_potmix:     3     -26.2069937829  1.05981e-01  8.29855e-03
+SCF_potmix:     4     -26.2218840234  1.48902e-02  2.00164e-03
+SCF_potmix:     5     -26.2293162764  7.43225e-03  1.59324e-03
+SCF_potmix:     6     -26.2312927738  1.97650e-03  7.52955e-04
+SCF_potmix:     7     -26.2321363936  8.43620e-04  4.94113e-04
+SCF_potmix:     8     -26.2324824986  3.46105e-04  3.12978e-04
+SCF_potmix:     9     -26.2326427487  1.60250e-04  2.12739e-04
+SCF_potmix:    10     -26.2327063414  6.35926e-05  1.29611e-04
+SCF_potmix:    11     -26.2327377974  3.14561e-05  8.97383e-05
+SCF_potmix:    12     -26.2327509503  1.31529e-05  5.43800e-05
+SCF_potmix:    13     -26.2327581001  7.14980e-06  3.87042e-05
+SCF_potmix:    14     -26.2327616382  3.53806e-06  2.46790e-05
+SCF_potmix:    15     -26.2327637405  2.10234e-06  1.77258e-05
+SCF_potmix:    16     -26.2327649304  1.18985e-06  1.17601e-05
+SCF_potmix:    17     -26.2327656853  7.54884e-07  8.75380e-06
+SCF_potmix:    18     -26.2327661480  4.62770e-07  6.29221e-06
+SCF_potmix is converged in 18 iterations
+
+Fermi energy =      -0.0141128786 Ha =      -0.3840309876 eV
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:      19.4249287931
+Ps_loc     energy:      -3.3163394952
+Ps_nloc    energy:     -15.2392847966
+Hartree    energy:       1.9084435037
+XC         energy:      -4.5172440225
+PspCore    energy:       6.4292813721
+-TS              :      -0.0005188793
+-------------------------------------
+Electronic energy:       4.6892664753
+NN         energy:     -30.9220326233
+-------------------------------------
+Total free energy:     -26.2327661480
+
+Total energy (extrapolated to T=0):     -26.2325067084
+
+Test Summary:                   | Pass  Total
+Pt fcc PBE potential mix simple |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = linear_adaptive
+Potential mixing with betamix =    0.20000
+Smearing = 0.001000
+
+--------------------------------------------------------------
+              iter            E            ΔE           Δρ
+--------------------------------------------------------------
+SCF_potmix:     1     -25.8007803637  2.58008e+01  9.81692e-02
+SCF_potmix:     2     -26.2098090787  4.09029e-01  3.01381e-02
+SCF_potmix:     3     -26.2312055579  2.13965e-02  5.52740e-03
+SCF_potmix:     4     -26.2325753172  1.36976e-03  1.08335e-03
+SCF_potmix:     5     -26.2327027164  1.27399e-04  2.68828e-04
+SCF_potmix:     6     -26.2327457977  4.30813e-05  1.38316e-04
+SCF_potmix:     7     -26.2327541777  8.37999e-06  5.36551e-05
+SCF_potmix:     8     -26.2327602858  6.10809e-06  3.55499e-05
+SCF_potmix:     9     -26.2327622309  1.94511e-06  1.25049e-05
+SCF_potmix:    10     -26.2327641391  1.90817e-06  1.29889e-05
+SCF_potmix:    11     -26.2327650483  9.09240e-07  6.19431e-06
+SCF_potmix:    12     -26.2327657649  7.16514e-07  6.98320e-06
+SCF_potmix is converged in 12 iterations
+
+Fermi energy =      -0.0141681297 Ha =      -0.3855344477 eV
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:      19.4263711645
+Ps_loc     energy:      -3.3157048380
+Ps_nloc    energy:     -15.2415233497
+Hartree    energy:       1.9085886768
+XC         energy:      -4.5172282761
+PspCore    energy:       6.4292813721
+-TS              :      -0.0005178912
+-------------------------------------
+Electronic energy:       4.6892668585
+NN         energy:     -30.9220326233
+-------------------------------------
+Total free energy:     -26.2327657649
+
+Total energy (extrapolated to T=0):     -26.2325068193
+
+Test Summary:                            | Pass  Total
+Pt fcc PBE potential mix linear_adaptive |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = broyden
+mixdim = 5
+Potential mixing with betamix =    0.20000
+Smearing = 0.001000
+
+--------------------------------------------------------------
+              iter            E            ΔE           Δρ
+--------------------------------------------------------------
+SCF_potmix:     1     -25.8007803637  2.58008e+01  9.81692e-02
+SCF_potmix:     2     -26.0970751766  2.96295e-01  3.89285e-02
+SCF_potmix:     3     -26.2311193631  1.34044e-01  1.21392e-02
+SCF_potmix:     4     -26.2326197779  1.50041e-03  1.53450e-03
+SCF_potmix:     5     -26.2327398838  1.20106e-04  1.51207e-04
+SCF_potmix:     6     -26.2327625046  2.26207e-05  1.35533e-04
+SCF_potmix:     7     -26.2327656811  3.17655e-06  2.45263e-05
+SCF_potmix:     8     -26.2327665502  8.69043e-07  1.21776e-05
+SCF_potmix:     9     -26.2327667710  2.20791e-07  2.10356e-06
+SCF_potmix is converged in 9 iterations
+
+Fermi energy =      -0.0140833526 Ha =      -0.3832275436 eV
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:      19.4232436420
+Ps_loc     energy:      -3.3149090489
+Ps_nloc    energy:     -15.2382776744
+Hartree    energy:       1.9073932034
+XC         energy:      -4.5169466752
+PspCore    energy:       6.4292813721
+-TS              :      -0.0005189667
+-------------------------------------
+Electronic energy:       4.6892658523
+NN         energy:     -30.9220326233
+-------------------------------------
+Total free energy:     -26.2327667710
+
+Total energy (extrapolated to T=0):     -26.2325072876
+
+Test Summary:                    | Pass  Total
+Pt fcc PBE potential mix broyden |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = simple
+Density mixing with betamix =    0.50000
+Smearing = 0.001000
+
+Initial integ Rhoe up  =      12.0000000000
+Initial integ Rhoe dn  =       4.0000000000
+Initial integ magn_den =       8.0000000000
+
+----------------------------------------------------------------------
+       iter            E            ΔE                  Δρ
+----------------------------------------------------------------------
+SCF:     1    -131.7773457599  1.31777e+02 [ 1.24431e-01, 4.74405e-02]
+SCF:     2    -119.8871445183  1.18902e+01 [ 3.06445e-02, 2.04108e-02]
+SCF:     3    -117.0394813515  2.84766e+00 [ 1.08325e-02, 1.05276e-02]
+SCF:     4    -116.7028627361  3.36619e-01 [ 5.52212e-03, 5.49485e-03]
+SCF:     5    -116.6073304826  9.55323e-02 [ 2.94515e-03, 2.84158e-03]
+SCF:     6    -116.5726727099  3.46578e-02 [ 1.60872e-03, 1.49354e-03]
+SCF:     7    -116.5537555205  1.89172e-02 [ 8.77202e-04, 7.99641e-04]
+SCF:     8    -116.5482752839  5.48024e-03 [ 4.92053e-04, 4.32577e-04]
+SCF:     9    -116.5443781989  3.89709e-03 [ 2.75399e-04, 2.43301e-04]
+SCF:    10    -116.5435222080  8.55991e-04 [ 1.59737e-04, 1.36008e-04]
+SCF:    11    -116.5426709194  8.51289e-04 [ 9.15651e-05, 7.96884e-05]
+SCF:    12    -116.5425027287  1.68191e-04 [ 5.38070e-05, 4.58839e-05]
+SCF:    13    -116.5423004054  2.02323e-04 [ 3.12531e-05, 2.74319e-05]
+SCF:    14    -116.5422596439  4.07615e-05 [ 1.85258e-05, 1.61069e-05]
+SCF:    15    -116.5422059202  5.37237e-05 [ 1.08881e-05, 9.72434e-06]
+SCF:    16    -116.5421946292  1.12910e-05 [ 6.51035e-06, 5.78556e-06]
+SCF:    17    -116.5421789194  1.57098e-05 [ 3.86303e-06, 3.52327e-06]
+SCF:    18    -116.5421753573  3.56210e-06 [ 2.32686e-06, 2.11722e-06]
+SCF:    19    -116.5421704467  4.91051e-06 [ 1.39251e-06, 1.29556e-06]
+SCF:    20    -116.5421692000  1.24676e-06 [ 8.43870e-07, 7.83993e-07]
+SCF:    21    -116.5421675671  1.63287e-06 [ 5.08709e-07, 4.81302e-07]
+SCF:    22    -116.5421671291  4.38018e-07 [ 3.09855e-07, 2.92770e-07]
+SCF:    23    -116.5421665525  5.76621e-07 [ 1.87858e-07, 1.80209e-07]
+
+SCF is converged in iter: 23
+
+Fermi energy =       0.7126376153 Ha =      19.3918572408 eV
+
+Final integ Rhoe up  =       8.7407411075
+Final integ Rhoe dn  =       7.2592588925
+Final integ magn_den =       1.4814822151
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:      43.2335380008
+Ps_loc     energy:     -80.3420062046
+Ps_nloc    energy:      -5.4521230945
+Hartree    energy:      20.0934083433
+XC         energy:     -11.3244413241
+PspCore    energy:       3.5600194021
+-TS              :      -0.0002241263
+-------------------------------------
+Electronic energy:     -30.2318290034
+NN         energy:     -86.3103375491
+-------------------------------------
+Total free energy:    -116.5421665525
+
+Total energy (extrapolated to T=0):    -116.5420544893
+
+Test Summary:                      | Pass  Total
+Fe bcc PBE spinpol Rhoe mix simple |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = anderson
+mixdim = 5
+Density mixing with betamix =    0.20000
+Smearing = 0.001000
+
+Initial integ Rhoe up  =      12.0000000000
+Initial integ Rhoe dn  =       4.0000000000
+Initial integ magn_den =       8.0000000000
+
+----------------------------------------------------------------------
+       iter            E            ΔE                  Δρ
+----------------------------------------------------------------------
+SCF:     1    -140.8714138594  1.40871e+02 [ 1.24431e-01, 4.74405e-02]
+SCF:     2    -121.1803184307  1.96911e+01 [ 8.98996e-02, 3.78431e-02]
+SCF:     3    -109.7821529253  1.13982e+01 [ 2.73943e-02, 2.40770e-02]
+SCF:     4    -113.4945608551  3.71241e+00 [ 1.65192e-02, 1.69665e-02]
+SCF:     5    -116.6329839592  3.13842e+00 [ 4.92403e-03, 5.48829e-03]
+SCF:     6    -117.2068363060  5.73852e-01 [ 5.03641e-03, 3.73150e-03]
+SCF:     7    -116.9113222974  2.95514e-01 [ 4.09346e-03, 2.84030e-03]
+SCF:     8    -116.5846560624  3.26666e-01 [ 5.41021e-04, 6.49004e-04]
+SCF:     9    -116.5609633774  2.36927e-02 [ 5.92205e-04, 6.01673e-04]
+SCF:    10    -116.5376333617  2.33300e-02 [ 1.26616e-04, 1.15914e-04]
+SCF:    11    -116.5406725953  3.03923e-03 [ 3.89136e-05, 3.83789e-05]
+SCF:    12    -116.5435033831  2.83079e-03 [ 3.39994e-05, 3.19344e-05]
+SCF:    13    -116.5432034597  2.99923e-04 [ 6.62386e-06, 1.63758e-05]
+SCF:    14    -116.5415765606  1.62690e-03 [ 1.04840e-05, 1.14130e-05]
+SCF:    15    -116.5415600036  1.65570e-05 [ 1.02974e-06, 4.23249e-06]
+SCF:    16    -116.5419637993  4.03796e-04 [ 9.99202e-07, 3.07237e-06]
+SCF:    17    -116.5420577586  9.39592e-05 [ 1.14086e-06, 1.04981e-06]
+SCF:    18    -116.5421353028  7.75443e-05 [ 6.15804e-07, 9.98497e-07]
+SCF:    19    -116.5422968809  1.61578e-04 [ 6.25516e-07, 4.04920e-07]
+SCF:    20    -116.5422356221  6.12588e-05 [ 5.84209e-07, 1.45514e-07]
+SCF:    21    -116.5421776687  5.79534e-05 [ 5.82342e-08, 3.80053e-08]
+SCF:    22    -116.5421684464  9.22225e-06 [ 2.24624e-08, 2.14500e-08]
+SCF:    23    -116.5421672990  1.14745e-06 [ 1.72054e-08, 1.76367e-08]
+SCF:    24    -116.5421661025  1.19644e-06 [ 1.32059e-08, 1.42197e-08]
+SCF:    25    -116.5421655581  5.44425e-07 [ 7.39967e-09, 5.55403e-09]
+SCF:    26    -116.5421660506  4.92495e-07 [ 2.79128e-09, 4.07378e-09]
+
+SCF is converged in iter: 26
+
+Fermi energy =       0.7126378235 Ha =      19.3918629055 eV
+
+Final integ Rhoe up  =       8.7407407294
+Final integ Rhoe dn  =       7.2592592706
+Final integ magn_den =       1.4814814587
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:      43.2335374463
+Ps_loc     energy:     -80.3420051395
+Ps_nloc    energy:      -5.4521229849
+Hartree    energy:      20.0934078194
+XC         energy:     -11.3244409185
+PspCore    energy:       3.5600194021
+-TS              :      -0.0002241263
+-------------------------------------
+Electronic energy:     -30.2318285015
+NN         energy:     -86.3103375491
+-------------------------------------
+Total free energy:    -116.5421660506
+
+Total energy (extrapolated to T=0):    -116.5420539875
+
+Test Summary:                        | Pass  Total
+Fe bcc PBE spinpol Rhoe mix anderson |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = pulay
+Density mixing with betamix =    0.20000
+Smearing = 0.001000
+
+Initial integ Rhoe up  =      12.0000000000
+Initial integ Rhoe dn  =       4.0000000000
+Initial integ magn_den =       8.0000000000
+
+----------------------------------------------------------------------
+       iter            E            ΔE                  Δρ
+----------------------------------------------------------------------
+SCF:     1    -140.8714138594  1.40871e+02 [ 1.24431e-01, 4.74405e-02]
+SCF:     2    -134.2265926867  6.64482e+00 [ 8.98996e-02, 3.78431e-02]
+SCF:     3    -128.9126196888  5.31397e+00 [ 6.25696e-02, 2.97789e-02]
+SCF:     4    -124.8797116517  4.03291e+00 [ 4.28290e-02, 2.11833e-02]
+SCF:     5    -122.1386436270  2.74107e+00 [ 2.97793e-02, 1.67149e-02]
+SCF:     6    -118.5720426903  3.56660e+00 [ 2.10129e-02, 1.32213e-02]
+SCF:     7    -116.7522070933  1.81984e+00 [ 3.15793e-03, 8.63945e-04]
+SCF:     8    -116.5387055761  2.13502e-01 [ 1.19772e-03, 8.11367e-04]
+SCF:     9    -116.5326188873  6.08669e-03 [ 7.49040e-04, 5.77747e-04]
+SCF:    10    -116.5012947333  3.13242e-02 [ 5.48214e-04, 4.55962e-04]
+SCF:    11    -116.5374082281  3.61135e-02 [ 5.38548e-05, 3.81529e-05]
+SCF:    12    -116.5411637701  3.75554e-03 [ 4.09140e-05, 2.48184e-05]
+SCF:    13    -116.5398498418  1.31393e-03 [ 1.01705e-05, 1.53286e-05]
+SCF:    14    -116.5415870856  1.73724e-03 [ 3.72877e-06, 5.69244e-06]
+SCF:    15    -116.5422183306  6.31245e-04 [ 1.95721e-06, 2.66093e-06]
+SCF:    16    -116.5420640712  1.54259e-04 [ 1.21586e-06, 2.14695e-06]
+SCF:    17    -116.5421104221  4.63509e-05 [ 7.14702e-07, 1.04562e-06]
+SCF:    18    -116.5421077122  2.70993e-06 [ 6.40296e-07, 6.50287e-07]
+SCF:    19    -116.5421071296  5.82579e-07 [ 1.95802e-07, 6.03174e-07]
+SCF:    20    -116.5421521671  4.50375e-05 [ 2.69710e-07, 3.17253e-07]
+SCF:    21    -116.5421614145  9.24742e-06 [ 2.91636e-07, 1.99547e-07]
+SCF:    22    -116.5421696719  8.25740e-06 [ 1.01923e-07, 8.93453e-08]
+SCF:    23    -116.5421716333  1.96139e-06 [ 8.26309e-08, 5.39649e-08]
+SCF:    24    -116.5421615220  1.01113e-05 [ 4.07823e-08, 4.94729e-08]
+SCF:    25    -116.5421631190  1.59702e-06 [ 1.76846e-08, 1.71519e-08]
+SCF:    26    -116.5421659776  2.85855e-06 [ 5.38435e-09, 5.49764e-09]
+SCF:    27    -116.5421663651  3.87551e-07 [ 5.67549e-09, 7.61063e-10]
+SCF:    28    -116.5421660603  3.04836e-07 [ 1.99417e-09, 3.70822e-10]
+
+SCF is converged in iter: 28
+
+Fermi energy =       0.7126378343 Ha =      19.3918631992 eV
+
+Final integ Rhoe up  =       8.7407407389
+Final integ Rhoe dn  =       7.2592592611
+Final integ magn_den =       1.4814814777
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:      43.2335373129
+Ps_loc     energy:     -80.3420049609
+Ps_nloc    energy:      -5.4521229617
+Hartree    energy:      20.0934077162
+XC         energy:     -11.3244408934
+PspCore    energy:       3.5600194021
+-TS              :      -0.0002241263
+-------------------------------------
+Electronic energy:     -30.2318285112
+NN         energy:     -86.3103375491
+-------------------------------------
+Total free energy:    -116.5421660603
+
+Total energy (extrapolated to T=0):    -116.5420539971
+
+Test Summary:                     | Pass  Total
+Fe bcc PBE spinpol Rhoe mix pulay |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = ppulay
+mixdim = 5
+Density mixing with betamix =    0.20000
+Smearing = 0.001000
+
+Initial integ Rhoe up  =      12.0000000000
+Initial integ Rhoe dn  =       4.0000000000
+Initial integ magn_den =       8.0000000000
+
+----------------------------------------------------------------------
+       iter            E            ΔE                  Δρ
+----------------------------------------------------------------------
+SCF:     1    -140.8714138594  1.40871e+02 [ 1.24431e-01, 4.74405e-02]
+SCF:     2    -134.2265926867  6.64482e+00 [ 8.98996e-02, 3.78431e-02]
+SCF:     3    -128.9126196888  5.31397e+00 [ 6.25696e-02, 2.97789e-02]
+SCF:     4    -124.8797116517  4.03291e+00 [ 4.28290e-02, 2.11833e-02]
+SCF:     5    -122.1386436270  2.74107e+00 [ 2.97793e-02, 1.67149e-02]
+SCF:     6    -118.5720426903  3.56660e+00 [ 2.10129e-02, 1.32213e-02]
+SCF:     7    -116.9571717008  1.61487e+00 [ 3.15793e-03, 8.63945e-04]
+SCF:     8    -116.7945131579  1.62659e-01 [ 2.21985e-03, 6.68318e-04]
+SCF:     9    -116.6747639009  1.19749e-01 [ 1.60175e-03, 5.50123e-04]
+SCF:    10    -116.5900844806  8.46794e-02 [ 1.48257e-04, 1.07561e-04]
+SCF:    11    -116.5724353210  1.76492e-02 [ 9.49673e-05, 8.47814e-05]
+SCF:    12    -116.5509121777  2.15231e-02 [ 5.74555e-05, 7.90733e-05]
+SCF:    13    -116.5433985717  7.51361e-03 [ 1.36476e-05, 1.20253e-05]
+SCF:    14    -116.5425589038  8.39668e-04 [ 8.52527e-06, 8.20457e-06]
+SCF:    15    -116.5428711591  3.12255e-04 [ 6.21180e-06, 5.17787e-06]
+SCF:    16    -116.5428638078  7.35126e-06 [ 1.27098e-06, 3.02846e-06]
+SCF:    17    -116.5425832878  2.80520e-04 [ 6.05718e-07, 1.97061e-06]
+SCF:    18    -116.5422325970  3.50691e-04 [ 5.46721e-07, 1.40219e-06]
+SCF:    19    -116.5420540419  1.78555e-04 [ 5.79355e-07, 1.71471e-07]
+SCF:    20    -116.5420887883  3.47464e-05 [ 4.08112e-07, 1.35376e-07]
+SCF:    21    -116.5421374410  4.86528e-05 [ 2.86796e-07, 1.32823e-07]
+SCF:    22    -116.5421619299  2.44889e-05 [ 1.57637e-08, 2.92138e-08]
+SCF:    23    -116.5421639633  2.03339e-06 [ 1.75283e-08, 2.34693e-08]
+SCF:    24    -116.5421642785  3.15169e-07 [ 1.63396e-08, 1.68531e-08]
+SCF:    25    -116.5421642995  2.10334e-08 [ 4.63536e-09, 5.25038e-09]
+
+SCF is converged in iter: 25
+
+Fermi energy =       0.7126377900 Ha =      19.3918619940 eV
+
+Final integ Rhoe up  =       8.7407407457
+Final integ Rhoe dn  =       7.2592592543
+Final integ magn_den =       1.4814814914
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:      43.2335385214
+Ps_loc     energy:     -80.3420038263
+Ps_nloc    energy:      -5.4521230910
+Hartree    energy:      20.0934071889
+XC         energy:     -11.3244408192
+PspCore    energy:       3.5600194021
+-TS              :      -0.0002241263
+-------------------------------------
+Electronic energy:     -30.2318267504
+NN         energy:     -86.3103375491
+-------------------------------------
+Total free energy:    -116.5421642995
+
+Total energy (extrapolated to T=0):    -116.5420522363
+
+Test Summary:                      | Pass  Total
+Fe bcc PBE spinpol Rhoe mix ppulay |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = rpulay
+mixdim = 5
+Density mixing with betamix =    0.20000
+Smearing = 0.001000
+
+Initial integ Rhoe up  =      12.0000000000
+Initial integ Rhoe dn  =       4.0000000000
+Initial integ magn_den =       8.0000000000
+
+----------------------------------------------------------------------
+       iter            E            ΔE                  Δρ
+----------------------------------------------------------------------
+SCF:     1    -140.8714138594  1.40871e+02 [ 1.24431e-01, 4.74405e-02]
+SCF:     2    -121.1803184307  1.96911e+01 [ 8.98996e-02, 3.78431e-02]
+SCF:     3    -109.7821529253  1.13982e+01 [ 2.73943e-02, 2.40770e-02]
+SCF:     4    -113.4945608551  3.71241e+00 [ 1.65192e-02, 1.69665e-02]
+SCF:     5    -116.6329839592  3.13842e+00 [ 4.92403e-03, 5.48829e-03]
+SCF:     6    -117.2068363059  5.73852e-01 [ 5.03641e-03, 3.73150e-03]
+SCF:     7    -116.6808314068  5.26005e-01 [ 4.09346e-03, 2.84030e-03]
+SCF:     8    -116.2567600825  4.24071e-01 [ 2.31958e-03, 1.83979e-03]
+SCF:     9    -116.4535374684  1.96777e-01 [ 1.84283e-03, 1.43133e-03]
+SCF:    10    -116.5667611625  1.13224e-01 [ 2.33306e-04, 2.47902e-04]
+SCF:    11    -116.5524173271  1.43438e-02 [ 1.20746e-04, 8.16693e-05]
+SCF:    12    -116.5357812305  1.66361e-02 [ 1.16610e-05, 3.72239e-05]
+SCF:    13    -116.5368696683  1.08844e-03 [ 2.58537e-05, 2.27468e-05]
+SCF:    14    -116.5405262898  3.65662e-03 [ 7.12059e-06, 9.15454e-06]
+SCF:    15    -116.5415195588  9.93269e-04 [ 5.22211e-06, 6.17958e-06]
+SCF:    16    -116.5420252338  5.05675e-04 [ 1.01274e-06, 1.41112e-06]
+SCF:    17    -116.5421075734  8.23396e-05 [ 8.44962e-07, 5.93891e-07]
+SCF:    18    -116.5420723021  3.52714e-05 [ 7.39125e-07, 5.04911e-07]
+SCF:    19    -116.5421528427  8.05406e-05 [ 1.08865e-07, 1.38224e-07]
+SCF:    20    -116.5421692268  1.63841e-05 [ 5.07202e-08, 7.83973e-08]
+SCF:    21    -116.5421629006  6.32623e-06 [ 4.01476e-08, 6.30110e-08]
+SCF:    22    -116.5421639801  1.07953e-06 [ 1.33005e-08, 1.61792e-08]
+SCF:    23    -116.5421675048  3.52469e-06 [ 1.08902e-08, 2.37509e-09]
+SCF:    24    -116.5421670370  4.67819e-07 [ 1.12042e-08, 2.70025e-09]
+SCF:    25    -116.5421661943  8.42680e-07 [ 2.20113e-09, 8.04968e-10]
+
+SCF is converged in iter: 25
+
+Fermi energy =       0.7126378396 Ha =      19.3918633442 eV
+
+Final integ Rhoe up  =       8.7407407074
+Final integ Rhoe dn  =       7.2592592926
+Final integ magn_den =       1.4814814148
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:      43.2335371765
+Ps_loc     energy:     -80.3420050230
+Ps_nloc    energy:      -5.4521229465
+Hartree    energy:      20.0934077682
+XC         energy:     -11.3244408961
+PspCore    energy:       3.5600194021
+-TS              :      -0.0002241263
+-------------------------------------
+Electronic energy:     -30.2318286452
+NN         energy:     -86.3103375491
+-------------------------------------
+Total free energy:    -116.5421661943
+
+Total energy (extrapolated to T=0):    -116.5420541311
+
+Test Summary:                      | Pass  Total
+Fe bcc PBE spinpol Rhoe mix rpulay |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = broyden
+mixdim = 5
+Density mixing with betamix =    0.20000
+Smearing = 0.001000
+
+Initial integ Rhoe up  =      12.0000000000
+Initial integ Rhoe dn  =       4.0000000000
+Initial integ magn_den =       8.0000000000
+
+----------------------------------------------------------------------
+       iter            E            ΔE                  Δρ
+----------------------------------------------------------------------
+SCF:     1    -140.8714138594  1.40871e+02 [ 1.24431e-01, 4.74405e-02]
+SCF:     2    -121.1817538200  1.96897e+01 [ 8.98996e-02, 3.78431e-02]
+SCF:     3    -109.7926739958  1.13891e+01 [ 2.73876e-02, 2.40728e-02]
+SCF:     4    -113.4980681907  3.70539e+00 [ 1.64688e-02, 1.69315e-02]
+SCF:     5    -116.6209277568  3.12286e+00 [ 4.92283e-03, 5.49859e-03]
+SCF:     6    -117.1978167750  5.76889e-01 [ 4.99861e-03, 3.72553e-03]
+SCF:     7    -116.9078963895  2.89920e-01 [ 4.06658e-03, 2.82504e-03]
+SCF:     8    -116.5839434753  3.23953e-01 [ 5.35187e-04, 6.47036e-04]
+SCF:     9    -116.5608198707  2.31236e-02 [ 5.84202e-04, 5.96719e-04]
+SCF:    10    -116.5381803717  2.26395e-02 [ 1.23984e-04, 1.13163e-04]
+SCF:    11    -116.5408624397  2.68207e-03 [ 3.95360e-05, 3.78014e-05]
+SCF:    12    -116.5434989666  2.63653e-03 [ 3.39801e-05, 3.16053e-05]
+SCF:    13    -116.5437375236  2.38557e-04 [ 6.37238e-06, 1.57216e-05]
+SCF:    14    -116.5417932544  1.94427e-03 [ 9.51216e-06, 6.73660e-06]
+SCF:    15    -116.5412809351  5.12319e-04 [ 1.29012e-06, 6.02997e-06]
+SCF:    16    -116.5416618388  3.80904e-04 [ 9.83580e-07, 3.84418e-06]
+SCF:    17    -116.5419880745  3.26236e-04 [ 9.56033e-07, 2.48092e-06]
+SCF:    18    -116.5421668726  1.78798e-04 [ 4.32015e-07, 1.10543e-06]
+SCF:    19    -116.5422023043  3.54317e-05 [ 2.11522e-07, 2.22592e-07]
+SCF:    20    -116.5421363934  6.59109e-05 [ 1.52710e-07, 1.44036e-07]
+SCF:    21    -116.5421279236  8.46982e-06 [ 4.13068e-07, 1.04179e-07]
+SCF:    22    -116.5421616479  3.37243e-05 [ 8.98679e-08, 6.95985e-08]
+SCF:    23    -116.5421614419  2.06079e-07 [ 5.36586e-08, 6.01952e-08]
+SCF:    24    -116.5421616233  1.81432e-07 [ 2.88160e-08, 1.72091e-08]
+
+SCF is converged in iter: 24
+
+Fermi energy =       0.7126377115 Ha =      19.3918598582 eV
+
+Final integ Rhoe up  =       8.7407413223
+Final integ Rhoe dn  =       7.2592586777
+Final integ magn_den =       1.4814826446
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:      43.2335405417
+Ps_loc     energy:     -80.3420026732
+Ps_nloc    energy:      -5.4521232722
+Hartree    energy:      20.0934068334
+XC         energy:     -11.3244407797
+PspCore    energy:       3.5600194021
+-TS              :      -0.0002241263
+-------------------------------------
+Electronic energy:     -30.2318240742
+NN         energy:     -86.3103375491
+-------------------------------------
+Total free energy:    -116.5421616233
+
+Total energy (extrapolated to T=0):    -116.5420495601
+
+Test Summary:                       | Pass  Total
+Fe bcc PBE spinpol Rhoe mix broyden |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = simple
+Potential mixing with betamix =    0.20000
+Smearing = 0.001000
+
+Initial integ Rhoe up  =      12.0000000000
+Initial integ Rhoe dn  =       4.0000000000
+Initial integ magn_den =       8.0000000000
+
+----------------------------------------------------------------------------
+              iter            E            ΔE                  Δρ
+----------------------------------------------------------------------------
+SCF_potmix:     1    -113.1120629991  1.13112e+02 [ 1.08841e-01, 9.47126e-02]
+SCF_potmix:     2    -114.8908536592  1.77879e+00 [ 1.07461e-02, 6.33388e-03]
+SCF_potmix:     3    -115.7913162377  9.00463e-01 [ 9.37990e-03, 5.65901e-03]
+SCF_potmix:     4    -116.2179153633  4.26599e-01 [ 6.73804e-03, 4.40727e-03]
+SCF_potmix:     5    -116.4038679372  1.85953e-01 [ 4.29863e-03, 2.81842e-03]
+SCF_potmix:     6    -116.4839491710  8.00812e-02 [ 2.70349e-03, 2.02454e-03]
+SCF_potmix:     7    -116.5177926976  3.38435e-02 [ 1.70198e-03, 1.38722e-03]
+SCF_potmix:     8    -116.5318239535  1.40313e-02 [ 1.03865e-03, 9.16508e-04]
+SCF_potmix:     9    -116.5376317384  5.80778e-03 [ 6.13909e-04, 5.93703e-04]
+SCF_potmix:    10    -116.5400735945  2.44186e-03 [ 3.50735e-04, 3.83018e-04]
+SCF_potmix:    11    -116.5411373051  1.06371e-03 [ 1.91059e-04, 2.47536e-04]
+SCF_potmix:    12    -116.5416303243  4.93019e-04 [ 1.04675e-04, 1.63531e-04]
+SCF_potmix:    13    -116.5418738797  2.43555e-04 [ 5.35675e-05, 1.09562e-04]
+SCF_potmix:    14    -116.5419984262  1.24547e-04 [ 3.64175e-05, 7.48737e-05]
+SCF_potmix:    15    -116.5420662148  6.77886e-05 [ 3.07507e-05, 5.36220e-05]
+SCF_potmix:    16    -116.5421050762  3.88614e-05 [ 2.80643e-05, 3.85178e-05]
+SCF_potmix:    17    -116.5421281421  2.30659e-05 [ 2.55513e-05, 2.92994e-05]
+SCF_potmix:    18    -116.5421420760  1.39339e-05 [ 2.31167e-05, 2.14657e-05]
+SCF_potmix:    19    -116.5421508065  8.73051e-06 [ 2.01506e-05, 1.72474e-05]
+SCF_potmix:    20    -116.5421562497  5.44323e-06 [ 1.71927e-05, 1.30195e-05]
+SCF_potmix:    21    -116.5421597121  3.46240e-06 [ 1.43589e-05, 1.07406e-05]
+SCF_potmix:    22    -116.5421618943  2.18215e-06 [ 1.19538e-05, 8.35990e-06]
+SCF_potmix:    23    -116.5421633254  1.43110e-06 [ 9.93585e-06, 7.04367e-06]
+SCF_potmix:    24    -116.5421642293  9.03963e-07 [ 8.19855e-06, 5.57631e-06]
+SCF_potmix:    25    -116.5421648222  5.92871e-07 [ 6.76087e-06, 4.75247e-06]
+SCF_potmix is converged in 25 iterations
+
+Fermi energy =       0.7126908947 Ha =      19.3933070475 eV
+
+Final integ Rhoe up  =       8.7407407403
+Final integ Rhoe dn  =       7.2592592597
+Final integ magn_den =       1.4814814806
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:      43.2325679861
+Ps_loc     energy:     -80.3403841953
+Ps_nloc    energy:      -5.4526077425
+Hartree    energy:      20.0932151523
+XC         energy:     -11.3244137114
+PspCore    energy:       3.5600194021
+-TS              :      -0.0002241644
+-------------------------------------
+Electronic energy:     -30.2318272731
+NN         energy:     -86.3103375491
+-------------------------------------
+Total free energy:    -116.5421648222
+
+Total energy (extrapolated to T=0):    -116.5420527400
+
+Test Summary:                           | Pass  Total
+Fe bcc PBE spinpol potential mix simple |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = linear_adaptive
+Potential mixing with betamix =    0.20000
+Smearing = 0.001000
+
+Initial integ Rhoe up  =      12.0000000000
+Initial integ Rhoe dn  =       4.0000000000
+Initial integ magn_den =       8.0000000000
+
+----------------------------------------------------------------------------
+              iter            E            ΔE                  Δρ
+----------------------------------------------------------------------------
+SCF_potmix:     1    -113.1120629991  1.13112e+02 [ 1.08841e-01, 9.47126e-02]
+SCF_potmix:     2    -116.4996525103  3.38759e+00 [ 4.37845e-02, 2.67868e-02]
+SCF_potmix:     3    -116.5375369293  3.78844e-02 [ 7.82443e-03, 5.80257e-03]
+SCF_potmix:     4    -116.5398228935  2.28596e-03 [ 1.71152e-03, 1.82132e-03]
+SCF_potmix:     5    -116.5416142410  1.79135e-03 [ 8.80774e-04, 6.25886e-04]
+SCF_potmix:     6    -116.5416770443  6.28032e-05 [ 1.53688e-04, 2.37990e-04]
+SCF_potmix:     7    -116.5419079255  2.30881e-04 [ 1.94454e-04, 1.30072e-04]
+SCF_potmix:     8    -116.5419691165  6.11909e-05 [ 9.85525e-06, 5.56701e-05]
+SCF_potmix:     9    -116.5420454302  7.63137e-05 [ 8.22216e-05, 5.45813e-05]
+SCF_potmix:    10    -116.5420868876  4.14574e-05 [ 4.35242e-05, 3.72317e-05]
+SCF_potmix:    11    -116.5421165423  2.96548e-05 [ 4.45172e-05, 3.29115e-05]
+SCF_potmix:    12    -116.5421349879  1.84455e-05 [ 3.62672e-05, 2.53455e-05]
+SCF_potmix:    13    -116.5421465203  1.15325e-05 [ 2.82945e-05, 2.00894e-05]
+SCF_potmix:    14    -116.5421535957  7.07538e-06 [ 2.12946e-05, 1.52938e-05]
+SCF_potmix:    15    -116.5421580101  4.41438e-06 [ 1.58147e-05, 1.19513e-05]
+SCF_potmix:    16    -116.5421608649  2.85479e-06 [ 1.23909e-05, 9.40189e-06]
+SCF_potmix:    17    -116.5421626498  1.78492e-06 [ 9.40412e-06, 7.49702e-06]
+SCF_potmix:    18    -116.5421638133  1.16354e-06 [ 7.50025e-06, 6.03506e-06]
+SCF_potmix:    19    -116.5421645667  7.53342e-07 [ 5.83187e-06, 4.84797e-06]
+SCF_potmix:    20    -116.5421650528  4.86087e-07 [ 4.69911e-06, 3.96967e-06]
+SCF_potmix is converged in 20 iterations
+
+Fermi energy =       0.7128801648 Ha =      19.3984573501 eV
+
+Final integ Rhoe up  =       8.7407407406
+Final integ Rhoe dn  =       7.2592592594
+Final integ magn_den =       1.4814814812
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:      43.2328233248
+Ps_loc     energy:     -80.3410893110
+Ps_nloc    energy:      -5.4524072677
+Hartree    energy:      20.0934353789
+XC         energy:     -11.3243848612
+PspCore    energy:       3.5600194021
+-TS              :      -0.0002241695
+-------------------------------------
+Electronic energy:     -30.2318275037
+NN         energy:     -86.3103375491
+-------------------------------------
+Total free energy:    -116.5421650528
+
+Total energy (extrapolated to T=0):    -116.5420529680
+
+Test Summary:                                    | Pass  Total
+Fe bcc PBE spinpol potential mix linear_adaptive |    1      1
+
+Self-consistent iteration begins ...
+update_psi = LOBPCG
+mix_method = broyden
+mixdim = 5
+Potential mixing with betamix =    0.20000
+Smearing = 0.001000
+
+Initial integ Rhoe up  =      12.0000000000
+Initial integ Rhoe dn  =       4.0000000000
+Initial integ magn_den =       8.0000000000
+
+----------------------------------------------------------------------------
+              iter            E            ΔE                  Δρ
+----------------------------------------------------------------------------
+SCF_potmix:     1    -113.1120629991  1.13112e+02 [ 1.08841e-01, 9.47126e-02]
+SCF_potmix:     2    -115.5789893453  2.46693e+00 [ 6.33453e-02, 4.04094e-02]
+SCF_potmix:     3    -116.5286256064  9.49636e-01 [ 2.82518e-02, 1.82110e-02]
+SCF_potmix:     4    -116.5417764994  1.31509e-02 [ 2.19571e-03, 1.78623e-03]
+SCF_potmix:     5    -116.5421268593  3.50360e-04 [ 2.01561e-04, 2.54350e-04]
+SCF_potmix:     6    -116.5421560109  2.91516e-05 [ 7.53462e-05, 5.01521e-05]
+SCF_potmix:     7    -116.5421623781  6.36714e-06 [ 5.89338e-05, 8.80253e-05]
+SCF_potmix:     8    -116.5421653385  2.96041e-06 [ 6.68023e-05, 3.45304e-05]
+SCF_potmix:     9    -116.5421659577  6.19191e-07 [ 1.35813e-05, 1.67836e-05]
+SCF_potmix:    10    -116.5421659924  3.47711e-08 [ 2.43783e-06, 1.56214e-06]
+SCF_potmix is converged in 10 iterations
+
+Fermi energy =       0.7126553568 Ha =      19.3923400103 eV
+
+Final integ Rhoe up  =       8.7407407389
+Final integ Rhoe dn  =       7.2592592611
+Final integ magn_den =       1.4814814777
+
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:      43.2331622774
+Ps_loc     energy:     -80.3414242559
+Ps_nloc    energy:      -5.4520728996
+Hartree    energy:      20.0931081311
+XC         energy:     -11.3243969716
+PspCore    energy:       3.5600194021
+-TS              :      -0.0002241268
+-------------------------------------
+Electronic energy:     -30.2318284433
+NN         energy:     -86.3103375491
+-------------------------------------
+Total free energy:    -116.5421659924
+
+Total energy (extrapolated to T=0):    -116.5420539291
+
+Test Summary:                            | Pass  Total
+Fe bcc PBE spinpol potential mix broyden |    1      1
+
+All test successfully run
+
