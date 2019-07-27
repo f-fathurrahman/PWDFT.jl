@@ -284,6 +284,8 @@ Articles:
 - Sohrab Ismail-Beigi and T.A. Arias. New algebraic formulation of density functional calculation.
   *Comp. Phys. Comm.* **128**, 1-45 (2000)
 
+- C. Yang, J. C. Meza, B. Lee, L.-W. Wang, KSSOLV - a MATLAB toolbox for solving the
+  Kohn-Sham equations, *ACM Trans. Math. Softw.* **36**, 1–35 (2009)
 
 Books:
 
