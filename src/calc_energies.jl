@@ -47,23 +47,36 @@ function calc_E_Ps_nloc( Ham::Hamiltonian, psiks::BlochWavefunc )
 
 end
 
+# Calculate Ps loc, Hartree, and XC components of total energy
+function calc_E_local( Ham::Hamiltonian )
 
-#
-# psi is assumed to be already orthonormalized elsewhere
-# `potentials` and `Rhoe` are not updated
-# Ham is assumed to be already updated at input psi
-#
-# Ham.energies.NN should be calculated outside this function
-function calc_energies( Ham::Hamiltonian, psiks::BlochWavefunc )
-
-    pw = Ham.pw
+    Npoints = prod(Ham.pw.Ns)
+    dVol = Ham.pw.CellVolume/Npoints
+    Nspin = Ham.electrons.Nspin
     potentials = Ham.potentials
-    Focc = Ham.electrons.Focc
 
-    CellVolume = pw.CellVolume
-    Ns = pw.Ns
-    Npoints = prod(Ns)
-    dVol = CellVolume/Npoints
+    Rhoe_tot = zeros(Npoints)
+    for ispin = 1:Nspin
+        Rhoe_tot[:] = Rhoe_tot[:] + Ham.rhoe[:,ispin]
+    end
+
+    E_Hartree = 0.5*dot( potentials.Hartree, Rhoe_tot ) * dVol
+    E_Ps_loc = dot( potentials.Ps_loc, Rhoe_tot ) * dVol
+
+    if Ham.xcfunc == "PBE"
+        epsxc = calc_epsxc_PBE( Ham.pw, Ham.rhoe )
+    else
+        epsxc = calc_epsxc_VWN( Ham.rhoe )
+    end
+    E_xc = dot( epsxc, Rhoe_tot ) * dVol
+
+    return E_Ps_loc, E_Hartree, E_xc
+end
+
+
+function calc_E_kin( Ham::Hamiltonian, psiks::BlochWavefunc )
+
+    Focc = Ham.electrons.Focc
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     Nstates = Ham.electrons.Nstates
     wk = Ham.pw.gvecw.kpoints.wk
@@ -73,10 +86,7 @@ function calc_energies( Ham::Hamiltonian, psiks::BlochWavefunc )
     idx_gw2g = Ham.pw.gvecw.idx_gw2g
     G = Ham.pw.gvec.G
     k = Ham.pw.gvecw.kpoints.k
-    
-    #
-    # Kinetic energy
-    #
+
     E_kin = 0.0
     for ispin = 1:Nspin
     for ik = 1:Nkpt
@@ -95,37 +105,21 @@ function calc_energies( Ham::Hamiltonian, psiks::BlochWavefunc )
         end
     end
     end
-    E_kin = 0.5*E_kin
+    return 0.5*E_kin
 
-    Rhoe_tot = zeros(Npoints)
-    for ispin = 1:Nspin
-        Rhoe_tot[:] = Rhoe_tot[:] + Ham.rhoe[:,ispin]
-    end
+end
 
-    E_Hartree = 0.5*dot( potentials.Hartree, Rhoe_tot ) * dVol
-    E_Ps_loc = dot( potentials.Ps_loc, Rhoe_tot ) * dVol
-
-#    cRhoeG = conj(R_to_G(pw, Rhoe_tot))/Npoints
-#    V_HartreeG = R_to_G(pw, potentials.Hartree)
-#    V_Ps_locG = R_to_G(pw, potentials.Ps_loc)
 #
-#    E_Hartree = 0.0
-#    E_Ps_loc = 0.0
-#    for ig = 2:pw.gvec.Ng
-#        ip = pw.gvec.idx_g2r[ig]
-#        E_Hartree = E_Hartree + abs( V_HartreeG[ip]*cRhoeG[ip] )
-#        E_Ps_loc = E_Ps_loc + real( V_Ps_locG[ip]*cRhoeG[ip] )
-#    end
-#    #E_Ps_loc = E_Ps_loc + real( V_Ps_locG[1]*cRhoeG[1] ) # should be the same as pspcore ene)
-#    E_Hartree = 0.5*E_Hartree*dVol
-#    E_Ps_loc = E_Ps_loc*dVol
+# psi is assumed to be already orthonormalized elsewhere
+# `potentials` and `Rhoe` are not updated
+# Ham is assumed to be already updated at input psi
+#
+# Ham.energies.NN abd Ham.energies.PspCore should be calculated outside this function
+function calc_energies( Ham::Hamiltonian, psiks::BlochWavefunc )
+    
+    E_kin = calc_E_kin( Ham, psiks )
 
-    if Ham.xcfunc == "PBE"
-        epsxc = calc_epsxc_PBE( Ham.pw, Ham.rhoe )
-    else
-        epsxc = calc_epsxc_VWN( Ham.rhoe )
-    end
-    E_xc = dot( epsxc, Rhoe_tot ) * dVol
+    E_Ps_loc, E_Hartree, E_xc = calc_E_local( Ham )
 
     if Ham.pspotNL.NbetaNL > 0
         E_Ps_nloc = calc_E_Ps_nloc( Ham, psiks )
