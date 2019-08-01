@@ -32,7 +32,7 @@ function main( ; method="SCF" )
     # Solve the KS problem
     #
     if method == "SCF"
-        KS_solve_SCF!( Ham, mix_method="anderson" )
+        KS_solve_SCF!( Ham, mix_method="rpulay", betamix=0.5 )
 
     elseif method == "Emin"
         KS_solve_Emin_PCG!( Ham, verbose=true )
