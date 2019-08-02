@@ -220,7 +220,8 @@ function KS_solve_TRDCM_01!(
                 #
                 # apply trust region if necessary
                 if abs(sigma[ikspin]) > SMALL # sigma is not zero
-                    println("Trust region is imposed")
+                    @printf("Trust region is imposed: ")
+                    @printf("ikspin=%3d sigma=%18.10f\n", ikspin, sigma[ikspin])
                     if iter > 1
                         D[:,ikspin], G[ikspin] =
                         eigen( A[ikspin] - sigma[ikspin]*C[ikspin], B[ikspin] )
