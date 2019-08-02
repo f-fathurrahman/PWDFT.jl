@@ -227,7 +227,7 @@ function KS_solve_DCM_01!(
             calc_rhoe!( Ham, psiks, Rhoe )
 
             # mix rhoe
-            Rhoe = 0.1*Rhoe + 0.9*Rhoe_old
+            #Rhoe = 0.1*Rhoe + 0.9*Rhoe_old
             #for rho in Rhoe
             #    if rho < eps() rho = 0.0 end
             #end
