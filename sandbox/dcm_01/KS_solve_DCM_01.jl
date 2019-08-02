@@ -62,18 +62,23 @@ function KS_solve_DCM_01!(
     Ham.energies.PspCore = calc_PspCore_ene( Ham.atoms, Ham.pspots )
     
     # Starting eigenvalues and psi
-    for ispin = 1:Nspin
-    for ik = 1:Nkpt
+    for ispin = 1:Nspin, ik = 1:Nkpt
         Ham.ik = ik
         Ham.ispin = ispin
-        ikspin = ik + (ispin - 1)*Nkpt
-        evals[:,ikspin], psiks[ikspin] =
-        diag_LOBPCG( Ham, psiks[ikspin], verbose_last=false, NiterMax=10 )
-    end
+        i = ik + (ispin - 1)*Nkpt
+        evals[:,i], psiks[i] =
+        diag_LOBPCG( Ham, psiks[i], verbose_last=false, NiterMax=10 )
     end
 
     Ham.energies = calc_energies( Ham, psiks )
     
+    #Ham.energies.Kinetic = calc_E_kin( Ham, psiks )
+    #Ham.energies.Ps_nloc = calc_E_Ps_nloc( Ham, psiks )
+    #E_Ps_loc, E_Hartree, E_XC = calc_E_local( Ham )
+    #Ham.energies.Ps_loc = E_Ps_loc
+    #Ham.energies.Hartree = E_Hartree
+    #Ham.energies.XC = E_XC
+
     Etot = sum(Ham.energies)
     Etot_old = Etot
     diffE = 1.0 # any number that is not 0
@@ -88,18 +93,21 @@ function KS_solve_DCM_01!(
     B = Array{Array{Float64,2},1}(undef,Nkspin)
     A = Array{Array{Float64,2},1}(undef,Nkspin)
     C = Array{Array{Float64,2},1}(undef,Nkspin)
-    for ispin = 1:Nspin
-    for ik = 1:Nkpt
-        ikspin = ik + (ispin - 1)*Nkpt
-        Y[ikspin] = zeros( ComplexF64, Ngw[ik], 3*Nstates )
-        R[ikspin] = zeros( ComplexF64, Ngw[ik], Nstates )
-        P[ikspin] = zeros( ComplexF64, Ngw[ik], Nstates )
-        G[ikspin] = zeros( ComplexF64, 3*Nstates, 3*Nstates )
-        T[ikspin] = zeros( Float64, 3*Nstates, 3*Nstates )
-        B[ikspin] = zeros( Float64, 3*Nstates, 3*Nstates )
-        A[ikspin] = zeros( Float64, 3*Nstates, 3*Nstates )
-        C[ikspin] = zeros( Float64, 3*Nstates, 3*Nstates )        
-    end
+    
+    for ispin = 1:Nspin, ik = 1:Nkpt
+        
+        i = ik + (ispin - 1)*Nkpt
+        
+        Y[i] = zeros( ComplexF64, Ngw[ik], 3*Nstates )
+        
+        R[i] = zeros( ComplexF64, Ngw[ik], Nstates )
+        P[i] = zeros( ComplexF64, Ngw[ik], Nstates )
+        
+        G[i] = zeros( ComplexF64, 3*Nstates, 3*Nstates )
+        T[i] = zeros( Float64, 3*Nstates, 3*Nstates )
+        B[i] = zeros( Float64, 3*Nstates, 3*Nstates )
+        A[i] = zeros( Float64, 3*Nstates, 3*Nstates )
+        C[i] = zeros( Float64, 3*Nstates, 3*Nstates )        
     end
 
     D = zeros(Float64,3*Nstates,Nkspin)  # array for saving eigenvalues of subspace problem
@@ -119,46 +127,46 @@ function KS_solve_DCM_01!(
         for ispin = 1:Nspin, ik = 1:Nkpt
             Ham.ik = ik
             Ham.ispin = ispin
-            ikspin = ik + (ispin - 1)*Nkpt
+            i = ik + (ispin - 1)*Nkpt
             #
-            Hpsi = op_H( Ham, psiks[ikspin] )
+            Hpsi = op_H( Ham, psiks[i] )
             #
-            psiHpsi = psiks[ikspin]' * Hpsi
+            psiHpsi = psiks[i]' * Hpsi
             psiHpsi = 0.5*( psiHpsi + psiHpsi' )
             # Calculate residual
-            R[ikspin] = Hpsi - psiks[ikspin]*psiHpsi
-            R[ikspin] = Kprec( ik, pw, R[ikspin] )
+            R[i] = Hpsi - psiks[i]*psiHpsi
+            R[i] = Kprec( ik, pw, R[i] )
             # Construct subspace
-            Y[ikspin][:,set1] = psiks[ikspin]
-            Y[ikspin][:,set2] = R[ikspin]
+            Y[i][:,set1] = psiks[i] # XXX Probably used views?
+            Y[i][:,set2] = R[i]
             #
             if iter > 1
-                Y[ikspin][:,set3] = P[ikspin]
+                Y[i][:,set3] = P[i]
             end
             
             #
             # Project kinetic and ionic potential
             #
             if iter > 1
-                KY = op_K( Ham, Y[ikspin] ) + op_V_Ps_loc( Ham, Y[ikspin] )
-                T[ikspin] = real(Y[ikspin]'*KY)
-                B[ikspin] = real(Y[ikspin]'*Y[ikspin])
-                B[ikspin] = 0.5*( B[ikspin] + B[ikspin]' )
+                KY = op_K( Ham, Y[i] ) + op_V_Ps_loc( Ham, Y[i] )
+                T[i] = real(Y[i]'*KY)
+                B[i] = real(Y[i]'*Y[i])
+                B[i] = 0.5*( B[i] + B[i]' )
             else
                 # only set5=1:2*Nstates is active for iter=1
-                KY = op_K( Ham, Y[ikspin][:,set5] ) + op_V_Ps_loc( Ham, Y[ikspin][:,set5] )
-                T[ikspin][set5,set5] = real(Y[ikspin][:,set5]'*KY)
-                bb = real(Y[ikspin][set5,set5]'*Y[ikspin][set5,set5])
-                B[ikspin][set5,set5] = 0.5*( bb + bb' )
+                KY = op_K( Ham, Y[i][:,set5] ) + op_V_Ps_loc( Ham, Y[i][:,set5] )
+                T[i][set5,set5] = real(Y[i][:,set5]'*KY)
+                bb = real(Y[i][set5,set5]'*Y[i][set5,set5])
+                B[i][set5,set5] = 0.5*( bb + bb' )
             end
 
             if iter > 1
-                G[ikspin] = Matrix(1.0I, 3*Nstates, 3*Nstates) #eye(3*Nstates)
+                G[i] = Matrix(1.0I, 3*Nstates, 3*Nstates) #eye(3*Nstates)
             else
-                G[ikspin] = Matrix(1.0I, 2*Nstates, 2*Nstates)
+                G[i] = Matrix(1.0I, 2*Nstates, 2*Nstates)
             end
         
-        end # ikspin
+        end # i
 
         Rhoe_old = copy(Ham.rhoe)
 
@@ -172,14 +180,14 @@ function KS_solve_DCM_01!(
                 #
                 Ham.ik = ik
                 Ham.ispin = ispin
-                ikspin = ik + (ispin - 1)*Nkpt
+                i = ik + (ispin - 1)*Nkpt
                 #
                 V_loc = Ham.potentials.Hartree + Ham.potentials.XC[:,ispin]
                 #
                 if iter > 1
-                    yy = Y[ikspin]
+                    yy = Y[i]
                 else
-                    yy = Y[ikspin][:,set5]
+                    yy = Y[i][:,set5]
                 end
                 #
                 if Ham.pspotNL.NbetaNL > 0
@@ -189,37 +197,37 @@ function KS_solve_DCM_01!(
                 end
                 #
                 if iter > 1
-                    A[ikspin] = real( T[ikspin] + yy'*VY )
-                    A[ikspin] = 0.5*( A[ikspin] + A[ikspin]' )
+                    A[i] = real( T[i] + yy'*VY )
+                    A[i] = 0.5*( A[i] + A[i]' )
                 else
-                    aa = real( T[ikspin][set5,set5] + yy'*VY )
-                    A[ikspin] = 0.5*( aa + aa' )
+                    aa = real( T[i][set5,set5] + yy'*VY )
+                    A[i] = 0.5*( aa + aa' )
                 end
                 #
                 if iter > 1
-                    BG = B[ikspin]*G[ikspin][:,1:Nocc]
-                    C[ikspin] = real( BG*BG' )
-                    C[ikspin] = 0.5*( C[ikspin] + C[ikspin]' )
+                    BG = B[i]*G[i][:,1:Nocc]
+                    C[i] = real( BG*BG' )
+                    C[i] = 0.5*( C[i] + C[i]' )
                 else
-                    BG = B[ikspin][set5,set5]*G[ikspin][set5,1:Nocc]
+                    BG = B[i][set5,set5]*G[i][set5,1:Nocc]
                     cc = real( BG*BG' )
-                    C[ikspin][set5,set5] = 0.5*( cc + cc' )
+                    C[i][set5,set5] = 0.5*( cc + cc' )
                 end
                 #
                 if iter > 1
-                    D[:,ikspin], G[ikspin] = eigen( A[ikspin], B[ikspin] )
+                    D[:,i], G[i] = eigen( A[i], B[i] )
                 else
-                    D[set5,ikspin], G[ikspin][set5,set5] =
-                    eigen( A[ikspin][set5,set5], B[ikspin][set5,set5] )
+                    D[set5,i], G[i][set5,set5] =
+                    eigen( A[i][set5,set5], B[i][set5,set5] )
                 end
                 #
                 # update wavefunction
                 if iter > 1
-                    psiks[ikspin] = Y[ikspin]*G[ikspin][:,set1]
-                    ortho_sqrt!(psiks[ikspin])  # is this necessary ?
+                    psiks[i] = Y[i]*G[i][:,set1]
+                    ortho_sqrt!(psiks[i])  # is this necessary ?
                 else
-                    psiks[ikspin] = Y[ikspin][:,set5]*G[ikspin][set5,set1]
-                    ortho_sqrt!(psiks[ikspin])
+                    psiks[i] = Y[i][:,set5]*G[i][set5,set1]
+                    ortho_sqrt!(psiks[i])
                 end
 
             end # ispin, ik
@@ -227,10 +235,7 @@ function KS_solve_DCM_01!(
             calc_rhoe!( Ham, psiks, Rhoe )
 
             # mix rhoe
-            #Rhoe = 0.1*Rhoe + 0.9*Rhoe_old
-            #for rho in Rhoe
-            #    if rho < eps() rho = 0.0 end
-            #end
+            #Rhoe = 0.5*Rhoe + 0.5*Rhoe_old
 
             # update Hartree and XC potential
             update!( Ham, Rhoe )
@@ -250,16 +255,17 @@ function KS_solve_DCM_01!(
                 @printf("\n")
             end
 
-            if abs(diffE) < etot_conv_thr*10
+            if abs(diffE) < etot_conv_thr*1e-2
                 println("Breaking out from innerSCF")
                 break
             end
 
             Etot_innerscf_old = Etot_innerscf
             
-        end
+        end # i
 
         Etot = Etot_innerscf
+        diffE = Etot - Etot_old
 
         @printf("DCM: %5d %18.10f %18.10e\n", iter, Etot, diffE)
 
@@ -279,12 +285,11 @@ function KS_solve_DCM_01!(
         Etot_old = Etot
 
         # No need to update potential, it is already updated in inner SCF loop
-        for ispin = 1:Nspin, ik = 1:Nkpt
-            ikspin = ik + (ispin - 1)*Nkpt
+        for i in 1:Nkspin
             if iter > 1
-                P[ikspin] = Y[ikspin][:,set4]*G[ikspin][set4,set1]
+                P[i] = Y[i][:,set4]*G[i][set4,set1]
             else
-                P[ikspin] = Y[ikspin][:,set2]*G[ikspin][set2,set1]
+                P[i] = Y[i][:,set2]*G[i][set2,set1]
             end
         end
 
@@ -312,9 +317,9 @@ function KS_solve_DCM_01!(
     end
 
     if savewfc
-        for ikspin = 1:Nkpt*Nspin
-            wfc_file = open("WFC_ikspin_"*string(ikspin)*".data","w")
-            write( wfc_file, psiks[ikspin] )
+        for i = 1:Nkpt*Nspin
+            wfc_file = open("WFC_i_"*string(i)*".data","w")
+            write( wfc_file, psiks[i] )
             close( wfc_file )
         end
     end
