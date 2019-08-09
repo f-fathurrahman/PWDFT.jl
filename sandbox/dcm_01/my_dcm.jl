@@ -73,16 +73,79 @@ function my_dcm!( Ham )
             T[set5,set5] = real( Y'[:,set5] * KY )
         end
 
+        Rhoe_old = copy(Ham.rhoe)
+
+        Etot_innerscf = 0.0
+        Etot_innerscf_old = 0.0
+        dEtot_innerscf = 1.0
+
     end
 
-    println("Pass here")
+
+    println("my_dcm is finished")
 
     return
 
 end
 
-function DCM_inner_SCF!( iterDCM::Int64, Ham, KY, B, G )
+function DCM_inner_SCF!( iterDCM::Int64, Ham, KY, B, G, MaxInnerSCF::Int64 )
 
+    for iterscf = 1:MaxInnerSCF
+        
+        for ispin = 1:Nspin, ik = 1:Nkpt
+            #
+            Ham.ik = ik
+            Ham.ispin = ispin
+            i = ik + (ispin - 1)*Nkpt
+            #
+            if iterDCM > 1
+                yy = Y[i]
+            else
+                yy = Y[i][:,set5]
+            end
+            #
+            if Ham.pspotNL.NbetaNL > 0
+                VY = op_V_Ps_nloc( Ham, yy ) + op_V_loc( ik, pw, V_loc, yy )
+            else
+                VY = op_V_loc( ik, pw, V_loc, yy )
+            end
+            #
+            if iter > 1
+                A[i] = real( T[i] + yy'*VY )
+                A[i] = 0.5*( A[i] + A[i]' )
+            else
+                aa = real( T[i][set5,set5] + yy'*VY )
+                A[i] = 0.5*( aa + aa' )
+            end
+            #
+            if iter > 1
+                BG = B[i]*G[i][:,1:Nocc]
+                C[i] = real( BG*BG' )
+                C[i] = 0.5*( C[i] + C[i]' )
+            else
+                BG = B[i][set5,set5]*G[i][set5,1:Nocc]
+                cc = real( BG*BG' )
+                C[i][set5,set5] = 0.5*( cc + cc' )
+            end
+            #
+            if iter > 1
+                D[:,i], G[i] = eigen( A[i], B[i] )
+            else
+                D[set5,i], G[i][set5,set5] =
+                eigen( A[i][set5,set5], B[i][set5,set5] )
+            end
+        #
+        # update wavefunction
+        if iter > 1
+            psiks[i] = Y[i]*G[i][:,set1]
+            ortho_sqrt!(psiks[i])  # is this necessary ?
+        else
+            psiks[i] = Y[i][:,set5]*G[i][set5,set1]
+            ortho_sqrt!(psiks[i])
+        end
+        end # ispin, ik
+
+    end
 
 
 end
