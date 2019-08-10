@@ -40,20 +40,16 @@ function grad_obj_function!(
     # rotate psiks
     for i = 1:Nkspin
         psiks[i] = psiks[i]*U_Haux[i]
-        #ortho_check(psiks[i])
     end
 
     Rhoe = calc_rhoe( Ham, psiks )
     update!( Ham, Rhoe )
 
-    for ispin = 1:Nspin
-        for ik = 1:Nkpt
-            Ham.ispin = ispin
-            Ham.ik = ik
-            ikspin = ik + (ispin-1)*Nkpt
-            g[ikspin], _, _, g_Haux[ikspin] =
-              calc_grad_Haux( Ham, psiks[ikspin], evals[:,ikspin], kT )
-        end
+    for ispin = 1:Nspin, ik = 1:Nkpt
+        Ham.ispin = ispin
+        Ham.ik = ik
+        i = ik + (ispin-1)*Nkpt
+        g[i], g_Haux[i], _, _, = calc_grad_Haux( Ham, psiks[i], evals[:,i], kT )
     end
 
     return

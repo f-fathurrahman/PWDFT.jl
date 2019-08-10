@@ -36,8 +36,9 @@ function main_SD()
     psiks = rand_BlochWavefunc( Ham )
     Rhoe = guess_rhoe_atomic( Ham )
     update!(Ham, Rhoe)
-    _ = diag_LOBPCG!( Ham, psiks, verbose=false, verbose_last=false, NiterMax=10 )
+    _ = diag_LOBPCG!( Ham, psiks, verbose=false, verbose_last=false, NiterMax=30 )
 
+    #psiks = Serialization.deserialize("psiks.data")
 
     Nstates = Ham.electrons.Nstates
     Nspin = Ham.electrons.Nspin
@@ -65,17 +66,19 @@ function main_SD()
 
     α_t = 1e-5
 
-    for iter = 1:1000
+    for iter = 1:100
         
         grad_obj_function!( Ham, psiks, g, Haux, g_Haux )
 
         precond_grad!( Ham, g, Kg )
-        Kg_Haux = 0.01*g_Haux
+        Kg_Haux = g_Haux
 
+        # update psiks
         psiks = psiks - α_t*g
 
+        # update Haux
         for i = 1:Nkspin
-            Haux[i] = Haux[i] + α_t*Kg_Haux[i]
+            Haux[i] = Haux[i] - α_t*Kg_Haux[i]
             Haux[i] = 0.5*( Haux[i] + Haux[i]' ) # or use previous U_Haux
         end
 

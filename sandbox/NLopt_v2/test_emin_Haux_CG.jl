@@ -51,9 +51,10 @@ function main_CG()
 
     Random.seed!(1234)
 
-    Ham = create_Ham_atom_Al_smearing()
+    #Ham = create_Ham_atom_Al_smearing()
     #Ham = create_Ham_Al_fcc_smearing()
     #Ham = create_Ham_atom_Pt_smearing()
+    Ham = create_Ham_Pt_fcc_smearing()
 
     Nstates = Ham.electrons.Nstates
     Nspin = Ham.electrons.Nspin
@@ -130,7 +131,7 @@ function main_CG()
         grad_obj_function!( Ham, psiks, g, Haux, g_Haux )
         precond_grad!( Ham, g, Kg )
 
-        Kg_Haux = 0.05*g_Haux  # scalar preconditioner
+        Kg_Haux = 0.01*g_Haux  # scalar preconditioner
 
         if iter > 1
             calc_beta_CG!( g, g_old, Kg, Kg_old, β )
@@ -139,14 +140,14 @@ function main_CG()
 
         d = -Kg + β .* d_old
 
-        d_Haux = Kg_Haux + β_Haux .* d_Haux_old
+        d_Haux = -Kg_Haux + β_Haux .* d_Haux_old
 
         psic = psiks + α_t*d  # trial wavefunc
 
-        Hauxc = Haux + α_t*d_Haux
-        for i in 1:Nkspin
-            Hauxc[i] = 0.5*( Hauxc[i] + Hauxc[i]' )
-        end
+        #Hauxc = Haux + α_t*d_Haux
+        #for i in 1:Nkspin
+        #    Hauxc[i] = 0.5*( Hauxc[i] + Hauxc[i]' )
+        #end
 
         # line minimization
         grad_obj_function!( Ham, psic, gt, Hauxc, gt_Haux )
@@ -154,11 +155,11 @@ function main_CG()
         calc_alpha_CG!( α_t, g, gt, d, α )
         psiks = psiks + α .* d
 
-        calc_alpha_CG!( α_t, g_Haux, gt_Haux, d_Haux, α_Haux )
-        for i in 1:Nkspin
-            Haux[i] = Haux[i] + α_Haux[i] .* d_Haux[i]
-            Haux[i] = 0.5( Haux[i] + Haux[i]' )
-        end
+        #calc_alpha_CG!( α_t, g_Haux, gt_Haux, d_Haux, α_Haux )
+        #for i in 1:Nkspin
+        #    Haux[i] = Haux[i] + α_Haux[i] .* d_Haux[i]
+        #    Haux[i] = 0.5( Haux[i] + Haux[i]' )
+        #end
 
         Etot = obj_function!( Ham, psiks, Haux )
 
