@@ -1,6 +1,6 @@
 function obj_function!(
     Ham::Hamiltonian,
-    psiks::BlochWavefunc,
+    psiks_::BlochWavefunc,
     Haux::Array{Matrix{ComplexF64},1};
     kT::Float64=1e-3,
     skip_ortho=false
@@ -21,14 +21,10 @@ function obj_function!(
     end
 
     Ham.electrons.Focc, E_fermi = calc_Focc( Nelectrons, wk, kT, evals, Nspin )
+    println("E_fermi = ", E_fermi)
     Entropy = calc_entropy( wk, kT, evals, E_fermi, Nspin )
 
-    # DEBUG, only for Nkspin=1
-    #@printf("E_fermi = %18.10f\n", E_fermi)
-    #@printf("eigenvalues, focc = \n")
-    #for i in 1:Nstates
-    #    @printf("%5d %18.10f %18.10f\n", i, evals[i,1], Ham.electrons.Focc[i,1])
-    #end
+    psiks = copy(psiks_)
 
     if !skip_ortho
         for i = 1:length(psiks)
@@ -39,7 +35,6 @@ function obj_function!(
     # rotate psiks
     for i = 1:Nkspin
         psiks[i] = psiks[i]*U_Haux[i]
-        #ortho_check(psiks[i])
     end
 
     Rhoe = calc_rhoe( Ham, psiks )
