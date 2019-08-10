@@ -2,7 +2,6 @@ function obj_function!(
     Ham::Hamiltonian,
     psiks::BlochWavefunc,
     Haux::Array{Matrix{ComplexF64},1};
-    rhoe_symm::Union{Nothing,RhoeSymmetrizer}=nothing,
     kT::Float64=1e-3,
     skip_ortho=false
 )
@@ -44,10 +43,6 @@ function obj_function!(
     end
 
     Rhoe = calc_rhoe( Ham, psiks )
-    if rhoe_symm != nothing
-        #if Ham.sym_info.Nsyms > 1
-        symmetrize_rhoe!( Ham, rhoe_symm, Rhoe )
-    end
     update!( Ham, Rhoe )
     
     Ham.energies = calc_energies( Ham, psiks )
