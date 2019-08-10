@@ -2,7 +2,6 @@ function grad_obj_function!(
     Ham::Hamiltonian,
     psiks::BlochWavefunc,
     g::BlochWavefunc;
-    rhoe_symm::Union{Nothing,RhoeSymmetrizer}=nothing,    
     skip_ortho=false
 )
 
@@ -16,19 +15,13 @@ function grad_obj_function!(
     end
 
     Rhoe = calc_rhoe( Ham, psiks )
-    if rhoe_symm != nothing
-        #if Ham.sym_info.Nsyms > 1
-        symmetrize_rhoe!( Ham, rhoe_symm, Rhoe )
-    end
     update!( Ham, Rhoe )
 
-    for ispin = 1:Nspin
-        for ik = 1:Nkpt
-            Ham.ispin = ispin
-            Ham.ik = ik
-            ikspin = ik + (ispin-1)*Nkpt
-            g[ikspin] = calc_grad( Ham, psiks[ikspin] )
-        end
+    for ispin = 1:Nspin, ik = 1:Nkpt
+        Ham.ispin = ispin
+        Ham.ik = ik
+        ikspin = ik + (ispin-1)*Nkpt
+        g[ikspin] = calc_grad( Ham, psiks[ikspin] )
     end
 
     return

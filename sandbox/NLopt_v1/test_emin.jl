@@ -141,19 +141,11 @@ function main_CG()
     psiks = rand_BlochWavefunc( Ham )
     Etot_old = obj_function!( Ham, psiks, skip_ortho=true )
 
-    if Ham.sym_info.Nsyms > 1
-        rhoe_symmetrizer = RhoeSymmetrizer( Ham )
-    end
-
     Npoints = prod(Ham.pw.Ns)
     Nspin = Ham.electrons.Nspin
     Rhoe = zeros(Float64,Npoints,Nspin)
     @assert Nspin == 1
     Rhoe[:,1] = guess_rhoe( Ham )
-    # Symmetrize Rhoe if needed
-    if Ham.sym_info.Nsyms > 1
-        symmetrize_rhoe!( Ham, rhoe_symmetrizer, Rhoe )
-    end
     #
     update!(Ham, Rhoe)
     # eigenvalues are not needed for this case
@@ -182,7 +174,7 @@ function main_CG()
 
     for iter = 1:50
         
-        grad_obj_function!( Ham, psiks, g, rhoe_symm=rhoe_symmetrizer )
+        grad_obj_function!( Ham, psiks, g )
         precond_grad!( Ham, g, Kg )
         if iter > 1
             calc_beta_CG!( g, g_old, Kg, Kg_old, β )
@@ -193,12 +185,12 @@ function main_CG()
         psic = psiks + α_t*d  # trial wavefunc
 
         # line minimization
-        grad_obj_function!( Ham, psic, gt, rhoe_symm=rhoe_symmetrizer )
+        grad_obj_function!( Ham, psic, gt )
         calc_alpha_CG!( α_t, g, gt, d, α )
 
         psiks = psiks + α .* d
 
-        Etot = obj_function!( Ham, psiks, rhoe_symm=rhoe_symmetrizer )
+        Etot = obj_function!( Ham, psiks )
         diffE = abs(Etot_old - Etot)
         @printf("%8d %18.10f %18.10e\n", iter, Etot, Etot_old - Etot)
 
