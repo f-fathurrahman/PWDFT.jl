@@ -8,6 +8,7 @@ const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
 
 include("obj_function.jl")
 include("grad_obj_function.jl")
+include("create_Ham.jl")
 
 function create_Ham_Si_fcc( ; xcfunc="VWN", Nspin=1 )
 
@@ -66,52 +67,11 @@ function create_Ham_H_atom()
     return Hamiltonian( atoms, pspfiles, ecutwfc )
 end
 
-
-# steepest descent
-function main_SD()
-
-    Random.seed!(1234)
-
-    #Ham = create_Ham_H2()
-    Ham = create_Ham_H_atom()
-
-    psiks = rand_BlochWavefunc( Ham )
-    Etot_old = obj_function!( Ham, psiks, skip_ortho=true )
-
-    g = zeros_BlochWavefunc( Ham )
-    Kg = zeros_BlochWavefunc( Ham )
-
-    α_t = 3e-5
-
-    for iter = 1:50
-        grad_obj_function!( Ham, psiks, g, Kg )
-        psiks = psiks - α_t*Kg
-        Etot = obj_function!( Ham, psiks )
-        @printf("%8d %18.10f %18.10e\n", iter, Etot, Etot_old - Etot)
-        Etot_old = Etot
-    end
-
-end
-#main_SD()
-
 function calc_beta_CG!( g, g_old, Kg, Kg_old, β )
     for i = 1:length(g)
         β[i] = real(sum(conj(g[i]-g_old[i]).*Kg[i]))/real(sum(conj(g_old[i]).*Kg_old[i]))
         if β[i] < 0.0
             β[i] = 0.0
-        end
-    end
-    return
-end
-
-
-function precond_grad!( Ham, g, Kg )
-    Nspin = Ham.electrons.Nspin
-    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
-    for ispin = 1:Nspin
-        for ik = 1:Nkpt
-            ikspin = ik + (ispin-1)*Nkpt
-            Kg[ikspin] = Kprec( ik, Ham.pw, g[ikspin] )
         end
     end
     return
@@ -135,8 +95,8 @@ function main_CG()
     Random.seed!(1234)
 
     #Ham = create_Ham_H2()
-    #Ham = create_Ham_H_atom()
-    Ham = create_Ham_Si_fcc()
+    Ham = create_Ham_H_atom()
+    #Ham = create_Ham_Si_fcc()
 
     psiks = rand_BlochWavefunc( Ham )
     Etot_old = obj_function!( Ham, psiks, skip_ortho=true )
@@ -182,19 +142,18 @@ function main_CG()
 
         d = -Kg + β .* d_old
 
-        psic = psiks + α_t*d  # trial wavefunc
-
         # line minimization
+        psic = psiks + α_t*d  # trial wavefunc
         grad_obj_function!( Ham, psic, gt )
         calc_alpha_CG!( α_t, g, gt, d, α )
 
         psiks = psiks + α .* d
 
         Etot = obj_function!( Ham, psiks )
-        diffE = abs(Etot_old - Etot)
+        diffE = Etot_old - Etot
         @printf("%8d %18.10f %18.10e\n", iter, Etot, Etot_old - Etot)
 
-        if diffE < etot_conv_thr
+        if abs(diffE) < etot_conv_thr
             Nconverges = Nconverges + 1
         else
             Nconverges = 0

@@ -27,3 +27,13 @@ function grad_obj_function!(
     return
 
 end
+
+function precond_grad!( Ham, g, Kg )
+    Nspin = Ham.electrons.Nspin
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+    for ispin = 1:Nspin, ik = 1:Nkpt
+        ikspin = ik + (ispin-1)*Nkpt
+        Kg[ikspin] = Kprec( ik, Ham.pw, g[ikspin] )
+    end
+    return
+end
