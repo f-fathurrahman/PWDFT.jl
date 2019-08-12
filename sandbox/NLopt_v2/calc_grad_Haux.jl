@@ -52,7 +52,6 @@ function calc_grad_Haux( Ham::Hamiltonian, psi::Array{ComplexF64,2}, eta::Array{
     #    @printf("dmu_deta = %18.10f, df_deta= %18.10f\n", dmu_deta[ist], df_deta[ist])
     #end
 
-
     Δ_Haux[:,:] = copy(Hsub)
 
     # diagonal

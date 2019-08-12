@@ -56,7 +56,6 @@ function test_main()
     Ham.electrons.ebands = rotate_subspace( Ham, psiks, skip_ortho=true )
     for i in 1:Nkspin
         Haux[i] = diagm(0 => Ham.electrons.ebands[:,i])
-        #display(Haux[i])
     end
     
     Etot_old = obj_function!( Ham, psiks, Haux, skip_ortho=true )
@@ -65,6 +64,38 @@ function test_main()
     Etot_old = obj_function!( Ham, psiks, Haux, skip_ortho=true )
     @printf("Etot_old    = %18.10f\n", Etot_old)
 
+    g = copy(psiks)
+    g_Haux = copy(Haux)
+
+    for itry = 1:5
+
+        println("\nitry = ", itry)
+
+        grad_obj_function!( Ham, psiks, g, Haux, g_Haux )
+        s1 = sum(g)
+        ss1 = sum(g_Haux)
+        @printf("sum g      = [%18.10f,%18.10f]\n", real(s1), imag(s1))
+        @printf("sum g_Haux = [%18.10f,%18.10f]\n", real(ss1), imag(ss1))
+
+        grad_obj_function!( Ham, psiks, g, Haux, g_Haux )
+        s2 = sum(g)
+        ss2 = sum(g_Haux)
+        @printf("sum g      = [%18.10f,%18.10f]\n", real(s2), imag(s2))
+        @printf("sum g_Haux = [%18.10f,%18.10f]\n", real(ss2), imag(ss2))
+
+        @printf("diff g      = [%18.10f,%18.10f]\n", real(s1 - s2), imag(s1 - s2))
+        @printf("diff g_Haux = [%18.10f,%18.10f]\n", real(ss1 - ss2), imag(ss1 - ss2))
+    end
+end
+
+
+import Base: sum
+function sum( f::Array{Array{ComplexF64,2},1} )
+    s = 0.0 + im*0.0
+    for i in 1:length(f)
+        s = s + sum(f[i])
+    end
+    return s
 end
 
 function rotate_subspace( Ham, psiks_; skip_ortho=false )

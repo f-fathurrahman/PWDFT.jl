@@ -6,9 +6,8 @@ using Random
 const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
 const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
 
-include("obj_function.jl")
-include("calc_grad_Haux.jl")
-include("grad_obj_function.jl")
+include("obj_function_v1.jl")
+include("grad_obj_function_v1.jl")
 include("create_Ham.jl")
 
 function precond_grad!( Ham, g, Kg )
@@ -62,14 +61,6 @@ function main_CG()
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     Nkspin = Nkpt*Nspin
 
-    Haux = Array{Matrix{ComplexF64},1}(undef,Nkspin)
-    for i in 1:Nkspin
-        Haux[i] = rand( ComplexF64, Nstates, Nstates )
-        Haux[i] = 0.5*( Haux[i] + Haux[i]' )
-    end
-
-    Hsub = copy(Haux)
-
     psiks = rand_BlochWavefunc( Ham )
     # prepare guess wavefunc
     Npoints = prod(Ham.pw.Ns)
@@ -81,7 +72,7 @@ function main_CG()
     # eigenvalues are not needed for this case
     _ = diag_LOBPCG!( Ham, psiks, verbose=false, verbose_last=false, NiterMax=10 )
 
-    Etot_old = obj_function!( Ham, psiks, Haux, skip_ortho=true )
+    Etot_old = obj_function_v1!( Ham, psiks, skip_ortho=true )
     println("Etot_old = ", Etot_old)
 
     g  = zeros_BlochWavefunc( Ham )
@@ -93,23 +84,8 @@ function main_CG()
     d_old = copy(g)
     psic = copy(g)
 
-    g_Haux = Array{Matrix{ComplexF64},1}(undef,Nkspin)
-    for i = 1:Nkspin
-        g_Haux[i] = zeros( ComplexF64, Nstates, Nstates )
-    end
-    Kg_Haux     = copy(g_Haux)
-    gt_Haux     = copy(g_Haux) 
-    g_Haux_old  = copy(g_Haux)
-    Kg_Haux_old = copy(g_Haux)
-    d_Haux      = copy(g_Haux)
-    d_Haux_old  = copy(g_Haux)
-    Hauxc       = copy(g_Haux)
-
     β = zeros(length(g))
     α = zeros(length(g))
-
-    β_Haux = zeros(length(g_Haux))
-    α_Haux = zeros(length(g_Haux))
 
     Ham.energies.NN = calc_E_NN( Ham.atoms )
     Ham.energies.PspCore = calc_PspCore_ene( Ham.atoms, Ham.pspots )
@@ -121,42 +97,28 @@ function main_CG()
 
     for iter = 1:50
         
-        grad_obj_function!( Ham, psiks, g, Haux, g_Haux )
+        grad_obj_function_v1!( Ham, psiks, g )
         precond_grad!( Ham, g, Kg )
-
-        Kg_Haux = 0.01*g_Haux  # scalar preconditioner
 
         if iter > 1
             calc_beta_CG!( g, g_old, Kg, Kg_old, β )
-            calc_beta_CG!( g_Haux, g_Haux_old, Kg_Haux, Kg_Haux_old, β_Haux )
         end
 
         d = -Kg + β .* d_old
         # line minimization
         psic = psiks + α_t*d  # trial wavefunc
 
-        #d_Haux = Kg_Haux + β_Haux .* d_Haux_old
-        #Hauxc = Haux + α_t*d_Haux
-        #for i in 1:Nkspin
-        #    Hauxc[i] = 0.5*( Hauxc[i] + Hauxc[i]' )
-        #end
-
-        grad_obj_function!( Ham, psic, gt, Hauxc, gt_Haux )        
+        grad_obj_function_v1!( Ham, psic, gt )        
         
         calc_alpha_CG!( α_t, g, gt, d, α )
         psiks = psiks + α .* d
 
-        #calc_alpha_CG!( α_t, g_Haux, gt_Haux, d_Haux, α_Haux )
-        #for i in 1:Nkspin
-        #    println("α_Haux = ", α_Haux[i])
-        #    Haux[i] = Haux[i] + α_Haux[i] .* d_Haux[i]
-        #    Haux[i] = 0.5( Haux[i] + Haux[i]' )
-        #end
-
-        Etot = obj_function!( Ham, psiks, Haux )
+        Etot = obj_function_v1!( Ham, psiks )
 
         diffE = abs(Etot_old - Etot)
         @printf("%8d %18.10f %18.10e\n", iter, Etot, Etot_old - Etot)
+
+        #print_ebands(Ham.electrons, Ham.pw.gvecw.kpoints)
 
         if diffE < etot_conv_thr
             Nconverges = Nconverges + 1
@@ -174,14 +136,20 @@ function main_CG()
         Kg_old = copy(Kg)
         d_old = copy(d)
 
-        g_Haux_old = copy(g_Haux)
-        Kg_Haux_old = copy(Kg_Haux)
-        d_Haux_old = copy(d_Haux)
-
-
     end
 
 end
-
 @time main_CG()
 
+function test_SCF()
+
+    Random.seed!(1234)
+
+    #Ham = create_Ham_atom_Al_smearing()
+    #Ham = create_Ham_Al_fcc_smearing()
+    #Ham = create_Ham_atom_Pt_smearing()
+    Ham = create_Ham_Pt_fcc_smearing()
+
+    KS_solve_SCF!( Ham, mix_method="rpulay", betamix=0.2 )
+end
+#test_SCF()
