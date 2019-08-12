@@ -14,6 +14,7 @@ function obj_function_v1!(
 
     psiks = copy(psiks_)
 
+    # orthonormalize if it is needed
     if !skip_ortho
         for i = 1:length(psiks)
             ortho_sqrt!(psiks[i])
@@ -22,12 +23,11 @@ function obj_function_v1!(
 
     ebands = zeros(Nstates, Nkspin)
 
-    # Calculate eigenvalues
+    # Rotate the subspace to calculate eigenvalues
     for ispin in 1:Nspin, ik in 1:Nkpt
         Ham.ik = ik
         Ham.ispin = ispin
         i = ik + (ispin - 1)*Nkpt
-        ortho_sqrt!(psiks[i])
         Hr = Hermitian(psiks[i]' * op_H(Ham, psiks[i]))
         ebands[:,i], evecs = eigen(Hr)
         psiks[i] = psiks[i]*evecs

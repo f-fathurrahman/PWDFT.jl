@@ -17,9 +17,9 @@ function test_main()
     Random.seed!(1234)
 
     #Ham = create_Ham_atom_Al_smearing()
-    #Ham = create_Ham_Al_fcc_smearing()
+    Ham = create_Ham_Al_fcc_smearing()
     #Ham = create_Ham_atom_Pt_smearing()
-    Ham = create_Ham_Pt_fcc_smearing()
+    #Ham = create_Ham_Pt_fcc_smearing()
 
     Nstates = Ham.electrons.Nstates
     Nspin = Ham.electrons.Nspin
@@ -48,28 +48,49 @@ function test_main()
     psiks_old = copy(psiks)
 
     Etot_old_v1 = obj_function_v1!( Ham, psiks, skip_ortho=true )
-    
-    #update!( Ham, Rhoe_old )
-    #Etot_old = obj_function!( Ham, psiks, Haux, skip_ortho=true )
-    
-    #println("Etot_old    = ", Etot_old)
-    println("Etot_old_v1 = ", Etot_old_v1)
+    @printf("Etot_old_v1 = %18.10f\n", Etot_old_v1)
 
-    #update!( Ham, Rhoe_old )
     Etot_old_v1 = obj_function_v1!( Ham, psiks, skip_ortho=true )
+    @printf("Etot_old_v1 = %18.10f\n", Etot_old_v1)
 
-    #update!( Ham, Rhoe_old )
-    #Etot_old = obj_function!( Ham, psiks_old, Haux, skip_ortho=true )
+    Ham.electrons.ebands = rotate_subspace( Ham, psiks, skip_ortho=true )
+    for i in 1:Nkspin
+        Haux[i] = diagm(0 => Ham.electrons.ebands[:,i])
+        #display(Haux[i])
+    end
     
-    #println("Etot_old    = ", Etot_old)
-    println("Etot_old_v1 = ", Etot_old_v1)
+    Etot_old = obj_function!( Ham, psiks, Haux, skip_ortho=true )
+    @printf("Etot_old    = %18.10f\n", Etot_old)
 
-    #for i in 1:Nkspin
-    #    Haux[i] = diagm(0 => Ham.electrons.ebands[:,i])
-    #end
-    #Etot_old = obj_function!( Ham, psiks, Haux, skip_ortho=true )
-    #println("Etot_old    = ", Etot_old)
+    Etot_old = obj_function!( Ham, psiks, Haux, skip_ortho=true )
+    @printf("Etot_old    = %18.10f\n", Etot_old)
 
+end
+
+function rotate_subspace( Ham, psiks_; skip_ortho=false )
+    psiks = copy(psiks_)
+    Nspin = Ham.electrons.Nspin
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+
+    if !skip_ortho
+        for i = 1:length(psiks)
+            ortho_sqrt!(psiks[i])
+        end
+    end
+
+    Nkspin = Nkpt*Nspin
+    Nstates = Ham.electrons.Nstates
+    ebands = zeros(Float64, Nstates, Nkspin)
+
+    for ispin in 1:Nspin, ik in 1:Nkpt
+        Ham.ik = ik
+        Ham.ispin = ispin
+        i = ik + (ispin - 1)*Nkpt
+        Hr = Hermitian(psiks[i]' * op_H(Ham, psiks[i]))
+        ebands[:,i], evecs = eigen(Hr)
+    end
+
+    return ebands
 end
 
 test_main()

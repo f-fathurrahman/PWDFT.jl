@@ -69,11 +69,7 @@ function main_CG()
 
     Hsub = copy(Haux)
 
-
-
-
     psiks = rand_BlochWavefunc( Ham )
-
     # prepare guess wavefunc
     Npoints = prod(Ham.pw.Ns)
     Nspin = Ham.electrons.Nspin
@@ -83,8 +79,6 @@ function main_CG()
     update!(Ham, Rhoe)
     # eigenvalues are not needed for this case
     _ = diag_LOBPCG!( Ham, psiks, verbose=false, verbose_last=false, NiterMax=10 )
-
-
 
     Etot_old = obj_function!( Ham, psiks, Haux, skip_ortho=true )
 
@@ -139,21 +133,18 @@ function main_CG()
         end
 
         d = -Kg + β .* d_old
+        # line minimization
+        psic = psiks + α_t*d  # trial wavefunc
+        grad_obj_function!( Ham, psic, gt, Hauxc, gt_Haux )        
+        calc_alpha_CG!( α_t, g, gt, d, α )
+        psiks = psiks + α .* d
+
 
         d_Haux = -Kg_Haux + β_Haux .* d_Haux_old
-
-        psic = psiks + α_t*d  # trial wavefunc
-
         #Hauxc = Haux + α_t*d_Haux
         #for i in 1:Nkspin
         #    Hauxc[i] = 0.5*( Hauxc[i] + Hauxc[i]' )
         #end
-
-        # line minimization
-        grad_obj_function!( Ham, psic, gt, Hauxc, gt_Haux )
-        
-        calc_alpha_CG!( α_t, g, gt, d, α )
-        psiks = psiks + α .* d
 
         #calc_alpha_CG!( α_t, g_Haux, gt_Haux, d_Haux, α_Haux )
         #for i in 1:Nkspin
@@ -165,24 +156,6 @@ function main_CG()
 
         diffE = abs(Etot_old - Etot)
         @printf("%8d %18.10f %18.10e\n", iter, Etot, Etot_old - Etot)
-
-        # Calculate Hsub (for comparison with Haux)
-        #=for ispin = 1:Nspin
-        for ik = 1:Nkpt
-            Ham.ik = ik
-            Ham.ispin = ispin
-            ikspin = ik + (ispin - 1)*Nkpt
-            #
-            Hsub[ikspin] = psiks[ikspin]' * ( Ham*psiks[ikspin] )
-
-            evalsHsub = eigvals(Hsub[ikspin])
-            evalsHaux = diag(Haux[ikspin])
-
-            #println("diff Haux = ", sum(Hsub[ikspin] - Haux[ikspin]))
-            println("diff sum evals = ", abs(sum(evalsHaux) - sum(evalsHsub)))
-
-        end
-        end=#
 
         if diffE < etot_conv_thr
             Nconverges = Nconverges + 1

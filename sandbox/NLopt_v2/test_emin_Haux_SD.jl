@@ -15,7 +15,7 @@ include("create_Ham.jl")
 function precond_grad!( Ham, g, Kg )
     Nspin = Ham.electrons.Nspin
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
-    for ispin = 1:Nspin, ik = 1:Nkpt
+    for ispin in 1:Nspin, ik in 1:Nkpt
         ikspin = ik + (ispin-1)*Nkpt
         Kg[ikspin] = Kprec( ik, Ham.pw, g[ikspin] )
     end # ikspin
@@ -50,6 +50,8 @@ function main_SD()
         Haux[i] = rand( ComplexF64, Nstates, Nstates )
         Haux[i] = 0.5*( Haux[i] + Haux[i]' )
     end
+
+    Hsub = copy(Haux)
 
     g = zeros_BlochWavefunc( Ham )
     Kg = copy(g)
@@ -86,6 +88,8 @@ function main_SD()
 
         @printf("%8d %18.10f %18.10e\n", iter, Etot, Etot_old - Etot)
 
+        check_evals!( Ham, psiks, Haux, Hsub )
+
         Etot_old = Etot
     end
 
@@ -93,15 +97,22 @@ function main_SD()
 
 end
 
-function check_evals( Ham, psiks, Haux )
+function check_evals!( Ham, psiks, Haux, Hsub )
     # Calculate Hsub for comparison with Haux
-    Nkspin = length(psiks)
-    for i in 1:Nkspin
-        Hsub = psiks[i]' * ( Ham*psiks[i] )
-        evalsHsub = eigvals(Hsub)
+    Nspin = Ham.electrons.Nspin
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+    s = 0.0
+    for ispin in 1:Nspin, ik = 1:Nkpt
+        Ham.ispin = ispin
+        Ham.ik = ik
+        i = ik + (ispin -1)*Nkpt
+        Hsub[i] = psiks[i]' * ( Ham*psiks[i] )
+        evalsHsub = eigvals(Hsub[i])
         evalsHaux = diag(Haux[i])
-        println("diff sum evals = ", abs(sum(evalsHaux) - sum(evalsHsub)))
+        s = s + abs(sum(evalsHaux) - sum(evalsHsub))
     end
+    println("diff sum evals = ", s)
+    return
 end
 
 
