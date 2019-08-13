@@ -42,7 +42,7 @@ end
 # rotate psiks
 # return subspace Hamiltonian
 # psiks should be orthonormalized first
-function subspace_rotation!( Ham, psiks; rotate_psiks=true )
+function subspace_rotation!( Ham, psiks )
 
     Nkspin = length(psiks)
     Nstates = Ham.electrons.Nstates
@@ -60,9 +60,7 @@ function subspace_rotation!( Ham, psiks; rotate_psiks=true )
         i = ik + (ispin - 1)*Nkpt
         Hr = Hermitian(psiks[i]' * op_H(Ham, psiks[i]))
         Ham.electrons.ebands[:,i], evecs = eigen(Hr)
-        if rotate_psiks
-            psiks[i] = psiks[i]*evecs # also rotate
-        end
+        psiks[i] = psiks[i]*evecs # also rotate
         Hsub[i] = psiks[i]' * ( op_H(Ham, psiks[i]) )
     end
 
@@ -76,44 +74,33 @@ function test_main()
     Ham = create_Ham_atom_Pt_smearing()
     psiks = rand_BlochWavefunc(Ham)
 
-    Rhoe = calc_rhoe( Ham, psiks )
-    update!( Ham, Rhoe )
+    Nstates = Ham.electrons.Nstates
+    Nspin = Ham.electrons.Nspin
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+    Nkspin = Nkpt*Nspin
 
-    Hsub = subspace_rotation!( Ham, psiks, rotate_psiks=false )
-    Rhoe = calc_rhoe( Ham, psiks )
-    update!( Ham, Rhoe )
-
-    Hsub = subspace_rotation!( Ham, psiks, rotate_psiks=false )
-    Rhoe = calc_rhoe( Ham, psiks )
-    update!( Ham, Rhoe )
-    
-    Etot = eval_L(Ham, psiks)
-    @printf("Etot = %18.10f\n", Etot)
-
-    for i in 1:length(Hsub)
-        println("Real part\n")
-        display(real(Hsub[i]))
-        println("")
-        println("Imaginary part\n")
-        display(imag(Hsub[i]))
-        println("")
-        println("eigvals = ", eigvals(Hermitian(Hsub[i])))
+    Haux = Array{Matrix{ComplexF64},1}(undef,Nkspin)
+    for i in 1:Nkspin
+        Haux[i] = rand( ComplexF64, Nstates, Nstates )
+        Haux[i] = 0.5*( Haux[i] + Haux[i]' )
     end
 
+    U_Haux = copy(Haux)
+    for i in 1:Nkspin
+        Ham.electrons.ebands[:,i], U_Haux[i] = eigen( Haux[i] )
+        Haux[i] = diagm( 0 => Ham.electrons.ebands[:,i] ) # rotate Haux
+        psiks[i] = psiks[i]*U_Haux[i] # rotate psiks
+    end
+
+    # calculate Rhoe with this psiks and Focc (included in Ham)
+    Rhoe = calc_rhoe( Ham, psiks )
+    update!( Ham, Rhoe )
+
     Etot = eval_L(Ham, psiks)
     @printf("Etot = %18.10f\n", Etot)
 
-    #evals = diag_LOBPCG!( Ham, psiks )
-    #println(evals)
-    #Hsub = subspace_rotation!( Ham, psiks )
-    #for i in 1:length(Hsub)
-    #    println("Real part\n")
-    #    display(real(Hsub[i]))
-    #    println("")
-    #    println("Imaginary part\n")
-    #    display(imag(Hsub[i]))
-    #    println("")
-    #end
+    Etot = eval_L(Ham, psiks)
+    @printf("Etot = %18.10f\n", Etot)
 
 end
 
