@@ -42,21 +42,16 @@ function rand_ElectronicVars( Ham::Hamiltonian )
     return ElectronicVars(psiks, Haux)
 end
 
-import Base: +
-function +( x::ElectronicVars, y::ElectronicVars )
-    z = ElectronicVars( copy(x.psiks), copy(y.Haux) )
-    for i in 1:length(x.psiks)
-        z.psiks[i] = x.psiks[i] + y.psiks[i]
-        z.Haux[i]  = x.Haux[i] + y.Haux[i]
-        z.Haux[i]  = 0.5*( z.Haux[i] + z.Haux[i]' )
-    end
-    return z
-end
-
-function eval_L_tilde!( Ham::Hamiltonian, evars::ElectronicVars; kT=1e-3 )
+function eval_L_tilde!( Ham::Hamiltonian, evars::ElectronicVars; kT=1e-3, skip_ortho=false )
 
     psiks = evars.psiks
     Haux = evars.Haux
+
+    if !skip_ortho
+        for i in length(psiks)
+            ortho_sqrt!(psiks[i])
+        end
+    end
 
     U_Haux = copy(Haux)
     for i in 1:length(U_Haux)
@@ -85,7 +80,124 @@ function eval_L_tilde!( Ham::Hamiltonian, evars::ElectronicVars; kT=1e-3 )
     return sum(energies)
 end
 
-function test_main()
+function grad_eval_L_tilde!( Ham::Hamiltonian, evars::ElectronicVars; kT=1e-3 )
+
+    psiks = evars.psiks
+    Haux = evars.Haux
+
+    U_Haux = copy(Haux)
+    for i in 1:length(U_Haux)
+        Ham.electrons.ebands[:,i], U_Haux[i] = eigen( Haux[i] )
+        Haux[i] = diagm( 0 => Ham.electrons.ebands[:,i] ) # rotate Haux
+        psiks[i] = psiks[i]*U_Haux[i] # rotate psiks
+    end
+
+    E_fermi = set_occupations!( Ham, kT )
+    Entropy = calc_entropy(
+        Ham.pw.gvecw.kpoints.wk,
+        kT,
+        Ham.electrons.ebands,
+        E_fermi,
+        Ham.electrons.Nspin
+    )
+
+    Rhoe = calc_rhoe( Ham, psiks )
+    update!( Ham, Rhoe )
+
+    Nspin = Ham.electrons.Nspin
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+
+    g = copy(psiks)
+    Haux = copy(Haux)
+    for ispin in 1:Nspin, ik in 1:Nkpt
+        Ham.ispin = ispin
+        Ham.ik = ik
+        i = ik + (ispin - 1)*Nkpt
+        g[i], Haux[i] = calc_grad_Haux(Ham, psiks[i], kT)
+    end
+
+    return ElectronicVars(g, Haux)
+
+
+end
+
+# using expression given in PhysRevB.79.241103 (Freysoldt-Boeck-Neugenbauer)
+function calc_grad_Haux(
+    Ham::Hamiltonian,
+    psi::Array{ComplexF64,2},
+    kT::Float64
+)
+
+    ik = Ham.ik
+    ispin = Ham.ispin
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+    ikspin = ik + (ispin - 1)*Nkpt
+
+    # occupation number for this kpoint
+    f = @view Ham.electrons.Focc[:,ikspin]
+    epsilon = @view Ham.electrons.ebands[:,ikspin]
+    
+    Ngw     = size(psi)[1]
+    Nstates = size(psi)[2]
+
+    # gradients
+    g_psi = zeros(ComplexF64, Ngw, Nstates)
+    g_Haux = zeros(ComplexF64, Nstates, Nstates)
+
+    Hpsi = op_H( Ham, psi )
+
+    # subspace Hamiltonian
+    Hsub = psi' * Hpsi
+
+    # gradient for psi
+    for ist = 1:Nstates
+        g_psi[:,ist] = Hpsi[:,ist]
+        for jst = 1:Nstates
+            g_psi[:,ist] = g_psi[:,ist] - Hsub[jst,ist]*psi[:,jst]
+        end
+        g_psi[:,ist] = f[ist]*g_psi[:,ist]
+    end
+
+
+    dF_dmu = 0.0
+    for ist = 1:Nstates
+        dF_dmu = dF_dmu + ( Hsub[ist,ist] - epsilon[ist] ) * 0.5*f[ist] * (1.0 - 0.5*f[ist])
+    end
+    dF_dmu = dF_dmu/kT
+
+    dmu_deta = zeros(Nstates)
+    # ss is the denominator of dmu_deta
+    ss = 0.0
+    for ist = 1:Nstates
+        ss = ss + 0.5*f[ist]*(1.0 - 0.5*f[ist])
+    end
+    SMALL = 1e-8
+    if abs(ss) > SMALL
+        for ist = 1:Nstates
+            dmu_deta[ist] = 0.5*f[ist]*(1.0 - 0.5*f[ist])/ss
+        end
+    end
+
+    # diagonal
+    for ist = 1:Nstates
+        term1 = -( Hsub[ist,ist] - epsilon[ist] ) * 0.5*f[ist] * ( 1.0 - 0.5*f[ist] )/kT
+        term2 = dmu_deta[ist]*dF_dmu
+        g_Haux[ist,ist] = term1 + term2
+    end
+
+    # off diagonal
+    for ist = 1:Nstates
+        for jst = (ist+1):Nstates
+            g_Haux[ist,jst] = Hsub[ist,jst] * (f[ist] - f[jst]) / (epsilon[ist] - epsilon[jst])
+            g_Haux[jst,ist] = g_Haux[ist,jst]
+        end
+    end
+
+    return g_psi, g_Haux
+end
+
+
+function test_eval_L_tilde()
 
     Random.seed!(1234)
 
@@ -107,6 +219,37 @@ function test_main()
     display(imag(evars.Haux[1]))
     println()
 
+end
+
+
+function test_main()
+
+    Random.seed!(1234)
+
+    Ham = create_Ham_atom_Pt_smearing()
+    evars = rand_ElectronicVars(Ham)
+
+    Etot = eval_L_tilde!(Ham, evars)
+    println("Etot = ", Etot)
+
+    g_evars = grad_eval_L_tilde!(Ham, evars)
+
+    Etot = eval_L_tilde!(Ham, evars)
+    println("Etot = ", Etot)
+
+#=
+    println("After grad_eval_L_tilde!")
+    display(real(evars.Haux[1]))
+    println()
+    display(imag(evars.Haux[1]))
+    println()
+
+    println("After grad_eval_L_tilde!")
+    display(real(g_evars.Haux[1]))
+    println()
+    display(imag(g_evars.Haux[1]))
+    println()
+=#
 end
 
 test_main()
