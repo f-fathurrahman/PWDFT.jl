@@ -75,8 +75,6 @@ function eval_L_tilde!( Ham::Hamiltonian, evars::ElectronicVars; kT=1e-3, skip_o
     energies = calc_energies( Ham, psiks )
     energies.mTS = Entropy
 
-    print_ebands( Ham.electrons, Ham.pw.gvecw.kpoints )
-
     return sum(energies)
 end
 
@@ -213,7 +211,7 @@ function test_eval_L_tilde()
     Etot = eval_L_tilde!(Ham, evars)
     @printf("Etot = %18.10f\n", Etot)
 
-    println("After  eval_L_tilde!")
+    println("After eval_L_tilde!")
     display(real(evars.Haux[1]))
     println()
     display(imag(evars.Haux[1]))
@@ -222,7 +220,7 @@ function test_eval_L_tilde()
 end
 
 
-function test_main()
+function test_grad_eval_L_tilde()
 
     Random.seed!(1234)
 
@@ -237,19 +235,5 @@ function test_main()
     Etot = eval_L_tilde!(Ham, evars)
     println("Etot = ", Etot)
 
-#=
-    println("After grad_eval_L_tilde!")
-    display(real(evars.Haux[1]))
-    println()
-    display(imag(evars.Haux[1]))
-    println()
-
-    println("After grad_eval_L_tilde!")
-    display(real(g_evars.Haux[1]))
-    println()
-    display(imag(g_evars.Haux[1]))
-    println()
-=#
 end
-
-test_main()
+test_grad_eval_L_tilde()
