@@ -144,7 +144,7 @@ KS_solve_Emin_PCG!( Ham ) # direct minimization using preconditioned conjugate g
 ## More examples on creating an instance of `Atoms`
 
 GaAs crystal (primitive unit cell), using keyword `xyz_string_frac`:
-```
+```julia
 # Atoms
 atoms = Atoms( xyz_string_frac=
     """
@@ -160,7 +160,7 @@ atoms = Atoms( xyz_string_frac=
 
 
 Hydrazine molecule in extended xyz file
-```
+```julia
 atoms = Atoms(ext_xyz_file="N2H4.xyz")
 ```
 with the following `N2H4.xyz` file:
@@ -180,17 +180,17 @@ Lattice vectors information is taken from the xyz file.
 ## More examples on creating an instance of `Hamiltonian`
 
 Using 3x3x3 Monkhorst-Pack kpoint grid (usually used for crystalline systems):
-```
+```julia
 Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3] )
 ```
 
 Include 4 extra states:
-```
+```julia
 Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3], extra_states=4 )
 ```
 
 Using spin-polarized (`Nspin=2 `):
-```
+```julia
 Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3],
     Nspin=2, extra_states=4 )
 ```
@@ -201,7 +201,7 @@ is usually should also be specified.
 
 
 Using PBE exchange-correlation functional:
-```
+```julia
 Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3],
     Nspin=2, extra_states=4, xcfunc="PBE" )
 ```
@@ -260,7 +260,7 @@ For metallic system, we use Fermi smearing scheme for occupation numbers of elec
 This is activated by setting `use_smearing=true` and specifying a small smearing parameter `kT`
 (in Hartree, default `kT=0.001`).
 
-```
+```julia
 KS_solve_SCF!( Ham, mix_method="rpulay", use_smearing=true, kT=0.001 )
 ```
 
