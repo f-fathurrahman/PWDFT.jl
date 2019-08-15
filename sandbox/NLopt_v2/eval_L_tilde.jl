@@ -263,20 +263,25 @@ import PWDFT: print_ebands
 function print_ebands( Ham::Hamiltonian )
     print_ebands( Ham.electrons, Ham.pw.gvecw.kpoints )
 end
- 
+
+import Base: copy
+function copy( evars::ElectronicVars )
+    return ElectronicVars( copy(evars.psiks), copy(evars.Haux) )
+end
+
 function test_SD()
     Random.seed!(1234)
 
-    #Ham = create_Ham_atom_Pt_smearing()
-    Ham = create_Ham_Al_fcc_smearing()
+    Ham = create_Ham_atom_Pt_smearing()
+    #Ham = create_Ham_Al_fcc_smearing()
     evars = rand_ElectronicVars(Ham)
 
-    g_evars = ElectronicVars( copy(evars.psiks), copy(evars.Haux) )
+    g_evars = copy(evars)
 
     Etot_old = eval_L_tilde!( Ham, evars )
 
     α_t = 1e-5
-    β_t = 1e-2
+    β_t = 1e-1
 
     for iter = 1:50
         
@@ -292,4 +297,4 @@ function test_SD()
         Etot_old = Etot
     end
 end
-test_SD()
+@time test_SD()
