@@ -246,41 +246,48 @@ function test_grad_eval_L_tilde()
     println("Etot = ", Etot)
 end
 
-function axpy!(a, x::ElectronicVars, y::ElectronicVars )
+function axpy!(a, b, x::ElectronicVars, y::ElectronicVars )
     
-    # update psiks
-    x.psiks = x.psiks + a*y.psiks
-    
-    # update Haux
-    for i in length(x.Haux)
-        x.Haux[i] = x.Haux[i] + a*y.Haux[i]
+    Nkspin = length(x.Haux)
+    # update psiks and Haux
+    for i in 1:Nkspin
+        x.psiks[i] = x.psiks[i] + a*y.psiks[i]
+        x.Haux[i] = x.Haux[i] + b*y.Haux[i]
         x.Haux[i] = 0.5*( x.Haux[i] + x.Haux[i]' ) # or use previous U_Haux
     end
 
     return
 end
 
+import PWDFT: print_ebands
+function print_ebands( Ham::Hamiltonian )
+    print_ebands( Ham.electrons, Ham.pw.gvecw.kpoints )
+end
+ 
 function test_SD()
     Random.seed!(1234)
 
-    Ham = create_Ham_atom_Pt_smearing()
+    #Ham = create_Ham_atom_Pt_smearing()
+    Ham = create_Ham_Al_fcc_smearing()
     evars = rand_ElectronicVars(Ham)
 
     g_evars = ElectronicVars( copy(evars.psiks), copy(evars.Haux) )
 
-    Etot_old = eval_L_tilde!(Ham, evars)
+    Etot_old = eval_L_tilde!( Ham, evars )
 
     α_t = 1e-5
+    β_t = 1e-2
 
-    for iter = 1:5
+    for iter = 1:50
         
         grad_eval_L_tilde!( Ham, evars, g_evars )
 
-        axpy!( -α_t, evars, g_evars )
+        axpy!( -α_t, -β_t, evars, g_evars )
 
         Etot = eval_L_tilde!( Ham, evars )
 
         @printf("%8d %18.10f %18.10e\n", iter, Etot, Etot_old - Etot)
+        #print_ebands( Ham )
 
         Etot_old = Etot
     end
