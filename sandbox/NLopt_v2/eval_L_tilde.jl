@@ -19,8 +19,51 @@ function set_occupations!( Ham, kT )
     return E_fermi
 end
 
+mutable struct ElectronicVars
+    psiks::BlochWavefunc
+    Haux::Array{Matrix{ComplexF64},1}
+end
 
-function eval_L( Ham, psiks; kT=1e-3 )
+function rand_ElectronicVars( Ham::Hamiltonian )
+
+    psiks = rand_BlochWavefunc(Ham)
+    
+    Nstates = Ham.electrons.Nstates
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+    Nspin = Ham.electrons.Nspin
+    Nkspin = Nkpt*Nspin
+
+    Haux = Array{Matrix{ComplexF64},1}(undef,Nkspin)
+    for i in 1:Nkspin
+        Haux[i] = rand( ComplexF64, Nstates, Nstates )
+        Haux[i] = 0.5*( Haux[i] + Haux[i]' )
+    end
+
+    return ElectronicVars(psiks, Haux)
+end
+
+import Base: +
+function +( x::ElectronicVars, y::ElectronicVars )
+    z = ElectronicVars( copy(x.psiks), copy(y.Haux) )
+    for i in 1:length(x.psiks)
+        z.psiks[i] = x.psiks[i] + y.psiks[i]
+        z.Haux[i]  = x.Haux[i] + y.Haux[i]
+        z.Haux[i]  = 0.5*( z.Haux[i] + z.Haux[i]' )
+    end
+    return z
+end
+
+function eval_L_tilde!( Ham::Hamiltonian, evars::ElectronicVars; kT=1e-3 )
+
+    psiks = evars.psiks
+    Haux = evars.Haux
+
+    U_Haux = copy(Haux)
+    for i in 1:length(U_Haux)
+        Ham.electrons.ebands[:,i], U_Haux[i] = eigen( Haux[i] )
+        Haux[i] = diagm( 0 => Ham.electrons.ebands[:,i] ) # rotate Haux
+        psiks[i] = psiks[i]*U_Haux[i] # rotate psiks
+    end
 
     E_fermi = set_occupations!( Ham, kT )
     Entropy = calc_entropy(
@@ -28,7 +71,11 @@ function eval_L( Ham, psiks; kT=1e-3 )
         kT,
         Ham.electrons.ebands,
         E_fermi,
-        Ham.electrons.Nspin )
+        Ham.electrons.Nspin
+    )
+
+    Rhoe = calc_rhoe( Ham, psiks )
+    update!( Ham, Rhoe )
 
     energies = calc_energies( Ham, psiks )
     energies.mTS = Entropy
@@ -38,69 +85,27 @@ function eval_L( Ham, psiks; kT=1e-3 )
     return sum(energies)
 end
 
-# modify Ham.electrons.ebands
-# rotate psiks
-# return subspace Hamiltonian
-# psiks should be orthonormalized first
-function subspace_rotation!( Ham, psiks )
-
-    Nkspin = length(psiks)
-    Nstates = Ham.electrons.Nstates
-    Hsub = Array{Matrix{ComplexF64},1}(undef,Nkspin)
-    for i in 1:Nkspin
-        Hsub[i] = zeros(ComplexF64,Nstates,Nstates)
-    end
-
-    Nspin = Ham.electrons.Nspin
-    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
-
-    for ispin = 1:Nspin, ik = 1:Nkpt
-        Ham.ispin = ispin
-        Ham.ik = ik
-        i = ik + (ispin - 1)*Nkpt
-        Hr = Hermitian(psiks[i]' * op_H(Ham, psiks[i]))
-        Ham.electrons.ebands[:,i], evecs = eigen(Hr)
-        psiks[i] = psiks[i]*evecs # also rotate
-        Hsub[i] = psiks[i]' * ( op_H(Ham, psiks[i]) )
-    end
-
-    return Hsub
-end
-
 function test_main()
 
     Random.seed!(1234)
 
     Ham = create_Ham_atom_Pt_smearing()
-    psiks = rand_BlochWavefunc(Ham)
+    evars = rand_ElectronicVars(Ham)
 
-    Nstates = Ham.electrons.Nstates
-    Nspin = Ham.electrons.Nspin
-    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
-    Nkspin = Nkpt*Nspin
+    println("Before eval_L_tilde!")
+    display(real(evars.Haux[1]))
+    println()
+    display(imag(evars.Haux[1]))
+    println()
 
-    Haux = Array{Matrix{ComplexF64},1}(undef,Nkspin)
-    for i in 1:Nkspin
-        Haux[i] = rand( ComplexF64, Nstates, Nstates )
-        Haux[i] = 0.5*( Haux[i] + Haux[i]' )
-    end
-
-    U_Haux = copy(Haux)
-    for i in 1:Nkspin
-        Ham.electrons.ebands[:,i], U_Haux[i] = eigen( Haux[i] )
-        Haux[i] = diagm( 0 => Ham.electrons.ebands[:,i] ) # rotate Haux
-        psiks[i] = psiks[i]*U_Haux[i] # rotate psiks
-    end
-
-    # calculate Rhoe with this psiks and Focc (included in Ham)
-    Rhoe = calc_rhoe( Ham, psiks )
-    update!( Ham, Rhoe )
-
-    Etot = eval_L(Ham, psiks)
+    Etot = eval_L_tilde!(Ham, evars)
     @printf("Etot = %18.10f\n", Etot)
 
-    Etot = eval_L(Ham, psiks)
-    @printf("Etot = %18.10f\n", Etot)
+    println("After  eval_L_tilde!")
+    display(real(evars.Haux[1]))
+    println()
+    display(imag(evars.Haux[1]))
+    println()
 
 end
 
