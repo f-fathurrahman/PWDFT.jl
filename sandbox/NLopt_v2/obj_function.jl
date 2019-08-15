@@ -36,9 +36,9 @@ function obj_function!(
     end
 
     # rotate psiks
-    for i = 1:Nkspin
-        psiks[i] = psiks[i]*U_Haux[i]
-    end
+    #for i = 1:Nkspin
+    #    psiks[i] = psiks[i]*U_Haux[i]
+    #end
 
     Rhoe_old = copy( Ham.rhoe )
 

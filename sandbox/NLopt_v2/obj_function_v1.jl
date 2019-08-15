@@ -36,7 +36,6 @@ function obj_function_v1!(
     Focc_old = copy(Ham.electrons.Focc)
 
     Ham.electrons.Focc, E_fermi = calc_Focc( Nelectrons, wk, kT, ebands, Nspin )
-    println("E_fermi = ", E_fermi)
     Entropy = calc_entropy( wk, kT, ebands, E_fermi, Nspin )
 
     Rhoe_old = copy( Ham.rhoe )
