@@ -106,15 +106,15 @@ function grad_eval_L_tilde!( Ham::Hamiltonian, evars::ElectronicVars; kT=1e-3 )
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
 
     g = copy(psiks)
-    Haux = copy(Haux)
+    g_Haux = copy(Haux)
     for ispin in 1:Nspin, ik in 1:Nkpt
         Ham.ispin = ispin
         Ham.ik = ik
         i = ik + (ispin - 1)*Nkpt
-        g[i], Haux[i] = calc_grad_Haux(Ham, psiks[i], kT)
+        g[i], g_Haux[i] = calc_grad_Haux(Ham, psiks[i], kT)
     end
 
-    return ElectronicVars(g, Haux)
+    return ElectronicVars(g, g_Haux)
 
 
 end
