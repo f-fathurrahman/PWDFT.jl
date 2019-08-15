@@ -78,10 +78,22 @@ function eval_L_tilde!( Ham::Hamiltonian, evars::ElectronicVars; kT=1e-3, skip_o
     return sum(energies)
 end
 
-function grad_eval_L_tilde!( Ham::Hamiltonian, evars::ElectronicVars; kT=1e-3 )
+function grad_eval_L_tilde!(
+    Ham::Hamiltonian,
+    evars::ElectronicVars,
+    g_evars::ElectronicVars;
+    kT=1e-3,
+    skip_ortho=false
+)
 
     psiks = evars.psiks
     Haux = evars.Haux
+
+    if !skip_ortho
+        for i in length(psiks)
+            ortho_sqrt!(psiks[i])
+        end
+    end
 
     U_Haux = copy(Haux)
     for i in 1:length(U_Haux)
@@ -105,8 +117,8 @@ function grad_eval_L_tilde!( Ham::Hamiltonian, evars::ElectronicVars; kT=1e-3 )
     Nspin = Ham.electrons.Nspin
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
 
-    g = copy(psiks)
-    g_Haux = copy(Haux)
+    g = g_evars.psiks
+    g_Haux = g_evars.Haux
     for ispin in 1:Nspin, ik in 1:Nkpt
         Ham.ispin = ispin
         Ham.ik = ik
@@ -114,8 +126,7 @@ function grad_eval_L_tilde!( Ham::Hamiltonian, evars::ElectronicVars; kT=1e-3 )
         g[i], g_Haux[i] = calc_grad_Haux(Ham, psiks[i], kT)
     end
 
-    return ElectronicVars(g, g_Haux)
-
+    return
 
 end
 
@@ -221,19 +232,57 @@ end
 
 
 function test_grad_eval_L_tilde()
+    Random.seed!(1234)
+    Ham = create_Ham_atom_Pt_smearing()
+    evars = rand_ElectronicVars(Ham)
+    g_evars = ElectronicVars( copy(evars.psiks), copy(evars.Haux) )
 
+    Etot = eval_L_tilde!(Ham, evars)
+    println("Etot = ", Etot)
+
+    grad_eval_L_tilde!(Ham, evars, g_evars)
+
+    Etot = eval_L_tilde!(Ham, evars)
+    println("Etot = ", Etot)
+end
+
+function axpy!(a, x::ElectronicVars, y::ElectronicVars )
+    
+    # update psiks
+    x.psiks = x.psiks + a*y.psiks
+    
+    # update Haux
+    for i in length(x.Haux)
+        x.Haux[i] = x.Haux[i] + a*y.Haux[i]
+        x.Haux[i] = 0.5*( x.Haux[i] + x.Haux[i]' ) # or use previous U_Haux
+    end
+
+    return
+end
+
+function test_SD()
     Random.seed!(1234)
 
     Ham = create_Ham_atom_Pt_smearing()
     evars = rand_ElectronicVars(Ham)
 
-    Etot = eval_L_tilde!(Ham, evars)
-    println("Etot = ", Etot)
+    g_evars = ElectronicVars( copy(evars.psiks), copy(evars.Haux) )
 
-    g_evars = grad_eval_L_tilde!(Ham, evars)
+    Etot_old = eval_L_tilde!(Ham, evars)
 
-    Etot = eval_L_tilde!(Ham, evars)
-    println("Etot = ", Etot)
+    α_t = 1e-5
 
+    for iter = 1:5
+        
+        grad_eval_L_tilde!( Ham, evars, g_evars )
+
+        axpy!( -α_t, evars, g_evars )
+
+        Etot = eval_L_tilde!( Ham, evars )
+
+        @printf("%8d %18.10f %18.10e\n", iter, Etot, Etot_old - Etot)
+
+        Etot_old = Etot
+    end
 end
-test_grad_eval_L_tilde()
+test_SD()
