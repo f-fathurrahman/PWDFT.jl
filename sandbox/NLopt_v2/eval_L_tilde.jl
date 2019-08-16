@@ -148,6 +148,110 @@ function grad_eval_L_tilde!(
 
 end
 
+
+function calc_primary_search_dirs!(
+    Ham::Hamiltonian,
+    evars::ElectronicVars,
+    Δ_evars::ElectronicVars;
+    kT=1e-3,
+    skip_ortho=false,
+    κ=0.5
+)
+
+    psiks = evars.psiks
+    Haux = evars.Haux
+
+    if !skip_ortho
+        for i in length(psiks)
+            ortho_sqrt!(psiks[i])
+        end
+    end
+
+    U_Haux = copy(Haux)
+    for i in 1:length(U_Haux)
+        Ham.electrons.ebands[:,i], U_Haux[i] = eigen( Haux[i] )
+        Haux[i] = diagm( 0 => Ham.electrons.ebands[:,i] ) # rotate Haux
+        psiks[i] = psiks[i]*U_Haux[i] # rotate psiks
+    end
+
+    E_fermi = set_occupations!( Ham, kT )
+    Entropy = calc_entropy(
+        Ham.pw.gvecw.kpoints.wk,
+        kT,
+        Ham.electrons.ebands,
+        E_fermi,
+        Ham.electrons.Nspin
+    )
+
+    Rhoe = calc_rhoe( Ham, psiks )
+    update!( Ham, Rhoe )
+
+    Nspin = Ham.electrons.Nspin
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+
+    Δ = Δ_evars.psiks
+    Δ_Haux = Δ_evars.Haux
+    for ispin in 1:Nspin, ik in 1:Nkpt
+        Ham.ispin = ispin
+        Ham.ik = ik
+        i = ik + (ispin - 1)*Nkpt
+        Δ[i], Δ_Haux[i] = calc_grad_Haux_prec(Ham, psiks[i], kT, κ)
+        Δ[i] = -Kprec( ik, Ham.pw, Δ[i] )
+    end
+
+    return
+
+end
+
+
+# using expression given in PhysRevB.79.241103 (Freysoldt-Boeck-Neugenbauer)
+# for primary search direction
+function calc_grad_Haux_prec(
+    Ham::Hamiltonian,
+    psi::Array{ComplexF64,2},
+    kT::Float64,
+    κ::Float64
+)
+
+    ik = Ham.ik
+    ispin = Ham.ispin
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+    ikspin = ik + (ispin - 1)*Nkpt
+
+    # occupation number for this kpoint
+    epsilon = @view Ham.electrons.ebands[:,ikspin]
+    
+    Ngw     = size(psi)[1]
+    Nstates = size(psi)[2]
+
+    # gradients
+    g_psi = zeros(ComplexF64, Ngw, Nstates)
+    g_Haux = zeros(ComplexF64, Nstates, Nstates)
+
+    Hpsi = op_H( Ham, psi )
+
+    # subspace Hamiltonian
+    Hsub = psi' * Hpsi
+
+    # gradient for psi (excluding Focc)
+    for ist = 1:Nstates
+        g_psi[:,ist] = Hpsi[:,ist]
+        for jst = 1:Nstates
+            g_psi[:,ist] = g_psi[:,ist] - Hsub[jst,ist]*psi[:,jst]
+        end
+    end
+
+    g_Haux = copy(Hsub)
+    # diagonal
+    for ist = 1:Nstates
+        g_Haux[ist,ist] = κ*( Hsub[ist,ist] - epsilon[ist] )
+    end
+
+    return g_psi, g_Haux
+end
+
+
+
 # using expression given in PhysRevB.79.241103 (Freysoldt-Boeck-Neugenbauer)
 function calc_grad_Haux(
     Ham::Hamiltonian,
@@ -340,7 +444,6 @@ function test_SD()
 end
 #@time test_SD()
 
-
 function precond_grad!( Ham, g, Kg; Kscalar=1.0 )
     Nspin = Ham.electrons.Nspin
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
@@ -357,13 +460,21 @@ function calc_beta_CG!( g, g_old, Kg, Kg_old, β, β_Haux )
     Nkspin = length(g.psiks)
 
     for i in 1:Nkspin
-        β[i] = real(sum(conj(g.psiks[i]-g_old.psiks[i]).*Kg.psiks[i]))/
-               real(sum(conj(g_old.psiks[i]).*Kg_old.psiks[i]))
+        ss = real(sum(conj(g_old.psiks[i]).*Kg_old.psiks[i]))
+        if abs(ss) >= 1e-10
+            β[i] = real(sum(conj(g.psiks[i]-g_old.psiks[i]).*Kg.psiks[i]))/ss
+        else
+            β[i] = 0.0
+        end
         if β[i] < 0.0
             β[i] = 0.0
         end
-        β_Haux[i] = real(sum(conj(g.Haux[i]-g_old.Haux[i]).*Kg.Haux[i]))/
-                    real(sum(conj(g_old.Haux[i]).*Kg_old.Haux[i]))
+        ss = real(sum(conj(g_old.Haux[i]).*Kg_old.Haux[i]))
+        if abs(ss) >= 1e-10
+            β_Haux[i] = real(sum(conj(g.Haux[i]-g_old.Haux[i]).*Kg.Haux[i]))/ss
+        else
+            β_Haux[i] = 0.0
+        end
         if β_Haux[i] < 0.0
             β_Haux[i] = 0.0
         end
@@ -375,8 +486,8 @@ end
 function calc_search_dirs!( d, Kg, d_old, β, β_Haux )
     Nkspin = length(d.psiks)
     for i in 1:Nkspin
-        d.psiks[i] = -Kg.psiks[i] + β[i] * d_old.psiks[i]
-        d.Haux[i] = -Kg.Haux[i] + β_Haux[i] * d_old.Haux[i]
+        d.psiks[i] = Kg.psiks[i] + β[i] * d_old.psiks[i]
+        d.Haux[i] = Kg.Haux[i] + β_Haux[i] * d_old.Haux[i]
     end
     return
 end
@@ -465,16 +576,15 @@ function test_CG()
     println("Etot_old = ", Etot_old)
 
     α_t = 1e-5
-    α_t_aux = 1e-1
 
-    for iter = 1:1
+    for iter = 1:50
         
         grad_eval_L_tilde!( Ham, evars, g_evars )
-        print_Haux( evars, "evars after grad_eval_L_tilde")
-        print_Haux( g_evars, "g_evars after grad_eval_L_tilde")
+        #print_Haux( evars, "evars after grad_eval_L_tilde")
+        #print_Haux( g_evars, "g_evars after grad_eval_L_tilde")
 
-        #precond_grad!( Ham, g_evars, Kg_evars, Kscalar=0.01 )
-        Kg_evars = copy(g_evars)
+        calc_primary_search_dirs!( Ham, evars, Kg_evars )
+        #print_Haux( Kg_evars, "Kg_evars after grad_eval_L_tilde")
 
         if iter > 1
             calc_beta_CG!( g_evars, g_old_evars, Kg_evars, Kg_old_evars, β, β_Haux )
@@ -483,15 +593,16 @@ function test_CG()
         println("β_Haux = ", β_Haux)
 
         calc_search_dirs!( d_evars, Kg_evars, d_old_evars, β, β_Haux )
-        print_Haux( d_evars, "d_evars after calc_search_dirs!")
+        #print_Haux( d_evars, "d_evars after calc_search_dirs!")
 
-        trial_evars!( evarsc, evars, d_evars, α_t, α_t_aux )
-        print_Haux( evarsc, "evarsc after trial_evars!")
+        trial_evars!( evarsc, evars, d_evars, α_t, α_t )
+        #print_Haux( evarsc, "evarsc after trial_evars!")
 
+        #print_Haux( evarsc, "evarsc before grad_eval_L_tilde")
         grad_eval_L_tilde!( Ham, evarsc, gt_evars )
-        print_Haux( evarsc, "evarsc after grad_eval_L_tilde")
+        #print_Haux( evarsc, "evarsc after grad_eval_L_tilde")
 
-        calc_alpha_CG!( evars, gt_evars, d_evars, α_t, α_t_aux, α, α_Haux )
+        calc_alpha_CG!( evars, gt_evars, d_evars, α_t, α_t, α, α_Haux )
 
         println("α      = ", α)
         println("α_Haux = ", α_Haux)
@@ -499,11 +610,12 @@ function test_CG()
         # update evars
         axpy!( α, α_Haux, evars, d_evars )
 
+        #print_Haux( evars, "evars before eval_L_tilde")
         Etot = eval_L_tilde!( Ham, evars )
-        print_Haux( evars, "evars after eval_L_tilde")
+        #print_Haux( evars, "evars after eval_L_tilde")
 
         @printf("%8d %18.10f %18.10e\n", iter, Etot, Etot_old - Etot)
-        print_ebands( Ham )
+        #print_ebands( Ham )
 
         Etot_old = Etot
         d_old_evars = copy(d_evars)
@@ -511,6 +623,8 @@ function test_CG()
         Kg_old_evars = copy(Kg_evars)
 
     end
+
+    print_ebands( Ham )
 
 
 end
