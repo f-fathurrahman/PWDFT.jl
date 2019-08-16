@@ -141,7 +141,7 @@ function main_CG()
         #    Hauxc[i] = 0.5*( Hauxc[i] + Hauxc[i]' )
         #end
 
-        grad_obj_function!( Ham, psic, gt, Hauxc, gt_Haux )        
+        grad_obj_function!( Ham, psic, gt, Hauxc, gt_Haux )       
         
         calc_alpha_CG!( α_t, g, gt, d, α )
         psiks = psiks + α .* d

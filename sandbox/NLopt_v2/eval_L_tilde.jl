@@ -421,11 +421,23 @@ function calc_alpha_CG!(
     return
 end
 
+# print the first Haux of an instance of ElectronicVars
+function print_Haux( e::ElectronicVars, header::String )
+    println()
+    println(header)
+    println("\nreal part\n")
+    display(real(e.Haux[1]))
+    println("\n\nimaginary part\n")
+    display(imag(e.Haux[1]))
+    println()
+end
+
 function test_CG()
     Random.seed!(1234)
 
     #Ham = create_Ham_atom_Pt_smearing()
-    Ham = create_Ham_Al_fcc_smearing()
+    Ham = create_Ham_Pt_fcc_smearing()
+    #Ham = create_Ham_Al_fcc_smearing()
     evars = rand_ElectronicVars(Ham)
 
     evarsc = copy(evars)
@@ -455,23 +467,14 @@ function test_CG()
     α_t = 1e-5
     α_t_aux = 1e-1
 
-    for iter = 1:5
+    for iter = 1:1
         
         grad_eval_L_tilde!( Ham, evars, g_evars )
+        print_Haux( evars, "evars after grad_eval_L_tilde")
+        print_Haux( g_evars, "g_evars after grad_eval_L_tilde")
 
-        #println("Before precond_grad")
-        #display(real(g_evars.Haux[1]))
-        #println()
-        #display(imag(g_evars.Haux[1]))
-        #println()
-
-        precond_grad!( Ham, g_evars, Kg_evars, Kscalar=0.01 )
-
-        #println("After precond_grad")
-        #display(real(Kg_evars.Haux[1]))
-        #println()
-        #display(imag(Kg_evars.Haux[1]))
-        #println()
+        #precond_grad!( Ham, g_evars, Kg_evars, Kscalar=0.01 )
+        Kg_evars = copy(g_evars)
 
         if iter > 1
             calc_beta_CG!( g_evars, g_old_evars, Kg_evars, Kg_old_evars, β, β_Haux )
@@ -479,58 +482,25 @@ function test_CG()
         println("β = ", β)
         println("β_Haux = ", β_Haux)
 
-        #println("Before calc_search_dirs")
-        #display(real(d_evars.Haux[1]))
-        #println()
-        #display(imag(d_evars.Haux[1]))
-        #println()
-
         calc_search_dirs!( d_evars, Kg_evars, d_old_evars, β, β_Haux )
-
-        #println("After calc_search_dirs!")
-        #display(real(d_evars.Haux[1]))
-        #println()
-        #display(imag(d_evars.Haux[1]))
-        #println()
+        print_Haux( d_evars, "d_evars after calc_search_dirs!")
 
         trial_evars!( evarsc, evars, d_evars, α_t, α_t_aux )
-        
+        print_Haux( evarsc, "evarsc after trial_evars!")
+
         grad_eval_L_tilde!( Ham, evarsc, gt_evars )
+        print_Haux( evarsc, "evarsc after grad_eval_L_tilde")
 
         calc_alpha_CG!( evars, gt_evars, d_evars, α_t, α_t_aux, α, α_Haux )
 
         println("α      = ", α)
         println("α_Haux = ", α_Haux)
 
-        #println("Before axpy!")
-        #display(real(d_evars.Haux[1]))
-        #println()
-        #display(imag(d_evars.Haux[1]))
-        #println()
-
         # update evars
         axpy!( α, α_Haux, evars, d_evars )
-        # evars = evars + α*d
-        #println("After axpy!")
-        #display(real(d_evars.Haux[1]))
-        #println()
-        #display(imag(d_evars.Haux[1]))
-        #println()
-
-
-        #println("Before eval_L_tilde!")
-        #display(real(d_evars.Haux[1]))
-        #println()
-        #display(imag(d_evars.Haux[1]))
-        #println()
 
         Etot = eval_L_tilde!( Ham, evars )
-        #println("After eval_L_tilde!")
-        #display(real(evars.Haux[1]))
-        #println()
-        #display(imag(evars.Haux[1]))
-        #println()
-
+        print_Haux( evars, "evars after eval_L_tilde")
 
         @printf("%8d %18.10f %18.10e\n", iter, Etot, Etot_old - Etot)
         print_ebands( Ham )
