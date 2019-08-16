@@ -42,6 +42,24 @@ function rand_ElectronicVars( Ham::Hamiltonian )
     return ElectronicVars(psiks, Haux)
 end
 
+function zeros_ElectronicVars( Ham::Hamiltonian )
+
+    psiks = zeros_BlochWavefunc(Ham)
+    
+    Nstates = Ham.electrons.Nstates
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+    Nspin = Ham.electrons.Nspin
+    Nkspin = Nkpt*Nspin
+
+    Haux = Array{Matrix{ComplexF64},1}(undef,Nkspin)
+    for i in 1:Nkspin
+        Haux[i] = zeros( ComplexF64, Nstates, Nstates )
+    end
+
+    return ElectronicVars(psiks, Haux)
+end
+
+
 function eval_L_tilde!( Ham::Hamiltonian, evars::ElectronicVars; kT=1e-3, skip_ortho=false )
 
     psiks = evars.psiks
@@ -246,18 +264,38 @@ function test_grad_eval_L_tilde()
     println("Etot = ", Etot)
 end
 
-function axpy!(a, b, x::ElectronicVars, y::ElectronicVars )
+function axpy!(a::Float64, b::Float64, x::ElectronicVars, y::ElectronicVars )
     
-    Nkspin = length(x.Haux)
+    Nkspin = length(x.psiks)
     # update psiks and Haux
     for i in 1:Nkspin
         x.psiks[i] = x.psiks[i] + a*y.psiks[i]
         x.Haux[i] = x.Haux[i] + b*y.Haux[i]
-        x.Haux[i] = 0.5*( x.Haux[i] + x.Haux[i]' ) # or use previous U_Haux
+        x.Haux[i] = 0.5*( x.Haux[i] + x.Haux[i]' ) # or use previous U_Haux ?
     end
 
     return
 end
+
+function axpy!(
+    a::Vector{Float64},
+    b::Vector{Float64},
+    x::ElectronicVars,
+    y::ElectronicVars
+)
+    
+    Nkspin = length(x.psiks)
+    # update psiks and Haux
+    for i in 1:Nkspin
+        x.psiks[i] = x.psiks[i] + a[i]*y.psiks[i]
+        x.Haux[i] = x.Haux[i] + b[i]*y.Haux[i]
+        x.Haux[i] = 0.5*( x.Haux[i] + x.Haux[i]' ) # or use previous U_Haux ?
+    end
+
+    return
+end
+
+
 
 import PWDFT: print_ebands
 function print_ebands( Ham::Hamiltonian )
@@ -300,38 +338,210 @@ function test_SD()
         Etot_old = Etot
     end
 end
-@time test_SD()
+#@time test_SD()
 
+
+function precond_grad!( Ham, g, Kg; Kscalar=1.0 )
+    Nspin = Ham.electrons.Nspin
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+    for ispin in 1:Nspin, ik in 1:Nkpt
+        ikspin = ik + (ispin-1)*Nkpt
+        Kg.psiks[ikspin] = Kprec( ik, Ham.pw, g.psiks[ikspin] )
+        Kg.Haux[ikspin] = Kscalar*g.Haux[ikspin]
+    end
+    return
+end
+
+function calc_beta_CG!( g, g_old, Kg, Kg_old, β, β_Haux )
+
+    Nkspin = length(g.psiks)
+
+    for i in 1:Nkspin
+        β[i] = real(sum(conj(g.psiks[i]-g_old.psiks[i]).*Kg.psiks[i]))/
+               real(sum(conj(g_old.psiks[i]).*Kg_old.psiks[i]))
+        if β[i] < 0.0
+            β[i] = 0.0
+        end
+        β_Haux[i] = real(sum(conj(g.Haux[i]-g_old.Haux[i]).*Kg.Haux[i]))/
+                    real(sum(conj(g_old.Haux[i]).*Kg_old.Haux[i]))
+        if β_Haux[i] < 0.0
+            β_Haux[i] = 0.0
+        end
+    end
+    return
+end
+
+
+function calc_search_dirs!( d, Kg, d_old, β, β_Haux )
+    Nkspin = length(d.psiks)
+    for i in 1:Nkspin
+        d.psiks[i] = -Kg.psiks[i] + β[i] * d_old.psiks[i]
+        d.Haux[i] = -Kg.Haux[i] + β_Haux[i] * d_old.Haux[i]
+    end
+    return
+end
+
+function trial_evars!( ec, e, d, α_t, α_t_aux )
+    Nkspin = length(e.psiks)
+    for i in 1:Nkspin
+        ec.psiks[i] = e.psiks[i] + α_t*d.psiks[i]
+        ec.Haux[i] = e.Haux[i] + α_t_aux*d.Haux[i]
+        ec.Haux[i] = 0.5*( ec.Haux[i] + ec.Haux[i]' )
+    end
+    return
+end
+
+function calc_alpha_CG!(
+    g::ElectronicVars, gt::ElectronicVars, d::ElectronicVars,
+    α_t::Float64, α_t_aux::Float64,
+    α, α_aux
+)
+
+    Nkspin = length(g.psiks)
+
+    for i in 1:Nkspin
+        
+        denum = real(sum(conj(g.psiks[i]-gt.psiks[i]).*d.psiks[i]))
+        #if abs(denum) <= 1e-6
+        if denum != 0.0
+            α[i] = abs( α_t*real(sum(conj(g.psiks[i]).*d.psiks[i]))/denum )
+        else
+            α[i] = 0.0
+        end
+
+        denum_aux = real(sum(conj(g.Haux[i]-gt.Haux[i]).*d.Haux[i]))
+        #if abs(denum) <= 1e-6
+        if denum_aux != 0.0
+            α_aux[i] = abs( α_t_aux*real(sum(conj(g.Haux[i]).*d.Haux[i]))/denum_aux )
+        else
+            α_aux[i] = 0.0
+        end
+
+    end
+    return
+end
 
 function test_CG()
     Random.seed!(1234)
 
-    Ham = create_Ham_atom_Pt_smearing()
-    #Ham = create_Ham_Al_fcc_smearing()
+    #Ham = create_Ham_atom_Pt_smearing()
+    Ham = create_Ham_Al_fcc_smearing()
     evars = rand_ElectronicVars(Ham)
 
+    evarsc = copy(evars)
     g_evars = copy(evars)
     Kg_evars = copy(evars)
+    gt_evars = copy(evars)
+    g_old_evars = copy(evars)
+    Kg_old_evars = copy(evars)
+    d_evars = copy(evars)
+    d_old_evars = zeros_ElectronicVars(Ham)
+
+    Nkspin = length(evars.psiks)
+
+    β = zeros(Float64,Nkspin)
+    β_Haux = zeros(Float64,Nkspin)
+
+    α = zeros(Float64,Nkspin)
+    α_Haux = zeros(Float64,Nkspin)
 
     Ham.energies.NN = calc_E_NN( Ham.atoms )
     Ham.energies.PspCore = calc_PspCore_ene( Ham.atoms, Ham.pspots )
 
     Etot_old = eval_L_tilde!( Ham, evars )
 
-    α_t = 1e-5
-    β_t = 1e-1
+    println("Etot_old = ", Etot_old)
 
-    for iter = 1:50
+    α_t = 1e-5
+    α_t_aux = 1e-1
+
+    for iter = 1:5
         
         grad_eval_L_tilde!( Ham, evars, g_evars )
 
-        axpy!( -α_t, -β_t, evars, g_evars )
+        #println("Before precond_grad")
+        #display(real(g_evars.Haux[1]))
+        #println()
+        #display(imag(g_evars.Haux[1]))
+        #println()
+
+        precond_grad!( Ham, g_evars, Kg_evars, Kscalar=0.01 )
+
+        #println("After precond_grad")
+        #display(real(Kg_evars.Haux[1]))
+        #println()
+        #display(imag(Kg_evars.Haux[1]))
+        #println()
+
+        if iter > 1
+            calc_beta_CG!( g_evars, g_old_evars, Kg_evars, Kg_old_evars, β, β_Haux )
+        end
+        println("β = ", β)
+        println("β_Haux = ", β_Haux)
+
+        #println("Before calc_search_dirs")
+        #display(real(d_evars.Haux[1]))
+        #println()
+        #display(imag(d_evars.Haux[1]))
+        #println()
+
+        calc_search_dirs!( d_evars, Kg_evars, d_old_evars, β, β_Haux )
+
+        #println("After calc_search_dirs!")
+        #display(real(d_evars.Haux[1]))
+        #println()
+        #display(imag(d_evars.Haux[1]))
+        #println()
+
+        trial_evars!( evarsc, evars, d_evars, α_t, α_t_aux )
+        
+        grad_eval_L_tilde!( Ham, evarsc, gt_evars )
+
+        calc_alpha_CG!( evars, gt_evars, d_evars, α_t, α_t_aux, α, α_Haux )
+
+        println("α      = ", α)
+        println("α_Haux = ", α_Haux)
+
+        #println("Before axpy!")
+        #display(real(d_evars.Haux[1]))
+        #println()
+        #display(imag(d_evars.Haux[1]))
+        #println()
+
+        # update evars
+        axpy!( α, α_Haux, evars, d_evars )
+        # evars = evars + α*d
+        #println("After axpy!")
+        #display(real(d_evars.Haux[1]))
+        #println()
+        #display(imag(d_evars.Haux[1]))
+        #println()
+
+
+        #println("Before eval_L_tilde!")
+        #display(real(d_evars.Haux[1]))
+        #println()
+        #display(imag(d_evars.Haux[1]))
+        #println()
 
         Etot = eval_L_tilde!( Ham, evars )
+        #println("After eval_L_tilde!")
+        #display(real(evars.Haux[1]))
+        #println()
+        #display(imag(evars.Haux[1]))
+        #println()
+
 
         @printf("%8d %18.10f %18.10e\n", iter, Etot, Etot_old - Etot)
-        #print_ebands( Ham )
+        print_ebands( Ham )
 
         Etot_old = Etot
+        d_old_evars = copy(d_evars)
+        g_old_evars = copy(g_evars)
+        Kg_old_evars = copy(Kg_evars)
+
     end
+
+
 end
+@time test_CG()
