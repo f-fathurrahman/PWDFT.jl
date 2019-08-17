@@ -96,6 +96,60 @@ function eval_L_tilde!( Ham::Hamiltonian, evars::ElectronicVars; kT=1e-3, skip_o
     return sum(energies)
 end
 
+
+function eval_L_tilde_and_rotate_dirs!(
+    Ham::Hamiltonian,
+    evars::ElectronicVars,
+    d::ElectronicVars;
+    kT=1e-3,
+    skip_ortho=false
+)
+
+    psiks = evars.psiks
+    Haux = evars.Haux
+
+    if !skip_ortho
+        for i in length(psiks)
+            ortho_sqrt!(psiks[i])
+        end
+    end
+
+    U_Haux = copy(Haux)
+    d_U_Haux = copy(Haux)
+
+    for i in 1:length(U_Haux)
+        Ham.electrons.ebands[:,i], U_Haux[i] = eigen( Haux[i] )
+        Haux[i] = diagm( 0 => Ham.electrons.ebands[:,i] ) # rotate Haux
+        psiks[i] = psiks[i]*U_Haux[i] # rotate psiks
+
+        # also rotate search direction
+        λ, d_U_Haux[i] = eigen( d.Haux[i] )
+        d.Haux[i] = diagm( 0 => λ )
+        d.psiks[i] = d.psiks[i]*d_U_Haux[i]
+        #d.psiks[i] = d.psiks[i]*U_Haux[i]
+        #d.Haux[i] = U_Haux[i]' * d.Haux[i] * U_Haux[i]
+    end
+
+    E_fermi = set_occupations!( Ham, kT )
+    Entropy = calc_entropy(
+        Ham.pw.gvecw.kpoints.wk,
+        kT,
+        Ham.electrons.ebands,
+        E_fermi,
+        Ham.electrons.Nspin
+    )
+
+    Rhoe = calc_rhoe( Ham, psiks )
+    update!( Ham, Rhoe )
+
+    energies = calc_energies( Ham, psiks )
+    energies.mTS = Entropy
+
+    return sum(energies)
+end
+
+
+
 function grad_eval_L_tilde!(
     Ham::Hamiltonian,
     evars::ElectronicVars,
@@ -580,11 +634,11 @@ function test_CG()
     for iter = 1:50
         
         grad_eval_L_tilde!( Ham, evars, g_evars )
-        #print_Haux( evars, "evars after grad_eval_L_tilde")
-        #print_Haux( g_evars, "g_evars after grad_eval_L_tilde")
+        print_Haux( evars, "evars after grad_eval_L_tilde")
+        print_Haux( g_evars, "g_evars after grad_eval_L_tilde")
 
         calc_primary_search_dirs!( Ham, evars, Kg_evars )
-        #print_Haux( Kg_evars, "Kg_evars after grad_eval_L_tilde")
+        print_Haux( Kg_evars, "Kg_evars after grad_eval_L_tilde")
 
         if iter > 1
             calc_beta_CG!( g_evars, g_old_evars, Kg_evars, Kg_old_evars, β, β_Haux )
@@ -593,16 +647,15 @@ function test_CG()
         println("β_Haux = ", β_Haux)
 
         calc_search_dirs!( d_evars, Kg_evars, d_old_evars, β, β_Haux )
-        #print_Haux( d_evars, "d_evars after calc_search_dirs!")
+        print_Haux( d_evars, "d_evars after calc_search_dirs!")
 
         trial_evars!( evarsc, evars, d_evars, α_t, α_t )
-        #print_Haux( evarsc, "evarsc after trial_evars!")
+        print_Haux( evarsc, "evarsc after trial_evars! and before grad_eval_L_tilde")
 
-        #print_Haux( evarsc, "evarsc before grad_eval_L_tilde")
         grad_eval_L_tilde!( Ham, evarsc, gt_evars )
-        #print_Haux( evarsc, "evarsc after grad_eval_L_tilde")
+        print_Haux( evarsc, "evarsc after grad_eval_L_tilde")
 
-        calc_alpha_CG!( evars, gt_evars, d_evars, α_t, α_t, α, α_Haux )
+        calc_alpha_CG!( g_evars, gt_evars, d_evars, α_t, α_t, α, α_Haux )
 
         println("α      = ", α)
         println("α_Haux = ", α_Haux)
@@ -610,11 +663,12 @@ function test_CG()
         # update evars
         axpy!( α, α_Haux, evars, d_evars )
 
-        #print_Haux( evars, "evars before eval_L_tilde")
-        Etot = eval_L_tilde!( Ham, evars )
-        #print_Haux( evars, "evars after eval_L_tilde")
+        print_Haux( evars, "evars before eval_L_tilde")
+        #Etot = eval_L_tilde!( Ham, evars )
+        Etot = eval_L_tilde_and_rotate_dirs!( Ham, evars, d_evars )
+        print_Haux( evars, "evars after eval_L_tilde")
 
-        @printf("%8d %18.10f %18.10e\n", iter, Etot, Etot_old - Etot)
+        @printf("Iteration %8d %18.10f %18.10e\n", iter, Etot, Etot_old - Etot)
         #print_ebands( Ham )
 
         Etot_old = Etot
