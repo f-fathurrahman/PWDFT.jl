@@ -90,12 +90,14 @@ function calc_alpha_CG!( α_t, g, gt, d, α )
 end
 
 
+include("quadratic_line_minimizer.jl")
+
 function main_CG()
 
     Random.seed!(1234)
 
-    #Ham = create_Ham_H2()
-    Ham = create_Ham_H_atom()
+    Ham = create_Ham_H2()
+    #Ham = create_Ham_H_atom()
     #Ham = create_Ham_Si_fcc()
 
     psiks = rand_BlochWavefunc( Ham )
@@ -104,12 +106,12 @@ function main_CG()
     Npoints = prod(Ham.pw.Ns)
     Nspin = Ham.electrons.Nspin
     Rhoe = zeros(Float64,Npoints,Nspin)
-    @assert Nspin == 1
-    Rhoe[:,1] = guess_rhoe( Ham )
-    #
-    update!(Ham, Rhoe)
-    # eigenvalues are not needed for this case
-    _ = diag_LOBPCG!( Ham, psiks, verbose=false, verbose_last=false, NiterMax=10 )
+    #@assert Nspin == 1
+    #Rhoe[:,1] = guess_rhoe( Ham )
+    ##
+    #update!(Ham, Rhoe)
+    ## eigenvalues are not needed for this case
+    #_ = diag_LOBPCG!( Ham, psiks, verbose=false, verbose_last=false, NiterMax=10 )
 
 
     g = zeros_BlochWavefunc( Ham )
@@ -139,13 +141,17 @@ function main_CG()
         if iter > 1
             calc_beta_CG!( g, g_old, Kg, Kg_old, β )
         end
-
+        println("β = ", β)
         d = -Kg + β .* d_old
 
         # line minimization
         psic = psiks + α_t*d  # trial wavefunc
         grad_obj_function!( Ham, psic, gt )
         calc_alpha_CG!( α_t, g, gt, d, α )
+
+        #quadratic_line_minimizer!(Ham, psiks, d, Etot_old, g, α_t, α)
+        
+        println("α = ", α)
 
         psiks = psiks + α .* d
 
@@ -174,4 +180,4 @@ function main_CG()
 end
 
 @time main_CG()
-@time main_CG()
+#@time main_CG()
