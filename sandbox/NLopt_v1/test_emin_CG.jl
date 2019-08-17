@@ -106,12 +106,12 @@ function main_CG()
     Npoints = prod(Ham.pw.Ns)
     Nspin = Ham.electrons.Nspin
     Rhoe = zeros(Float64,Npoints,Nspin)
-    #@assert Nspin == 1
-    #Rhoe[:,1] = guess_rhoe( Ham )
-    ##
-    #update!(Ham, Rhoe)
-    ## eigenvalues are not needed for this case
-    #_ = diag_LOBPCG!( Ham, psiks, verbose=false, verbose_last=false, NiterMax=10 )
+    @assert Nspin == 1
+    Rhoe[:,1] = guess_rhoe( Ham )
+    #
+    update!(Ham, Rhoe)
+    # eigenvalues are not needed for this case
+    _ = diag_LOBPCG!( Ham, psiks, verbose=false, verbose_last=false, NiterMax=10 )
 
 
     g = zeros_BlochWavefunc( Ham )
