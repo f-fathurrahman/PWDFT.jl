@@ -536,19 +536,28 @@ function calc_beta_CG!( g, g_old, Kg, Kg_old, β, β_Haux )
     for i in 1:Nkspin
         ss = real(sum(conj(g_old.psiks[i]).*Kg_old.psiks[i]))
         if abs(ss) >= 1e-10
-            β[i] = real(sum(conj(g.psiks[i]-g_old.psiks[i]).*Kg.psiks[i]))/ss
+            #β[i] = real(sum(conj(g.psiks[i]-g_old.psiks[i]).*Kg.psiks[i]))/ss
+            β[i] = real(sum(conj(g.psiks[i]).*Kg.psiks[i]))/ss
         else
+            β[i] = 0.0
+        end
+        if abs(β[i] - 1.0) < 0.2
             β[i] = 0.0
         end
         if β[i] < 0.0
             β[i] = 0.0
         end
+
         ss = real(sum(conj(g_old.Haux[i]).*Kg_old.Haux[i]))
         if abs(ss) >= 1e-10
-            β_Haux[i] = real(sum(conj(g.Haux[i]-g_old.Haux[i]).*Kg.Haux[i]))/ss
+            #β_Haux[i] = real(sum(conj(g.Haux[i]-g_old.Haux[i]).*Kg.Haux[i]))/ss
+            β_Haux[i] = real(sum(conj(g.Haux[i]).*Kg.Haux[i]))/ss
         else
             β_Haux[i] = 0.0
         end
+        if abs(β_Haux[i] - 1.0) < 0.2
+            β_Haux[i] = 0.0
+        end        
         if β_Haux[i] < 0.0
             β_Haux[i] = 0.0
         end
@@ -588,6 +597,7 @@ function calc_alpha_CG!(
     for i in 1:Nkspin
         
         denum = real(sum(conj(g.psiks[i]-gt.psiks[i]).*d.psiks[i]))
+        #println("denum = ", denum)
         #if abs(denum) <= 1e-6
         if denum != 0.0
             α[i] = abs( α_t*real(sum(conj(g.psiks[i]).*d.psiks[i]))/denum )
@@ -596,6 +606,7 @@ function calc_alpha_CG!(
         end
 
         denum_aux = real(sum(conj(g.Haux[i]-gt.Haux[i]).*d.Haux[i]))
+        #println("denum_aux = ", denum_aux)
         #if abs(denum) <= 1e-6
         if denum_aux != 0.0
             α_aux[i] = abs( α_t_aux*real(sum(conj(g.Haux[i]).*d.Haux[i]))/denum_aux )
@@ -659,7 +670,8 @@ function test_CG()
         #print_Haux( g_evars, "g_evars after grad_eval_L_tilde")
 
         calc_primary_search_dirs!( Ham, evars, Kg_evars )
-        #print_Haux( Kg_evars, "Kg_evars after grad_eval_L_tilde")
+        #print_Haux( evars, "evars after calc_primary_search_dirs!")
+        #print_Haux( Kg_evars, "Kg_evars after calc_primary_search_dirs!")
 
         if iter > 1
             calc_beta_CG!( g_evars, g_old_evars, Kg_evars, Kg_old_evars, β, β_Haux )
@@ -676,6 +688,8 @@ function test_CG()
         grad_eval_L_tilde!( Ham, evarsc, gt_evars )
         #print_Haux( evarsc, "evarsc after grad_eval_L_tilde")
 
+        #print_Haux( g_evars, "g_evars after grad_eval_L_tilde")
+        #print_Haux( gt_evars, "gt_evars after grad_eval_L_tilde")
         calc_alpha_CG!( g_evars, gt_evars, d_evars, α_t, α_t, α, α_Haux )
 
         println("α      = ", α)
