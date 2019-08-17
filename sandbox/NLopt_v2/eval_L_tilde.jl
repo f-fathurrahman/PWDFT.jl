@@ -52,6 +52,7 @@ function rotate!( e::ElectronicVars )
     for i in 1:length(U_Haux)
         λ, U_Haux[i] = eigen( Haux[i] )
         Haux[i] = diagm( 0 => λ ) # rotate Haux
+        ortho_sqrt!(psiks[i])
         psiks[i] = psiks[i]*U_Haux[i] # rotate psiks
     end
 
@@ -141,7 +142,10 @@ function eval_L_tilde_and_rotate_dirs!(
         # also rotate search direction
         λ, d_U_Haux[i] = eigen( d.Haux[i] )
         d.Haux[i] = diagm( 0 => λ )
+        #ortho_sqrt!(d.psiks[i])  # need this?
         d.psiks[i] = d.psiks[i]*d_U_Haux[i]
+        
+        # using current U_Haux
         #d.psiks[i] = d.psiks[i]*U_Haux[i]
         #d.Haux[i] = U_Haux[i]' * d.Haux[i] * U_Haux[i]
     end
@@ -559,7 +563,7 @@ function calc_search_dirs!( d, Kg, d_old, β, β_Haux )
         d.psiks[i] = Kg.psiks[i] + β[i] * d_old.psiks[i]
         d.Haux[i] = Kg.Haux[i] + β_Haux[i] * d_old.Haux[i]
     end
-    rotate!(d)
+    #rotate!(d)
     return
 end
 
@@ -660,8 +664,8 @@ function test_CG()
         if iter > 1
             calc_beta_CG!( g_evars, g_old_evars, Kg_evars, Kg_old_evars, β, β_Haux )
         end
-        #println("β = ", β)
-        #println("β_Haux = ", β_Haux)
+        println("β = ", β)
+        println("β_Haux = ", β_Haux)
 
         calc_search_dirs!( d_evars, Kg_evars, d_old_evars, β, β_Haux )
         #print_Haux( d_evars, "d_evars after calc_search_dirs!")
@@ -674,15 +678,15 @@ function test_CG()
 
         calc_alpha_CG!( g_evars, gt_evars, d_evars, α_t, α_t, α, α_Haux )
 
-        #println("α      = ", α)
-        #println("α_Haux = ", α_Haux)
+        println("α      = ", α)
+        println("α_Haux = ", α_Haux)
 
         # update evars
         axpy!( α, α_Haux, evars, d_evars )
 
         #print_Haux( evars, "evars before eval_L_tilde")
-        Etot = eval_L_tilde!( Ham, evars )
-        #Etot = eval_L_tilde_and_rotate_dirs!( Ham, evars, d_evars )
+        #Etot = eval_L_tilde!( Ham, evars )
+        Etot = eval_L_tilde_and_rotate_dirs!( Ham, evars, d_evars )
         #print_Haux( evars, "evars after eval_L_tilde")
 
         @printf("Iteration %8d %18.10f %18.10e\n", iter, Etot, Etot_old - Etot)
