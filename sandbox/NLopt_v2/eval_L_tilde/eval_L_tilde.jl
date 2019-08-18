@@ -21,8 +21,6 @@ function eval_L_tilde!( Ham::Hamiltonian, evars::ElectronicVars; kT=1e-3, skip_o
         end
     end
 
-    Hsub = subspace_rotation!( Ham, psiks )
-
     U_Haux = copy(Haux)
     for i in 1:length(U_Haux)
         Ham.electrons.ebands[:,i], U_Haux[i] = eigen( Haux[i] )
@@ -45,7 +43,7 @@ function eval_L_tilde!( Ham::Hamiltonian, evars::ElectronicVars; kT=1e-3, skip_o
     energies = calc_energies( Ham, psiks )
     energies.mTS = Entropy
 
-    return sum(energies), Hsub
+    return sum(energies)
 end
 
 
