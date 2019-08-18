@@ -19,8 +19,11 @@ function test_eval_L_tilde()
     println("After eval_L_tilde!")
     print_Haux(evars, "evars after eval_L_tilde")
     println()
-    println("Hsub = ")
-    display(Hsub)
+    println("real(Hsub) = ")
+    display(real(Hsub[1]))
+    println()
+    println("imag(Hsub) = ")
+    display(imag(Hsub[1]))
     println()
 
 end

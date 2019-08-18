@@ -7,6 +7,7 @@ const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
 const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
 
 include("../create_Ham.jl")
+include("subspace_rotation.jl")
 include("ElectronicVars.jl")
 
 function eval_L_tilde!( Ham::Hamiltonian, evars::ElectronicVars; kT=1e-3, skip_ortho=false )
