@@ -195,7 +195,7 @@ function KS_solve_DCM_01!(
                 else
                     VY = op_V_loc( ik, pw, V_loc, yy )
                 end
-                #
+                # Build the projected Hamiltonian
                 if iter > 1
                     A[i] = real( T[i] + yy'*VY )
                     A[i] = 0.5*( A[i] + A[i]' )

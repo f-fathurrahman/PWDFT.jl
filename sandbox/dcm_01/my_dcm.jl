@@ -35,6 +35,8 @@ function my_dcm!( Ham )
 
     T = zeros(ComplexF64, 3*Nstates, 3*Nstates )
 
+    V_loc = Ham.potentials.Hartree + Ham.potentials.XC[:,ispin]
+
     for iterDCM in 1:1
 
         Hpsi = Ham*psi
