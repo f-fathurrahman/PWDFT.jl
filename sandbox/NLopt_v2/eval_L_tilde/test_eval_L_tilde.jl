@@ -17,29 +17,29 @@ function test_eval_L_tilde()
     # eigenvalues are not needed for this case
     _ = diag_LOBPCG!( Ham, evars.psiks, verbose=false, verbose_last=false, NiterMax=10 )
 
+    for i in 1:length(evars.Haux)
+        evars.Haux[i] = Hermitian( evars.psiks[i]' * ( Ham * evars.psiks[i] ) )
+    end
+
     println("Before eval_L_tilde!")
     display(real(evars.Haux[1]))
     println()
     display(imag(evars.Haux[1]))
     println()
 
-    Etot, Hsub = eval_L_tilde!(Ham, evars)
+    Etot = eval_L_tilde!(Ham, evars)
     @printf("Etot = %18.10f\n", Etot)
 
     println("After eval_L_tilde!")
-    print_Haux(evars, "evars after eval_L_tilde")
+    display(real(evars.Haux[1]))
     println()
-    println("real(Hsub) = ")
-    display(real(Hsub[1]))
-    println()
-    println("imag(Hsub) = ")
-    display(imag(Hsub[1]))
+    display(imag(evars.Haux[1]))
     println()
 
-    Etot, Hsub = eval_L_tilde!(Ham, evars)
+    Etot = eval_L_tilde!(Ham, evars)
     @printf("Etot = %18.10f\n", Etot)
 
-    Etot, Hsub = eval_L_tilde!(Ham, evars)
+    Etot = eval_L_tilde!(Ham, evars)
     @printf("Etot = %18.10f\n", Etot)
 
 end

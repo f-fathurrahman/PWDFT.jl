@@ -238,7 +238,7 @@ function calc_grad_Haux_prec(
     Hpsi = op_H( Ham, psi )
 
     # subspace Hamiltonian
-    Hsub = psi' * Hpsi
+    Hsub = Hermitian( psi' * Hpsi )
 
     # gradient for psi (excluding Focc)
     for ist = 1:Nstates
@@ -285,7 +285,7 @@ function calc_grad_Haux(
     Hpsi = op_H( Ham, psi )
 
     # subspace Hamiltonian
-    Hsub = psi' * Hpsi
+    Hsub = Hermitian( psi' * Hpsi )
 
     # gradient for psi
     for ist = 1:Nstates
