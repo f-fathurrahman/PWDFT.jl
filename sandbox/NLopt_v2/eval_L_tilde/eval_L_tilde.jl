@@ -31,86 +31,15 @@ function eval_L_tilde!( Ham::Hamiltonian, evars::ElectronicVars; kT=1e-3 )
     return sum(energies)
 end
 
-
-function eval_L_tilde_and_rotate_dirs!(
-    Ham::Hamiltonian,
-    evars::ElectronicVars,
-    d::ElectronicVars;
-    kT=1e-3,
-    skip_ortho=false
-)
-
-    psiks = evars.psiks
-    Haux = evars.Haux
-
-    if !skip_ortho
-        for i in length(psiks)
-            ortho_sqrt!(psiks[i])
-        end
-    end
-
-    U_Haux = copy(Haux)
-    d_U_Haux = copy(Haux)
-
-    for i in 1:length(U_Haux)
-        Ham.electrons.ebands[:,i], U_Haux[i] = eigen( Haux[i] )
-        Haux[i] = diagm( 0 => Ham.electrons.ebands[:,i] ) # rotate Haux
-        psiks[i] = psiks[i]*U_Haux[i] # rotate psiks
-
-        # also rotate search direction
-        λ, d_U_Haux[i] = eigen( d.Haux[i] )
-        d.Haux[i] = diagm( 0 => λ )
-        #ortho_sqrt!(d.psiks[i])  # need this?
-        d.psiks[i] = d.psiks[i]*d_U_Haux[i]
-        
-        # using current U_Haux
-        #d.psiks[i] = d.psiks[i]*U_Haux[i]
-        #d.Haux[i] = U_Haux[i]' * d.Haux[i] * U_Haux[i]
-    end
-
-    E_fermi = set_occupations!( Ham, kT )
-    Entropy = calc_entropy(
-        Ham.pw.gvecw.kpoints.wk,
-        kT,
-        Ham.electrons.ebands,
-        E_fermi,
-        Ham.electrons.Nspin
-    )
-
-    Rhoe = calc_rhoe( Ham, psiks )
-    update!( Ham, Rhoe )
-
-    energies = calc_energies( Ham, psiks )
-    energies.mTS = Entropy
-
-    return sum(energies)
-end
-
-
-
 function grad_eval_L_tilde!(
     Ham::Hamiltonian,
     evars::ElectronicVars,
     g_evars::ElectronicVars;
-    kT=1e-3,
-    skip_ortho=false
+    kT=1e-3
 )
 
     psiks = evars.psiks
     Haux = evars.Haux
-
-    if !skip_ortho
-        for i in length(psiks)
-            ortho_sqrt!(psiks[i])
-        end
-    end
-
-    U_Haux = copy(Haux)
-    for i in 1:length(U_Haux)
-        Ham.electrons.ebands[:,i], U_Haux[i] = eigen( Haux[i] )
-        Haux[i] = diagm( 0 => Ham.electrons.ebands[:,i] ) # rotate Haux
-        psiks[i] = psiks[i]*U_Haux[i] # rotate psiks
-    end
 
     E_fermi = set_occupations!( Ham, kT )
     Entropy = calc_entropy(
@@ -146,37 +75,8 @@ function calc_primary_search_dirs!(
     evars::ElectronicVars,
     Δ_evars::ElectronicVars;
     kT=1e-3,
-    skip_ortho=true, # should already be done previously in grad_eval_L_tilde
     κ=0.5
 )
-
-    psiks = evars.psiks
-    Haux = evars.Haux
-
-    if !skip_ortho
-        for i in length(psiks)
-            ortho_sqrt!(psiks[i])
-        end
-    end
-
-    U_Haux = copy(Haux)
-    for i in 1:length(U_Haux)
-        Ham.electrons.ebands[:,i], U_Haux[i] = eigen( Haux[i] )
-        Haux[i] = diagm( 0 => Ham.electrons.ebands[:,i] ) # rotate Haux
-        #psiks[i] = psiks[i]*U_Haux[i] # rotate psiks, should already be done previously
-    end
-
-    E_fermi = set_occupations!( Ham, kT )
-    Entropy = calc_entropy(
-        Ham.pw.gvecw.kpoints.wk,
-        kT,
-        Ham.electrons.ebands,
-        E_fermi,
-        Ham.electrons.Nspin
-    )
-
-    Rhoe = calc_rhoe( Ham, psiks )
-    update!( Ham, Rhoe )
 
     Nspin = Ham.electrons.Nspin
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
@@ -187,7 +87,7 @@ function calc_primary_search_dirs!(
         Ham.ispin = ispin
         Ham.ik = ik
         i = ik + (ispin - 1)*Nkpt
-        Δ[i], Δ_Haux[i] = calc_grad_Haux_prec(Ham, psiks[i], kT, κ)
+        Δ[i], Δ_Haux[i] = calc_grad_Haux_prec(Ham, evars.psiks[i], kT, κ)
         Δ[i] = -Kprec( ik, Ham.pw, Δ[i] )
     end
 
