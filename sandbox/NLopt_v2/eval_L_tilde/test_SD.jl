@@ -1,3 +1,5 @@
+include("eval_L_tilde.jl")
+
 function test_SD()
     Random.seed!(1234)
 
@@ -17,16 +19,19 @@ function test_SD()
 
     for iter = 1:50
         
+        rotate_evars!( Ham, evars )
         grad_eval_L_tilde!( Ham, evars, g_evars )
 
         axpy!( -α_t, -β_t, evars, g_evars )
 
+        rotate_evars!( Ham, evars )
         Etot = eval_L_tilde!( Ham, evars )
+        print_Haux(evars, "evars after eval_L_tilde!")
 
-        @printf("%8d %18.10f %18.10e\n", iter, Etot, Etot_old - Etot)
+        @printf("Iteration %8d %18.10f %18.10e\n", iter, Etot, Etot_old - Etot)
         #print_ebands( Ham )
 
         Etot_old = Etot
     end
 end
-#@time test_SD()
+@time test_SD()
