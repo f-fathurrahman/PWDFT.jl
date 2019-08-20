@@ -17,6 +17,32 @@ function rotate_evars!( Ham, evars; skip_ortho=false )
     return
 end
 
+# modify evars.psiks and evars.Haux
+# modify Ham.electrons.ebands
+function rotate_evars!( Ham, evars, d; skip_ortho=false )
+    psiks = evars.psiks
+    Haux = evars.Haux
+    if !skip_ortho
+        for i in length(psiks)
+            ortho_sqrt!(psiks[i])
+        end
+    end
+    U_Haux = copy(Haux)
+    d_U_Haux = copy(Haux)
+    for i in 1:length(U_Haux)
+        Ham.electrons.ebands[:,i], U_Haux[i] = eigen( Haux[i] )
+        Haux[i] = diagm( 0 => Ham.electrons.ebands[:,i] ) # rotate Haux
+        psiks[i] = psiks[i]*U_Haux[i] # rotate psiks
+        # also rotate search direction
+        λ, d_U_Haux[i] = eigen( d.Haux[i] )
+        d.Haux[i] = diagm( 0 => λ )
+        #ortho_sqrt!(d.psiks[i])  # need this?
+        d.psiks[i] = d.psiks[i]*d_U_Haux[i]
+    end
+    return
+end
+
+
 function subspace_rotation!( Ham, psiks; rotate_psiks=true )
 
     Nkspin = length(psiks)
