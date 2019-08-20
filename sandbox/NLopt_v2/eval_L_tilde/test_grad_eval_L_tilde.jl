@@ -4,9 +4,9 @@ function test_grad_eval_L_tilde()
     Random.seed!(1234)
     Ham = create_Ham_Al_fcc_smearing()
     evars = rand_ElectronicVars(Ham)
-    g_evars = ElectronicVars( copy(evars.psiks), copy(evars.Haux) )
+    g_evars = copy(evars)
+    Kg_evars = copy(evars)
 
-#=
     # prepare guess wavefunc
     Npoints = prod(Ham.pw.Ns)
     Nspin = Ham.electrons.Nspin
@@ -24,16 +24,20 @@ function test_grad_eval_L_tilde()
         i = ik + (ispin -1)*Nkpt
         evars.Haux[i] = Hermitian( evars.psiks[i]' * ( Ham * evars.psiks[i] ) )
     end
-=#
 
     print_Haux(evars, "evars before eval_L_tilde")
+
+    rotate_evars!( Ham, evars )
+
     Etot = eval_L_tilde!(Ham, evars)
     print_Haux(evars, "evars after eval_L_tilde")
-
     println("Etot = ", Etot)
 
     grad_eval_L_tilde!(Ham, evars, g_evars)
     print_Haux(g_evars, "g_evars before grad_eval_L_tilde")
+
+    calc_primary_search_dirs!( Ham, evars, Kg_evars, κ=1.0 )
+    print_Haux(Kg_evars, "Kg_evars before grad_eval_L_tilde")
 
     Etot = eval_L_tilde!(Ham, evars)
     println("Etot = ", Etot)
