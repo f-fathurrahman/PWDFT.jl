@@ -10,23 +10,8 @@ include("../create_Ham.jl")
 include("subspace_rotation.jl")
 include("ElectronicVars.jl")
 
-function eval_L_tilde!( Ham::Hamiltonian, evars::ElectronicVars; kT=1e-3, skip_ortho=false )
-
-    psiks = evars.psiks
-    Haux = evars.Haux
-
-    if !skip_ortho
-        for i in length(psiks)
-            ortho_sqrt!(psiks[i])
-        end
-    end
-
-    U_Haux = copy(Haux)
-    for i in 1:length(U_Haux)
-        Ham.electrons.ebands[:,i], U_Haux[i] = eigen( Haux[i] )
-        Haux[i] = diagm( 0 => Ham.electrons.ebands[:,i] ) # rotate Haux
-        psiks[i] = psiks[i]*U_Haux[i] # rotate psiks
-    end
+# should be called before after rotate_evars!
+function eval_L_tilde!( Ham::Hamiltonian, evars::ElectronicVars; kT=1e-3 )
 
     E_fermi = set_occupations!( Ham, kT )
     Entropy = calc_entropy(
@@ -37,10 +22,10 @@ function eval_L_tilde!( Ham::Hamiltonian, evars::ElectronicVars; kT=1e-3, skip_o
         Ham.electrons.Nspin
     )
 
-    Rhoe = calc_rhoe( Ham, psiks )
+    Rhoe = calc_rhoe( Ham, evars.psiks )
     update!( Ham, Rhoe )
 
-    energies = calc_energies( Ham, psiks )
+    energies = calc_energies( Ham, evars.psiks )
     energies.mTS = Entropy
 
     return sum(energies)
@@ -161,7 +146,7 @@ function calc_primary_search_dirs!(
     evars::ElectronicVars,
     Δ_evars::ElectronicVars;
     kT=1e-3,
-    skip_ortho=false,
+    skip_ortho=true, # should already be done previously in grad_eval_L_tilde
     κ=0.5
 )
 
@@ -178,7 +163,7 @@ function calc_primary_search_dirs!(
     for i in 1:length(U_Haux)
         Ham.electrons.ebands[:,i], U_Haux[i] = eigen( Haux[i] )
         Haux[i] = diagm( 0 => Ham.electrons.ebands[:,i] ) # rotate Haux
-        psiks[i] = psiks[i]*U_Haux[i] # rotate psiks
+        #psiks[i] = psiks[i]*U_Haux[i] # rotate psiks, should already be done previously
     end
 
     E_fermi = set_occupations!( Ham, kT )

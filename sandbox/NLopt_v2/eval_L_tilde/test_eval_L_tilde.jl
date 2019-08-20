@@ -21,26 +21,24 @@ function test_eval_L_tilde()
         evars.Haux[i] = Hermitian( evars.psiks[i]' * ( Ham * evars.psiks[i] ) )
     end
 
-    println("Before eval_L_tilde!")
-    display(real(evars.Haux[1]))
-    println()
-    display(imag(evars.Haux[1]))
-    println()
-
+    Rhoe_1 = copy(Ham.rhoe)
+    print_Haux(evars, "evars before eval_L_tilde!")
+    
+    rotate_evars!( Ham, evars )
     Etot = eval_L_tilde!(Ham, evars)
+    
+    print_Haux(evars, "evars after eval_L_tilde!")    
     @printf("Etot = %18.10f\n", Etot)
 
-    println("After eval_L_tilde!")
-    display(real(evars.Haux[1]))
-    println()
-    display(imag(evars.Haux[1]))
-    println()
-
+    Rhoe_2 = copy(Ham.rhoe)
+    print_Haux(evars, "evars before eval_L_tilde!")
+    
     Etot = eval_L_tilde!(Ham, evars)
+    
+    print_Haux(evars, "evars after eval_L_tilde!")    
     @printf("Etot = %18.10f\n", Etot)
 
-    Etot = eval_L_tilde!(Ham, evars)
-    @printf("Etot = %18.10f\n", Etot)
+    println("sum diff rhoe = ", sum(Rhoe_2 - Rhoe_1))
 
 end
 test_eval_L_tilde()
