@@ -46,8 +46,8 @@ end
 function test_linmin()
     Random.seed!(1234)
 
-    #Ham = create_Ham_atom_Pt_smearing()
-    Ham = create_Ham_Al_fcc_smearing()
+    Ham = create_Ham_atom_Pt_smearing()
+    #Ham = create_Ham_Al_fcc_smearing()
     #Ham = create_Ham_Pt_fcc_smearing()
 
     evars = rand_ElectronicVars(Ham)
@@ -129,8 +129,8 @@ function test_linmin()
 
         calc_alpha_CG!( g_evars, gt_evars, d_evars, α_t, α, α_Haux )
 
-        #println("α      = ", α)
-        #println("α_Haux = ", α_Haux)
+        println("α      = ", α)
+        println("α_Haux = ", α_Haux)
 
         # update evars
         axpy!( α, α_Haux, evars, d_evars )
