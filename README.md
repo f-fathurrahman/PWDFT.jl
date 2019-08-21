@@ -227,12 +227,12 @@ Stopping criteria is based on difference in total energy.
 The following example will use `Emin_PCG`.
 It will stop if the difference in total energy is less than
 `etot_conv_thr` and it occurs twice in a row.
-```
+```julia
 KS_solve_Emin_PCG!( Ham, etot_conv_thr=1e-6, NiterMax=150 )
 ```
 
 Using SCF with `betamix` (mixing parameter) 0.1:
-```
+```julia
 KS_solve_SCF!( Ham, betamix=0.1 )
 ```
 Smaller `betamix` usually will lead to slower convergence but more stable.
