@@ -65,3 +65,17 @@ function zeros_ElectronicVars( Ham::Hamiltonian )
 
     return ElectronicVars(psiks, Haux)
 end
+
+import LinearAlgebra: dot
+function dot( a::ElectronicVars, b::ElectronicVars )
+
+    N = length(a.psiks)
+    v_psiks = zeros(N)
+    v_Haux  = zeros(N)
+
+    for i in 1:N
+        v_psiks[i] = real( sum(conj(a.psiks[i]) .* b.psiks[i]) )
+        v_Haux[i]  = real( sum(conj(a.Haux[i]) .* b.Haux[i]) )
+    end
+    return v_psiks, v_Haux
+end

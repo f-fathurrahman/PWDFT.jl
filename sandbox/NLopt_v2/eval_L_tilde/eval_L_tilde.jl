@@ -95,6 +95,34 @@ function calc_primary_search_dirs!(
 
 end
 
+function calc_primary_search_dirs_v1!(
+    Ham::Hamiltonian,
+    evars::ElectronicVars,
+    Δ_evars::ElectronicVars;
+    kT=1e-3,
+    κ=0.5
+)
+
+    Nspin = Ham.electrons.Nspin
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+
+    Δ = Δ_evars.psiks
+    Δ_Haux = Δ_evars.Haux
+    for ispin in 1:Nspin, ik in 1:Nkpt
+        Ham.ispin = ispin
+        Ham.ik = ik
+        i = ik + (ispin - 1)*Nkpt
+        #Δ[i], Δ_Haux[i] = calc_grad_Haux_prec(Ham, evars.psiks[i], kT, κ)
+        #Δ[i] = -Kprec( ik, Ham.pw, Δ[i] )
+        Δ[i], Δ_Haux[i] = calc_grad_Haux(Ham, evars.psiks[i], kT)
+        Δ_Haux[i] = -0.5*Δ_Haux[i]
+        Δ[i] = -Kprec( ik, Ham.pw, Δ[i] )
+    end
+
+    return
+
+end
+
 
 # using expression given in PhysRevB.79.241103 (Freysoldt-Boeck-Neugenbauer)
 # for primary search direction
@@ -111,7 +139,10 @@ function calc_grad_Haux_prec(
     ikspin = ik + (ispin - 1)*Nkpt
 
     # occupation number for this kpoint
+    Focc = @view Ham.electrons.Focc[:,ikspin]
+
     epsilon = @view Ham.electrons.ebands[:,ikspin]
+
     
     Ngw     = size(psi)[1]
     Nstates = size(psi)[2]
@@ -125,12 +156,13 @@ function calc_grad_Haux_prec(
     # subspace Hamiltonian
     Hsub = Hermitian( psi' * Hpsi )
 
-    # gradient for psi (excluding Focc)
+    # gradient for psi (excluding Focc?)
     for ist = 1:Nstates
         g_psi[:,ist] = Hpsi[:,ist]
         for jst = 1:Nstates
             g_psi[:,ist] = g_psi[:,ist] - Hsub[jst,ist]*psi[:,jst]
         end
+        g_psi[:,ist] = Focc[ist]*g_psi[:,ist]
     end
 
     g_Haux = copy(Hsub)
@@ -219,7 +251,7 @@ function calc_grad_Haux(
     return g_psi, g_Haux
 end
 
-function axpy!(a::Float64, b::Float64, x::ElectronicVars, y::ElectronicVars )
+function axpy!( a::Float64, b::Float64, x::ElectronicVars, y::ElectronicVars )
     
     Nkspin = length(x.psiks)
     # update psiks and Haux
