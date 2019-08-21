@@ -25,10 +25,10 @@ function eval_L_tilde!( Ham::Hamiltonian, evars::ElectronicVars; kT=1e-3 )
     Rhoe = calc_rhoe( Ham, evars.psiks )
     update!( Ham, Rhoe )
 
-    energies = calc_energies( Ham, evars.psiks )
-    energies.mTS = Entropy
+    Ham.energies = calc_energies( Ham, evars.psiks )
+    Ham.energies.mTS = Entropy
 
-    return sum(energies)
+    return sum(Ham.energies)
 end
 
 function grad_eval_L_tilde!(
