@@ -15,7 +15,8 @@ structure package such as Quantum ESPRESSO, ABINIT, VASP, etc.
 ## Features
 
 - Total energy calculation of molecules, surfaces, and crystalline system
-  within periodic unit cell.
+  within periodic unit cell (however, no corrections are 
+  implemented for non-periodic systems yet).
 - SCF with electron density mixing (for semiconducting and metallic systems)
 - Direct minimization method using conjugate gradient (for semiconducting systems)
 - GTH pseudopotentials (included in the repository)
