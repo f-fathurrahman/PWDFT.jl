@@ -14,12 +14,12 @@ structure package such as Quantum ESPRESSO, ABINIT, VASP, etc.
 
 ## Features
 
-- Total energy calculation of molecules, surfaces, and crystalline system via
+- Total energy calculation of molecules, surfaces, and crystalline system
   within periodic unit cell.
 - SCF with electron density mixing (for semiconducting and metallic systems)
 - Direct minimization method using conjugate gradient (for semiconducting systems)
 - GTH pseudopotentials (included in the repository)
-- LDA-VWN and GGA-PBE functionals (via LibXC)
+- LDA-VWN and GGA-PBE functionals (via `Libxc.jl`)
 
 ## Requirements
 
@@ -27,7 +27,7 @@ structure package such as Quantum ESPRESSO, ABINIT, VASP, etc.
   with the following packages installed:
   - `FFTW`
   - `SpecialFunctions`
-  - `Libxc` (a wrapper to [LibXC](https://gitlab.com/libxc/libxc))
+  - `Libxc` (a wrapper to [Libxc](https://gitlab.com/libxc/libxc))
   - `LibSymspg` (a wrapper to [symspg](https://github.com/atztogo/spglib))
 
 These packages are registered so they can be installed by using Julia's package manager.
