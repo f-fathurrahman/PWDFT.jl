@@ -164,7 +164,7 @@ Hydrazine molecule in extended xyz file
 ```julia
 atoms = Atoms(ext_xyz_file="N2H4.xyz")
 ```
-with the following `N2H4.xyz` file:
+with the following `N2H4.xyz` file (generated using [ASE](https://wiki.fysik.dtu.dk/ase/)):
 ```
 6
 Lattice="11.896428 0.0 0.0 0.0 12.185504 0.0 0.0 0.0 11.151965" Properties=species:S:1:pos:R:3:Z:I:1 pbc="T T T"
@@ -197,8 +197,8 @@ Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3],
 ```
 
 NOTES: Currently spin-polarized calculations are only supported by
-specifying calculations with smearing scheme (no fixed magnetization), so `extra_states`
-is usually should also be specified.
+specifying calculations with smearing scheme (no fixed magnetization yet),
+so `extra_states` should also be specified.
 
 
 Using PBE exchange-correlation functional:
@@ -252,9 +252,9 @@ Several mixing methods are available in `KS_solve_SCF!`:
 
 - `pulay`
 
-- `ppulay` (periodic Pulay mixing)
+- `ppulay`: [periodic Pulay mixing](https://www.sciencedirect.com/science/article/abs/pii/S0009261416000464)
 
-- `rpulay` (restarted Pulay mixing)
+- `rpulay`: [restarted Pulay mixing](https://www.sciencedirect.com/science/article/abs/pii/S0009261415004480)
 
 
 For metallic system, we use Fermi smearing scheme for occupation numbers of electrons.
