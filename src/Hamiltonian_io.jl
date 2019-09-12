@@ -1,5 +1,5 @@
-import Base: println
-function println( Ham::Hamiltonian; header=true )
+import Base: show
+function show( io::IO, Ham::Hamiltonian; header=true )
     if header
         @printf("\n")
         @printf("                                  -----------\n")
@@ -7,15 +7,16 @@ function println( Ham::Hamiltonian; header=true )
         @printf("                                  -----------\n")
         @printf("\n")
     end
-    @printf("size (MiB) = %18.5f\n", Base.summarysize(Ham)/1024/1024)
-    println("")
-    println("xcfunc     = ", Ham.xcfunc)
-    println("")
-    println(Ham.atoms)
-    println(Ham.pw)
-    println(Ham.pw.gvecw.kpoints)
-    println(Ham.electrons)
+    @printf(io, "size (MiB) = %18.5f\n", Base.summarysize(Ham)/1024/1024)
+    println(io, "")
+    println(io, "xcfunc     = ", Ham.xcfunc)
+    println(io, "")
+    show(io, Ham.atoms)
+    show(io, Ham.pw)
+    show(io, Ham.pw.gvecw.kpoints)
+    show(io, Ham.electrons)
     for isp = 1:Ham.atoms.Nspecies
-        println(Ham.pspots[isp])
+        show(io, Ham.pspots[isp])
     end
 end
+show( Ham::Hamiltonian; header=true ) = show( stdout, Ham, header=header )
