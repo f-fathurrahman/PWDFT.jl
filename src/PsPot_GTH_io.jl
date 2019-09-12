@@ -1,6 +1,6 @@
 # Display information about GTH pseudopotential
-import Base: println
-function println( psp::PsPot_GTH; header=true )
+import Base: show
+function show( io::IO, psp::PsPot_GTH; header=true )
 
     ANGMOM = ["s", "p", "d", "f"]
 
@@ -11,42 +11,43 @@ function println( psp::PsPot_GTH; header=true )
     h = psp.h
 
     if header
-        @printf("\n")
-        @printf("                                   ---------\n")
-        @printf("                                   PsPot_GTH\n")
-        @printf("                                   ---------\n")
-        @printf("\n")
+        @printf(io, "\n")
+        @printf(io, "                                   ---------\n")
+        @printf(io, "                                   PsPot_GTH\n")
+        @printf(io, "                                   ---------\n")
+        @printf(io, "\n")
     end
-    @printf("Species: %s\n\n", psp.atsymb)
-    @printf("zval: %d\n", psp.zval)
-    @printf("File: %s\n", psp.pspfile)
-    @printf("\nLocal pseudopotential parameters\n\n")
-    @printf("rloc = %18.10f\n", rlocal)
-    @printf("c[1] = %18.10f\n", c[1])
-    @printf("c[2] = %18.10f\n", c[2])
-    @printf("c[3] = %18.10f\n", c[3])
-    @printf("c[4] = %18.10f\n", c[4])
-    @printf("\n")
+    @printf(io, "Species: %s\n\n", psp.atsymb)
+    @printf(io, "zval: %d\n", psp.zval)
+    @printf(io, "File: %s\n", psp.pspfile)
+    @printf(io, "\nLocal pseudopotential parameters\n\n")
+    @printf(io, "rloc = %18.10f\n", rlocal)
+    @printf(io, "c[1] = %18.10f\n", c[1])
+    @printf(io, "c[2] = %18.10f\n", c[2])
+    @printf(io, "c[3] = %18.10f\n", c[3])
+    @printf(io, "c[4] = %18.10f\n", c[4])
+    @printf(io, "\n")
     if psp.lmax > -1
-        @printf("Nonlocal pseudopotential parameters:\n\n")
+        @printf(io, "Nonlocal pseudopotential parameters:\n\n")
     else
-        @printf("No non-local pseudopotential.\n\n")
+        @printf(io, "No non-local pseudopotential.\n\n")
     end
     for i=1:psp.lmax+1
-        @printf("Angular momentum: %s, rc = %f\n", ANGMOM[i], rc[i])
+        @printf(io, "Angular momentum: %s, rc = %f\n", ANGMOM[i], rc[i])
         if Nproj_l[i] >= 1
-            @printf("h = \n")
+            @printf(io, "h = \n")
         end
         for pi = 1:Nproj_l[i]
             for pj = 1:Nproj_l[i]
-                @printf("%18.10f ", h[i,pi,pj])
+                @printf(io, "%18.10f ", h[i,pi,pj])
             end
-            @printf("\n")
+            @printf(io, "\n")
         end
-        @printf("\n")
+        @printf(io, "\n")
     end
 
 end
+show( psp::PsPot_GTH; header=true ) = show( stdout, psp; header=header )
 
 
 """

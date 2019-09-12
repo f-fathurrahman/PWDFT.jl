@@ -1,5 +1,5 @@
 
-# Overloaded println
+# Overloaded show's
 
 import Base: show
 
@@ -37,7 +37,7 @@ function show( io::IO, pw::PWGrid; header=true )
     show( io, pw.gvec )
     show( io, pw.gvec, pw.gvecw )
 end
-show( pw::PWGrid ) = show( stdout, pw )
+show( pw::PWGrid; header=true ) = show( stdout, pw, header=header )
 
 """
 Display some information about `gvec::GVectors`.

@@ -1,30 +1,30 @@
-import Base: println
+import Base: show
 
 """
 Display some information about an instance of `KPoints`.
 """
-function println( kpoints::KPoints; header=true )
+function show( io::IO, kpoints::KPoints; header=true )
 
     if header
-        @printf("\n")
-        @printf("                                     -------\n")
-        @printf("                                     KPoints\n")
-        @printf("                                     -------\n")
-        @printf("\n")
+        @printf(io, "\n")
+        @printf(io, "                                     -------\n")
+        @printf(io, "                                     KPoints\n")
+        @printf(io, "                                     -------\n")
+        @printf(io, "\n")
     end
 
     @printf("\n")
     if kpoints.mesh != (0,0,0)
-        @printf("Mesh: (%4d,%4d,%4d)\n", kpoints.mesh[1], kpoints.mesh[2], kpoints.mesh[3])
+        @printf(io, "Mesh: (%4d,%4d,%4d)\n", kpoints.mesh[1], kpoints.mesh[2], kpoints.mesh[3])
     end
-    @printf("Total number of kpoints = %d\n", kpoints.Nkpt )
+    @printf(io, "Total number of kpoints = %d\n", kpoints.Nkpt )
 
-    @printf("\n")
-    @printf("kpoints in Cartesian coordinate (unscaled)\n")
-    @printf("\n")
+    @printf(io, "\n")
+    @printf(io, "kpoints in Cartesian coordinate (unscaled)\n")
+    @printf(io, "\n")
     kcart = copy(kpoints.k)
     for ik = 1:kpoints.Nkpt
-        @printf("%4d [%14.10f %14.10f %14.10f] %14.10f\n",
+        @printf(io, "%4d [%14.10f %14.10f %14.10f] %14.10f\n",
                 ik, kcart[1,ik], kcart[2,ik], kcart[3,ik], kpoints.wk[ik])
     end
 
@@ -34,16 +34,17 @@ function println( kpoints::KPoints; header=true )
     ss = 1.0/alat
 
     # This is useful for comparison with pwscf
-    @printf("\n")
-    @printf("kpoints in Cartesian coordinate (scale: %f)\n", ss)
-    @printf("\n")
+    @printf(io, "\n")
+    @printf(io, "kpoints in Cartesian coordinate (scale: %f)\n", ss)
+    @printf(io, "\n")
     kcart = kcart/ss
 
     for ik = 1:kpoints.Nkpt
-        @printf("%4d [%14.10f %14.10f %14.10f] %14.10f\n",
+        @printf(io, "%4d [%14.10f %14.10f %14.10f] %14.10f\n",
                 ik, kcart[1,ik], kcart[2,ik], kcart[3,ik], kpoints.wk[ik])
     end
     
-    @printf("\n")
-    @printf("sum wk = %f\n", sum(kpoints.wk))
+    @printf(io, "\n")
+    @printf(io, "sum wk = %f\n", sum(kpoints.wk))
 end
+show( kpoints::KPoints; header=true ) = show( stdout, kpoints, header=header )
