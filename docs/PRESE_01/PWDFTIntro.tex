@@ -48,19 +48,10 @@ Engineering Physics Department \\
 Research Center for Nanoscience and Nanotechnology \\
 Institut Teknologi Bandung
 }
-\date{20 April 2018}
+%\date{20 April 2018}
+\date{24 September 2019}
 
 \frame{\titlepage}
-
-\begin{frame}
-\frametitle{Codes for DFT}
-
-\begin{itemize}
-\item using Fortran, C, C++: ABINIT, VASP, Quantum Espresso
-\item Python: GPAW
-\end{itemize}
-
-\end{frame}
 
 \begin{frame}
 \frametitle{Software packages for DFT calculations}
@@ -78,40 +69,86 @@ There are a lot of software packages for DFT calculations, for examples:
 More extensive list:
 \url{https://en.wikipedia.org/wiki/List_of_quantum_chemistry_and_solid-state_physics_software}
 
-
 \end{frame}
-
 
 
 \begin{frame}
 \frametitle{Problems}
 
-These packages are very helpful for doing various calculations based on DFT.
-
+\begin{itemize}
+\item These packages are very helpful for doing various calculations based on DFT.
+%
 These packages are suitable for black-box-type calculations where we are only concerned about the results.
+%
+\item However they are generally rather difficult to extend.
+  \begin{itemize}
+  \item New development on the DFT functionals:
+  users generally need to wait for the next release of the package to use them
+  (if these functionals are to be implemented at all).
+  \item Custom calculations or post-processing steps:
+  Users need to know in some detail
+  about how the data they are interested in is represented or implemented in the package's source code.
+  \end{itemize}
+\end{itemize}
 
-However they are generally quite difficult to be extended. For example if there are some new development
-on the DFT functionals, users generally need to wait for the next release of the package to use them
-(if these functionals are to be implemented at all).
+\end{frame}
 
-Another example is when users want to develop custom post-processing tools. Users need to know in some detail
-about how the data they are interested in is represented or implemented in the package's source code.
+
+\begin{frame}
+\frametitle{Write another DFT package?}
+
+Personal motivation:
+
+learning how DFT or Kohn-Sham equations are solved
+
+frustation when trying to extend available package
 
 \end{frame}
 
 
 
+\begin{frame}
+\frametitle{Programming languages for DFT}
+    
+Programming languages used:
+\begin{itemize}
+\item Fortran and/or C/C++: ABINIT, VASP, Quantum Espresso, ...
+\item Python: GPAW
+\item MATLAB: KSSOLV, RESCU
+\end{itemize}
+    
+Static languages: Fortran, C/C++
+
+Dynamic languages: Python and MATLAB
+
+\end{frame}
+
 
 
 \begin{frame}
-\frametitle{PWDFT.jl}
+\frametitle{Julia programming language}
+
+A rather new programming language (2012)
+
+Syntax is familar to MATLAB or Python users
+
+support for multidimensional array and linear algebra
+
+Loop is fast!
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Introducing PWDFT.jl}
 
 \begin{itemize}
-\item A package for doing DFT calculations using Julia
+\item A program package for doing DFT calculations using Julia
 \item plane wave basis + pseudopotentials (norm-conserving)
 \item LDA and GGA functionals can be used (via LibXC)
 \item symmetry detection (via SPGLIB)
-\item algorithms: SCF and Emin (PCG and DCM)
+\item algorithms for solving KS problem: SCF and Emin (PCG and DCM)
 \end{itemize}
 
 \end{frame}
