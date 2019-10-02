@@ -1,0 +1,18 @@
+\begin{frame}
+\frametitle{SCF solvers}
+
+Kohn-Sham problem is solved using self-consistent field (SCF) iterations.
+This is the most popular method.
+
+In PWDFT.jl we can set various options to SCF algorithm:
+
+\begin{itemize}
+\item \jlinline{betamix}: linear mixing parameters (between 0 and 1)
+\item \jlinline{mix_method}: linear, adaptive linear, Anderson, Pulay, restarted Pulay, periodic Pulay,
+  and Broyden.
+\item \jlinline{update_psi}: how to update the wave functions (iterative diagonalization or Chebyshev
+subspace filtering).
+\end{itemize}
+
+
+\end{frame}
