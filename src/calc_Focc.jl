@@ -6,7 +6,7 @@ function calc_Focc(
     Nspin::Int64
 )
 
-    E_fermi = efermig( Nelectrons, wk, kT, evals, Nspin )
+    E_fermi = find_E_fermi( Nelectrons, wk, kT, evals, Nspin )
   
     Nkspin = size(evals)[2]
     Nstates = size(evals)[1]

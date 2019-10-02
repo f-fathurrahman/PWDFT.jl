@@ -45,7 +45,7 @@ function sumkg(
     return ss
 end
 
-function efermig(
+function find_E_fermi(
   Nelectrons::Float64,
   wk::Array{Float64,1},
   kT::Float64,
@@ -91,7 +91,7 @@ function efermig(
         Ef = 0.5*(Eup + Elw)
         diff_Ef = abs(Ef-Ef_old)
         if verbose
-            @printf("efermig: %3d %18.10f %18.10f %18.10e\n", iter, Ef, sumkmid, diff_Ef)
+            @printf("find_E_fermi: %3d %18.10f %18.10f %18.10e\n", iter, Ef, sumkmid, diff_Ef)
         end
         if diff_Ef < SMALL
             return Ef
@@ -102,32 +102,4 @@ function efermig(
     @printf("WARNING: Ef is not found after %d iterations\n", NiterMax)
     return Ef
     
-end
-
-
-function calc_Focc_v2(
-  wk::Array{Float64,1},
-  kT::Float64,
-  evals::Array{Float64,2},
-  E_fermi::Float64,
-  Nspin::Int64
-)
-
-    Nkspin = size(evals)[2]
-    Nstates = size(evals)[1]
-
-    Focc = zeros(Nstates,Nkspin)
-
-    for ikspin = 1:Nkspin
-        for ist = 1:Nstates
-            Focc[ist,ikspin] = wgauss( (E_fermi - evals[ist,ikspin])/kT )
-        end
-    end
-
-    if Nspin == 1
-        return 2.0*Focc
-    else
-        return Focc
-    end
-
 end
