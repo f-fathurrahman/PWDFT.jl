@@ -189,7 +189,8 @@ function calc_grad_Haux(
     ikspin = ik + (ispin - 1)*Nkpt
 
     # occupation number for this kpoint
-    f = @view Ham.electrons.Focc[:,ikspin]
+    f = copy(Ham.electrons.Focc[:,ikspin])
+    f = 0.5*f # for non spin pol
     epsilon = @view Ham.electrons.ebands[:,ikspin]
     
     Ngw     = size(psi)[1]
@@ -216,7 +217,8 @@ function calc_grad_Haux(
 
     dF_dmu = 0.0
     for ist = 1:Nstates
-        dF_dmu = dF_dmu + ( Hsub[ist,ist] - epsilon[ist] ) * 0.5*f[ist] * (1.0 - 0.5*f[ist])
+        #dF_dmu = dF_dmu + ( Hsub[ist,ist] - epsilon[ist] ) * 0.5*f[ist] * (1.0 - 0.5*f[ist])
+        dF_dmu = dF_dmu + ( Hsub[ist,ist] - epsilon[ist] ) * f[ist] * (1.0 - f[ist]) # for non spin pol XXX
     end
     dF_dmu = dF_dmu/kT
 
@@ -224,18 +226,20 @@ function calc_grad_Haux(
     # ss is the denominator of dmu_deta
     ss = 0.0
     for ist = 1:Nstates
-        ss = ss + 0.5*f[ist]*(1.0 - 0.5*f[ist])
+        ss = ss + f[ist]*(1.0 - f[ist])  # for non spin pol XXX
     end
     SMALL = 1e-8
     if abs(ss) > SMALL
         for ist = 1:Nstates
-            dmu_deta[ist] = 0.5*f[ist]*(1.0 - 0.5*f[ist])/ss
+            #dmu_deta[ist] = 0.5*f[ist]*(1.0 - 0.5*f[ist])/ss
+            dmu_deta[ist] = f[ist]*(1.0 - f[ist])/ss  # for non spin pol XXX
         end
     end
 
     # diagonal
     for ist = 1:Nstates
-        term1 = -( Hsub[ist,ist] - epsilon[ist] ) * 0.5*f[ist] * ( 1.0 - 0.5*f[ist] )/kT
+        #term1 = -( Hsub[ist,ist] - epsilon[ist] ) * 0.5*f[ist] * ( 1.0 - 0.5*f[ist] )/kT
+        term1 = -( Hsub[ist,ist] - epsilon[ist] ) * f[ist] * ( 1.0 - f[ist] )/kT # for non spin pol XXX
         term2 = dmu_deta[ist]*dF_dmu
         g_Haux[ist,ist] = term1 + term2
     end
