@@ -25,8 +25,7 @@ function main()
                        Nspin=1, meshk=[8,8,8], extra_states=4 )
     println(Ham)
 
-    KS_solve_SCF!( Ham, mix_method="rpulay", betamix=0.2, use_smearing=true, 
-                   check_rhoe=false )
+    KS_solve_SCF!( Ham, mix_method="rpulay", betamix=0.2, use_smearing=true )
     
 end
 
