@@ -12,11 +12,9 @@ function calc_Focc(
     Nstates = size(evals)[1]
   
     Focc = zeros(Nstates,Nkspin)
-  
-    for ikspin = 1:Nkspin
-        for ist = 1:Nstates
-            Focc[ist,ikspin] = wgauss( (E_fermi - evals[ist,ikspin])/kT )
-        end
+
+    for ikspin = 1:Nkspin, ist = 1:Nstates
+        Focc[ist,ikspin] = wgauss( (E_fermi - evals[ist,ikspin])/kT )
     end
   
     if Nspin == 1
@@ -34,10 +32,8 @@ function sum_kFocc( wk, Focc, Nspin )
     wks = repeat(wk, Nspin)
 
     s = 0.0
-    for ikspin = 1:Nkspin
-        for ist = 1:Nstates
-            s = s + wks[ikspin]*Focc[ist,ikspin]
-        end
+    for ikspin = 1:Nkspin, ist = 1:Nstates
+        s = s + wks[ikspin]*Focc[ist,ikspin]
     end
     return s
 end
