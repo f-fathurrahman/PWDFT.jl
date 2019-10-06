@@ -101,12 +101,34 @@ function calc_alpha_CG!(
 end
 
 function test_CG()
-    Random.seed!(1234)
+    Random.seed!(12345)
 
     #Ham = create_Ham_atom_Pt_smearing()
-    Ham = create_Ham_Pt_fcc_smearing()
-    #Ham = create_Ham_Al_fcc_smearing()
+    #Ham = create_Ham_Pt_fcc_smearing()
+    Ham = create_Ham_Al_fcc_smearing()
+
     evars = rand_ElectronicVars(Ham)
+
+    # prepare guess wavefunc
+    #Npoints = prod(Ham.pw.Ns)
+    #Nspin = Ham.electrons.Nspin
+    #Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+    #Rhoe = zeros(Float64,Npoints,Nspin)
+    #@assert Nspin == 1
+    #Rhoe[:,1] = guess_rhoe( Ham )
+    #update!(Ham, Rhoe)
+    ## eigenvalues are not needed for this case
+    #Ham.electrons.ebands[:,:] = diag_LOBPCG!( Ham, evars.psiks, verbose=false, verbose_last=true, NiterMax=10 )
+    ##print(evals)
+#
+#    #for ispin in 1:Nspin, ik in 1:Nkpt
+#    #    Ham.ispin = ispin
+#    #    Ham.ik = ik
+#    #    i = ik + (ispin -1)*Nkpt
+#    #    #evars.Haux[i] = Hermitian( evars.psiks[i]' * ( Ham * evars.psiks[i] ) )
+#    #    evars.Haux[i] = diagm( 0 => Ham.electrons.ebands[:,i] )
+    #end
+
 
     evarsc = copy(evars)
     g_evars = copy(evars)
@@ -128,14 +150,18 @@ function test_CG()
     Ham.energies.NN = calc_E_NN( Ham.atoms )
     Ham.energies.PspCore = calc_PspCore_ene( Ham.atoms, Ham.pspots )
 
+    rotate_evars!( Ham, evars )
     Etot_old = eval_L_tilde!( Ham, evars )
 
     println("Etot_old = ", Etot_old)
 
     α_t = 1e-5
 
-    for iter = 1:50
+    Nconverges = 0
+
+    for iter = 1:100
         
+        rotate_evars!( Ham, evars )
         grad_eval_L_tilde!( Ham, evars, g_evars )
         #print_Haux( evars, "evars after grad_eval_L_tilde")
         #print_Haux( g_evars, "g_evars after grad_eval_L_tilde")
@@ -147,8 +173,8 @@ function test_CG()
         if iter > 1
             calc_beta_CG!( g_evars, g_old_evars, Kg_evars, Kg_old_evars, β, β_Haux )
         end
-        println("β = ", β)
-        println("β_Haux = ", β_Haux)
+        #println("β = ", β)
+        #println("β_Haux = ", β_Haux)
 
         calc_search_dirs!( d_evars, Kg_evars, d_old_evars, β, β_Haux )
         #print_Haux( d_evars, "d_evars after calc_search_dirs!")
@@ -156,6 +182,7 @@ function test_CG()
         trial_evars!( evarsc, evars, d_evars, α_t, α_t )
         #print_Haux( evarsc, "evarsc after trial_evars! and before grad_eval_L_tilde")
 
+        rotate_evars!( Ham, evarsc )
         grad_eval_L_tilde!( Ham, evarsc, gt_evars )
         #print_Haux( evarsc, "evarsc after grad_eval_L_tilde")
 
@@ -170,12 +197,24 @@ function test_CG()
         axpy!( α, α_Haux, evars, d_evars )
 
         #print_Haux( evars, "evars before eval_L_tilde")
-        #Etot = eval_L_tilde!( Ham, evars )
-        Etot = eval_L_tilde_and_rotate_dirs!( Ham, evars, d_evars )
+        rotate_evars!( Ham, evars )
+        Etot = eval_L_tilde!( Ham, evars )
+        #Etot = eval_L_tilde_and_rotate_dirs!( Ham, evars, d_evars )
         #print_Haux( evars, "evars after eval_L_tilde")
 
         @printf("Iteration %8d %18.10f %18.10e\n", iter, Etot, Etot_old - Etot)
         #print_ebands( Ham )
+        if abs(Etot_old - Etot) < 1e-6
+            Nconverges = Nconverges + 1
+        else
+            Nconverges = 0
+        end
+        if Nconverges >= 2
+            @printf("\nEmin_Haux_CG is converged in iter: %d\n", iter)
+            break
+        end
+
+
 
         Etot_old = Etot
         d_old_evars = copy(d_evars)

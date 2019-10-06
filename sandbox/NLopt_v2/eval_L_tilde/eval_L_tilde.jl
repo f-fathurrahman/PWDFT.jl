@@ -1,36 +1,37 @@
-using LinearAlgebra
-using Printf
-using PWDFT
-using Random
+"""
+A convenience wrapper for `calc_Focc` and `calc_entropy`
+Modify Ham.electrons.Focc and returns E_fermi and Entropy
+"""
+function set_occupations!( Ham, kT )
+    Ham.electrons.Focc, E_fermi = calc_Focc(
+        Ham.electrons.Nelectrons, Ham.pw.gvecw.kpoints.wk, kT, Ham.electrons.ebands, Ham.electrons.Nspin )
+    Entropy = calc_entropy( Ham.pw.gvecw.kpoints.wk, kT,
+        Ham.electrons.ebands, E_fermi, Ham.electrons.Nspin
+    )
+    return E_fermi, Entropy
+end
 
-const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
-const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
-
-include("../create_Ham.jl")
-include("subspace_rotation.jl")
-include("ElectronicVars.jl")
-
-# should be called before after rotate_evars!
+"""
+Evaluate modified Lagrangian.
+Should be called before after constraint!(::ElectronicVars)
+"""
 function eval_L_tilde!( Ham::Hamiltonian, evars::ElectronicVars; kT=1e-3 )
 
-    E_fermi = set_occupations!( Ham, kT )
-    Entropy = calc_entropy(
-        Ham.pw.gvecw.kpoints.wk,
-        kT,
-        Ham.electrons.ebands,
-        E_fermi,
-        Ham.electrons.Nspin
-    )
+    E_fermi, Entropy = set_occupations!( Ham, kT )
 
-    Rhoe = calc_rhoe( Ham, evars.psiks )
+    Rhoe = calc_rhoe( Ham, evars.ψ )
     update!( Ham, Rhoe )
 
-    Ham.energies = calc_energies( Ham, evars.psiks )
+    Ham.energies = calc_energies( Ham, evars.ψ )
     Ham.energies.mTS = Entropy
 
     return sum(Ham.energies)
 end
 
+"""
+Calculate gradient of modified Lagrangian.
+Results are stored in `g_evars`.
+"""
 function grad_eval_L_tilde!(
     Ham::Hamiltonian,
     evars::ElectronicVars,
@@ -38,31 +39,22 @@ function grad_eval_L_tilde!(
     kT=1e-3
 )
 
-    psiks = evars.psiks
-    Haux = evars.Haux
+    ψ = evars.ψ
+    E_fermi, Entropy = set_occupations!( Ham, kT )
 
-    E_fermi = set_occupations!( Ham, kT )
-    Entropy = calc_entropy(
-        Ham.pw.gvecw.kpoints.wk,
-        kT,
-        Ham.electrons.ebands,
-        E_fermi,
-        Ham.electrons.Nspin
-    )
-
-    Rhoe = calc_rhoe( Ham, psiks )
+    Rhoe = calc_rhoe( Ham, ψ )
     update!( Ham, Rhoe )
 
     Nspin = Ham.electrons.Nspin
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
 
-    g = g_evars.psiks
-    g_Haux = g_evars.Haux
+    g_ψ = g_evars.ψ
+    g_η = g_evars.η
     for ispin in 1:Nspin, ik in 1:Nkpt
         Ham.ispin = ispin
         Ham.ik = ik
         i = ik + (ispin - 1)*Nkpt
-        g[i], g_Haux[i] = calc_grad_Haux(Ham, psiks[i], kT)
+        g_ψ[i], g_η[i] = calc_grad_Haux( Ham, ψ[i], kT )
     end
 
     return
@@ -70,6 +62,9 @@ function grad_eval_L_tilde!(
 end
 
 
+"""
+Wrapper for `calc_grad_Haux_prec`.
+"""
 function calc_primary_search_dirs!(
     Ham::Hamiltonian,
     evars::ElectronicVars,
@@ -81,20 +76,24 @@ function calc_primary_search_dirs!(
     Nspin = Ham.electrons.Nspin
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
 
-    Δ = Δ_evars.psiks
-    Δ_Haux = Δ_evars.Haux
+    Δ_ψ = Δ_evars.ψ
+    Δ_η = Δ_evars.η
     for ispin in 1:Nspin, ik in 1:Nkpt
         Ham.ispin = ispin
         Ham.ik = ik
         i = ik + (ispin - 1)*Nkpt
-        Δ[i], Δ_Haux[i] = calc_grad_Haux_prec(Ham, evars.psiks[i], kT, κ)
-        Δ[i] = -Kprec( ik, Ham.pw, Δ[i] )
+        Δ_ψ[i], Δ_η[i] = calc_grad_Haux_prec( Ham, evars.ψ[i], kT, κ )
     end
 
     return
 
 end
 
+"""
+Similar to `calc_primary_search_dirs`, but using the gradients explicitly.
+FIXME: If this is ever used, no need to call `calc_grad_Haux` again.
+Simply use the one that has been calculated previously.
+"""
 function calc_primary_search_dirs_v1!(
     Ham::Hamiltonian,
     evars::ElectronicVars,
@@ -106,17 +105,14 @@ function calc_primary_search_dirs_v1!(
     Nspin = Ham.electrons.Nspin
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
 
-    Δ = Δ_evars.psiks
-    Δ_Haux = Δ_evars.Haux
+    Δ_ψ = Δ_evars.ψ
+    Δ_η = Δ_evars.η
     for ispin in 1:Nspin, ik in 1:Nkpt
         Ham.ispin = ispin
         Ham.ik = ik
         i = ik + (ispin - 1)*Nkpt
-        #Δ[i], Δ_Haux[i] = calc_grad_Haux_prec(Ham, evars.psiks[i], kT, κ)
-        #Δ[i] = -Kprec( ik, Ham.pw, Δ[i] )
-        Δ[i], Δ_Haux[i] = calc_grad_Haux(Ham, evars.psiks[i], kT)
-        Δ_Haux[i] = -0.5*Δ_Haux[i]
-        Δ[i] = -Kprec( ik, Ham.pw, Δ[i] )
+        Δ_ψ[i], Δ_η[i] = calc_grad_Haux(Ham, evars.ψ[i], kT)
+        Δ_η[i] = -κ*Δ_η[i]
     end
 
     return
@@ -124,11 +120,14 @@ function calc_primary_search_dirs_v1!(
 end
 
 
-# using expression given in PhysRevB.79.241103 (Freysoldt-Boeck-Neugenbauer)
-# for primary search direction
+"""
+Calculate preconditioned gradient in η direction
+using expression given in PhysRevB.79.241103 (Freysoldt-Boeck-Neugenbauer)
+for primary search direction
+"""
 function calc_grad_Haux_prec(
     Ham::Hamiltonian,
-    psi::Array{ComplexF64,2},
+    ψ::Array{ComplexF64,2},
     kT::Float64,
     κ::Float64
 )
@@ -140,38 +139,37 @@ function calc_grad_Haux_prec(
 
     # occupation number for this kpoint
     Focc = @view Ham.electrons.Focc[:,ikspin]
-
     epsilon = @view Ham.electrons.ebands[:,ikspin]
 
-    
     Ngw     = size(psi)[1]
     Nstates = size(psi)[2]
 
     # gradients
-    g_psi = zeros(ComplexF64, Ngw, Nstates)
-    g_Haux = zeros(ComplexF64, Nstates, Nstates)
+    g_ψ = zeros(ComplexF64, Ngw, Nstates)
+    g_η = zeros(ComplexF64, Nstates, Nstates)
 
-    Hpsi = op_H( Ham, psi )
+    Hψ = op_H( Ham, ψ )
 
     # subspace Hamiltonian
-    Hsub = Hermitian( psi' * Hpsi )
+    Hsub = Hermitian( ψ' * Hψ )
 
     # gradient for psi (excluding Focc?)
     for ist = 1:Nstates
-        g_psi[:,ist] = Hpsi[:,ist]
+        g_ψ[:,ist] = Hpsi[:,ist]
         for jst = 1:Nstates
-            g_psi[:,ist] = g_psi[:,ist] - Hsub[jst,ist]*psi[:,jst]
+            g_ψ[:,ist] = g_ψ[:,ist] - Hsub[jst,ist]*ψ[:,jst]
         end
-        g_psi[:,ist] = Focc[ist]*g_psi[:,ist]
+        g_ψ[:,ist] = Focc[ist]*g_ψ[:,ist]  # FIXME: in the paper there is no `Focc` factor.
     end
+    g_ψ[i] = -Kprec( ik, Ham.pw, g_ψ ) # precondition gradient in ψ direction
 
-    g_Haux = copy(Hsub)
-    # diagonal
+    g_η = copy(Hsub)
+    # only diagonal elements are different from Hsub
     for ist = 1:Nstates
-        g_Haux[ist,ist] = κ*( Hsub[ist,ist] - epsilon[ist] )
+        g_η[ist,ist] = κ*( Hsub[ist,ist] - epsilon[ist] )
     end
 
-    return g_psi, g_Haux
+    return g_ψ, g_η
 end
 
 
@@ -179,7 +177,7 @@ end
 # using expression given in PhysRevB.79.241103 (Freysoldt-Boeck-Neugenbauer)
 function calc_grad_Haux(
     Ham::Hamiltonian,
-    psi::Array{ComplexF64,2},
+    ψ::Array{ComplexF64,2},
     kT::Float64
 )
 
@@ -188,122 +186,71 @@ function calc_grad_Haux(
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     ikspin = ik + (ispin - 1)*Nkpt
 
-    # occupation number for this kpoint
+    # occupation number for this kpoint and spin
     f = copy(Ham.electrons.Focc[:,ikspin])
-    f = 0.5*f # for non spin pol
+
+    if Ham.electrons.Nspin == 1
+        f = 0.5*f # for non spin pol
+    end
     epsilon = @view Ham.electrons.ebands[:,ikspin]
-    
-    Ngw     = size(psi)[1]
-    Nstates = size(psi)[2]
+
+    Ngw     = size(ψ)[1]
+    Nstates = size(ψ)[2]
 
     # gradients
-    g_psi = zeros(ComplexF64, Ngw, Nstates)
-    g_Haux = zeros(ComplexF64, Nstates, Nstates)
+    g_ψ = zeros(ComplexF64, Ngw, Nstates)
+    g_η = zeros(ComplexF64, Nstates, Nstates)
 
-    Hpsi = op_H( Ham, psi )
+    Hψ = op_H( Ham, ψ )
 
     # subspace Hamiltonian
-    Hsub = Hermitian( psi' * Hpsi )
+    Hsub = Hermitian( ψ' * Hψ )
 
+    # Equation (22)
     # gradient for psi
     for ist = 1:Nstates
-        g_psi[:,ist] = Hpsi[:,ist]
+        g_ψ[:,ist] = Hψ[:,ist]
         for jst = 1:Nstates
-            g_psi[:,ist] = g_psi[:,ist] - Hsub[jst,ist]*psi[:,jst]
+            g_ψ[:,ist] = g_ψ[:,ist] - Hsub[jst,ist]*ψ[:,jst]
         end
-        g_psi[:,ist] = f[ist]*g_psi[:,ist]
+        g_ψ[:,ist] = f[ist]*g_ψ[:,ist]
     end
 
-
+    # Equation (24)
     dF_dmu = 0.0
     for ist = 1:Nstates
-        #dF_dmu = dF_dmu + ( Hsub[ist,ist] - epsilon[ist] ) * 0.5*f[ist] * (1.0 - 0.5*f[ist])
-        dF_dmu = dF_dmu + ( Hsub[ist,ist] - epsilon[ist] ) * f[ist] * (1.0 - f[ist]) # for non spin pol XXX
+        dF_dmu = dF_dmu + ( Hsub[ist,ist] - epsilon[ist] ) * f[ist] * (1.0 - f[ist])
     end
     dF_dmu = dF_dmu/kT
 
+    # Equation (19)
     dmu_deta = zeros(Nstates)
     # ss is the denominator of dmu_deta
     ss = 0.0
     for ist = 1:Nstates
-        ss = ss + f[ist]*(1.0 - f[ist])  # for non spin pol XXX
+        ss = ss + f[ist]*(1.0 - f[ist])
     end
     SMALL = 1e-8
     if abs(ss) > SMALL
         for ist = 1:Nstates
-            #dmu_deta[ist] = 0.5*f[ist]*(1.0 - 0.5*f[ist])/ss
             dmu_deta[ist] = f[ist]*(1.0 - f[ist])/ss  # for non spin pol XXX
         end
     end
 
-    # diagonal
+    # diagonal of Equation (23)
     for ist = 1:Nstates
-        #term1 = -( Hsub[ist,ist] - epsilon[ist] ) * 0.5*f[ist] * ( 1.0 - 0.5*f[ist] )/kT
         term1 = -( Hsub[ist,ist] - epsilon[ist] ) * f[ist] * ( 1.0 - f[ist] )/kT # for non spin pol XXX
         term2 = dmu_deta[ist]*dF_dmu
-        g_Haux[ist,ist] = term1 + term2
+        g_η[ist,ist] = term1 + term2
     end
 
-    # off diagonal
+    # off diagonal of Equation (22)
     for ist = 1:Nstates
         for jst = (ist+1):Nstates
-            g_Haux[ist,jst] = Hsub[ist,jst] * (f[ist] - f[jst]) / (epsilon[ist] - epsilon[jst])
-            g_Haux[jst,ist] = g_Haux[ist,jst]
+            g_η[ist,jst] = Hsub[ist,jst] * (f[ist] - f[jst]) / (epsilon[ist] - epsilon[jst])
+            g_η[jst,ist] = g_η[ist,jst]
         end
     end
 
-    return g_psi, g_Haux
+    return g_ψ, g_η
 end
-
-function axpy!( a::Float64, b::Float64, x::ElectronicVars, y::ElectronicVars )
-    
-    Nkspin = length(x.psiks)
-    # update psiks and Haux
-    for i in 1:Nkspin
-        x.psiks[i] = x.psiks[i] + a*y.psiks[i]
-        x.Haux[i] = x.Haux[i] + b*y.Haux[i]
-        x.Haux[i] = 0.5*( x.Haux[i] + x.Haux[i]' ) # or use previous U_Haux ?
-    end
-
-    return
-end
-
-function axpy!(
-    a::Vector{Float64},
-    b::Vector{Float64},
-    x::ElectronicVars,
-    y::ElectronicVars
-)
-    
-    Nkspin = length(x.psiks)
-    # update psiks and Haux
-    for i in 1:Nkspin
-        x.psiks[i] = x.psiks[i] + a[i]*y.psiks[i]
-        x.Haux[i] = x.Haux[i] + b[i]*y.Haux[i]
-        x.Haux[i] = 0.5*( x.Haux[i] + x.Haux[i]' ) # or use previous U_Haux ?
-    end
-
-    return
-end
-
-import PWDFT: print_ebands
-function print_ebands( Ham::Hamiltonian )
-    print_ebands( Ham.electrons, Ham.pw.gvecw.kpoints )
-end
-
-import Base: copy
-function copy( evars::ElectronicVars )
-    return ElectronicVars( copy(evars.psiks), copy(evars.Haux) )
-end
-
-# print the first Haux of an instance of ElectronicVars
-function print_Haux( e::ElectronicVars, header::String )
-    println()
-    println(header)
-    println("\nreal part\n")
-    display(real(e.Haux[1]))
-    println("\n\nimaginary part\n")
-    display(imag(e.Haux[1]))
-    println()
-end
-

@@ -12,7 +12,7 @@ function calc_alpha_CG!(
     for i in 1:Nkspin
         
         denum = real(sum(conj(g.psiks[i]-gt.psiks[i]).*d.psiks[i]))
-        #println("denum = ", denum)
+        println("denum = ", denum)
         #if abs(denum) <= 1e-6
         if denum != 0.0
             α[i] = abs( α_t*real(sum(conj(g.psiks[i]).*d.psiks[i]))/denum )
@@ -21,7 +21,7 @@ function calc_alpha_CG!(
         end
 
         denum_aux = real(sum(conj(g.Haux[i]-gt.Haux[i]).*d.Haux[i]))
-        #println("denum_aux = ", denum_aux)
+        println("denum_aux = ", denum_aux)
         #if abs(denum) <= 1e-6
         if denum_aux != 0.0
             α_Haux[i] = abs( α_t*real(sum(conj(g.Haux[i]).*d.Haux[i]))/denum_aux )
@@ -46,9 +46,9 @@ end
 function test_linmin()
     Random.seed!(1234)
 
-    Ham = create_Ham_atom_Pt_smearing()
+    #Ham = create_Ham_atom_Pt_smearing()
     #Ham = create_Ham_Al_fcc_smearing()
-    #Ham = create_Ham_Pt_fcc_smearing()
+    Ham = create_Ham_Pt_fcc_smearing()
 
     evars = rand_ElectronicVars(Ham)
 
@@ -100,7 +100,7 @@ function test_linmin()
     v3_Haux = zeros(Nkspin)
 
     Nconverges = 0
-    for iter = 1:100
+    for iter = 1:10
         
         #rotate_evars!( Ham, evars )
         grad_eval_L_tilde!( Ham, evars, g_evars )
@@ -109,10 +109,10 @@ function test_linmin()
             v1_psiks, v1_Haux = dot( g_evars, d_evars )
             v2_psiks, v2_Haux = dot( g_evars, g_evars )
             v3_psiks, v3_Haux = dot( d_evars, d_evars )
-            for i in 1:Nkspin
-                @printf("cosine angle psiks = %18.10f, ", v1_psiks[i]/sqrt(v2_psiks[i]*v3_psiks[i]))
-                @printf("cosine angle Haux = %18.10f\n", v1_Haux[i]/sqrt(v2_Haux[i]*v3_Haux[i]))
-            end
+            #for i in 1:Nkspin
+            #    @printf("cosine angle psiks = %18.10f, ", v1_psiks[i]/sqrt(v2_psiks[i]*v3_psiks[i]))
+            #    @printf("cosine angle Haux = %18.10f\n", v1_Haux[i]/sqrt(v2_Haux[i]*v3_Haux[i]))
+            #end
         end
         #print_Haux( evars, "evars after eval_L_tilde")
         #print_Haux( g_evars, "g_evars after eval_L_tilde")
@@ -126,6 +126,7 @@ function test_linmin()
 
         rotate_evars!( Ham, evarsc )
         grad_eval_L_tilde!( Ham, evarsc, gt_evars )
+        print_Haux(gt_evars, "gt_evars")
 
         calc_alpha_CG!( g_evars, gt_evars, d_evars, α_t, α, α_Haux )
 
@@ -146,7 +147,7 @@ function test_linmin()
             Nconverges = 0
         end
         if Nconverges >= 2
-            @printf("\nEmin_Haux_SD is converged in iter: %d\n", iter)
+            @printf("\nEmin_Haux_linmin is converged in iter: %d\n", iter)
             break
         end
 
@@ -154,7 +155,7 @@ function test_linmin()
         d_old_evars = copy(d_evars)
     end
 
-    print_ebands( Ham )
+    #print_ebands( Ham )
     println( Ham.energies )
 end
 @time test_linmin()

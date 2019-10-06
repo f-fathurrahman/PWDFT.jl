@@ -1,49 +1,44 @@
-function set_occupations!( Ham, kT )
-
-    Ham.electrons.Focc, E_fermi = calc_Focc(
-        Ham.electrons.Nelectrons,
-        Ham.pw.gvecw.kpoints.wk,
-        kT, Ham.electrons.ebands,
-        Ham.electrons.Nspin )
-
-    return E_fermi
-end
-
 mutable struct ElectronicVars
-    psiks::BlochWavefunc
-    Haux::Array{Matrix{ComplexF64},1}
+    ψ::BlochWavefunc
+    η::Array{Matrix{ComplexF64},1}
 end
 
 function rand_ElectronicVars( Ham::Hamiltonian )
 
-    psiks = rand_BlochWavefunc(Ham)
-    
+    ψ = rand_BlochWavefunc(Ham)
+
     Nstates = Ham.electrons.Nstates
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     Nspin = Ham.electrons.Nspin
     Nkspin = Nkpt*Nspin
 
-    Haux = Array{Matrix{ComplexF64},1}(undef,Nkspin)
+    η = Array{Matrix{ComplexF64},1}(undef,Nkspin)
     for i in 1:Nkspin
-        Haux[i] = rand( ComplexF64, Nstates, Nstates )
-        Haux[i] = 0.5*( Haux[i] + Haux[i]' )
+        η[i] = rand( ComplexF64, Nstates, Nstates )
+        η[i] = 0.5*( η[i] + η[i]' )
     end
 
-    return ElectronicVars(psiks, Haux)
+    return ElectronicVars(ψ, η)
 end
 
-function rotate!( e::ElectronicVars )
+"""
+Rotate auxiliary Hamiltonian η.
+Set Ham.electrons.ebands to eigenvalues of η.
+Rotate orthonormalize and rotate ψ.
+"""
+function constraint!( Ham::Hamiltonian, e::ElectronicVars )
 
-    psiks = e.psiks
-    Haux = e.Haux
+    ψ = e.ψ
+    η = e.η
 
-    U_Haux = copy(Haux)
-    λ = zeros(Float64, size(Haux[1],1) )
-    for i in 1:length(U_Haux)
-        λ, U_Haux[i] = eigen( Haux[i] )
-        Haux[i] = diagm( 0 => λ ) # rotate Haux
-        ortho_sqrt!(psiks[i])
-        psiks[i] = psiks[i]*U_Haux[i] # rotate psiks
+    U = copy(η)
+    λ = zeros( Float64, size(η[1],1) ) # eigenvalues
+    for i in 1:length(U)
+        λ, U[i] = eigen(η[i])
+        Ham.electrons.ebands[:,i] = λ
+        η[i] = diagm( 0 => λ ) # rotate η
+        ortho_sqrt!( ψ[i] )
+        ψ[i] = ψ[i] * U[i]
     end
 
     return
@@ -51,31 +46,87 @@ end
 
 function zeros_ElectronicVars( Ham::Hamiltonian )
 
-    psiks = zeros_BlochWavefunc(Ham)
-    
+    ψ = zeros_BlochWavefunc(Ham)
+
     Nstates = Ham.electrons.Nstates
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     Nspin = Ham.electrons.Nspin
     Nkspin = Nkpt*Nspin
 
-    Haux = Array{Matrix{ComplexF64},1}(undef,Nkspin)
+    η = Array{Matrix{ComplexF64},1}(undef,Nkspin)
     for i in 1:Nkspin
-        Haux[i] = zeros( ComplexF64, Nstates, Nstates )
+        η[i] = zeros( ComplexF64, Nstates, Nstates )
     end
 
-    return ElectronicVars(psiks, Haux)
+    return ElectronicVars(ψ, η)
 end
 
 import LinearAlgebra: dot
 function dot( a::ElectronicVars, b::ElectronicVars )
 
-    N = length(a.psiks)
-    v_psiks = zeros(N)
-    v_Haux  = zeros(N)
+    N = length(a.ψ)
+    v_ψ = zeros(N)
+    v_η  = zeros(N)
 
     for i in 1:N
-        v_psiks[i] = real( sum(conj(a.psiks[i]) .* b.psiks[i]) )
-        v_Haux[i]  = real( sum(conj(a.Haux[i]) .* b.Haux[i]) )
+        v_ψ[i] = real( sum(conj(a.ψ[i]) .* b.ψ[i]) )
+        v_η[i]  = real( sum(conj(a.η[i]) .* b.η[i]) )
     end
-    return v_psiks, v_Haux
+    return v_ψ, v_η
+end
+
+
+function axpy!( a::Float64, b::Float64, x::ElectronicVars, y::ElectronicVars )
+    Nkspin = length(x.ψ)
+    # update ψ and η
+    for i in 1:Nkspin
+        x.ψ[i] = x.ψ[i] + a*y.ψ[i]
+        x.η[i] = x.η[i] + b*y.η[i]
+        x.η[i] = 0.5*( x.η[i] + x.η[i]' ) # or use previous U_Haux ?
+    end
+    return
+end
+
+function axpy!(
+    a::Vector{Float64},
+    b::Vector{Float64},
+    x::ElectronicVars,
+    y::ElectronicVars
+)
+    Nkspin = length(x.ψ)
+    # update ψ and η
+    for i in 1:Nkspin
+        x.ψ[i] = x.ψ[i] + a[i]*y.ψ[i]
+        x.η[i] = x.η[i] + b[i]*y.η[i]
+        x.η[i] = 0.5*( x.η[i] + x.η[i]' ) # or use previous U_Haux ?
+    end
+    return
+end
+
+import PWDFT: print_ebands
+
+"""
+Wrapper for `print_ebands`.
+FIXME: Should be added to `PWDFT.jl`.
+"""
+function print_ebands( Ham::Hamiltonian )
+    print_ebands( Ham.electrons, Ham.pw.gvecw.kpoints, unit="eV" )
+end
+
+import Base: copy
+function copy( evars::ElectronicVars )
+    return ElectronicVars( copy(evars.ψ), copy(evars.η) )
+end
+
+"""
+Print the first η of an instance of ElectronicVars
+"""
+function print_Haux( e::ElectronicVars, header::String )
+    println()
+    println(header)
+    println("\nreal part\n")
+    display(real(e.η[1]))
+    println("\n\nimaginary part\n")
+    display(imag(e.η[1]))
+    println()
 end
