@@ -12,7 +12,7 @@ function main()
 
     #Ham = create_Ham_atom_Pt_smearing(a=10.0)
     #Ham = create_Ham_atom_Pt()
-    Ham = create_Ham_Al_fcc_smearing(meshk=[1,1,1])
+    Ham = create_Ham_Al_fcc_smearing(meshk=[1,1,1], Nspin=1, ecutwfc=30.0)
     #Ham = create_Ham_Pt_fcc_smearing()
 
     println(Ham)

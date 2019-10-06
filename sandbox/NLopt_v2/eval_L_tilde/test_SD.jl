@@ -15,7 +15,7 @@ function test_SD()
     Random.seed!(1234)
 
     #Ham = create_Ham_atom_Pt_smearing(a=10.0)
-    Ham = create_Ham_Al_fcc_smearing(meshk=[1,1,1])
+    Ham = create_Ham_Al_fcc_smearing( meshk=[1,1,1], Nspin=1, ecutwfc=30.0 )
     #Ham = create_Ham_Pt_fcc_smearing()
 
     println(Ham)
@@ -32,12 +32,14 @@ function test_SD()
     Nspin = Ham.electrons.Nspin
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     Rhoe = zeros(Float64,Npoints,Nspin)
-    @assert Nspin == 1
-    Rhoe[:,1] = guess_rhoe( Ham )
+    if Nspin == 1
+        Rhoe[:,1] = guess_rhoe( Ham )
+    else
+        Rhoe = guess_rhoe_atomic( Ham, starting_magnetization=[0.1] )
+    end
     update!(Ham, Rhoe)
 
-    Ham.electrons.ebands[:,:] = diag_LOBPCG!( Ham, evars.ψ, verbose_last=false, NiterMax=10 )
-
+    Ham.electrons.ebands[:,:] = diag_LOBPCG!( Ham, evars.ψ, verbose=true, NiterMax=20 )
     for ispin in 1:Nspin, ik in 1:Nkpt
         Ham.ispin = ispin
         Ham.ik = ik
@@ -48,11 +50,11 @@ function test_SD()
     constraint!( Ham, evars )
     Etot_old = eval_L_tilde!( Ham, evars )
 
-    α_t = 1e-5
-    β_t = 1e-1  # not good
+    α_t = 3e-5
+    #β_t = 1e-1  # not good
 
     Nconverges = 0
-    for iter = 1:20
+    for iter = 1:10
 
         constraint!( Ham, evars )
         grad_eval_L_tilde!( Ham, evars, g_evars )
@@ -62,7 +64,6 @@ function test_SD()
 
         constraint!( Ham, evars )
         Etot = eval_L_tilde!( Ham, evars )
-        print_Haux(evars, "evars after eval_L_tilde!")
 
         @printf("Iteration %8d %18.10f %18.10e\n", iter, Etot, Etot_old - Etot)
         if abs(Etot_old - Etot) < 1e-6
@@ -70,7 +71,7 @@ function test_SD()
         else
             Nconverges = 0
         end
-        if Nconverges >= 2
+        if Nconverges >= 3
             @printf("\nEmin_Haux_SD is converged in iter: %d\n", iter)
             break
         end

@@ -23,7 +23,7 @@ function calc_alpha_CG!(
     for i in 1:Nkspin
 
         denum_ψ = real(sum(conj(g.ψ[i] - gt.ψ[i]).*d.ψ[i]))
-        println("denum_ψ = ", denum_ψ)
+        #println("denum_ψ = ", denum_ψ)
         #if abs(denum) <= 1e-6
         if denum_ψ != 0.0
             α_ψ[i] = abs( α_t*real(sum(conj(g.ψ[i]).*d.ψ[i])) / denum_ψ )
@@ -32,7 +32,7 @@ function calc_alpha_CG!(
         end
 
         denum_η = real(sum(conj(g.η[i] - gt.η[i]).*d.η[i]))
-        println("denum_η = ", denum_η)
+        #println("denum_η = ", denum_η)
         #if abs(denum) <= 1e-6
         if denum_η != 0.0
             α_ψ[i] = abs( α_t*real(sum(conj(g.η[i]).*d.η[i])) / denum_η )
@@ -57,8 +57,8 @@ end
 function test_linmin()
     Random.seed!(1234)
 
-    Ham = create_Ham_atom_Pt_smearing(a=10.0)
-    #Ham = create_Ham_Al_fcc_smearing(meshk=[1,1,1])
+    #Ham = create_Ham_atom_Pt_smearing(a=10.0)
+    Ham = create_Ham_Al_fcc_smearing(meshk=[1,1,1], ecutwfc=30.0, Nspin=1)
     #Ham = create_Ham_Pt_fcc_smearing()
 
     println(Ham)
@@ -75,11 +75,14 @@ function test_linmin()
     Nspin = Ham.electrons.Nspin
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     Rhoe = zeros(Float64,Npoints,Nspin)
-    @assert Nspin == 1
-    Rhoe[:,1] = guess_rhoe( Ham )
+    if Nspin == 1
+        Rhoe[:,1] = guess_rhoe( Ham )
+    else
+        Rhoe = guess_rhoe_atomic( Ham, starting_magnetization=[0.1] )
+    end
     update!(Ham, Rhoe)
     # eigenvalues are not needed for this case
-    Ham.electrons.ebands[:,:] = diag_LOBPCG!( Ham, evars.ψ, verbose=false, verbose_last=false, NiterMax=20 )
+    Ham.electrons.ebands[:,:] = diag_LOBPCG!( Ham, evars.ψ, verbose=true, verbose_last=true, NiterMax=20 )
 
     for ispin in 1:Nspin, ik in 1:Nkpt
         Ham.ispin = ispin
@@ -127,9 +130,9 @@ function test_linmin()
         #    end
         #end
         #print_Haux( evars, "evars after eval_L_tilde")
-        print_Haux( g_evars, "g_evars after eval_L_tilde")
+        #print_Haux( g_evars, "g_evars after eval_L_tilde")
 
-        calc_primary_search_dirs!( Ham, evars, Kg_evars, κ=0.01 )
+        calc_primary_search_dirs!( Ham, evars, Kg_evars, κ=1.0 )
         d_evars = copy( Kg_evars )
 
         #d_evars = ElectronicVars( -g_evars.ψ, -g_evars.η )
@@ -141,9 +144,11 @@ function test_linmin()
         #print_Haux(gt_evars, "gt_evars")
 
         calc_alpha_CG!( g_evars, gt_evars, d_evars, α_t, α_ψ, α_η )
-
         println("α_ψ = ", α_ψ)
         println("α_η = ", α_η)
+
+        #α_ψ[:] .= α_t
+        #α_η[:] .= α_t
 
         # update evars
         axpy!( α_ψ, α_η, evars, d_evars )
