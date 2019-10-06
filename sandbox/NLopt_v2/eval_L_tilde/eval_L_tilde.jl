@@ -18,6 +18,7 @@ Should be called before after constraint!(::ElectronicVars)
 function eval_L_tilde!( Ham::Hamiltonian, evars::ElectronicVars; kT=1e-3 )
 
     E_fermi, Entropy = set_occupations!( Ham, kT )
+    println("E_fermi = ", E_fermi)
 
     Rhoe = calc_rhoe( Ham, evars.ψ )
     update!( Ham, Rhoe )
@@ -219,9 +220,10 @@ function calc_grad_Haux(
     # Equation (24)
     dF_dmu = 0.0
     for ist = 1:Nstates
-        dF_dmu = dF_dmu + ( Hsub[ist,ist] - epsilon[ist] ) * f[ist] * (1.0 - f[ist])
+        dF_dmu = dF_dmu + ( real(Hsub[ist,ist]) - epsilon[ist] ) * f[ist] * (1.0 - f[ist])
     end
     dF_dmu = dF_dmu/kT
+    @printf("%3d dF_dmu = %18.10f\n", ik, dF_dmu)
 
     # Equation (19)
     dmu_deta = zeros(Nstates)
@@ -230,16 +232,17 @@ function calc_grad_Haux(
     for ist = 1:Nstates
         ss = ss + f[ist]*(1.0 - f[ist])
     end
+    @printf("%3d ss = %18.10f\n", ik, ss)
     SMALL = 1e-8
     if abs(ss) > SMALL
         for ist = 1:Nstates
-            dmu_deta[ist] = f[ist]*(1.0 - f[ist])/ss  # for non spin pol XXX
+            dmu_deta[ist] = f[ist]*(1.0 - f[ist])/ss
         end
     end
 
     # diagonal of Equation (23)
     for ist = 1:Nstates
-        term1 = -( Hsub[ist,ist] - epsilon[ist] ) * f[ist] * ( 1.0 - f[ist] )/kT # for non spin pol XXX
+        term1 = -( Hsub[ist,ist] - epsilon[ist] ) * f[ist] * ( 1.0 - f[ist] )/kT
         term2 = dmu_deta[ist]*dF_dmu
         g_η[ist,ist] = term1 + term2
     end

@@ -11,7 +11,7 @@ function create_Ham_Pt_fcc_smearing(; meshk=[3,3,3])
                        meshk=meshk, extra_states=4 )
 end
 
-function create_Ham_atom_Pt_smearing()
+function create_Ham_atom_Pt_smearing(; a=16.0)
     atoms = Atoms(xyz_string_frac=
         """
         1

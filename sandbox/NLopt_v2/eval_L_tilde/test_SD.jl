@@ -14,9 +14,11 @@ include("eval_L_tilde.jl")
 function test_SD()
     Random.seed!(1234)
 
-    #Ham = create_Ham_atom_Pt_smearing()
-    Ham = create_Ham_Al_fcc_smearing()
+    Ham = create_Ham_atom_Pt_smearing(a=10.0)
+    #Ham = create_Ham_Al_fcc_smearing(meshk=[5,5,5])
     #Ham = create_Ham_Pt_fcc_smearing()
+
+    println(Ham)
 
     evars = rand_ElectronicVars(Ham)
 
@@ -54,6 +56,7 @@ function test_SD()
 
         constraint!( Ham, evars )
         grad_eval_L_tilde!( Ham, evars, g_evars )
+        print_Haux(g_evars, "g_evars after grad_eval_L_tilde")
 
         axpy!( -α_t, -α_t, evars, g_evars )
 

@@ -1,10 +1,21 @@
-include("eval_L_tilde.jl")
+using LinearAlgebra
+using Printf
+using PWDFT
+using Random
+
+const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
+const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
+
+include("../create_Ham.jl")
 
 function main()
-    #Ham = create_Ham_atom_Pt_smearing()
+
+    Ham = create_Ham_atom_Pt_smearing(a=10.0)
     #Ham = create_Ham_atom_Pt()
-    Ham = create_Ham_Al_fcc_smearing()
+    #Ham = create_Ham_Al_fcc_smearing()
     #Ham = create_Ham_Pt_fcc_smearing()
+
+    println(Ham)
 
     KS_solve_SCF!( Ham,
         print_final_ebands=true,
