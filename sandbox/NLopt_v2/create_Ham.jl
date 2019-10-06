@@ -17,7 +17,7 @@ function create_Ham_atom_Pt_smearing(; a=16.0)
         1
 
         Pt  0.0  0.0  0.0
-        """, LatVecs=gen_lattice_sc(16.0))
+        """, LatVecs=gen_lattice_sc(a))
     pspfiles = [joinpath(DIR_PSP, "Pt-q10.gth")]
     ecutwfc = 30.0
     return Hamiltonian( atoms, pspfiles, ecutwfc, extra_states=4 )
