@@ -142,8 +142,8 @@ function calc_grad_Haux_prec(
     Focc = @view Ham.electrons.Focc[:,ikspin]
     epsilon = @view Ham.electrons.ebands[:,ikspin]
 
-    Ngw     = size(psi)[1]
-    Nstates = size(psi)[2]
+    Ngw     = size(ψ)[1]
+    Nstates = size(ψ)[2]
 
     # gradients
     g_ψ = zeros(ComplexF64, Ngw, Nstates)
@@ -156,13 +156,13 @@ function calc_grad_Haux_prec(
 
     # gradient for psi (excluding Focc?)
     for ist = 1:Nstates
-        g_ψ[:,ist] = Hpsi[:,ist]
+        g_ψ[:,ist] = Hψ[:,ist]
         for jst = 1:Nstates
             g_ψ[:,ist] = g_ψ[:,ist] - Hsub[jst,ist]*ψ[:,jst]
         end
-        g_ψ[:,ist] = Focc[ist]*g_ψ[:,ist]  # FIXME: in the paper there is no `Focc` factor.
+        #g_ψ[:,ist] = Focc[ist]*g_ψ[:,ist]  # FIXME: in the paper there is no `Focc` factor.
     end
-    g_ψ[i] = -Kprec( ik, Ham.pw, g_ψ ) # precondition gradient in ψ direction
+    g_ψ = -Kprec( ik, Ham.pw, g_ψ ) # precondition gradient in ψ direction
 
     g_η = copy(Hsub)
     # only diagonal elements are different from Hsub
@@ -222,7 +222,7 @@ function calc_grad_Haux(
     for ist = 1:Nstates
         dF_dmu = dF_dmu + ( real(Hsub[ist,ist]) - epsilon[ist] ) * f[ist] * (1.0 - f[ist])
     end
-    dF_dmu = dF_dmu/kT
+    dF_dmu = 2*dF_dmu/kT  # XXX multiply by 2 (for non spin pol ?)
     @printf("%3d dF_dmu = %18.10f\n", ik, dF_dmu)
 
     # Equation (19)
@@ -232,18 +232,22 @@ function calc_grad_Haux(
     for ist = 1:Nstates
         ss = ss + f[ist]*(1.0 - f[ist])
     end
-    @printf("%3d ss = %18.10f\n", ik, ss)
+    #@printf("%3d ss = %18.10f\n", ik, ss)
     SMALL = 1e-8
     if abs(ss) > SMALL
         for ist = 1:Nstates
             dmu_deta[ist] = f[ist]*(1.0 - f[ist])/ss
         end
     end
+    println("dmu_deta = ", dmu_deta)
 
     # diagonal of Equation (23)
     for ist = 1:Nstates
         term1 = -( Hsub[ist,ist] - epsilon[ist] ) * f[ist] * ( 1.0 - f[ist] )/kT
         term2 = dmu_deta[ist]*dF_dmu
+        println("")
+        println("Hsub - epsilon = ", Hsub[ist,ist] - epsilon[ist])
+        println("term1 = ", term1, " term2 = ", term2)
         g_η[ist,ist] = term1 + term2
     end
 

@@ -1,32 +1,43 @@
+using LinearAlgebra
+using Printf
+using PWDFT
+using Random
+
+const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
+const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
+
+include("../create_Ham.jl")
+#include("subspace_rotation.jl")
+include("ElectronicVars.jl")
 include("eval_L_tilde.jl")
 
 function calc_alpha_CG!(
     g::ElectronicVars, gt::ElectronicVars, d::ElectronicVars,
     α_t::Float64,
-    α::Vector{Float64},
-    α_Haux::Vector{Float64}
+    α_ψ::Vector{Float64},
+    α_η::Vector{Float64}
 )
 
-    Nkspin = length(g.psiks)
+    Nkspin = length(g.ψ)
 
     for i in 1:Nkspin
-        
-        denum = real(sum(conj(g.psiks[i]-gt.psiks[i]).*d.psiks[i]))
-        println("denum = ", denum)
+
+        denum_ψ = real(sum(conj(g.ψ[i] - gt.ψ[i]).*d.ψ[i]))
+        println("denum_ψ = ", denum_ψ)
         #if abs(denum) <= 1e-6
-        if denum != 0.0
-            α[i] = abs( α_t*real(sum(conj(g.psiks[i]).*d.psiks[i]))/denum )
+        if denum_ψ != 0.0
+            α_ψ[i] = abs( α_t*real(sum(conj(g.ψ[i]).*d.ψ[i])) / denum_ψ )
         else
-            α[i] = 0.0
+            α_ψ[i] = 0.0
         end
 
-        denum_aux = real(sum(conj(g.Haux[i]-gt.Haux[i]).*d.Haux[i]))
-        println("denum_aux = ", denum_aux)
+        denum_η = real(sum(conj(g.η[i] - gt.η[i]).*d.η[i]))
+        println("denum_η = ", denum_η)
         #if abs(denum) <= 1e-6
-        if denum_aux != 0.0
-            α_Haux[i] = abs( α_t*real(sum(conj(g.Haux[i]).*d.Haux[i]))/denum_aux )
+        if denum_η != 0.0
+            α_ψ[i] = abs( α_t*real(sum(conj(g.η[i]).*d.η[i])) / denum_η )
         else
-            α_Haux[i] = 0.0
+            α_ψ[i] = 0.0
         end
 
     end
@@ -34,11 +45,11 @@ function calc_alpha_CG!(
 end
 
 function trial_evars!( ec, e, d, α_t )
-    Nkspin = length(e.psiks)
+    Nkspin = length(e.ψ)
     for i in 1:Nkspin
-        ec.psiks[i] = e.psiks[i] + α_t*d.psiks[i]
-        ec.Haux[i] = e.Haux[i] + α_t*d.Haux[i]
-        ec.Haux[i] = 0.5*( ec.Haux[i] + ec.Haux[i]' )
+        ec.ψ[i] = e.ψ[i] + α_t*d.ψ[i]
+        ec.η[i] = e.η[i] + α_t*d.η[i]
+        ec.η[i] = 0.5*( ec.η[i] + ec.η[i]' )
     end
     return
 end
@@ -46,9 +57,11 @@ end
 function test_linmin()
     Random.seed!(1234)
 
-    #Ham = create_Ham_atom_Pt_smearing()
-    #Ham = create_Ham_Al_fcc_smearing()
-    Ham = create_Ham_Pt_fcc_smearing()
+    Ham = create_Ham_atom_Pt_smearing(a=10.0)
+    #Ham = create_Ham_Al_fcc_smearing(meshk=[1,1,1])
+    #Ham = create_Ham_Pt_fcc_smearing()
+
+    println(Ham)
 
     evars = rand_ElectronicVars(Ham)
 
@@ -66,24 +79,23 @@ function test_linmin()
     Rhoe[:,1] = guess_rhoe( Ham )
     update!(Ham, Rhoe)
     # eigenvalues are not needed for this case
-    _ = diag_LOBPCG!( Ham, evars.psiks, verbose=false, verbose_last=false, NiterMax=20 )
+    Ham.electrons.ebands[:,:] = diag_LOBPCG!( Ham, evars.ψ, verbose=false, verbose_last=false, NiterMax=20 )
 
     for ispin in 1:Nspin, ik in 1:Nkpt
         Ham.ispin = ispin
         Ham.ik = ik
         i = ik + (ispin -1)*Nkpt
-        evars.Haux[i] = Hermitian( evars.psiks[i]' * ( Ham * evars.psiks[i] ) )
+        evars.η[i] = diagm( 0 => Ham.electrons.ebands[:,i] )
     end
 
-
-    rotate_evars!( Ham, evars )
+    constraint!( Ham, evars )
     Etot_old = eval_L_tilde!( Ham, evars )
 
     α_t = 3e-5
 
-    Nkspin = length(evars.psiks)
-    α = zeros(Nkspin)
-    α_Haux = zeros(Nkspin)
+    Nkspin = length(evars.ψ)
+    α_ψ = zeros(Nkspin)
+    α_η = zeros(Nkspin)
 
     evarsc = copy(evars)
     d_evars = copy(evars)
@@ -91,52 +103,52 @@ function test_linmin()
     Kg_evars = copy(evars)
     d_old_evars = copy(evars)
 
-    v1_psiks = zeros(Nkspin)
-    v2_psiks = zeros(Nkspin)
-    v3_psiks = zeros(Nkspin)
+    v1_ψ = zeros(Nkspin)
+    v2_ψ = zeros(Nkspin)
+    v3_ψ = zeros(Nkspin)
 
-    v1_Haux = zeros(Nkspin)
-    v2_Haux = zeros(Nkspin)
-    v3_Haux = zeros(Nkspin)
+    v1_η = zeros(Nkspin)
+    v2_η = zeros(Nkspin)
+    v3_η = zeros(Nkspin)
 
     Nconverges = 0
-    for iter = 1:10
-        
+    for iter = 1:50
+
         #rotate_evars!( Ham, evars )
         grad_eval_L_tilde!( Ham, evars, g_evars )
 
-        if iter > 1
-            v1_psiks, v1_Haux = dot( g_evars, d_evars )
-            v2_psiks, v2_Haux = dot( g_evars, g_evars )
-            v3_psiks, v3_Haux = dot( d_evars, d_evars )
-            #for i in 1:Nkspin
-            #    @printf("cosine angle psiks = %18.10f, ", v1_psiks[i]/sqrt(v2_psiks[i]*v3_psiks[i]))
-            #    @printf("cosine angle Haux = %18.10f\n", v1_Haux[i]/sqrt(v2_Haux[i]*v3_Haux[i]))
-            #end
-        end
+        #if iter > 1
+        #    v1_ψ, v1_η = dot( g_evars, d_evars )
+        #    v2_ψ, v2_η = dot( g_evars, g_evars )
+        #    v3_ψ, v3_η = dot( d_evars, d_evars )
+        #    for i in 1:Nkspin
+        #        @printf("cosine angle psiks = %18.10f, ", v1_ψ[i]/sqrt(v2_ψ[i]*v3_ψ[i]))
+        #        @printf("cosine angle Haux = %18.10f\n", v1_η[i]/sqrt(v2_η[i]*v3_η[i]))
+        #    end
+        #end
         #print_Haux( evars, "evars after eval_L_tilde")
-        #print_Haux( g_evars, "g_evars after eval_L_tilde")
+        print_Haux( g_evars, "g_evars after eval_L_tilde")
 
-        #calc_primary_search_dirs!( Ham, evars, Kg_evars )
-        #d_evars = copy( Kg_evars )
+        calc_primary_search_dirs!( Ham, evars, Kg_evars, κ=0.01 )
+        d_evars = copy( Kg_evars )
 
-        d_evars = ElectronicVars( -g_evars.psiks, -g_evars.Haux )
+        #d_evars = ElectronicVars( -g_evars.ψ, -g_evars.η )
 
         trial_evars!( evarsc, evars, d_evars, α_t )
 
-        rotate_evars!( Ham, evarsc )
+        constraint!( Ham, evarsc )
         grad_eval_L_tilde!( Ham, evarsc, gt_evars )
-        print_Haux(gt_evars, "gt_evars")
+        #print_Haux(gt_evars, "gt_evars")
 
-        calc_alpha_CG!( g_evars, gt_evars, d_evars, α_t, α, α_Haux )
+        calc_alpha_CG!( g_evars, gt_evars, d_evars, α_t, α_ψ, α_η )
 
-        println("α      = ", α)
-        println("α_Haux = ", α_Haux)
+        println("α_ψ = ", α_ψ)
+        println("α_η = ", α_η)
 
         # update evars
-        axpy!( α, α_Haux, evars, d_evars )
+        axpy!( α_ψ, α_η, evars, d_evars )
 
-        rotate_evars!( Ham, evars )
+        constraint!( Ham, evars )
         Etot = eval_L_tilde!( Ham, evars )
         #print_Haux(evars, "evars after eval_L_tilde!")
 
@@ -155,7 +167,7 @@ function test_linmin()
         d_old_evars = copy(d_evars)
     end
 
-    #print_ebands( Ham )
+    print_ebands( Ham )
     println( Ham.energies )
 end
 @time test_linmin()

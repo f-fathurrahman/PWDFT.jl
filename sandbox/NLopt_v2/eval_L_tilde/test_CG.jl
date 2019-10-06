@@ -1,4 +1,4 @@
-include("eval_L_tilde.jl")
+
 
 function precond_grad!( Ham, g, Kg; Kscalar=1.0 )
     Nspin = Ham.electrons.Nspin
@@ -39,7 +39,7 @@ function calc_beta_CG!( g, g_old, Kg, Kg_old, β, β_Haux )
         end
         if abs(β_Haux[i] - 1.0) < 0.2
             β_Haux[i] = 0.0
-        end        
+        end
         if β_Haux[i] < 0.0
             β_Haux[i] = 0.0
         end
@@ -77,7 +77,7 @@ function calc_alpha_CG!(
     Nkspin = length(g.psiks)
 
     for i in 1:Nkspin
-        
+
         denum = real(sum(conj(g.psiks[i]-gt.psiks[i]).*d.psiks[i]))
         #println("denum = ", denum)
         #if abs(denum) <= 1e-6
@@ -160,7 +160,7 @@ function test_CG()
     Nconverges = 0
 
     for iter = 1:100
-        
+
         rotate_evars!( Ham, evars )
         grad_eval_L_tilde!( Ham, evars, g_evars )
         #print_Haux( evars, "evars after grad_eval_L_tilde")
