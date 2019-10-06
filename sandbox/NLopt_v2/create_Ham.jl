@@ -1,4 +1,4 @@
-function create_Ham_Pt_fcc_smearing()
+function create_Ham_Pt_fcc_smearing(; meshk=[3,3,3])
     atoms = Atoms(xyz_string_frac=
         """
         1
@@ -8,7 +8,7 @@ function create_Ham_Pt_fcc_smearing()
     pspfiles = [joinpath(DIR_PSP, "Pt-q10.gth")]
     ecutwfc = 30.0
     return Hamiltonian( atoms, pspfiles, ecutwfc,
-                       meshk=[3,3,3], extra_states=4 )
+                       meshk=meshk, extra_states=4 )
 end
 
 function create_Ham_atom_Pt_smearing()
@@ -48,7 +48,7 @@ function create_Ham_atom_Al_smearing()
     return Hamiltonian( atoms, pspfiles, ecutwfc, extra_states=4 )
 end
 
-function create_Ham_Al_fcc_smearing()
+function create_Ham_Al_fcc_smearing(; meshk=[3,3,3])
     atoms = Atoms( xyz_string_frac=
         """
         1
@@ -59,6 +59,6 @@ function create_Ham_Al_fcc_smearing()
     pspfiles = [joinpath(DIR_PSP, "Al-q3.gth")]
     ecutwfc = 15.0
     return Hamiltonian( atoms, pspfiles, ecutwfc,
-                       meshk=[3,3,3], extra_states=4 )
+                       meshk=meshk, extra_states=4 )
 
 end
