@@ -48,7 +48,7 @@ function create_Ham_atom_Al_smearing()
     return Hamiltonian( atoms, pspfiles, ecutwfc, extra_states=4 )
 end
 
-function create_Ham_Al_fcc_smearing(; meshk=[3,3,3])
+function create_Ham_Al_fcc_smearing(; meshk=[3,3,3], Nspin=1, ecutwfc=15.0)
     atoms = Atoms( xyz_string_frac=
         """
         1
@@ -57,8 +57,10 @@ function create_Ham_Al_fcc_smearing(; meshk=[3,3,3])
         """, in_bohr=true,
         LatVecs = gen_lattice_fcc(7.6525970200) )
     pspfiles = [joinpath(DIR_PSP, "Al-q3.gth")]
-    ecutwfc = 15.0
-    return Hamiltonian( atoms, pspfiles, ecutwfc,
-                       meshk=meshk, extra_states=4 )
+    if Nspin == 1
+        return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=meshk, extra_states=4 )
+    else
+        return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=meshk, extra_states=4, Nspin=2 )
+    end
 
 end
