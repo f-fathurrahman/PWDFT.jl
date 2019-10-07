@@ -24,6 +24,7 @@ function calc_alpha_CG!(
 
         denum_ψ = real(sum(conj(g.ψ[i] - gt.ψ[i]).*d.ψ[i]))
         #println("denum_ψ = ", denum_ψ)
+        #println("num_ψ   = ", real(sum(conj(g.ψ[i]).*d.ψ[i])) )
         #if abs(denum) <= 1e-6
         if denum_ψ != 0.0
             α_ψ[i] = abs( α_t*real(sum(conj(g.ψ[i]).*d.ψ[i])) / denum_ψ )
@@ -33,11 +34,12 @@ function calc_alpha_CG!(
 
         denum_η = real(sum(conj(g.η[i] - gt.η[i]).*d.η[i]))
         #println("denum_η = ", denum_η)
+        #println("num_η   = ", real(sum(conj(g.η[i]).*d.η[i])) )
         #if abs(denum) <= 1e-6
         if denum_η != 0.0
-            α_ψ[i] = abs( α_t*real(sum(conj(g.η[i]).*d.η[i])) / denum_η )
+            α_η[i] = abs( α_t*real(sum(conj(g.η[i]).*d.η[i])) / denum_η )
         else
-            α_ψ[i] = 0.0
+            α_η[i] = 0.0
         end
 
     end
@@ -57,8 +59,8 @@ end
 function test_linmin()
     Random.seed!(1234)
 
-    #Ham = create_Ham_atom_Pt_smearing(a=10.0)
-    Ham = create_Ham_Al_fcc_smearing(meshk=[1,1,1], ecutwfc=30.0, Nspin=1)
+    Ham = create_Ham_atom_Pt_smearing(a=10.0)
+    #Ham = create_Ham_Al_fcc_smearing(meshk=[1,1,1], ecutwfc=30.0, Nspin=1)
     #Ham = create_Ham_Pt_fcc_smearing()
 
     println(Ham)
@@ -82,7 +84,7 @@ function test_linmin()
     end
     update!(Ham, Rhoe)
     # eigenvalues are not needed for this case
-    Ham.electrons.ebands[:,:] = diag_LOBPCG!( Ham, evars.ψ, verbose=true, verbose_last=true, NiterMax=20 )
+    Ham.electrons.ebands[:,:] = diag_LOBPCG!( Ham, evars.ψ, verbose=true, verbose_last=true, NiterMax=5 )
 
     for ispin in 1:Nspin, ik in 1:Nkpt
         Ham.ispin = ispin
@@ -115,7 +117,10 @@ function test_linmin()
     v3_η = zeros(Nkspin)
 
     Nconverges = 0
-    for iter = 1:50
+
+    check_Hsub( Ham, evars )
+
+    for iter = 1:20
 
         #rotate_evars!( Ham, evars )
         grad_eval_L_tilde!( Ham, evars, g_evars )
@@ -130,7 +135,7 @@ function test_linmin()
         #    end
         #end
         #print_Haux( evars, "evars after eval_L_tilde")
-        #print_Haux( g_evars, "g_evars after eval_L_tilde")
+        print_Haux( g_evars, "g_evars after eval_L_tilde")
 
         calc_primary_search_dirs!( Ham, evars, Kg_evars, κ=1.0 )
         d_evars = copy( Kg_evars )
@@ -141,7 +146,7 @@ function test_linmin()
 
         constraint!( Ham, evarsc )
         grad_eval_L_tilde!( Ham, evarsc, gt_evars )
-        #print_Haux(gt_evars, "gt_evars")
+        print_Haux(gt_evars, "gt_evars")
 
         calc_alpha_CG!( g_evars, gt_evars, d_evars, α_t, α_ψ, α_η )
         println("α_ψ = ", α_ψ)
@@ -158,7 +163,9 @@ function test_linmin()
         #print_Haux(evars, "evars after eval_L_tilde!")
 
         @printf("Iteration %8d %18.10f %18.10e\n", iter, Etot, Etot_old - Etot)
-        if abs(Etot_old - Etot) < 1e-6
+        check_Hsub( Ham, evars )
+
+        if abs(Etot_old - Etot) < 1e-10
             Nconverges = Nconverges + 1
         else
             Nconverges = 0

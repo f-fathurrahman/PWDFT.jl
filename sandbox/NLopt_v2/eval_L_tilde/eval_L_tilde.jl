@@ -1,4 +1,57 @@
 """
+Prepare guess wavefunc
+"""
+function guess_evars!( Ham, evars; NiterMax=10 )
+
+    Npoints = prod(Ham.pw.Ns)
+    Nspin = Ham.electrons.Nspin
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+    Rhoe = zeros(Float64,Npoints,Nspin)
+
+    if Nspin == 1
+        Rhoe[:,1] = guess_rhoe( Ham )
+    else
+        Rhoe = guess_rhoe_atomic( Ham, starting_magnetization=0.1*ones(Ham.atoms.Nspecies) )
+    end
+    update!(Ham, Rhoe)
+
+    Ham.electrons.ebands[:,:] = diag_LOBPCG!( Ham, evars.ψ, verbose=true, NiterMax=NiterMax )
+    for ispin in 1:Nspin, ik in 1:Nkpt
+        Ham.ispin = ispin
+        Ham.ik = ik
+        i = ik + (ispin - 1)*Nkpt
+        evars.η[i] = diagm( 0 => Ham.electrons.ebands[:,i] )
+    end
+
+    return
+end
+
+
+"""
+Check convergence in Haux
+"""
+function check_Hsub( Ham, evars )
+    ψ = evars.ψ
+    η = evars.η
+    Nkspin = length(ψ)
+    Nstates = Ham.electrons.Nstates
+    ss = 0.0
+    for i in 1:Nkspin
+        Hsub = Hermitian( ψ[i]' * (Ham*ψ[i]) )
+        λ = eigvals(Hsub)
+        for ist in 1:Nstates
+            #@printf("Hsub-Haux: %d %18.10f\n", ist, abs(λ[ist] - real(η[i][ist,ist])))
+            #ds = abs(real(Hsub[ist,ist] - η[i][ist,ist]))
+            ds = abs(λ[ist] - real(η[i][ist,ist]))
+            @printf("Hsub-Haux: %d %18.10f\n", ist, ds)
+            ss = ss + ds
+        end
+    end
+    println("ss = ", ss)
+    return
+end
+
+"""
 A convenience wrapper for `calc_Focc` and `calc_entropy`
 Modify Ham.electrons.Focc and returns E_fermi and Entropy
 """
@@ -160,7 +213,7 @@ function calc_grad_Haux_prec(
         for jst = 1:Nstates
             g_ψ[:,ist] = g_ψ[:,ist] - Hsub[jst,ist]*ψ[:,jst]
         end
-        #g_ψ[:,ist] = Focc[ist]*g_ψ[:,ist]  # FIXME: in the paper there is no `Focc` factor.
+        g_ψ[:,ist] = Focc[ist]*g_ψ[:,ist]  # FIXME: in the paper there is no `Focc` factor.
     end
     g_ψ = -Kprec( ik, Ham.pw, g_ψ ) # precondition gradient in ψ direction
 
@@ -251,7 +304,7 @@ function calc_grad_Haux(
 
     # diagonal of Equation (23)
     for ist = 1:Nstates
-        term1 = -( Hsub[ist,ist] - epsilon[ist] ) * f[ist] * ( 1.0 - f[ist] )/kT
+        term1 = -( Hsub[ist,ist] - epsilon[ist] ) * f[ist] * ( 1.0 - f[ist] )/kT #* 2 # XXX: non spin pol
         term2 = dmu_deta[ist]*dF_dmu
         #println("")
         #println("ist = ", ist)
