@@ -15,8 +15,8 @@ function test_SD()
     Random.seed!(1234)
 
     #Ham = create_Ham_atom_Pt_smearing(a=10.0)
-    Ham = create_Ham_Al_fcc_smearing( meshk=[1,1,1], Nspin=1, ecutwfc=15.0 )
-    #Ham = create_Ham_Pt_fcc_smearing()
+    #Ham = create_Ham_Al_fcc_smearing( meshk=[1,1,1], Nspin=1, ecutwfc=15.0 )
+    Ham = create_Ham_Pt_fcc_smearing( meshk=[1,1,1] )
 
     println(Ham)
 
@@ -27,13 +27,13 @@ function test_SD()
     Ham.energies.NN = calc_E_NN( Ham.atoms )
     Ham.energies.PspCore = calc_PspCore_ene( Ham.atoms, Ham.pspots )
 
-    guess_evars!( Ham, evars, NiterMax=2 )
+    guess_evars!( Ham, evars, NiterMax=20 )
 
     constraint!( Ham, evars )
     Etot_old = eval_L_tilde!( Ham, evars )
 
     α_t = 3e-5
-    #β_t = 1e-1  # not good
+    β_t = 3e-5  # also set this?
 
     Nconverges = 0
     for iter = 1:10
@@ -42,10 +42,13 @@ function test_SD()
         grad_eval_L_tilde!( Ham, evars, g_evars )
         print_Haux(g_evars, "g_evars after grad_eval_L_tilde")
 
-        axpy!( -α_t, α_t, evars, g_evars )  # different sign for Haux
+        axpy!( -α_t, -α_t, evars, g_evars )  # XXX: try different sign for Haux?
+        #axpy!( -α_t, -β_t, evars, g_evars )  # XXX: try different sign for Haux?
+        #axpy!( -α_t, 1e-8, evars, g_evars )  # XXX: try different sign for Haux?
 
         constraint!( Ham, evars )
         Etot = eval_L_tilde!( Ham, evars )
+        print_Haux(evars, "evars after grad_eval_L_tilde")
 
         @printf("Iteration %8d %18.10f %18.10e\n", iter, Etot, Etot_old - Etot)
 

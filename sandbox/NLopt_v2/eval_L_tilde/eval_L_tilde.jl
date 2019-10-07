@@ -34,9 +34,16 @@ function check_Hsub( Ham, evars )
     ψ = evars.ψ
     η = evars.η
     Nkspin = length(ψ)
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+    Nspin = Ham.electrons.Nspin
     Nstates = Ham.electrons.Nstates
     ss = 0.0
-    for i in 1:Nkspin
+    for ispin in 1:Nspin, ik in 1:Nkpt
+        #
+        Ham.ik = ik
+        Ham.ispin = ispin
+        #
+        i = ik + (ispin - 1)*Nkpt
         Hsub = Hermitian( ψ[i]' * (Ham*ψ[i]) )
         λ = eigvals(Hsub)
         for ist in 1:Nstates
@@ -144,37 +151,6 @@ function calc_primary_search_dirs!(
 end
 
 """
-Similar to `calc_primary_search_dirs`, but using the gradients explicitly.
-FIXME: If this is ever used, no need to call `calc_grad_Haux` again.
-Simply use the one that has been calculated previously.
-"""
-function calc_primary_search_dirs_v1!(
-    Ham::Hamiltonian,
-    evars::ElectronicVars,
-    Δ_evars::ElectronicVars;
-    kT=1e-3,
-    κ=0.5
-)
-
-    Nspin = Ham.electrons.Nspin
-    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
-
-    Δ_ψ = Δ_evars.ψ
-    Δ_η = Δ_evars.η
-    for ispin in 1:Nspin, ik in 1:Nkpt
-        Ham.ispin = ispin
-        Ham.ik = ik
-        i = ik + (ispin - 1)*Nkpt
-        Δ_ψ[i], Δ_η[i] = calc_grad_Haux(Ham, evars.ψ[i], kT)
-        Δ_η[i] = -κ*Δ_η[i]
-    end
-
-    return
-
-end
-
-
-"""
 Calculate preconditioned gradient in η direction
 using expression given in PhysRevB.79.241103 (Freysoldt-Boeck-Neugenbauer)
 for primary search direction
@@ -215,7 +191,7 @@ function calc_grad_Haux_prec(
         end
         g_ψ[:,ist] = Focc[ist]*g_ψ[:,ist]  # FIXME: in the paper there is no `Focc` factor.
     end
-    g_ψ = -Kprec( ik, Ham.pw, g_ψ ) # precondition gradient in ψ direction
+    g_ψ = -Kprec( ik, Ham.pw, g_ψ ) # precondition gradient in ψ direction XXX: the sign is negative
 
     g_η = copy(Hsub)
     # only diagonal elements are different from Hsub
@@ -322,5 +298,5 @@ function calc_grad_Haux(
         end
     end
 
-    return g_ψ, g_η
+    return g_ψ, g_η   # set the sign ? (doesn't matter for linmin?)
 end

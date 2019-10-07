@@ -27,7 +27,8 @@ function calc_alpha_CG!(
         #println("num_ψ   = ", real(sum(conj(g.ψ[i]).*d.ψ[i])) )
         #if abs(denum) <= 1e-6
         if denum_ψ != 0.0
-            α_ψ[i] = abs( α_t*real(sum(conj(g.ψ[i]).*d.ψ[i])) / denum_ψ )
+            #α_ψ[i] = abs( α_t*real(sum(conj(g.ψ[i]).*d.ψ[i])) / denum_ψ )
+            α_ψ[i] = α_t*real(sum(conj(g.ψ[i]).*d.ψ[i])) / denum_ψ
         else
             α_ψ[i] = 0.0
         end
@@ -37,7 +38,8 @@ function calc_alpha_CG!(
         #println("num_η   = ", real(sum(conj(g.η[i]).*d.η[i])) )
         #if abs(denum) <= 1e-6
         if denum_η != 0.0
-            α_η[i] = abs( α_t*real(sum(conj(g.η[i]).*d.η[i])) / denum_η )
+            #α_η[i] = abs( α_t*real(sum(conj(g.η[i]).*d.η[i])) / denum_η )
+            α_η[i] = α_t*real(sum(conj(g.η[i]).*d.η[i])) / denum_η
         else
             α_η[i] = 0.0
         end
@@ -59,9 +61,9 @@ end
 function test_linmin()
     Random.seed!(1234)
 
-    Ham = create_Ham_atom_Pt_smearing(a=10.0)
-    #Ham = create_Ham_Al_fcc_smearing(meshk=[1,1,1], ecutwfc=30.0, Nspin=1)
-    #Ham = create_Ham_Pt_fcc_smearing()
+    #Ham = create_Ham_atom_Pt_smearing(a=10.0)
+    Ham = create_Ham_Al_fcc_smearing( meshk=[1,1,1], ecutwfc=30.0, Nspin=1 )
+    #Ham = create_Ham_Pt_fcc_smearing( meshk=[1,1,1] )
 
     println(Ham)
 
@@ -72,26 +74,7 @@ function test_linmin()
     Ham.energies.NN = calc_E_NN( Ham.atoms )
     Ham.energies.PspCore = calc_PspCore_ene( Ham.atoms, Ham.pspots )
 
-    # prepare guess wavefunc
-    Npoints = prod(Ham.pw.Ns)
-    Nspin = Ham.electrons.Nspin
-    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
-    Rhoe = zeros(Float64,Npoints,Nspin)
-    if Nspin == 1
-        Rhoe[:,1] = guess_rhoe( Ham )
-    else
-        Rhoe = guess_rhoe_atomic( Ham, starting_magnetization=[0.1] )
-    end
-    update!(Ham, Rhoe)
-    # eigenvalues are not needed for this case
-    Ham.electrons.ebands[:,:] = diag_LOBPCG!( Ham, evars.ψ, verbose=true, verbose_last=true, NiterMax=5 )
-
-    for ispin in 1:Nspin, ik in 1:Nkpt
-        Ham.ispin = ispin
-        Ham.ik = ik
-        i = ik + (ispin -1)*Nkpt
-        evars.η[i] = diagm( 0 => Ham.electrons.ebands[:,i] )
-    end
+    guess_evars!( Ham, evars, NiterMax=5 )
 
     constraint!( Ham, evars )
     Etot_old = eval_L_tilde!( Ham, evars )
@@ -125,21 +108,23 @@ function test_linmin()
         #rotate_evars!( Ham, evars )
         grad_eval_L_tilde!( Ham, evars, g_evars )
 
-        #if iter > 1
-        #    v1_ψ, v1_η = dot( g_evars, d_evars )
-        #    v2_ψ, v2_η = dot( g_evars, g_evars )
-        #    v3_ψ, v3_η = dot( d_evars, d_evars )
-        #    for i in 1:Nkspin
-        #        @printf("cosine angle psiks = %18.10f, ", v1_ψ[i]/sqrt(v2_ψ[i]*v3_ψ[i]))
-        #        @printf("cosine angle Haux = %18.10f\n", v1_η[i]/sqrt(v2_η[i]*v3_η[i]))
-        #    end
-        #end
+        if iter > 1
+            v1_ψ, v1_η = dot( g_evars, d_evars )
+            v2_ψ, v2_η = dot( g_evars, g_evars )
+            v3_ψ, v3_η = dot( d_evars, d_evars )
+            for i in 1:Nkspin
+                @printf("cosine angle psiks = %18.10f, ", v1_ψ[i]/sqrt(v2_ψ[i]*v3_ψ[i]))
+                @printf("cosine angle Haux  = %18.10f\n", v1_η[i]/sqrt(v2_η[i]*v3_η[i]))
+            end
+        end
         #print_Haux( evars, "evars after eval_L_tilde")
         print_Haux( g_evars, "g_evars after eval_L_tilde")
 
         calc_primary_search_dirs!( Ham, evars, Kg_evars, κ=1.0 )
         d_evars = copy( Kg_evars )
 
+        # use unpreconditioned gradients
+        # try different sign of g_evars.η
         #d_evars = ElectronicVars( -g_evars.ψ, -g_evars.η )
 
         trial_evars!( evarsc, evars, d_evars, α_t )
@@ -149,8 +134,8 @@ function test_linmin()
         print_Haux(gt_evars, "gt_evars")
 
         calc_alpha_CG!( g_evars, gt_evars, d_evars, α_t, α_ψ, α_η )
-        println("α_ψ = ", α_ψ)
-        println("α_η = ", α_η)
+        println("iter = ", iter, "α_ψ = ", α_ψ)
+        println("iter = ", iter, "α_η = ", α_η)
 
         #α_ψ[:] .= α_t
         #α_η[:] .= α_t
@@ -163,6 +148,7 @@ function test_linmin()
         #print_Haux(evars, "evars after eval_L_tilde!")
 
         @printf("Iteration %8d %18.10f %18.10e\n", iter, Etot, Etot_old - Etot)
+
         check_Hsub( Ham, evars )
 
         if abs(Etot_old - Etot) < 1e-10
