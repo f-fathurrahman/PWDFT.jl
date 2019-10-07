@@ -96,9 +96,9 @@ function main_CG()
 
     Random.seed!(1234)
 
-    Ham = create_Ham_H2()
+    #Ham = create_Ham_H2()
     #Ham = create_Ham_H_atom()
-    #Ham = create_Ham_Si_fcc()
+    Ham = create_Ham_Si_fcc()  # pathological for current implementation of quadratic_line_minimizer
 
     psiks = rand_BlochWavefunc( Ham )
     Etot_old = obj_function!( Ham, psiks, skip_ortho=true )
@@ -111,11 +111,11 @@ function main_CG()
     #
     update!(Ham, Rhoe)
     # eigenvalues are not needed for this case
-    _ = diag_LOBPCG!( Ham, psiks, verbose=false, verbose_last=false, NiterMax=10 )
+    _ = diag_LOBPCG!( Ham, psiks, verbose=true, NiterMax=20 )
 
 
     g = zeros_BlochWavefunc( Ham )
-    gt = zeros_BlochWavefunc( Ham )    
+    gt = zeros_BlochWavefunc( Ham )
     Kg = zeros_BlochWavefunc( Ham )
     g_old = zeros_BlochWavefunc( Ham )
     Kg_old = zeros_BlochWavefunc( Ham )
@@ -135,7 +135,7 @@ function main_CG()
     Nconverges = 0
 
     for iter = 1:50
-        
+
         grad_obj_function!( Ham, psiks, g )
         precond_grad!( Ham, g, Kg )
         if iter > 1
@@ -150,7 +150,7 @@ function main_CG()
         calc_alpha_CG!( α_t, g, gt, d, α )
 
         #quadratic_line_minimizer!(Ham, psiks, d, Etot_old, g, α_t, α)
-        
+
         println("α = ", α)
 
         psiks = psiks + α .* d
