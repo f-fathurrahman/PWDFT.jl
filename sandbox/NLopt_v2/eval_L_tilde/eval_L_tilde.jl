@@ -50,7 +50,7 @@ function check_Hsub( Ham, evars )
             #@printf("Hsub-Haux: %d %18.10f\n", ist, abs(λ[ist] - real(η[i][ist,ist])))
             #ds = abs(real(Hsub[ist,ist] - η[i][ist,ist]))
             ds = abs(λ[ist] - real(η[i][ist,ist]))
-            @printf("Hsub-Haux: %d %18.10f\n", ist, ds)
+            @printf("Hsub-Haux: %d %18.10f %18.10f diff: %18.10f\n", ist, λ[ist], real(η[i][ist,ist]), ds)
             ss = ss + ds
         end
     end
@@ -199,7 +199,7 @@ function calc_grad_Haux_prec(
         g_η[ist,ist] = κ*( Hsub[ist,ist] - epsilon[ist] )
     end
 
-    return g_ψ, g_η
+    return g_ψ, g_η  # set the sign ?
 end
 
 
@@ -254,12 +254,12 @@ function calc_grad_Haux(
     for ist = 1:Nstates
         dF_dmu = dF_dmu + ( real(Hsub[ist,ist]) - epsilon[ist] ) * f[ist] * (1.0 - f[ist])
     end
-    if Ham.electrons.Nspin == 1
-        dF_dmu = 2.0*dF_dmu/kT  # XXX multiply by 2 (for non spin pol ?)
-    else
-        dF_dmu = dF_dmu/kT
-    end
-    #dF_dmu = dF_dmu/kT
+    #if Ham.electrons.Nspin == 1
+    #    dF_dmu = 2.0*dF_dmu/kT  # XXX multiply by 2 (for non spin pol ?)
+    #else
+    #    dF_dmu = dF_dmu/kT
+    #end
+    dF_dmu = dF_dmu/kT
     #@printf("%3d dF_dmu = %18.10f\n", ik, dF_dmu)
 
     # Equation (19)

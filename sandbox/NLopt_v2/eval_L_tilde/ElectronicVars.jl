@@ -71,6 +71,8 @@ function dot( a::ElectronicVars, b::ElectronicVars )
     for i in 1:N
         v_ψ[i] = real( sum(conj(a.ψ[i]) .* b.ψ[i]) )
         v_η[i]  = real( sum(conj(a.η[i]) .* b.η[i]) )
+        #v_ψ[i] = 2*real( tr( a.ψ[i]' * b.ψ[i] ) )
+        #v_η[i] = 2*real( tr( a.η[i]' * b.η[i] ) )
     end
     return v_ψ, v_η
 end
@@ -109,8 +111,8 @@ import PWDFT: print_ebands
 Wrapper for `print_ebands`.
 FIXME: Should be added to `PWDFT.jl`.
 """
-function print_ebands( Ham::Hamiltonian )
-    print_ebands( Ham.electrons, Ham.pw.gvecw.kpoints, unit="eV" )
+function print_ebands( Ham::Hamiltonian; unit="Ha" )
+    print_ebands( Ham.electrons, Ham.pw.gvecw.kpoints, unit=unit )
 end
 
 import Base: copy

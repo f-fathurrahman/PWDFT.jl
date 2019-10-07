@@ -62,7 +62,7 @@ function test_linmin()
     Random.seed!(1234)
 
     #Ham = create_Ham_atom_Pt_smearing(a=10.0)
-    Ham = create_Ham_Al_fcc_smearing( meshk=[1,1,1], ecutwfc=30.0, Nspin=1 )
+    Ham = create_Ham_Al_fcc_smearing( meshk=[1,1,1], Nspin=1 )
     #Ham = create_Ham_Pt_fcc_smearing( meshk=[1,1,1] )
 
     println(Ham)
@@ -74,7 +74,7 @@ function test_linmin()
     Ham.energies.NN = calc_E_NN( Ham.atoms )
     Ham.energies.PspCore = calc_PspCore_ene( Ham.atoms, Ham.pspots )
 
-    guess_evars!( Ham, evars, NiterMax=5 )
+    #guess_evars!( Ham, evars, NiterMax=20 )
 
     constraint!( Ham, evars )
     Etot_old = eval_L_tilde!( Ham, evars )
@@ -103,7 +103,12 @@ function test_linmin()
 
     check_Hsub( Ham, evars )
 
-    for iter = 1:20
+    κ_0 = 1.0
+    κ = κ_0
+
+    evars_old = copy(evars)
+
+    for iter = 1:50
 
         #rotate_evars!( Ham, evars )
         grad_eval_L_tilde!( Ham, evars, g_evars )
@@ -120,7 +125,7 @@ function test_linmin()
         #print_Haux( evars, "evars after eval_L_tilde")
         print_Haux( g_evars, "g_evars after eval_L_tilde")
 
-        calc_primary_search_dirs!( Ham, evars, Kg_evars, κ=1.0 )
+        calc_primary_search_dirs!( Ham, evars, Kg_evars, κ=κ )
         d_evars = copy( Kg_evars )
 
         # use unpreconditioned gradients
@@ -134,8 +139,8 @@ function test_linmin()
         print_Haux(gt_evars, "gt_evars")
 
         calc_alpha_CG!( g_evars, gt_evars, d_evars, α_t, α_ψ, α_η )
-        println("iter = ", iter, "α_ψ = ", α_ψ)
-        println("iter = ", iter, "α_η = ", α_η)
+        println("iter = ", iter, " α_ψ = ", α_ψ)
+        println("iter = ", iter, " α_η = ", α_η)
 
         #α_ψ[:] .= α_t
         #α_η[:] .= α_t
@@ -146,8 +151,17 @@ function test_linmin()
         constraint!( Ham, evars )
         Etot = eval_L_tilde!( Ham, evars )
         #print_Haux(evars, "evars after eval_L_tilde!")
+        dEtot = Etot_old - Etot
+        if dEtot < 0.0
+            evars = copy(evars_old)
+            κ = 0.5*κ
+            @printf("Iteration %8d Undoing step\n", iter)
+            @printf("Iteration %8d Reducing κ to %18.10f\n", iter, κ)
+            continue
+        end
 
         @printf("Iteration %8d %18.10f %18.10e\n", iter, Etot, Etot_old - Etot)
+        println("Iteration norm grad: ", dot(g_evars, g_evars))
 
         check_Hsub( Ham, evars )
 
@@ -162,7 +176,8 @@ function test_linmin()
         end
 
         Etot_old = Etot
-        d_old_evars = copy(d_evars)
+        d_old_evars = copy(d_evars) # not used
+        evars_old = copy(evars)
     end
 
     print_ebands( Ham )
