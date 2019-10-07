@@ -121,12 +121,26 @@ end
 """
 Print the first η of an instance of ElectronicVars
 """
-function print_Haux( e::ElectronicVars, header::String )
+function print_Haux( e::ElectronicVars, header::String; diag_only=false, ikspin=1, imag_part=true )
+
     println()
-    println(header)
-    println("\nreal part\n")
-    display(real(e.η[1]))
-    println("\n\nimaginary part\n")
-    display(imag(e.η[1]))
+    println(header, ": real part\n")
+    if diag_only
+        display(diag(real(e.η[ikspin])))
+    else
+        display(real(e.η[ikspin]))
+    end
+    println()
+
+    println()
+    if imag_part
+        println(header, ": imaginary part\n")
+        if diag_only
+            display(diag(imag(e.η[ikspin])))
+        else
+            display(imag(e.η[ikspin]))
+        end
+    end
+    println()
     println()
 end
