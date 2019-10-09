@@ -58,11 +58,57 @@ function trial_evars!( ec, e, d, α_t )
     return
 end
 
+"""
+evars_t: memory for trial evars
+"""
+function quadratic_line_minimizer!(Ham, evars, evars_t, d, E, g, α_t, α_1, α_2)
+
+    Nkspin = length(evars.ψ)
+    Δ = zeros(Nkspin)
+
+    # compute directional derivative
+    d_ψ, d_η = dot(d, g)
+    for i in 1:Nkspin
+        Δ[i] = 2.0*( d_ψ[i] + d_η[i] )
+    end
+
+    println("quadratic_line_minimizer: α_t = ", α_t)
+    if sum(Δ) > 0
+        println("Wrong direction !!!!")
+        exit()
+    end
+
+    evars_t = copy(evars)
+
+    trial_evars!( evars_t, evars, d, α_t )
+
+    constraint!( Ham, evars_t )
+    E_trial = eval_L_tilde!( Ham, evars_t )
+
+    ss = sum(Δ)
+    curvature = ( E_trial - ( E + α_t*ss ) ) /α_t^2
+    #println("curvature = ", curvature, " num = ", num)
+    cc = -ss/(2*curvature)
+    if cc < 0
+        println("Wrong sign of α")
+        α_1[:] .= α_t
+        α_2[:] .= α_t
+        α_t = 3.0*α_t
+    else
+        α_1[:] .= cc
+        α_2[:] .= cc
+    end
+
+    return α_t
+end
+
+
+
 function test_linmin()
     Random.seed!(1234)
 
     #Ham = create_Ham_atom_Pt_smearing(a=10.0)
-    Ham = create_Ham_Al_fcc_smearing( meshk=[1,1,1], Nspin=1 )
+    Ham = create_Ham_Al_fcc_smearing( meshk=[1,1,1], Nspin=2 )
     #Ham = create_Ham_Pt_fcc_smearing( meshk=[1,1,1] )
 
     println(Ham)
@@ -79,7 +125,8 @@ function test_linmin()
     constraint!( Ham, evars )
     Etot_old = eval_L_tilde!( Ham, evars )
 
-    α_t = 3e-5
+    #α_t = 3e-5
+    α_t = 1.0
 
     Nkspin = length(evars.ψ)
     α_ψ = zeros(Nkspin)
@@ -132,18 +179,16 @@ function test_linmin()
         # try different sign of g_evars.η
         #d_evars = ElectronicVars( -g_evars.ψ, -g_evars.η )
 
-        trial_evars!( evarsc, evars, d_evars, α_t )
+        #trial_evars!( evarsc, evars, d_evars, α_t )
+        #constraint!( Ham, evarsc )
+        #grad_eval_L_tilde!( Ham, evarsc, gt_evars )
+        #print_Haux(gt_evars, "gt_evars")
 
-        constraint!( Ham, evarsc )
-        grad_eval_L_tilde!( Ham, evarsc, gt_evars )
-        print_Haux(gt_evars, "gt_evars")
+        #calc_alpha_CG!( g_evars, gt_evars, d_evars, α_t, α_ψ, α_η )
+        #println("iter = ", iter, " α_ψ = ", α_ψ)
+        #println("iter = ", iter, " α_η = ", α_η)
 
-        calc_alpha_CG!( g_evars, gt_evars, d_evars, α_t, α_ψ, α_η )
-        println("iter = ", iter, " α_ψ = ", α_ψ)
-        println("iter = ", iter, " α_η = ", α_η)
-
-        #α_ψ[:] .= α_t
-        #α_η[:] .= α_t
+        α_t = quadratic_line_minimizer!(Ham, evars, evarsc, d_evars, Etot_old, g_evars, α_t, α_ψ, α_η)
 
         # update evars
         axpy!( α_ψ, α_η, evars, d_evars )

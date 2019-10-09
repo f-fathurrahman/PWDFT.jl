@@ -50,7 +50,8 @@ function check_Hsub( Ham, evars )
             #@printf("Hsub-Haux: %d %18.10f\n", ist, abs(λ[ist] - real(η[i][ist,ist])))
             #ds = abs(real(Hsub[ist,ist] - η[i][ist,ist]))
             ds = abs(λ[ist] - real(η[i][ist,ist]))
-            @printf("Hsub-Haux: %d %18.10f %18.10f diff: %18.10f\n", ist, λ[ist], real(η[i][ist,ist]), ds)
+            @printf("Hsub-Haux: %d %18.10f %18.10f %18.10f diff: %18.10f\n", ist, Ham.electrons.Focc[ist,i],
+               λ[ist], real(η[i][ist,ist]), ds)
             ss = ss + ds
         end
     end

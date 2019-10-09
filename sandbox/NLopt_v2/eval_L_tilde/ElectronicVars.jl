@@ -1,6 +1,7 @@
 mutable struct ElectronicVars
     ψ::BlochWavefunc
     η::Array{Matrix{ComplexF64},1}
+    U::Array{Matrix{ComplexF64},1}
 end
 
 function rand_ElectronicVars( Ham::Hamiltonian )
@@ -13,12 +14,14 @@ function rand_ElectronicVars( Ham::Hamiltonian )
     Nkspin = Nkpt*Nspin
 
     η = Array{Matrix{ComplexF64},1}(undef,Nkspin)
+    U = Array{Matrix{ComplexF64},1}(undef,Nkspin)    
     for i in 1:Nkspin
         η[i] = rand( ComplexF64, Nstates, Nstates )
         η[i] = 0.5*( η[i] + η[i]' )
+        U[i] = diagm( 0 => ones(Nstates) ) # initialize to  identity
     end
 
-    return ElectronicVars(ψ, η)
+    return ElectronicVars(ψ, η, U)
 end
 
 """
@@ -30,6 +33,7 @@ function constraint!( Ham::Hamiltonian, e::ElectronicVars )
 
     ψ = e.ψ
     η = e.η
+    U = e.U
 
     U = copy(η)
     λ = zeros( Float64, size(η[1],1) ) # eigenvalues
@@ -56,9 +60,10 @@ function zeros_ElectronicVars( Ham::Hamiltonian )
     η = Array{Matrix{ComplexF64},1}(undef,Nkspin)
     for i in 1:Nkspin
         η[i] = zeros( ComplexF64, Nstates, Nstates )
+        U[i] = diagm( 0 => ones(Nstates) )
     end
 
-    return ElectronicVars(ψ, η)
+    return ElectronicVars(ψ, η, U)
 end
 
 import LinearAlgebra: dot
@@ -117,7 +122,7 @@ end
 
 import Base: copy
 function copy( evars::ElectronicVars )
-    return ElectronicVars( copy(evars.ψ), copy(evars.η) )
+    return ElectronicVars( copy(evars.ψ), copy(evars.η), copy(evars.U) )
 end
 
 """
