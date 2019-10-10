@@ -90,10 +90,10 @@ function quadratic_line_minimizer!(Ham, evars, evars_t, d, E, g, α_t, α_1, α_
     #println("curvature = ", curvature, " num = ", num)
     cc = -ss/(2*curvature)
     if cc < 0
-        println("Wrong sign of α")
+        #println("Wrong sign of α")
         α_1[:] .= α_t
         α_2[:] .= α_t
-        α_t = 3.0*α_t
+        #α_t = 3.0*α_t
     else
         α_1[:] .= cc
         α_2[:] .= cc
@@ -108,7 +108,7 @@ function test_linmin()
     Random.seed!(1234)
 
     #Ham = create_Ham_atom_Pt_smearing(a=10.0)
-    Ham = create_Ham_Al_fcc_smearing( meshk=[1,1,1], Nspin=2 )
+    Ham = create_Ham_Al_fcc_smearing( meshk=[1,1,1], Nspin=1 )
     #Ham = create_Ham_Pt_fcc_smearing( meshk=[1,1,1] )
 
     println(Ham)
@@ -120,10 +120,15 @@ function test_linmin()
     Ham.energies.NN = calc_E_NN( Ham.atoms )
     Ham.energies.PspCore = calc_PspCore_ene( Ham.atoms, Ham.pspots )
 
-    #guess_evars!( Ham, evars, NiterMax=20 )
+    guess_evars!( Ham, evars, NiterMax=3 )
 
     constraint!( Ham, evars )
     Etot_old = eval_L_tilde!( Ham, evars )
+
+    println("\n U real part = ")
+    display(real(evars.U[1]))
+    println("\n U imag part = ")
+    display(imag(evars.U[1]))
 
     #α_t = 3e-5
     α_t = 1.0
@@ -194,15 +199,26 @@ function test_linmin()
         axpy!( α_ψ, α_η, evars, d_evars )
 
         constraint!( Ham, evars )
+
+        println("\n U real part = ")
+        display(real(evars.U[1]))
+        println("\n U imag part = ")
+        display(imag(evars.U[1]))
+        println("\n")
+
         Etot = eval_L_tilde!( Ham, evars )
         #print_Haux(evars, "evars after eval_L_tilde!")
         dEtot = Etot_old - Etot
-        if dEtot < 0.0
-            evars = copy(evars_old)
-            κ = 0.5*κ
-            @printf("Iteration %8d Undoing step\n", iter)
-            @printf("Iteration %8d Reducing κ to %18.10f\n", iter, κ)
-            continue
+
+        _, dd_η = dot(g_evars, g_evars)
+        if sum(dd_η) > 1e-6
+            if dEtot < 0.0
+                evars = copy(evars_old)
+                κ = 0.5*κ
+                @printf("Iteration %8d Undoing step\n", iter)
+                @printf("Iteration %8d Reducing κ to %18.10f\n", iter, κ)
+                continue
+            end
         end
 
         @printf("Iteration %8d %18.10f %18.10e\n", iter, Etot, Etot_old - Etot)
@@ -210,7 +226,7 @@ function test_linmin()
 
         check_Hsub( Ham, evars )
 
-        if abs(Etot_old - Etot) < 1e-10
+        if abs(Etot_old - Etot) < 1e-6
             Nconverges = Nconverges + 1
         else
             Nconverges = 0

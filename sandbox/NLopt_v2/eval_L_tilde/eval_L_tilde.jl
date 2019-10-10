@@ -116,7 +116,7 @@ function grad_eval_L_tilde!(
         Ham.ispin = ispin
         Ham.ik = ik
         i = ik + (ispin - 1)*Nkpt
-        g_ψ[i], g_η[i] = calc_grad_Haux( Ham, ψ[i], kT )
+        g_ψ[i], g_η[i] = calc_grad_Haux( Ham, ψ[i], kT, evars.U[i] )
     end
 
     return
@@ -209,7 +209,8 @@ end
 function calc_grad_Haux(
     Ham::Hamiltonian,
     ψ::Array{ComplexF64,2},
-    kT::Float64
+    kT::Float64,
+    U::Matrix{ComplexF64}
 )
 
     ik = Ham.ik
@@ -270,7 +271,20 @@ function calc_grad_Haux(
     for ist = 1:Nstates
         ss = ss + f[ist]*(1.0 - f[ist])
     end
-    #@printf("%3d ss = %18.10f\n", ik, ss)
+    #@printf("%3d ss dmu_deta = %18.10f\n", ik, ss)
+
+    # including U
+    #SMALL = 1e-10
+    #if abs(ss) > SMALL
+    #    for m = 1:Nstates
+    #        ff = 0.0
+    #        for n = 1:Nstates
+    #            ff = ff + f[n]*(1.0 - f[n]) * real( conj(U[n,m]) * U[m,n] )
+    #        end
+    #        dmu_deta[m] = ff/ss
+    #    end
+    #end
+
     SMALL = 1e-8
     if abs(ss) > SMALL
         for ist = 1:Nstates

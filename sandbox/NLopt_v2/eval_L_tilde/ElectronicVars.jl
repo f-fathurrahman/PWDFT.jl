@@ -14,7 +14,7 @@ function rand_ElectronicVars( Ham::Hamiltonian )
     Nkspin = Nkpt*Nspin
 
     η = Array{Matrix{ComplexF64},1}(undef,Nkspin)
-    U = Array{Matrix{ComplexF64},1}(undef,Nkspin)    
+    U = Array{Matrix{ComplexF64},1}(undef,Nkspin)
     for i in 1:Nkspin
         η[i] = rand( ComplexF64, Nstates, Nstates )
         η[i] = 0.5*( η[i] + η[i]' )
@@ -35,11 +35,11 @@ function constraint!( Ham::Hamiltonian, e::ElectronicVars )
     η = e.η
     U = e.U
 
-    U = copy(η)
-    λ = zeros( Float64, size(η[1],1) ) # eigenvalues
+    Nstates = size(η[1],1)
+    λ = zeros( Float64, Nstates ) # eigenvalues
     for i in 1:length(U)
         λ, U[i] = eigen(η[i])
-        Ham.electrons.ebands[:,i] = λ
+        Ham.electrons.ebands[:,i] = λ[:]
         η[i] = diagm( 0 => λ ) # rotate η
         ortho_sqrt!( ψ[i] )
         ψ[i] = ψ[i] * U[i]
@@ -122,7 +122,7 @@ end
 
 import Base: copy
 function copy( evars::ElectronicVars )
-    return ElectronicVars( copy(evars.ψ), copy(evars.η), copy(evars.U) )
+    return ElectronicVars( deepcopy(evars.ψ), deepcopy(evars.η), deepcopy(evars.U) )
 end
 
 """

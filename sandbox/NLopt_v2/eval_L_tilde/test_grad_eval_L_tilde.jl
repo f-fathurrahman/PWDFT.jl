@@ -25,11 +25,16 @@ function test_grad_eval_L_tilde()
     Ham.energies.NN = calc_E_NN( Ham.atoms )
     Ham.energies.PspCore = calc_PspCore_ene( Ham.atoms, Ham.pspots )
 
-    guess_evars!( Ham, evars, NiterMax=20 )
+    #guess_evars!( Ham, evars, NiterMax=20 )
 
     print_Haux(evars, "evars before eval_L_tilde")
 
     constraint!( Ham, evars )
+
+    println("\n U real part = ")
+    display(real(evars.U[1]))
+    println("\n U imag part = ")
+    display(imag(evars.U[1]))
 
     Etot = eval_L_tilde!( Ham, evars )
     print_Haux( evars, "evars after eval_L_tilde" )
