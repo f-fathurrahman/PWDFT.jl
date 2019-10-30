@@ -1,39 +1,4 @@
-\subsection*{Initializing \jlcode{Atoms}}
-
-From xyz file: supply the path to xyz file as string and
-set the lattice vectors:
-
-\begin{juliacode}
-atoms = Atoms(xyz_file="file.xyz", LatVecs=gen_lattice_sc(16.0))
-\end{juliacode}
-
-In extended xyz file, the lattice vectors information is included
-(along with several others information, if any):
-
-\begin{juliacode}
-atoms = Atoms(ext_xyz_file="file.xyz")
-\end{juliacode}
-
-For crystalline systems, using keyword argument \jlcode{xyz_string_frac}
-is sometimes convenient:
-
-\begin{juliacode}
-atoms = Atoms(xyz_string_frac=
-        """
-        2
-
-        Si  0.0  0.0  0.0
-        Si  0.25  0.25  0.25
-        """, in_bohr=true,
-        LatVecs=gen_lattice_fcc(10.2631))
-\end{juliacode}
-
-\textbf{IMPORTANT} We need to be careful to also specify \jlcode{in_bohr} keyword to get
-the correct coordinates in bohr (which is used internally in \jlcode{PWDFT.jl}).
-
-
-
-\subsection*{Referring or including files in \jlcode{sandbox} (or other dirs in \jlcode{PWDFT.jl})}
+\section{Referring or including files in \jlinline{sandbox} (or other dirs in \jlinline{PWDFT.jl})}
 
 \begin{juliacode}
 using PWDFT
@@ -45,31 +10,31 @@ pspfiles = [joinpath(DIR_PSP,"Ag-q11.gth")]
 \end{juliacode}
 
 
-\subsection*{Generating lattice vectors}
+\section{Generating lattice vectors}
 
 Lattice vectors are simply 3x3 array. We can set it manually or use
-one of functions defined in \jlcode{gen_lattice_pwscf.jl}.
+one of functions defined in \jlinline{gen_lattice_pwscf.jl}.
 for generating lattice vectors for Bravais lattices that used
 in Quantum ESPRESSO's PWSCF.
 
-\subsection*{Using Babel to generate xyz file from SMILES}
+\section{Using Babel to generate xyz file from SMILES}
 
 \begin{textcode}
 babel file.smi file.sdf
 babel file.sdf file.xyz
 \end{textcode}
 
-Use \myverbcode{babel -h} to autogenerate hydrogens.
+Use \txtinline{babel -h} to autogenerate hydrogens.
 
 
 
-\subsection*{Setting up pseudopotentials}
+\section{Setting up pseudopotentials}
 
-One can use the function \jlcode{get_default_psp(::Atoms)} to get default
-pseudopotentials set for a given instance of \jlcode{Atoms}.
+One can use the function \jlinline{get_default_psp(::Atoms)} to get default
+pseudopotentials set for a given instance of \jlinline{Atoms}.
 
-Currently, it is not part of main \jlcode{PWDFT.jl} package. It is located
-under \myverbcode{sandbox} subdirectory of \jlcode{PWDFT.jl} distribution.
+Currently, it is not part of main \jlinline{PWDFT.jl} package. It is located
+under \txtinline{sandbox} subdirectory of \jlinline{PWDFT.jl} distribution.
 
 \begin{juliacode}
 using PWDFT
@@ -81,14 +46,14 @@ atoms = Atoms(ext_xyz_file="atoms.xyz")
 pspfiles = get_default_psp(atoms)
 \end{juliacode}
 
-Alternatively, one can set \myverbcode{pspfiles} manually because it is simply
-an array of \jlcode{String}:
+Alternatively, one can set \txtinline{pspfiles} manually because it is simply
+an array of \jlinline{String}:
 \begin{juliacode}
 pspfiles = ["Al-q3.gth", "O-q6.gth"]
 \end{juliacode}
 
 \textbf{IMPORTANT} Be careful to set the order of species to be same as
-\jlcode{atoms.SpeciesSymbols}. For example, if
+\jlinline{atoms.SpeciesSymbols}. For example, if
 \begin{juliacode}
 atoms.SpeciesSymbols = ["Al", "O", "H"]
 \end{juliacode}
@@ -97,7 +62,7 @@ then
 pspfiles = ["Al-q3.gth", "O-q6.gth", "H-q1.gth"]
 \end{juliacode}
 
-\subsection*{Initializing Hamiltonian}
+\section{Initializing Hamiltonian}
 
 For molecular systems:
 \begin{juliacode}
@@ -114,12 +79,12 @@ For metallic systems:
 Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3], extra_states=4 )
 \end{juliacode}
 
-Empty extra states can be specified by using \jlcode{extra_states} keyword.
+Empty extra states can be specified by using \jlinline{extra_states} keyword.
 
-For spin-polarized systems, \jlcode{Nspin} keyword can be used.
+For spin-polarized systems, \jlinline{Nspin} keyword can be used.
 
 
-\subsection*{Iterative diagonalization of Hamiltonian}
+\section{Iterative diagonalization of Hamiltonian}
 
 \begin{juliacode}
 evals =  diag_LOBPCG!( Ham, psiks, verbose=false, verbose_last=false,
@@ -127,7 +92,7 @@ evals =  diag_LOBPCG!( Ham, psiks, verbose=false, verbose_last=false,
 \end{juliacode}
 
 
-\subsection*{Calculating electron density}
+\section{Calculating electron density}
 
 Several ways:
 \begin{juliacode}
@@ -138,7 +103,7 @@ Rhoe = calc_rhoe( Ham, psiks )
 calc_rhoe!( Ham, psiks, Rhoe )
 \end{juliacode}
 
-\subsection*{Read and write array (binary file)}
+\section{Read and write array (binary file)}
 
 Write to binary files:
 \begin{juliacode}
@@ -152,15 +117,13 @@ end
 Read from binary files:
 \begin{juliacode}
 psiks = BlochWavefunc(undef,Nkpt)
-for ispin = 1:Nspin
-for ik = 1:Nkpt
+for ispin = 1:Nspin, ik = 1:Nkpt
     ikspin = ik + (ispin-1)*Nkpt
     # Don't forget to use read mode
     wfc_file = open("WFC_ikspin_"*string(ikspin)*".data","r")
     psiks[ikspin] = Array{ComplexF64}(undef,Ngw[ik],Nstates)
     psiks[ikspin] = read!( wfc_file, psiks[ikspin] )
     close( wfc_file )
-end
 end
 \end{juliacode}
 
@@ -175,7 +138,7 @@ Hr = psiks[ikspin]' * op_H( Ham, psiks[ikspin] )
 evals, evecs = eigen(Hr)
 evals = real(evals[:])
 
-# Sort in ascending order based on evals 
+# Sort in ascending order based on evals
 idx_sorted = sortperm(evals)
 
 # Copy to Hamiltonian

@@ -1,4 +1,4 @@
-\documentclass[a4paper,12pt]{article}
+\documentclass[a4paper,10pt]{article}
 
 \usepackage[a4paper]{geometry}
 \geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
@@ -7,7 +7,7 @@
 \setlength{\parindent}{0pt}
 
 \usepackage{fontspec}
-\setmonofont{Iosevka}
+\setmonofont{FreeMono}
 
 \usepackage{hyperref}
 \usepackage{url}
@@ -22,17 +22,23 @@
 \usepackage{mhchem}
 
 \usepackage{minted}
-\newminted{julia}{breaklines,fontsize=\footnotesize}
-\newminted{text}{breaklines,fontsize=\footnotesize}
+\newminted{julia}{breaklines}
+\newminted{text}{breaklines}
 
-\newcommand{\jlcode}[1]{\mintinline[fontsize=\footnotesize]{julia}{#1}}
-\newcommand{\myverbcode}[1]{\mintinline[fontsize=\footnotesize]{text}{#1}}
+\newcommand{\jlinline}[1]{\mintinline{julia}{#1}}
+\newcommand{\txtinline}[1]{\mintinline{text}{#1}}
 
 \newenvironment{markdown}%
     {\VerbatimEnvironment\begin{VerbatimOut}{tmp.markdown}}%
     {\end{VerbatimOut}%
         \immediate\write18{pandoc tmp.markdown -t latex -o tmp.tex}%
         \input{tmp}}
+
+\definecolor{mintedbg}{rgb}{0.90,0.90,0.90}
+\usepackage{mdframed}
+\BeforeBeginEnvironment{minted}{\begin{mdframed}[backgroundcolor=mintedbg,%
+  rightline=false,leftline=false,topline=false,bottomline=false]}
+\AfterEndEnvironment{minted}{\end{mdframed}}
 
 \begin{document}
 
@@ -42,608 +48,149 @@
 
 \tableofcontents
 
-\part{User Guide}
-
-\section{Overview}
+\part{Implementation Notes}
 
 \textbf{This document is a work in progress}
 
-\textsf{PWDFT.jl} is a Julia package to carry out (electronic)
-density functional theory calculations on materials.
-It uses plane wave basis sets to discretize Kohn-Sham equations.
-It also uses pseudopotentials to replace strong Coulombic nuclei-electron
-interactions \footnote{You can carry out the calculation with
-full potential anyway, however this will requires a lot of plane waves (large
-cutoff energy)}.
+In this part I will describe my design choices in implementing \textsf{PWDFT.jl}.
+This design is by no means perfect
+and it might change in the future to accomodate more complex use cases.
 
-I assumes that the readers already have some experience with similar electronic
-structure programs such as Quantum Espresso, ABINIT, VASP, and others.
+\section{Overview}
 
-\textsf{PWDFT.jl} uses Hartree atomic units internally.
+The design of \textsf{PWDFT.jl} is intended to be rather simple. One constraint
+that is set to the code is that it should be possible to perform application
+of Hamiltonian operator to wave function as simple as:
+%
+\begin{juliacode}
+Hpsi = Ham*psi # or
+Hpsi = op_H(Ham, psi)
+\end{juliacode}
+%
+where \jlinline{psi} is, currently, of type \jlinline{Array{ComplexF64,2}}
+\footnote{This function may be extended take other types other that plain Julia
+array for more complex case.}.
+%
+This comes with an important consequences: all other pieces of information
+about how this operation is done should be present in the type of \jlinline{Ham}.
+\footnote{We will also see some quirks related to this design choice later,
+such as applying Hamiltonian to several k-points or spin-polarized case}.
 
-\section{Installation}
-
-You need the following to use \texttt{PWDFT.jl}:
+In \textsf{PWDFT.jl}, the type of \jlinline{Ham} is \jlinline{Hamiltonian}.
+Several important fields of \jlinline{Hamiltonian} are instances of the following
+types (please refer to the source code for more details about this):
 \begin{itemize}
-\item Julia version 0.7 or higher
-\item LibXC
-\item SPGLIB
-\item C compiler to compile LibXC and SPGLIB
-\end{itemize}
-
-\textsf{PWDFT.jl} is a Julia package, so you need to copy (or clone)
-under Julia's package depot so that it can be used within Julia.
-Presently, it is not yet a registered package. There are at least
-two ways of doing this.
-
-The first way is using Julia's package manager. The following command
-can be issued at the Julia's console.
-\begin{juliacode}
-Pkg.add(PackageSpec(url="https://github.com/f-fathurrahman/PWDFT.jl"))
-\end{juliacode}
-
-The second way is to use Julia's development directory located at
-\texttt{\$HOME/.julia/dev}.
-To enable this, please put the following in the
-your \texttt{\$HOME/.julia/config/startup.jl} file:
-\begin{juliacode}
-push!(LOAD_PATH, expanduser("~/.julia/dev"))
-\end{juliacode}
-I usually sym-links my original \textsf{PWDFT.jl} directory
-to a directory named \texttt{PWDFT} (without \texttt{.jl} part)
-under \texttt{\$HOME/.julia/dev}.
-\begin{textcode}
-ln -fs /path/to/PWDFT.jl ~/.julia/dev/PWDFT
-\end{textcode}
-
-To test the installation, you can run the following:
-\begin{juliacode}
-using PWDFT
-\end{juliacode}
-at the Julia's console.
-If there are no error messages then the installation is OK.
-\footnote{This does not check the LibXC or SPGLIB installation.}
-
-\subsection{LibXC}
-
-\textsf{PWDFT.jl} uses LibXC to calculate exchange correlation energy
-and potential.
-The following commands can be used to configure, build, and install LibXC
-in your computer.
-\begin{textcode}
-./configure --prefix=/home/user/softwares/libxc \
-  --disable-fortran --enable-shared
-make
-make install
-\end{textcode}
-
-\subsection{SPGLIB}
-
-\textsf{PWDFT.jl} uses SPGLIB to generate reduced k-point for integration
-over Brillouin zone.
-The following commands can be used to configure, build, and install SPGLIB
-in your computer.
-\begin{textcode}
-cd spglib-master
-mkdir build
-cd build
-cmake -D CMAKE_INSTALL_PREFIX=/home/user/softwares/spglib
-make
-make install
-\end{textcode}
-
-
-\section{Total energy calculation}
-
-We need to prepare several things before using \textsf{PWDFT.jl}:
-\begin{itemize}
-\item Atomic structures: coordinates and unit cell
-\item Pseudopotentials
-\end{itemize}
-
-This code will initialize a hydrogen molecule ($\ce{H2}$) inside a box of
-$16\times16\times16$ bohr.
-\begin{juliacode}
-atoms = Atoms(
-  xyz_string="""
-  2
-    
-  H      3.83653478       4.23341768       4.23341768
-  H      4.63030059       4.23341768       4.23341768
-  """,
-  LatVecs=gen_lattice_sc(16.0))
-\end{juliacode}
-
-
-After creating an instance of \jlcode{Atoms}, we need to create
-an instance of Hamiltonian:
-\begin{juliacode}
-DIR_PWDFT = joinpath(dirname(pathof(PWDFT)), "..")
-DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
-pspfiles = [joinpath(DIR_PSP, "H-q1.gth")]
-ecutwfc = 30.0 
-Ham = Hamiltonian(atoms, pspfiles, ecutwfc)
-\end{juliacode}
-
-Once the instance of \jlcode{Hamiltonian is initialized}, we can solve
-the Kohn-Sham problem by SCF method (or your own solver!),
-for example:
-\begin{juliacode}
-KS_solve_SCF!(Ham)
-\end{juliacode}
-During the call of this function several info will be printed to
-\jlcode{stdout}. You can redirect this print out to file if you
-want to save the print out and analyze it later
-\begin{juliacode}
-# save the reference to original stdout
-stdout_orig = stdout
-# Open file for writing
-fileout = open("LOG_"*molname, "w")
-# Redirect stdout
-redirect_stdout(fileout)
-# Solve the Kohn-Sham problem
-KS_solve_SCF!(Ham)
-# Close IO
-close(fileout)
-\end{juliacode}
-
-\jlcode{KS_solve_SCF!} has several options that you can used.
-For more information you can see the original code in
-\myverbcode{src/KS_solve_SCF.jl}.
-
-
-\part{Implementation Notes}
-
-In this note, I will describe several user-defined data types that are
-used throughout \textsf{PWDFT.jl}. Beginners are not expected to know them
-all, however they are needed to know the internal of \textsf{PWDFT.jl}.
-
-When referring to a file, I always meant to the file contained in
-the \texttt{src/} directory.
-
-Even though it is not strictly required in Julia, I have tried to always
-use type annotations.
-
-\section{Atoms}
-
-\texttt{Atoms} can be used to represent molecular or crystalline structures.
-This type is implemented in the file \myverbcode{src/Atoms.jl}.
-
-It has the following fields:
-\begin{itemize}
-%
-\item \jlcode{Natoms::Int64}: number of atoms present in the system
-%
-\item \jlcode{Nspecies::Int64}: number of atomic species present in the system
-%
-\item \jlcode{positions::Array{Float64,2}}: An array containing coordinates of atoms
-  in bohr units. Its shape is \jlcode{(3,Natoms)}
-%
-\item \jlcode{atm2species::Array{Int64,1}}: An array containing mapping between atom index
-  to species index. Its shape is \jlcode{(Natoms,)}
-%
-\item \jlcode{atsymbs::Array{String,1}}: An array containing atomic symbols for each atoms.
-  Its shape is \jlcode{(Natoms,)}.
-%
-\item \jlcode{SpeciesSymbols::Array{String,1}}: An array containing unique symbols
-  for each atomic species present in the system. Its shape is \jlcode{(Nspecies,)}.
-%
-\item \jlcode{LatVecs::Array{Float64,2}}: A 3 by 3 matrix describing lattice vectors for unit
-  cell of the system.
-%
-\item \jlcode{Zvals::Array{Float64,1}}: An array containing number of (valence)
-  electrons of each atomic species. Its shape is \verb|(Nspecies,)|.
-\end{itemize}
-
-An instance of \jlcode{Atoms} can be initialized using any of the following ways:
-
-\begin{itemize}
-\item Using \jlcode{Atoms} constructor, which has the following signature
-%
-\begin{juliacode}
-function Atoms( ;xyz_file="", xyz_string="", xyz_string_frac="",
-                in_bohr=false,
-                LatVecs=10*[1.0 0.0 0.0; 0.0 1.0 0.0; 0.0 0.0 1.0] )
-\end{juliacode}
-%
-\item Using \jlcode{init_atoms_xyz} or \jlcode{init_atoms_xyz}
-  which takes either
-  a string containing path to xyz file or the content of the xyz file
-  itself. When using this function, one must set \jlcode{LatVecs}
-  field manually.
-  The \jlcode{Atoms} constructor mentioned before is actually
-  a wrapper for the functions
-  \jlcode{init_atoms_xyz} and \jlcode{init_atoms_xyz_string}.
-\end{itemize}
-
-A note about \jlcode{Zvals}: \\
-Both \jlcode{Atoms} and \jlcode{init_atoms_*} function set
-\jlcode{Zvals} to \jlcode{zeros(Nspecies)}.
-After passed to \jlcode{Hamiltonian} constructor
-\jlcode{Zvals} will be set according to the pseudopotentials used.
-
-TODO: examples
-
-\section{Hamiltonian}
-
-An instance \jlcode{Hamiltonian} is a central object in \textsf{PWDFT.jl}.
-It is used to store various instances of other important types
-such as atoms, plane wave grids, pseudopotentials, etc.
-It is implemented in the file \texttt{src/Hamiltonian.jl}.
-
-To create an instance of \jlcode{Hamiltonian}, we normaly need to provide at least
-three arguments to the \jlcode{Hamiltonian} constructor:
-%
-\begin{itemize}
-%
-\item \jlcode{atoms::Atoms}: an instance of \jlcode{Atoms}
-%
-\item \jlcode{pspfiles::Array{String,1}}: a list of strings specifying the
-  locations of pseudopotentials used in the
-  calculations. Note that, the order should be the same as species ordering
-  of \jlcode{atoms}, i.e. \jlcode{pspfiles[isp]} is the path of
-  pseudopotentials of species with symbols \jlcode{atoms.SpeciesSymbols[isp]}.
-%
-\item \jlcode{ecutwfc::Float64}: cutoff energy for wave function
-  expansion using plane wave basis set.
-\end{itemize}
-
-A simplified version of \jlcode{Hamiltonian} constructor only needs two arguments:
-\jlcode{atoms::Atoms} and \jlcode{ecutwfc::Float64}. In this case, full Coulomb potential
-will be used. We usually need very large cutoff energy in this case (probably
-in the order or $10^2$ Hartree to obtain good convergence).
-
-The structure of \jlcode{Hamiltonian} is designed such that we can perform
-application or multiplication of Hamiltonian to wave function:
-%
-\begin{juliacode}
-Hpsi = op_H(H, psi)
-\end{juliacode}
-%
-or, (by overloading the \jlcode{*} operator
-\footnote{The operator * is actually implemented as function in Julia})
-%
-\begin{juliacode}
-Hpsi = H*psi
-\end{juliacode}
-
-
-\section{Plane wave basis}
-
-The plane wave basis is described by the type \jlcode{PWGrid}.
-This type is defined in the file \jlcode{PWGrid.jl}. It has the following fields:
-\begin{itemize}
-%
-\item \jlcode{ecutwfc::Float64}:\\
-  cutoff for wave function expansion
-%
-\item \jlcode{ecutrho::Float64}:\\
-  cutoff for electron density
-  expansion, for norm-converving
-  pseudopotential we have \\
-  \jlcode{ecutrho = 4*ecutwfc}.
-%
-\item \jlcode{Ns::Tuple{Int64,Int64,Int64}}:\\
-  parameters defining real-space grid points.
-%
-\item \jlcode{LatVecs::Array{Float64,2}}: lattice vectors of
-unit cell ($3\times3$ matrix)
-%
-\item \jlcode{RecVecs::Array{Float64,2}}:\\
-  reciprocal lattice vectors ($3\times3$ matrix)
-%
-\item \jlcode{CellVolume::Float64}:\\
-  the volume of real-space unit cell
-%
-\item \jlcode{r::Array{Float64,2}}:\\
-  real-space grid points.
-  Its shape is \jlcode{(3,Npoints)}
-%
-\item \jlcode{gvec::GVectors}:\\
-  an instance of \jlcode{GVectors},
-  for potentials and density expansion
-%
-\item \jlcode{gvecw::GVectorsW}:\\
-  an instace of \jlcode{GVectorsW}, for wave function expansion
-%
-\item \jlcode{planfw}:\\
-  FFTW forward plan
-%
-\item \jlcode{planbw}:\\
-  FFTW backward plan
-%
-\end{itemize}
-
-The following constructor can be used to create an instance of
-\jlcode{PWGrid}:
-
-\begin{juliacode}
-function PWGrid( ecutwfc::Float64,
-                 LatVecs::Array{Float64,2};
-                 kpoints=nothing )
-\end{juliacode}
-
-
-\subsection{$\mathbf{G}$-vectors for potentials and densities expansion}
-
-$\mathbf{G}$-vectors are described by type \jlcode{GVectors}.
-It is defined in the file \jlcode{PWGrid.jl}. It has the following fields:
-\begin{itemize}
-%
-\item \jlcode{Ng::Int64}: total number of $\mathbf{G}$-vectors
-%
-\item \jlcode{G::Array{Float64,2}} The array containing the actual $\mathbf{G}$-vectors.
-   Its shape is \jlcode{(3,Ng)}.
-%
-\item \jlcode{G2::Array{Float64,1}}: The array containing magnitude of $\mathbf{G}$-vectors.
-  Its shape is \jlcode{(Ng,)}.
-%
-\item \jlcode{idx_g2r::Array{Int64,1}} The array containing mapping between $\mathbf{G}$-vectors
-  to real space grid points. Its shape is \jlcode{(Ng,)}.
-%
-\end{itemize}
-
-The following function is used as the constructor:
-
-\begin{juliacode}
-function init_gvec( Ns, RecVecs, ecutrho )
-\end{juliacode}
-%
-This function takes the following arguments
-%
-\begin{itemize}
-%
-\item \jlcode{Ns}: a tuple of three \jlcode{Int64}'s specifying sampling points
-  along the 1st, 2nd, and 3rd lattice vector directions.
-%
-\item \jlcode{RecVecs}: 3 by 3 matrix describing reciprocal lattice vectors
-%
-\item \jlcode{ecutrho}: cutoff energy (in Hartree). For norm-conserving PP,
-  it is 4 times \jlcode{ecutwfc}.
+\item \jlinline{Atoms}: contains information about atomic structure: cell
+vectors, atomic species and atomic coordinates.
+\item \jlinline{PsPot_GTH}: contains information about atomic pseudopotentials.
+\item \jlinline{Electrons}: contains information about electronic states.
+\item \jlinline{PWGrid}: contains information about plane wave basis set.
+\item \jlinline{Potentials}: contains information about local potentials such
+as local pseudopotential, Hartree and exchange-correlation potential.
+\item \jlinline{PsPotNL}: contains information about nonlocal pseudopotential
+terms.
+\item \jlinline{Energies}: contains information about components of Kohn-Sham
+energy.
+\item \jlinline{SymmetryInfo}: contains information about symmetry operations.
 \end{itemize}
 
 
-\subsection{G-vectorsW}
-
-The $\mathbf{G}$-vectors for wave function expansion is described by
-the type \jlcode{GVectorsW}.
-They are a subset of \jlcode{GVectors}. It has the following fields:
-\begin{itemize}
+\section{Atomic structure}
 %
-\item \jlcode{Ngwx::Int64}: maximum number of $\mathbf{G}$-vectors for all kpoints.
-%
-\item \jlcode{Ngw::Array{Int64,1}}: number of $\mathbf{G}$-vectors for each kpoints
-%
-\item \jlcode{idx_gw2g::Array{Array{Int64,1},1}}: mapping between indices of
-  \jlcode{GVectorsW} to indices of \jlcode{GVectors}.
-%
-\item \jlcode{idx_gw2r::Array{Array{Int64,1},1}}: mapping between indices of
-  \jlcode{GVectorsW}
-  to indices of real space grid points \jlcode{PWGrid.r}
-%
-\item \jlcode{kpoints::KPoints}: an instance of \jlcode{KPoints}
-%
-\end{itemize}
-
-
-Constructor: TODO
-
-\subsection{Bloch wave vector}
-
-The type describing Bloch wave vectors, or commonly referred
-to as k-points, is \jlcode{KPoints}. It is defined in the file
-\jlcode{KPoints.jl}. It has the following fields
+The type \jlinline{Atoms} contains the following information:
 %
 \begin{itemize}
-%
-\item \jlcode{Nkpt::Int64}: total number of k-points.
-%
-\item \jlcode{k::Array{Float64,2}}: the actual k-points.
-  Its shape is \jlcode{(3,Nkpt)}.
-%
-\item \jlcode{wk::Array{Float64,1}}: the weight of each k-points needed
-  for integration over Brillouin zone
-%
-\item \jlcode{RecVecs::Array{Float64,2}}: a copy of \jlcode{PWGrid.RecVecs}.
+\item Number of atoms: \jlinline{Natoms::Int64}
+\item Number of atomic species: \jlinline{Nspecies::Int64}
+\item Atomic coordinates: \jlinline{positions::Array{Float64,2}}
+\item Unit cell vectors (lattice vectors): \jlinline{LatVecs::Array{Float64,2}}
 \end{itemize}
-
-Monkhorst-Pack grid points:
 %
-\begin{equation}
-k_{i} = \frac{2n_i -N_i - 1}{2N_i} \mathbf{b}_i.\hspace{1em}
-i = 1,2,3
-\end{equation}
+\jlinline{Atoms} also contains several other fields such as \jlinline{Zvals}
+which will be set according to the pseudopotentials assigned to
+the instance of \jlinline{Atoms}.
+\footnote{Maybe we should include pseudopotential information under the
+\jlinline{Atoms} type. However this would make \jlinline{Atoms} "heavier".}
+
+
+\jlinline{LatVecs} is a $3\times3$ matrix. The vectors are stored column-wise which is
+opposite to PWSCF input convention.
+Convenience functions to calculate lattice vectors for several types of Bravais lattice
+are provided in \textsf{PWDFT.jl}. These functions adapt PWSCF definition. Several
+of these functions are listed below:
+\begin{itemize}
+\item \jlinline{gen_lattice_sc} or \jlinline{gen_lattice_cubic} for generating
+simple cubic lattice vectors.
+\item \jlinline{gen_lattice_fcc}: for fcc structure
+\item \jlinline{gen_lattice_bcc}: for bcc structure
+\item \jlinline{gen_lattice_hcp}: for hcp structure
+\end{itemize}
+Please see file \txtinline{gen_lattice.jl} for more information.
+
+
+There are several ways to initialize an instance of \jlinline{Atoms}. The following
+are typical cases.
 %
-where $n_i=1,2,...,N_{i}$
-size = \((N_1, N_2, N_3)\) and the \(\mathbf{b}_i\)'s are reciprocal lattice vectors.
-
-
-Constructor:
-
+\begin{itemize}
+%
+\item From xyz file. We need to supply the path to xyz file as string and
+set the lattice vectors:
+%
 \begin{juliacode}
-function KPoints( atoms::Atoms, mesh::Array{Int64,1},
-                  is_shift::Array{Int64,1};
-                  time_reversal=1 )
+atoms = Atoms(xyz_file="file.xyz", LatVecs=gen_lattice_sc(16.0))
 \end{juliacode}
-
-SPGLIB is used to generate reduced k-points within the first Brillouin zone.
-
-
-\section{Wave functions}
-
-In the present implementation, I have chosen to use the simplest
-data structure for representing wave functions, namely
-\jlcode{Array{ComplexF64,2}}. In \textsf{PWDFT.jl}, an alias
-has been defined:
+%
+\item For crystalline systems, using keyword argument \jlinline{xyz_string_frac}
+is sometimes convenient:
+%
 \begin{juliacode}
-const Wavefunc = Array{ComplexF64,2}
-\end{juliacode}
+atoms = Atoms(xyz_string_frac=
+        """
+        2
 
-I also differentiate between wave function and Bloch wave function.
-A Bloch wave function is composed of several wave functions having
-different Bloch wave vectors $\mathbf{k}$ or k-points.
-The following alias also has been defined
+        Si  0.0  0.0  0.0
+        Si  0.25  0.25  0.25
+        """, in_bohr=true,
+        LatVecs=gen_lattice_fcc(10.2631))
+\end{juliacode}
+%
+\textbf{IMPORTANT} We need to be careful to also specify \jlinline{in_bohr} keyword to get
+the correct coordinates in bohr (which is used internally in \jlinline{PWDFT.jl}).
+%
+\item From extended xyz file, the lattice vectors information is included
+along with several others information, if any, however they are ignored):
+%
 \begin{juliacode}
-const BlochWavefunc = Array{Array{ComplexF64,2},1}
+atoms = Atoms(ext_xyz_file="file.xyz")
 \end{juliacode}
-
-Spin index is merged with kpoint index
-
-Conventions: \jlcode{psi} for an instance of \jlcode{Wavefunc} and
-\jlcode{psiks} for an instance of \jlcode{BlochWavefunc}
-
-Functions related to wave functions:
-\begin{itemize}
-\item \jlcode{rand_Wavefunc}
-\item \jlcode{zeros_Wavefunc}
-\item \jlcode{rand_BlochWavefunc}
-\item \jlcode{zeros_BlochWavefunc}
-\end{itemize}
-
-Wave functions in real and reciprocal space.
-
-Converting between wave functions in real and reciprocal space
-
-Orthonormalization functions
-\jlcode{ortho_gram_schmidt} and \jlcode{ortho_sqrt}
-
-
-\section{Total energy components}
-
-Total energy components are stored in the type \jlcode{Energies}. Currently its
-fields are as follows.
-\begin{itemize}
-%
-\item \jlcode{Kinetic}: kinetic energy
-%
-\item \jlcode{Ps_loc}: local pseudopotential energy
-%
-\item \jlcode{Ps_nloc}: nonlocal pseudopotential energy
-%
-\item \jlcode{Hartree}: classical electrostatic energy
-%
-\item \jlcode{XC}: exchange correlation energy
-%
-\item \jlcode{NN}: nuclear-nuclear (repulsive) interaction energy
-%
-\item \jlcode{PspCore}: core (screened) pseudopotential energy
-%
-\item \jlcode{mTS}: electronic entropy contribution (with minus sign). This is
-  used for calculation with partial occupations such as metals.
 %
 \end{itemize}
 
-
-\section{Local potentials}
-
-Various local potentials are stored in the type \jlcode{Potentials}. Currently
-its fields are as follows.
-\begin{itemize}
-%
-\item \jlcode{Ps_loc} local pseudopotential components.
-  Its shape is \jlcode{(Npoints,)}.
-%
-\item \jlcode{Hartree}: classical electrostatic potential.
-  Its shape is \jlcode{(Npoints,)}.
-%
-\item \jlcode{XC}: exchange-correlation potential. This potential can be spin
-  dependent so its shape is \jlcode{(Npoints,Nspin)}.
-%
-\end{itemize}
-
-All of these potentials are stored in the real space representation.
 
 
 \section{Pseudopotentials}
-
-Currently, only GTH pseudopotentials with no core-correction are supported.
-The type for handling GTH pseudopotential for a species is \jlcode{PsPot_GTH}.
-It is declared as follows.
-
-\begin{juliacode}
-struct PsPot_GTH
-    pspfile::String
-    atsymb::String
-    zval::Int64
-    rlocal::Float64
-    rc::Array{Float64,1}
-    c::Array{Float64,1}
-    h::Array{Float64,3}
-    lmax::Int64
-    Nproj_l::Array{Int64,1}
-    rcut_NL::Array{Float64,1}
-end
-\end{juliacode}
-
-\section{Hamiltonian operator}
-
-Apply Hamiltonian operator to wave function
-\begin{juliacode}
-for ispin = 1:Nspin
-    for ik = 1:Nkpt
-        # Important: need to set internal variables within ::Hamiltonian
-        Ham.ispin = ispin
-        Ham.ik = ik
-        Hpsiks = op_H(Ham, psiks)
-    end
-end
-\end{juliacode}
-
-
-\section{Eigensolver}
-
-Three methods are available:
-\begin{itemize}
-\item LOBPCG method
-\item blocked Davidson method
-\item preconditioned conjugate gradient by minizing trace of Hamiltonian
-\end{itemize}
-
-These eigensolvers can be used to find eigenvalues and eigenvectors
-of Hamiltonian at fixed potential.
+%
+Currently, \textsf{PWDFT.jl} supports a subset of GTH (Goedecker-Teter-Hutter)
+pseudopotentials. This type of pseudopotential is analytic and contains
+few parameters.
+%
+\textsf{PWDFT.jl} distribution contains several parameters
+of GTH pseudopotential
 
 
 
-\section{Solving Kohn-Sham problems}
+\section{Plane wave basis set}
 
-Two main algorithms are available:
-\begin{itemize}
-\item self-consistent field (SCF)
-\item direct minimization of Kohn-Sham total energy functional
-\end{itemize}
-
-The solvers of Kohn-Sham problems start with prefix \jlcode{KS_solve_}.
-Currently implemented solvers are
-\begin{itemize}
-\item \jlcode{KS_solve_SCF}
-\item \jlcode{KS_solve_Emin_PCG}
-\item \jlcode{KS_solve_DCM}
-\item \jlcode{KS_solve_TRDCM}
-\end{itemize}
+The type \jlinline{PWGrid} wraps various variables related to plane wave basis
+set.
 
 
-\subsection{Self-consistent field}
-\jlcode{KS_solve_SCF}
-
-
-\subsection{Direct energy minimization via nonlinear conjugate gradient method}
-
-\jlcode{KS_solve_Emin_PCG}
-
-This method is described by Ismail-Beigi and Arias
-
-Presently only working for systems with band gap (insulators and semiconductors).
-
-\subsection{Direct constrained minimization method of Yang (experimental feature)}
-
-\jlcode{KS_solve_DCM}
-
-\subsection{Chebyshev filtered subspace iteration SCF (experimental feature)}
-
-\jlcode{update_psi="CheFSI"}
 
 
 \part{Howtos}
+
+This part contains miscellaneous info.
+
 \input{HOWTOS.tex}
 
 
