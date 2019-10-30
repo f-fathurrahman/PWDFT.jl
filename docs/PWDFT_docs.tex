@@ -114,7 +114,7 @@ the instance of \jlinline{Atoms}.
 
 
 \jlinline{LatVecs} is a $3\times3$ matrix. The vectors are stored column-wise which is
-opposite to PWSCF input convention.
+opposite to the PWSCF input convention.
 Convenience functions to calculate lattice vectors for several types of Bravais lattice
 are provided in \textsf{PWDFT.jl}. These functions adapt PWSCF definition. Several
 of these functions are listed below:
@@ -171,11 +171,11 @@ atoms = Atoms(ext_xyz_file="file.xyz")
 \section{Pseudopotentials}
 %
 Currently, \textsf{PWDFT.jl} supports a subset of GTH (Goedecker-Teter-Hutter)
-pseudopotentials. This type of pseudopotential is analytic and contains
-few parameters.
+pseudopotentials. This type of pseudopotential is analytic and thus is somewhat
+easier to program.
 %
 \textsf{PWDFT.jl} distribution contains several parameters
-of GTH pseudopotential
+of GTH pseudopotentials for LDA and GGA functionals.
 
 
 
@@ -184,7 +184,17 @@ of GTH pseudopotential
 The type \jlinline{PWGrid} wraps various variables related to plane wave basis
 set.
 
+Real space grid points:
+$$
+\mathbf{r} = \frac{i}{N_{s1}}\mathbf{a}_{1} + \frac{j}{N_{s2}}\mathbf{a}_{2} +
+\frac{k}{N_{s3}}\mathbf{a}_{3}
+$$
 
+$i = 0,1,\ldots,N_{s1}-1$
+
+$j = 0,1,\ldots,N_{s2}-1$
+
+$k = 0,1,\ldots,N_{s3}-1$
 
 
 \part{Howtos}
