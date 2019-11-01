@@ -1,4 +1,4 @@
-\section{Referring or including files in \jlinline{sandbox} (or other dirs in \jlinline{PWDFT.jl})}
+\subsection{Referring or including files in \jlinline{sandbox} (or other dirs in \jlinline{PWDFT.jl})}
 
 \begin{juliacode}
 using PWDFT
@@ -10,7 +10,7 @@ pspfiles = [joinpath(DIR_PSP,"Ag-q11.gth")]
 \end{juliacode}
 
 
-\section{Using Babel to generate xyz file from SMILES}
+\subsection{Using Babel to generate xyz file from SMILES}
 
 \begin{textcode}
 babel file.smi file.sdf
@@ -21,7 +21,7 @@ Use \txtinline{babel -h} to autogenerate hydrogens.
 
 
 
-\section{Setting up pseudopotentials}
+\subsection{Setting up pseudopotentials}
 
 One can use the function \jlinline{get_default_psp(::Atoms)} to get default
 pseudopotentials set for a given instance of \jlinline{Atoms}.
@@ -55,7 +55,7 @@ then
 pspfiles = ["Al-q3.gth", "O-q6.gth", "H-q1.gth"]
 \end{juliacode}
 
-\section{Initializing Hamiltonian}
+\subsection{Initializing Hamiltonian}
 
 For molecular systems:
 \begin{juliacode}
@@ -77,7 +77,7 @@ Empty extra states can be specified by using \jlinline{extra_states} keyword.
 For spin-polarized systems, \jlinline{Nspin} keyword can be used.
 
 
-\section{Iterative diagonalization of Hamiltonian}
+\subsection{Iterative diagonalization of Hamiltonian}
 
 \begin{juliacode}
 evals =  diag_LOBPCG!( Ham, psiks, verbose=false, verbose_last=false,
@@ -85,7 +85,7 @@ evals =  diag_LOBPCG!( Ham, psiks, verbose=false, verbose_last=false,
 \end{juliacode}
 
 
-\section{Calculating electron density}
+\subsection{Calculating electron density}
 
 Several ways:
 \begin{juliacode}
@@ -96,7 +96,7 @@ Rhoe = calc_rhoe( Ham, psiks )
 calc_rhoe!( Ham, psiks, Rhoe )
 \end{juliacode}
 
-\section{Read and write array (binary file)}
+\subsection{Read and write array (binary file)}
 
 Write to binary files:
 \begin{juliacode}
@@ -123,7 +123,7 @@ end
 
 
 
-\subsection*{Subspace rotation}
+\subsubsection*{Subspace rotation}
 
 In case need sorting:
 \begin{juliacode}
