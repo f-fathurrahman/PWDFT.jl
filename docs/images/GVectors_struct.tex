@@ -1,0 +1,38 @@
+\documentclass{article}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric}
+
+\tikzstyle{mybox} = [draw=blue, fill=green!5, very thick, rectangle,
+  rounded corners, inner sep=10pt, inner ysep=20pt]
+
+\tikzstyle{fancytitle} = [fill=blue, text=white]
+
+\usepackage{minted}
+\newcommand{\jlinline}[1]{\mintinline{julia}{#1}}
+
+\begin{document}
+
+\thispagestyle{empty}
+
+\begin{tikzpicture}
+
+\node[mybox] (box) {%
+\begin{minipage}{0.6\textwidth}%
+\begin{minted}{julia}
+struct GVectors
+    Ng::Int64
+    G::Array{Float64,2}
+    G2::Array{Float64,1}
+    idx_g2r::Array{Int64,1}
+    G2_shells::Array{Float64,1}
+    idx_g2shells::Array{Int64,1}
+end
+\end{minted}
+\end{minipage}
+};
+
+\node[fancytitle, right=10pt] at (box.north west) {\jlinline{GVectors} struct definition};
+
+\end{tikzpicture}
+
+\end{document}

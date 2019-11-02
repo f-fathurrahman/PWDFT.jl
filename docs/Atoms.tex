@@ -1,0 +1,94 @@
+\section{Atomic structure}
+%
+The type \jlinline{Atoms} contains the following information:
+%
+\begin{itemize}
+\item Number of atoms: \jlinline{Natoms::Int64}
+\item Number of atomic species: \jlinline{Nspecies::Int64}
+\item Atomic coordinates: \jlinline{positions::Array{Float64,2}}
+\item Unit cell vectors (lattice vectors): \jlinline{LatVecs::Array{Float64,2}}
+\end{itemize}
+%
+\jlinline{Atoms} also contains several other fields such as \jlinline{Zvals}
+which will be set according to the pseudopotentials assigned to
+the instance of \jlinline{Atoms}.
+\footnote{Maybe we should include pseudopotential information under the
+\jlinline{Atoms} type. However this would make \jlinline{Atoms} "heavier".}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\node[mybox] (box) {%
+\begin{minipage}{0.6\textwidth}%
+\begin{minted}{julia}
+mutable struct Atoms
+    Natoms::Int64
+    Nspecies::Int64
+    positions::Array{Float64,2}
+    atm2species::Array{Int64,1}
+    atsymbs::Array{String,1}
+    SpeciesSymbols::Array{String,1}
+    LatVecs::Array{Float64,2}
+    Zvals::Array{Float64,1}
+end
+\end{minted}
+\end{minipage}
+};
+\node[fancytitle, right=10pt] at (box.north west) {\jlinline{Atoms} struct definition};
+\end{tikzpicture}
+\caption{Definition of \jlinline{Atoms}.}
+\end{figure}
+
+
+\jlinline{LatVecs} is a $3\times3$ matrix. The vectors are stored column-wise which is
+opposite to the PWSCF input convention.
+Convenience functions to calculate lattice vectors for several types of Bravais lattice
+are provided in \textsf{PWDFT.jl}. These functions adopt PWSCF definition. Several
+of these functions are listed below:
+\begin{itemize}
+\item \jlinline{gen_lattice_sc} or \jlinline{gen_lattice_cubic} for generating
+simple cubic lattice vectors.
+\item \jlinline{gen_lattice_fcc}: for fcc structure
+\item \jlinline{gen_lattice_bcc}: for bcc structure
+\item \jlinline{gen_lattice_hcp}: for hcp structure
+\end{itemize}
+Please see file \txtinline{gen_lattice.jl} for more information.
+
+
+There are several ways to initialize an instance of \jlinline{Atoms}. The following
+are typical cases.
+%
+\begin{itemize}
+%
+\item From xyz file. We need to supply the path to xyz file as string and
+set the lattice vectors:
+%
+\begin{juliacode}
+atoms = Atoms(xyz_file="file.xyz", LatVecs=gen_lattice_sc(16.0))
+\end{juliacode}
+%
+\item For crystalline systems, using keyword argument \jlinline{xyz_string_frac}
+is sometimes convenient:
+%
+\begin{juliacode}
+atoms = Atoms(xyz_string_frac=
+        """
+        2
+
+        Si  0.0  0.0  0.0
+        Si  0.25  0.25  0.25
+        """, in_bohr=true,
+        LatVecs=gen_lattice_fcc(10.2631))
+\end{juliacode}
+%
+\textbf{IMPORTANT} We need to be careful to also specify \jlinline{in_bohr} keyword to get
+the correct coordinates in bohr (which is used internally in \jlinline{PWDFT.jl}).
+%
+\item From extended xyz file, the lattice vectors information is included
+along with several others information, if any, however they are ignored):
+%
+\begin{juliacode}
+atoms = Atoms(ext_xyz_file="file.xyz")
+\end{juliacode}
+%
+\end{itemize}

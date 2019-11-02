@@ -1,0 +1,34 @@
+\RequirePackage{luatex85}
+\documentclass{standalone}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric}
+
+\usepackage{minted}
+\newcommand{\jlinline}[1]{\mintinline{julia}{#1}}
+
+\begin{document}
+
+\begin{tikzpicture}
+\draw [help lines] (-5,-5) grid (5,5);
+
+\path node [draw,scale=1.5] (Hamiltonian) at (0,0) {\texttt{Hamiltonian}};
+
+\path node [draw] (Atoms) at (-4,2) {\texttt{atoms::Atoms}};
+
+\path node [draw] (PsPot_GTH) at (-4,0) {\jlinline{sym_info::SymmetryInfo}};
+
+\path node [draw] (PWGrid) at (0,2) {\jlinline{pw::PWGrid}};
+
+\path node [draw] (Electrons) at (4,2) {\jlinline{electrons::Electrons}};
+
+\path node [draw] (PsPot_GTH) at (-4,-2) {\jlinline{pspots::Array{PsPot_GTH,1}}};
+
+\path node [draw] (PsPot_GTH) at (-4,-4) {\jlinline{pspotNL::PsPotNL}};
+
+\path node [draw] (PsPot_GTH) at (0,-3) {\jlinline{potentials::Potentials}};
+
+\path node [draw] (PsPot_GTH) at (4,-2) {\jlinline{energies::Energies}};
+
+\end{tikzpicture}
+
+\end{document}

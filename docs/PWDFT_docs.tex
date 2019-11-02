@@ -29,17 +29,19 @@
 \newcommand{\jlinline}[1]{\mintinline{julia}{#1}}
 \newcommand{\txtinline}[1]{\mintinline{text}{#1}}
 
-\newenvironment{markdown}%
-    {\VerbatimEnvironment\begin{VerbatimOut}{tmp.markdown}}%
-    {\end{VerbatimOut}%
-        \immediate\write18{pandoc tmp.markdown -t latex -o tmp.tex}%
-        \input{tmp}}
-
 \definecolor{mintedbg}{rgb}{0.90,0.90,0.90}
 \usepackage{mdframed}
 \BeforeBeginEnvironment{minted}{\begin{mdframed}[backgroundcolor=mintedbg,%
   rightline=false,leftline=false,topline=false,bottomline=false]}
 \AfterEndEnvironment{minted}{\end{mdframed}}
+
+
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric}
+\tikzstyle{mybox} = [draw=blue, fill=green!5, very thick, rectangle,
+  rounded corners, inner sep=10pt, inner ysep=20pt]
+\tikzstyle{fancytitle} = [fill=blue, text=white]
+
 
 \begin{document}
 
@@ -95,251 +97,38 @@ energy.
 \end{itemize}
 
 
-\section{Describing atomic structure}
-%
-The type \jlinline{Atoms} contains the following information:
-%
-\begin{itemize}
-\item Number of atoms: \jlinline{Natoms::Int64}
-\item Number of atomic species: \jlinline{Nspecies::Int64}
-\item Atomic coordinates: \jlinline{positions::Array{Float64,2}}
-\item Unit cell vectors (lattice vectors): \jlinline{LatVecs::Array{Float64,2}}
-\end{itemize}
-%
-\jlinline{Atoms} also contains several other fields such as \jlinline{Zvals}
-which will be set according to the pseudopotentials assigned to
-the instance of \jlinline{Atoms}.
-\footnote{Maybe we should include pseudopotential information under the
-\jlinline{Atoms} type. However this would make \jlinline{Atoms} "heavier".}
+\input{Atoms}
 
 
-\jlinline{LatVecs} is a $3\times3$ matrix. The vectors are stored column-wise which is
-opposite to the PWSCF input convention.
-Convenience functions to calculate lattice vectors for several types of Bravais lattice
-are provided in \textsf{PWDFT.jl}. These functions adapt PWSCF definition. Several
-of these functions are listed below:
-\begin{itemize}
-\item \jlinline{gen_lattice_sc} or \jlinline{gen_lattice_cubic} for generating
-simple cubic lattice vectors.
-\item \jlinline{gen_lattice_fcc}: for fcc structure
-\item \jlinline{gen_lattice_bcc}: for bcc structure
-\item \jlinline{gen_lattice_hcp}: for hcp structure
-\end{itemize}
-Please see file \txtinline{gen_lattice.jl} for more information.
+\input{PWGrid}
 
 
-There are several ways to initialize an instance of \jlinline{Atoms}. The following
-are typical cases.
-%
-\begin{itemize}
-%
-\item From xyz file. We need to supply the path to xyz file as string and
-set the lattice vectors:
-%
-\begin{juliacode}
-atoms = Atoms(xyz_file="file.xyz", LatVecs=gen_lattice_sc(16.0))
-\end{juliacode}
-%
-\item For crystalline systems, using keyword argument \jlinline{xyz_string_frac}
-is sometimes convenient:
-%
-\begin{juliacode}
-atoms = Atoms(xyz_string_frac=
-        """
-        2
-
-        Si  0.0  0.0  0.0
-        Si  0.25  0.25  0.25
-        """, in_bohr=true,
-        LatVecs=gen_lattice_fcc(10.2631))
-\end{juliacode}
-%
-\textbf{IMPORTANT} We need to be careful to also specify \jlinline{in_bohr} keyword to get
-the correct coordinates in bohr (which is used internally in \jlinline{PWDFT.jl}).
-%
-\item From extended xyz file, the lattice vectors information is included
-along with several others information, if any, however they are ignored):
-%
-\begin{juliacode}
-atoms = Atoms(ext_xyz_file="file.xyz")
-\end{juliacode}
-%
-\end{itemize}
+\section{Electronic states}
 
 
-\section{Describing plane wave basis set and real space grid}
-
-The type \jlinline{PWGrid} wraps various variables related to plane wave basis
-set.
-
-Real space grid points:
-$$
-\mathbf{r} = \frac{i}{N_{s1}}\mathbf{a}_{1} + \frac{j}{N_{s2}}\mathbf{a}_{2} +
-\frac{k}{N_{s3}}\mathbf{a}_{3}
-$$
-
-$i = 0,1,\ldots,N_{s1}-1$
-
-$j = 0,1,\ldots,N_{s2}-1$
-
-$k = 0,1,\ldots,N_{s3}-1$
+\section{Potentials and energies}
 
 
-\section{Pseudopotentials}
-%
-Currently, \textsf{PWDFT.jl} supports a subset of GTH (Goedecker-Teter-Hutter)
-pseudopotentials. This type of pseudopotential is analytic and thus is somewhat
-easier to program.
-%
-\textsf{PWDFT.jl} distribution contains several parameters
-of GTH pseudopotentials for LDA and GGA functionals.
+\input{Pseudopotential}
 
-These pseudopotentials can be written in terms of
-local $V^{\mathrm{PS}}_{\mathrm{loc}}$ and
-angular momentum $l$ dependent
-nonlocal components $\Delta V^{\mathrm{PS}}_{l}$:
-\begin{equation}
-V_{\mathrm{ene-nuc}}(\mathbf{r}) =
-\sum_{I} \left[
-V^{\mathrm{PS}}_{\mathrm{loc}}(\mathbf{r}-\mathbf{R}_{I}) +
-\sum_{l=0}^{l_{\mathrm{max}}}
-V^{\mathrm{PS}}_{l}(\mathbf{r}-\mathrm{R}_{I},\mathbf{r}'-\mathbf{R}_{I})
-\right]
-\end{equation}
 
-\subsection{Local pseudopotential}
+\section{Hamiltonian operators}
 
-The local pseudopotential for
-$I$-th atom, $V^{\mathrm{PS}}_{\mathrm{loc}}(\mathbf{r}-\mathbf{R}_{I})$,
-is radially symmetric
-function with the following radial form
-\begin{equation}
-V^{\mathrm{PS}}_{\mathrm{loc}}(r) =
--\frac{Z_{\mathrm{val}}}{r}\mathrm{erf}\left[
-\frac{\bar{r}}{\sqrt{2}} \right] +
-\exp\left[-\frac{1}{2}\bar{r}^2\right]\left(
-C_{1} + C_{2}\bar{r}^2 + C_{3}\bar{r}^4 + C_{4}\bar{r}^6
-\right)
-\label{eq:V_ps_loc_R}
-\end{equation}
-with $\bar{r}=r/r_{\mathrm{loc}}$ and $r_{\mathrm{loc}}$, $Z_{\mathrm{val}}$,
-$C_{1}$, $C_{2}$, $C_{3}$ and $C_{4}$ are the corresponding pseudopotential
-parameters.
-In $\mathbf{G}$-space, the GTH local pseudopotential can be written as
-\begin{multline}
-V^{\mathrm{PS}}_{\mathrm{loc}}(G) = -\frac{4\pi}{\Omega}\frac{Z_{\mathrm{val}}}{G^2}
-\exp\left[-\frac{x^2}{2}\right] +
-\sqrt{8\pi^3} \frac{r^{3}_{\mathrm{loc}}}{\Omega}\exp\left[-\frac{x^2}{2}\right]\times\\
-\left( C_{1} + C_{2}(3 - x^2) + C_{3}(15 - 10x^2 + x^4) + C_{4}(105 - 105x^2 + 21x^4 - x^6) \right)
-\label{eq:V_ps_loc_G}
-\end{multline}
-where $x=G r_{\mathrm{loc}}$.
 
-\subsection{Nonlocal pseudopotential}
+\section{Iterative diagonalization of Hamiltonian}
 
-The nonlocal component of GTH pseudopotential can written in real space as
-\begin{equation}
-V^{\mathrm{PS}}_{l}(\mathbf{r}-\mathbf{R}_{I},\mathbf{r}'-\mathbf{R}_{I}) =
-\sum_{\mu=1}^{N_{l}} \sum_{\nu=1}^{N_{l}} \sum_{m=-l}^{l}
-\beta_{\mu lm}(\mathbf{r}-\mathbf{R}_{I})\,
-h^{l}_{\mu\nu}\,
-\beta^{*}_{\nu lm}(\mathbf{r}'-\mathbf{R}_{I})
-\end{equation}
-where $\beta_{\mu lm}(\mathbf{r})$ are atomic-centered projector functions
-\begin{equation}
-\beta_{\mu lm}(\mathbf{r}) =
-p^{l}_{\mu}(r) Y_{lm}(\hat{\mathbf{r}})
-\label{eq:proj_NL_R}
-\end{equation}
-%
-and $h^{l}_{\mu\nu}$ are the pseudopotential parameters and
-$Y_{lm}$ are the spherical harmonics. Number of projectors per angular
-momentum $N_{l}$ may take value up to 3 projectors.
-%
-In $\mathbf{G}$-space, the nonlocal part of GTH pseudopotential can be described by
-the following equation.
-\begin{equation}
-V^{\mathrm{PS}}_{l}(\mathbf{G},\mathbf{G}') =
-(-1)^{l} \sum_{\mu}^{3} \sum_{\nu}^{3}\sum_{m=-l}^{l}
-\beta_{\mu l m}(\mathbf{G}) h^{l}_{\mu\nu}
-\beta^{*}_{\nu l m}(\mathbf{G}')
-\end{equation}
-with the projector functions
-\begin{equation}
-\beta_{\mu lm}(\mathbf{G}) = p^{l}_{\mu}(G) Y_{lm}(\hat{\mathbf{G}})
-\label{eq:betaNL_G}
-\end{equation}
-The radial part of projector functions take the following form
-\begin{equation}
-p^{l}_{\mu}(G) = q^{l}_{\mu}\left(Gr_{l}\right)
-\frac{\pi^{5/4}G^{l}\sqrt{ r_{l}^{2l+3}}}{\sqrt{\Omega}}
-\exp\left[-\frac{1}{2}G^{2}r^{2}_{l}\right]
-\label{eq:proj_NL_G}
-\end{equation}
-%
-For $l=0$, we consider up to $N_{l}=3$ projectors:
-\begin{align}
-q^{0}_{1}(x) & = 4\sqrt{2} \\
-q^{0}_{2}(x) & = 8\sqrt{\frac{2}{15}}(3 - x^2) \\
-q^{0}_{3}(x) & = \frac{16}{3}\sqrt{\frac{2}{105}} (15 - 20x^2 + 4x^4)
-\end{align}
-%
-For $l=1$, we consider up to $N_{l}=3$ projectors:
-\begin{align}
-q^{1}_{1}(x) & = 8 \sqrt{\frac{1}{3}} \\
-q^{1}_{2}(x) & = 16 \sqrt{\frac{1}{105}} (5 - x^2) \\
-q^{1}_{3}(x) & = 8 \sqrt{\frac{1}{1155}} (35 - 28x^2 + 4x^4)
-\end{align}
-%
-For $l=2$, we consider up to $N_{l}=2$ projectors:
-\begin{align}
-q^{2}_{1}(x) & = 8\sqrt{\frac{2}{15}} \\
-q^{2}_{2}(x) & = \frac{16}{3} \sqrt{\frac{2}{105}}(7 - x^2)
-\end{align}
-%
-For $l=3$, we only consider up to $N_{l}=1$ projector:
-\begin{equation}
-q^{3}_{1}(x) = 16\sqrt{\frac{1}{105}}
-\end{equation}
 
-In the present implementation, we construct the local and nonlocal
-components of pseudopotential in the $\mathbf{G}$-space using
-their Fourier-transformed expressions
-and transformed them back to real space if needed.
-We refer the readers to the original
-reference \cite{Goedecker1996} and the book \cite{Marx2009}
-for more information about GTH pseudopotentials.
+\section{Calculation of electron density and total energy}
 
-Due to the separation of local and non-local components of electrons-nuclei
-interaction, Equation \eqref{eq:E_ele_nuc} can be written as
-\begin{equation}
-E_{\mathrm{ele-nuc}} = E^{\mathrm{PS}}_{\mathrm{loc}}
-+ E^{\mathrm{PS}}_{\mathrm{nloc}}
-\end{equation}
-%
-The local pseudopotential contribution is
-\begin{equation}
-E^{\mathrm{PS}}_{\mathrm{loc}} =
-\int_{\Omega} \rho(\mathbf{r})\,V^{\mathrm{PS}}_{\mathrm{loc}}(\mathbf{r})\,
-\mathrm{d}\mathbf{r}
-\end{equation}
-%
-and the non-local contribution is
-\begin{equation}
-E^{\mathrm{PS}}_{\mathrm{nloc}} =
-\sum_{\mathbf{k}}
-\sum_{i}
-w_{\mathbf{k}}
-f_{i\mathbf{k}}
-\int_{\Omega}\,
-\psi^{*}_{i\mathbf{k}}(\mathbf{r})
-\left[
-\sum_{I}\sum_{l=0}^{l_{\mathrm{max}}}
-V^{\mathrm{PS}}_{l}(\mathbf{r}-\mathbf{R}_{I},\mathbf{r}'-\mathbf{R}_{I})
-\right]
-\psi_{i\mathbf{k}}(\mathbf{r})
-\,\mathrm{d}\mathbf{r}.
-\end{equation}
+
+\section{Self-consistent field}
+
+Mixing etc
+
+Density vs potential mix
+
+
+\section{Direct minimization}
 
 
 \appendix

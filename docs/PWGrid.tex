@@ -1,0 +1,108 @@
+\section{Plane wave basis set, real space grid, and k-points}
+
+The type \jlinline{PWGrid} wraps various variables related to plane wave basis
+set. This has two fields of type \jlinline{GVectors}
+and \jlinline{GVectorsW} for storing information about $\mathbf{G}$-vectors
+that are used in potential and wave functions, respectively.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\node[mybox] (box) {%
+\begin{minipage}{0.6\textwidth}%
+\begin{minted}{julia}
+struct PWGrid
+    ecutwfc::Float64
+    ecutrho::Float64
+    Ns::Tuple{Int64,Int64,Int64}
+    LatVecs::Array{Float64,2}
+    RecVecs::Array{Float64,2}
+    CellVolume::Float64
+    r::Array{Float64,2}
+    gvec::GVectors
+    gvecw::GVectorsW
+    planfw
+    planbw
+end
+\end{minted}
+\end{minipage}
+};
+\node[fancytitle, right=10pt] at (box.north west) {\jlinline{PWGrid} struct definition};
+\end{tikzpicture}
+\caption{Definition of \jlinline{PWGrid}. The type annotation of \jlinline{planfw} and \jlinline{planbw} is
+omitted because they are too long.}
+\end{figure}
+
+The $\mathbf{G}$-Gvectors can be defined as:
+\begin{equation}
+\mathbf{G} = n_1 \mathbf{b}_1 + n_2 \mathbf{b}_2 + n_3 \mathbf{b}_3
+\end{equation}
+where $n_1, n_2, n_3$ are integer numbers and
+$\mathbf{b}_1, \mathbf{b}_2, \mathbf{b}_3$ are three vectors describing
+unit cell of reciprocal lattice or \textit{unit reciprocal lattice vectors}.
+
+\begin{equation}
+\mathbf{b}_1 = 2\pi\frac{\mathbf{a}_{2} \times \mathbf{a}_{3}}{\Omega}
+\end{equation}
+
+A periodic function
+\begin{equation}
+f(\mathbf{r}) = f(\mathbf{r}+\mathbf{L}),\,\,\,
+\mathbf{L} = n_{1}a_{1} + n_{2}a_{2} + n_{3}a_{3}
+\end{equation}
+can be expanded using plane wave basis basis functions as:
+\begin{equation}
+f(\mathbf{r}) = \frac{1}{\sqrt{\Omega}}\sum_{\mathbf{G}}
+C_{\mathbf{G}} \exp(\imath \mathbf{G} \cdot \mathbf{r})
+\end{equation}
+where $C_{\mathbf{G}}$ are expansion coefficients. This sum is usually truncated
+at a certain maximum value of $\mathbf{G}$-vector, $\mathbf{G}_{\mathrm{max}}$.
+
+Kohn-Sham wave function:
+\begin{equation}
+\psi_{i,\mathbf{k}}(\mathbf{r}) = u_{i,\mathbf{k}}(\mathbf{r}) \exp\left[ \imath \mathbf{k} \cdot \mathbf{r} \right]
+\end{equation}
+where $u_{i,\mathbf{k}}(\mathbf{r}) = u_{i,\mathbf{k}}(\mathbf{r}+\mathbf{L})$
+
+Using plane wave expansion:
+\begin{equation}
+u_{i,\mathbf{k}}(\mathbf{r}) =
+\frac{1}{\sqrt{\Omega}}\sum_{\mathbf{G}} C_{i,\mathbf{k},\mathbf{G}} \exp(\imath \mathbf{G} \cdot \mathbf{r}),
+\end{equation}
+%
+we have:
+\begin{equation}
+\psi_{i,\mathbf{k}}(\mathbf{r}) =
+\frac{1}{\sqrt{\Omega}}\sum_{\mathbf{G}} C_{i,\mathbf{G+\mathbf{k}}}
+\exp\left[ \imath (\mathbf{G}+\mathbf{k}) \cdot \mathbf{r} \right]
+\end{equation}
+
+
+
+An instance of \jlinline{PWGrid} can be initialized by using its constructor
+which has the following signature:
+\begin{juliacode}
+function PWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2};
+    kpoints=nothing, Ns_=(0,0,0) )
+\end{juliacode}
+There are two mandatory arguments: \jlinline{ecutwfc} and \jlinline{LatVecs}.
+\jlinline{ecutwf} is cutoff energy for kinetic energy (in Hartree) and
+\jlinline{LatVecs} is usually correspond to the one used in an
+instance of \jlinline{Atoms}.
+
+Real space grid points:
+$$
+\mathbf{r} = \frac{i}{N_{s1}}\mathbf{a}_{1} + \frac{j}{N_{s2}}\mathbf{a}_{2} +
+\frac{k}{N_{s3}}\mathbf{a}_{3}
+$$
+
+$i = 0,1,\ldots,N_{s1}-1$
+
+$j = 0,1,\ldots,N_{s2}-1$
+
+$k = 0,1,\ldots,N_{s3}-1$
+
+FFT
+
+
+operators op nabla op nabla 2
