@@ -5,45 +5,32 @@ set. This has two fields of type \jlinline{GVectors}
 and \jlinline{GVectorsW} for storing information about $\mathbf{G}$-vectors
 that are used in potential and wave functions, respectively.
 
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}
-\node[mybox] (box) {%
-\begin{minipage}{0.6\textwidth}%
-\begin{minted}{julia}
-struct PWGrid
-    ecutwfc::Float64
-    ecutrho::Float64
-    Ns::Tuple{Int64,Int64,Int64}
-    LatVecs::Array{Float64,2}
-    RecVecs::Array{Float64,2}
-    CellVolume::Float64
-    r::Array{Float64,2}
-    gvec::GVectors
-    gvecw::GVectorsW
-    planfw
-    planbw
-end
-\end{minted}
-\end{minipage}
-};
-\node[fancytitle, right=10pt] at (box.north west) {\jlinline{PWGrid} struct definition};
-\end{tikzpicture}
-\caption{Definition of \jlinline{PWGrid}. The type annotation of \jlinline{planfw} and \jlinline{planbw} is
-omitted because they are too long.}
-\end{figure}
+\input{images/PWGrid_struct}
 
-The $\mathbf{G}$-Gvectors can be defined as:
+We can define grid points over unit cell as:
+$$
+\mathbf{r} = \frac{i}{N_{s1}}\mathbf{a}_{1} + \frac{j}{N_{s2}}\mathbf{a}_{2} +
+\frac{k}{N_{s3}}\mathbf{a}_{3}
+$$
+where $i = 0,1,\ldots,N_{s1}-1$, $j = 0,1,\ldots,N_{s2}-1$, $k = 0,1,\ldots,N_{s3}-1$
+
+\input{images/GVectors_struct}
+
+\input{images/GVectorsW_struct}
+
+The $\mathbf{G}$-vectors can be defined as:
 \begin{equation}
 \mathbf{G} = n_1 \mathbf{b}_1 + n_2 \mathbf{b}_2 + n_3 \mathbf{b}_3
 \end{equation}
 where $n_1, n_2, n_3$ are integer numbers and
 $\mathbf{b}_1, \mathbf{b}_2, \mathbf{b}_3$ are three vectors describing
 unit cell of reciprocal lattice or \textit{unit reciprocal lattice vectors}.
-
-\begin{equation}
-\mathbf{b}_1 = 2\pi\frac{\mathbf{a}_{2} \times \mathbf{a}_{3}}{\Omega}
-\end{equation}
+They satisfy the following relations:
+\begin{align}
+\mathbf{a}_1 = 2\pi\frac{\mathbf{a}_{2} \times \mathbf{a}_{3}}{\Omega}
+\mathbf{a}_2 = 2\pi\frac{\mathbf{a}_{3} \times \mathbf{a}_{1}}{\Omega}
+\mathbf{a}_3 = 2\pi\frac{\mathbf{a}_{1} \times \mathbf{a}_{2}}{\Omega}
+\end{align}
 
 A periodic function
 \begin{equation}
@@ -77,7 +64,56 @@ we have:
 \exp\left[ \imath (\mathbf{G}+\mathbf{k}) \cdot \mathbf{r} \right]
 \end{equation}
 
+With this expression we can expand electronic density in plane wave basis:
+\begin{align*}
+\rho(\mathbf{r}) & = \sum_{i} \int f_{i,\mathbf{k}}
+\psi^{*}_{i,\mathbf{k}}(\mathbf{r}) \psi_{i,\mathbf{k}}(\mathbf{r})
+\,\mathrm{d}\mathbf{k} \\
+%
+& = \frac{1}{\Omega} \sum_{i} \int f_{i,\mathbf{k}}
+\left(
+\sum_{\mathbf{G}'} C_{i,\mathbf{G'+\mathbf{k}}}
+\exp\left[ -\imath (\mathbf{G}'+\mathbf{k}) \cdot \mathbf{r} \right]
+\right)
+%
+\left(
+\sum_{\mathbf{G}} C_{i,\mathbf{G+\mathbf{k}}}
+\exp\left[ \imath (\mathbf{G}+\mathbf{k}) \cdot \mathbf{r} \right]
+\right)
+\,\mathrm{d}\mathbf{k} \\
+%
+& = \frac{1}{\Omega} \sum_{i} \int f_{i,\mathbf{k}}
+\sum_{\mathbf{G}} \sum_{\mathbf{G}'}
+C_{i,\mathbf{G+\mathbf{k}}} C_{i,\mathbf{G'+\mathbf{k}}}
+\exp\left[ \imath (\mathbf{G}-\mathbf{G}') \cdot \mathbf{r} \right]
+\,\mathrm{d}\mathbf{k} \\
+%
+& = \frac{1}{\Omega} \sum_{\mathbf{G}''}
+C_{\mathbf{G}''} \exp\left[ \imath \mathbf{G}'' \cdot \mathbf{r} \right]
+\,\mathrm{d}\mathbf{k}
+\end{align*}
+The sum over $\mathbf{G}''$ extends twice the range over the range needed
+by the wave function expansion.
 
+For wave function expansion we use plane wave expansion over $\mathbf{G}$
+vectors defined by:
+\begin{equation}
+\frac{1}{2} \left| \mathbf{G} + \mathbf{k} \right|^2 \leq E_{\mathrm{cut}}
+\label{eq:ecutwfc_def}
+\end{equation}
+where $E_{\mathrm{cut}}$ is a given cutoff energy which corresponds
+to \jlinline{ecutwfc} field of \jlinline{PWGrid}.
+For electronic density (and potentials) we have:
+\begin{equation}
+\frac{1}{2} \mathbf{G}^2 \leq 4 E_{\mathrm{cut}}
+\label{eq:ecutrho_def}
+\end{equation}
+The value of $4 E_{\mathrm{cut}}$ corresponds to \jlinline{ecutrho} field of
+of \jlinline{PWGrid}.
+
+In the implementation, we first generate a set of $\mathbf{G}$-vectors which satify
+Equation \eqref{eq:ecutrho_def} and derives several subsets from it which
+satisfy Equation \eqref{ecutwfc_def} for a given $\mathbf{k}$-points.
 
 An instance of \jlinline{PWGrid} can be initialized by using its constructor
 which has the following signature:
@@ -89,18 +125,6 @@ There are two mandatory arguments: \jlinline{ecutwfc} and \jlinline{LatVecs}.
 \jlinline{ecutwf} is cutoff energy for kinetic energy (in Hartree) and
 \jlinline{LatVecs} is usually correspond to the one used in an
 instance of \jlinline{Atoms}.
-
-Real space grid points:
-$$
-\mathbf{r} = \frac{i}{N_{s1}}\mathbf{a}_{1} + \frac{j}{N_{s2}}\mathbf{a}_{2} +
-\frac{k}{N_{s3}}\mathbf{a}_{3}
-$$
-
-$i = 0,1,\ldots,N_{s1}-1$
-
-$j = 0,1,\ldots,N_{s2}-1$
-
-$k = 0,1,\ldots,N_{s3}-1$
 
 FFT
 

@@ -1,19 +1,5 @@
-\documentclass{article}
-\usepackage{tikz}
-\usetikzlibrary{shapes.geometric}
-
-\tikzstyle{mybox} = [draw=blue, fill=green!5, very thick, rectangle,
-  rounded corners, inner sep=10pt, inner ysep=20pt]
-
-\tikzstyle{fancytitle} = [fill=blue, text=white]
-
-\usepackage{minted}
-\newcommand{\jlinline}[1]{\mintinline{julia}{#1}}
-
-\begin{document}
-
-\thispagestyle{empty}
-
+\begin{figure}[H]
+\centering
 \begin{tikzpicture}
 \node[mybox] (box) {%
 \begin{minipage}{0.6\textwidth}%
@@ -34,9 +20,8 @@ end
 \end{minted}
 \end{minipage}
 };
-
 \node[fancytitle, right=10pt] at (box.north west) {\jlinline{PWGrid} struct definition};
-
 \end{tikzpicture}
-
-\end{document}
+\caption{Definition of \jlinline{PWGrid}. The type annotation of \jlinline{planfw} and \jlinline{planbw} is
+omitted because they are too long.}
+\end{figure}
