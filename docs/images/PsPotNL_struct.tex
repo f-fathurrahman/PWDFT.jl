@@ -1,0 +1,18 @@
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\node[mybox] (box) {%
+\begin{minipage}{0.6\textwidth}%
+\begin{minted}{julia}
+struct PsPotNL
+    NbetaNL::Int64
+    prj2beta::Array{Int64,4}
+    betaNL::Array{ComplexF64,3}
+end
+\end{minted}
+\end{minipage}
+};
+\node[fancytitle, right=10pt] at (box.north west) {\jlinline{PsPotNL} struct definition};
+\end{tikzpicture}
+\caption{Definition of \jlinline{PsPotNL}.}
+\end{figure}

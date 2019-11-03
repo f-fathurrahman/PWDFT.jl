@@ -1,0 +1,19 @@
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\node[mybox] (box) {%
+\begin{minipage}{0.6\textwidth}%
+\begin{minted}{julia}
+mutable struct Potentials
+    Ps_loc::Array{Float64,1}
+    Hartree::Array{Float64,1}
+    XC::Array{Float64,2}
+    Total::Array{Float64,2}
+end
+\end{minted}
+\end{minipage}
+};
+\node[fancytitle, right=10pt] at (box.north west) {\jlinline{Potentials} struct definition};
+\end{tikzpicture}
+\caption{Definition of \jlinline{Potentials}.}
+\end{figure}
