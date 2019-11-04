@@ -1,0 +1,25 @@
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\node[mybox] (box) {%
+\begin{minipage}{0.6\textwidth}%
+\begin{minted}{julia}
+struct PsPot_GTH
+    pspfile::String
+    atsymb::String
+    zval::Int64
+    rlocal::Float64
+    rc::Array{Float64,1}
+    c::Array{Float64,1}
+    h::Array{Float64,3}
+    lmax::Int64
+    Nproj_l::Array{Int64,1}
+    rcut_NL::Array{Float64,1}
+end
+\end{minted}
+\end{minipage}
+};
+\node[fancytitle, right=10pt] at (box.north west) {\jlinline{PsPot_GTH} struct definition};
+\end{tikzpicture}
+\caption{Definition of \jlinline{PsPot_GTH}.}
+\end{figure}

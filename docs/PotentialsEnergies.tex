@@ -1,7 +1,26 @@
 \section{Potentials and energies}
 
+In KSDFT approach \cite{Hohenberg1964,Kohn1965}, total energy per unit cell system
+$E^{\mathrm{KS}}_{\mathrm{total}}$ can be written as
+\begin{equation}
+E^{\mathrm{KS}}_{\mathrm{total}} =
+E_{\mathrm{kin}} + E_{\mathrm{ele-nuc}} +
+E_{\mathrm{Ha}} + E_{\mathrm{xc}} + E_{\mathrm{nuc-nuc}}
+\label{eq:E_KS_total}
+\end{equation}
+
+Kohn-Sham equations:
+\begin{equation}
+H_{\mathrm{KS}} \psi_{i\mathbf{k}}(\mathbf{r}) =
+\epsilon_{i\mathbf{k}} \psi_{i\mathbf{k}}(\mathbf{r})
+\end{equation}
+
 \input{images/Potentials_struct}
 
 \input{images/Energies_struct}
 
 Calculation of electron density and total energy
+
+Using Libxc.jl
+
+Equations for E xc and V xc (LDA and GGA, nonspin and spinpol cases)
