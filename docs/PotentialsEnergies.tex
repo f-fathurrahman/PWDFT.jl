@@ -21,6 +21,101 @@ H_{\mathrm{KS}} \psi_{i\mathbf{k}}(\mathbf{r}) =
 
 Calculation of electron density and total energy
 
-Using Libxc.jl
+\subsection{XC energy and potential}
 
-Equations for E xc and V xc (LDA and GGA, nonspin and spinpol cases)
+\textsf{PWDFT.jl} uses \textsf{Libxc.jl}\cite{Libxc.jl}, a Julia wrapper to
+\textsf{Libxc}\cite{Marques2012,Lehtola2018}, to calculate exchange correlation
+energy and potentials.
+
+For LDA we have:
+\begin{align}
+E_{\mathrm{xc}}\left[\rho_{\sigma}\right] & = \int \epsilon^{\mathrm{HEG}}_{\mathrm{xc}}
+\left[ \rho_{\sigma}(\mathbf{r}) \right]
+\rho_{\mathrm{tot}}(\mathbf{r})\, \mathrm{d}\mathbf{r} \\
+& = \int \left\{
+\epsilon^{\mathrm{HEG}}_{\mathrm{x}} \left[ \rho_{\sigma}(\mathbf{r}) \right] +
+\epsilon^{\mathrm{HEG}}_{\mathrm{c}} \left[ \rho_{\sigma}(\mathbf{r}) \right]
+\right\}
+\rho(\mathbf{r})\, \mathrm{d}\mathbf{r}
+\end{align}
+
+\begin{equation}
+\delta E_{\mathrm{xc}}\left[\rho_{\sigma}\right] =
+\sum_{\sigma} \int
+\left(
+\epsilon^{\mathrm{HEG}}_{\mathrm{xc}} +
+\rho_{\mathrm{tot}} \frac{\partial}{\partial \rho_{\sigma}} \epsilon^{\mathrm{HEG}}_{\mathrm{xc}}
+\right)
+\, \mathrm{d}\mathbf{r}\,\delta \rho_{\sigma}
+\end{equation}
+
+
+Implementation in \textsf{PWDFT.jl} using Libxc
+
+\begin{juliacode}
+function calc_epsxc_VWN( Rhoe::Array{Float64,1} )
+    Npoints = size(Rhoe)[1]
+    Nspin = 1
+    eps_x = zeros(Float64,Npoints)
+    eps_c = zeros(Float64,Npoints)
+
+    ptr = Libxc.xc_func_alloc()
+
+    # exchange part
+    Libxc.xc_func_init(ptr, Libxc.LDA_X, Nspin)
+    Libxc.xc_lda_exc!(ptr, Npoints, Rhoe, eps_x)
+    Libxc.xc_func_end(ptr)
+
+    # correlation part
+    Libxc.xc_func_init(ptr, Libxc.LDA_C_VWN, Nspin)
+    Libxc.xc_lda_exc!(ptr, Npoints, Rhoe, eps_c)
+    Libxc.xc_func_end(ptr)
+
+    Libxc.xc_func_free(ptr)
+
+    return eps_x + eps_c
+end
+\end{juliacode}
+
+
+\begin{juliacode}
+    function calc_epsxc_VWN( Rhoe::Array{Float64,2} )
+
+        Nspin = size(Rhoe)[2]
+        Npoints = size(Rhoe)[1]
+
+        if Nspin == 1
+            return calc_epsxc_VWN( Rhoe[:,1] )
+        end
+
+        # Do the transpose manually
+        Rhoe_tmp = zeros(2*Npoints)
+        ipp = 0
+        for ip = 1:2:2*Npoints
+            ipp = ipp + 1
+            Rhoe_tmp[ip] = Rhoe[ipp,1]
+            Rhoe_tmp[ip+1] = Rhoe[ipp,2]
+        end
+
+
+        eps_x = zeros(Float64,Npoints)
+        eps_c = zeros(Float64,Npoints)
+
+        ptr = Libxc.xc_func_alloc()
+        # exchange part
+        Libxc.xc_func_init(ptr, Libxc.LDA_X, Nspin)
+        Libxc.xc_lda_exc!(ptr, Npoints, Rhoe_tmp, eps_x)
+        Libxc.xc_func_end(ptr)
+
+        #
+        # correlation part
+        Libxc.xc_func_init(ptr, Libxc.LDA_C_VWN, Nspin)
+        Libxc.xc_lda_exc!(ptr, Npoints, Rhoe_tmp, eps_c)
+        Libxc.xc_func_end(ptr)
+
+        #
+        Libxc.xc_func_free(ptr)
+
+        return eps_x + eps_c
+    end
+\end{juliacode}
