@@ -1,0 +1,127 @@
+\documentclass[english,9pt]{beamer}
+
+\usepackage{amsmath} % load this before unicode-math
+\usepackage{amssymb}
+%\usepackage{unicode-math}
+
+\usepackage{fontspec}
+\setmonofont{DejaVu Sans Mono}
+%\setmathfont{STIXMath}
+%\setmathfont{TeX Gyre Termes Math}
+
+\usefonttheme[onlymath]{serif}
+
+\setlength{\parskip}{\smallskipamount}
+\setlength{\parindent}{0pt}
+
+\setbeamersize{text margin left=5pt, text margin right=5pt}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{braket}
+
+\usepackage{minted}
+\newminted{julia}{breaklines,fontsize=\scriptsize,texcomments=true}
+\newminted{python}{breaklines,fontsize=\scriptsize,texcomments=true}
+\newminted{bash}{breaklines,fontsize=\scriptsize,texcomments=true}
+\newminted{text}{breaklines,fontsize=\scriptsize,texcomments=true}
+
+\newcommand{\txtinline}[1]{\mintinline[fontsize=\scriptsize]{text}{#1}}
+\newcommand{\jlinline}[1]{\mintinline[fontsize=\scriptsize]{julia}{#1}}
+
+\definecolor{mintedbg}{rgb}{0.95,0.95,0.95}
+\usepackage{mdframed}
+
+\BeforeBeginEnvironment{minted}{\begin{mdframed}[backgroundcolor=mintedbg]}
+\AfterEndEnvironment{minted}{\end{mdframed}}
+
+\usepackage{braket}
+
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{3}
+
+\makeatletter
+
+ \newcommand\makebeamertitle{\frame{\maketitle}}%
+ % (ERT) argument for the TOC
+ \AtBeginDocument{%
+   \let\origtableofcontents=\tableofcontents
+   \def\tableofcontents{\@ifnextchar[{\origtableofcontents}{\gobbletableofcontents}}
+   \def\gobbletableofcontents#1{\origtableofcontents}
+ }
+
+\makeatother
+
+\usepackage{babel}
+
+\begin{document}
+
+
+\title{Emin Haux Notes}
+\author{Fadjar Fathurrahman}
+\institute{
+Engineering Physics Department \\
+Research Center for Nanoscience and Nanotechnology \\
+Institut Teknologi Bandung
+}
+\date{}
+
+\frame{\titlepage}
+
+\begin{frame}
+\frametitle{Important equations}
+
+\begin{equation}
+E\left[f_{n}, \psi_{n} \right] = \sum_{n} f_{n}
+\Braket{\psi_{n} | -\frac{1}{2}\nabla^2 + V_{\mathrm{ext}} | \psi_{n} } +
+\frac{1}{2}\int \frac{\rho(\mathbf{r}) \rho(\mathbf{r}') }{\left| \mathbf{r} - \mathbf{r}' \right|}
+\, \mathrm{d}\mathbf{r} \, \mathrm{d}\mathbf{r}' +
+E_{\mathrm{XC}}\left[\rho(\mathbf{r})\right]
+\end{equation}
+
+\begin{equation}
+F\left[f_{n},\psi_{n}\right] = E\left[f_{n},\psi_{n}\right] - T\,S\left[f_{n}\right]
+\end{equation}
+
+\begin{equation}
+S\left[f_{n}\right] = -k\sum_{n} f_{n} \mathrm{ln} f_{n} +
+(1 - f_{n}) \mathrm{ln}\left(1 - f_{n} \right)
+\end{equation}
+
+\begin{equation}
+L\left[ f_{n}, \psi_{n} \right] = F\left[ f_{n}, \psi_{n} \right] -
+\sum_{nn'} \lambda_{nn'} \left( \braket{ \psi_{n} | \psi_{n}} - \delta_{nn'} \right) -
+\mu\left( \sum_{n} f_{n} -N \right)
+\end{equation}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Important equations}
+
+\begin{equation}
+\frac{\partial L}{\partial \Bra{\psi_{n}}} = f_{n} H \Ket{\psi_{n}}
+- \sum_{n'} \lambda_{nn'} \ket{\psi_{n'}}
+\end{equation}
+
+\begin{equation}
+\frac{\partial L}{\partial f_{n}} = \Braket{\psi_{n} | H | \psi_{n} } - \epsilon_{n}
+\end{equation}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Modified Lagrangian}
+
+\begin{equation}
+\tilde{L} \left[ \eta_{mm'}, \psi_{m}\right ] :=
+L\left[
+\sum_{m} U_{mn} \left[\eta\right] \psi_{m}, f_{n}\left[\eta\right]
+\right]
+\end{equation}
+
+\end{frame}
+
+\end{document}
