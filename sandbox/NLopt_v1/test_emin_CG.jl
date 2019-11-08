@@ -81,7 +81,8 @@ function calc_alpha_CG!( α_t, g, gt, d, α )
     for i = 1:length(g)
         denum = real(sum(conj(g[i]-gt[i]).*d[i]))
         if denum != 0.0
-            α[i] = abs( α_t*real(sum(conj(g[i]).*d[i]))/denum )
+            #α[i] = abs( α_t*real(sum(conj(g[i]).*d[i]))/denum )
+            α[i] = α_t*real(sum(conj(g[i]).*d[i]))/denum
         else
             α[i] = 0.0
         end
@@ -111,7 +112,7 @@ function main_CG()
     #
     update!(Ham, Rhoe)
     # eigenvalues are not needed for this case
-    _ = diag_LOBPCG!( Ham, psiks, verbose=true, NiterMax=20 )
+    _ = diag_LOBPCG!( Ham, psiks, verbose=false, NiterMax=20 )
 
 
     g = zeros_BlochWavefunc( Ham )
@@ -129,12 +130,12 @@ function main_CG()
     Ham.energies.NN = calc_E_NN( Ham.atoms )
     Ham.energies.PspCore = calc_PspCore_ene( Ham.atoms, Ham.pspots )
 
-    α_t = 3e-5
+    α_t = 1.0
     etot_conv_thr = 1e-6
 
     Nconverges = 0
 
-    for iter = 1:50
+    for iter = 1:20
 
         grad_obj_function!( Ham, psiks, g )
         precond_grad!( Ham, g, Kg )
@@ -145,11 +146,11 @@ function main_CG()
         d = -Kg + β .* d_old
 
         # line minimization
-        psic = psiks + α_t*d  # trial wavefunc
-        grad_obj_function!( Ham, psic, gt )
-        calc_alpha_CG!( α_t, g, gt, d, α )
+        #psic = psiks + α_t*d  # trial wavefunc
+        #grad_obj_function!( Ham, psic, gt )
+        #calc_alpha_CG!( α_t, g, gt, d, α )
 
-        #quadratic_line_minimizer!(Ham, psiks, d, Etot_old, g, α_t, α)
+        α_t = quadratic_line_minimizer!(Ham, psiks, d, Etot_old, g, α_t, α)
 
         println("α = ", α)
 
