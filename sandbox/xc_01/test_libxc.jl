@@ -49,40 +49,29 @@ function test_LDA_VWN()
     @printf("Integrated rhoe = %18.10f\n", sum(Rhoe)*dVol)
 
     Vxc = calc_Vxc_VWN( Rhoe )
-    @printf("sum Vxc = %18.10f\n", sum(Vxc))
 
     epsxc = calc_epsxc_VWN( Rhoe )
     E_xc = dot( Rhoe, epsxc ) * dVol
-    @printf("E_xc v1 = %18.10f\n", E_xc)
 
     etxc = 0.0
     third = 1.0/3.0
     pi34 = 0.6203504908994  # pi34=(3/4pi)^(1/3)
+    
+    Vxc_v2 = zeros(Npoints)
     for ip in 1:Npoints
         rs = pi34/Rhoe[ip]^third
-        ss_x, _ = XC_x_slater( rs )
-        ss_c, _ = XC_c_vwn( rs )
+        ss_x, vx = XC_x_slater( rs )
+        ss_c, vc = XC_c_vwn( rs )
         etxc = etxc + (ss_x + ss_c)*Rhoe[ip]
+        Vxc_v2[ip] = vx + vc
     end
+
+
+    @printf("E_xc v1 = %18.10f\n", E_xc)
     @printf("E_xc v2 = %18.10f\n", etxc*dVol)
-
-    psiks = rand_BlochWavefunc(Ham)
-    update!( Ham, Rhoe )
-
-    Nspin = Ham.electrons.Nspin
-    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
-    Ngw = Ham.pw.gvecw.Ngw
-    Nstates = Ham.electrons.Nstates
-
-    for ispin = 1:Nspin, ik = 1:Nkpt
-        Ham.ik = ik
-        Ham.ispin = ispin
-        ikspin = ik + (ispin-1)*Nkpt
-        psiks[ikspin] = ones(Ngw[ik], Nstates)/Ngw[ik]
-        psiks[ikspin] = op_H(Ham, psiks[ikspin])
-        ss = sum(psiks[ikspin])
-        @printf("sum psiks[ikspin] = [%18.10f,%18.10f]\n", real(ss), imag(ss))
-    end
+    
+    @printf("sum Vxc v1 = %18.10f\n", sum(Vxc))
+    @printf("sum Vxc v2 = %18.10f\n", sum(Vxc_v2))
 
 end
 
@@ -107,40 +96,43 @@ function test_LDA_VWN_spinpol()
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3], Nspin=2 )
 
     pw = Ham.pw
-    dVol = pw.CellVolume/prod(pw.Ns)
+    Npoints = prod(pw.Ns)
+    dVol = pw.CellVolume/Npoints
 
-    Rhoe = guess_rhoe_atomic(Ham, starting_magnetization=[0.0])
+    Rhoe = guess_rhoe_atomic(Ham, starting_magnetization=[0.1])
     @printf("Integrated rhoe = %18.10f\n", sum(Rhoe)*dVol)
 
     Vxc = calc_Vxc_VWN( Rhoe )
-    for ispin = 1:2
-        @printf("sum Vxc = %18.10f\n", sum(Vxc[:,ispin]))
-    end
 
     epsxc = calc_epsxc_VWN( Rhoe )
     Rhoe_total = Rhoe[:,1] + Rhoe[:,2]
     E_xc = dot( Rhoe_total, epsxc ) * dVol
-    @printf("E_xc = %18.10f\n", E_xc)
 
-    psiks = rand_BlochWavefunc(Ham)
-    update!( Ham, Rhoe )
+    etxc = 0.0
+    third = 1.0/3.0
+    pi34 = 0.6203504908994  # pi34=(3/4pi)^(1/3) 
+    Vxc_v2 = zeros(Npoints,2)
+    
+    for ip in 1:Npoints    
+        ρ = Rhoe[ip,1] + Rhoe[ip,2]
+        ζ = (Rhoe[ip,1] - Rhoe[ip,2])/ρ
+        rs = pi34/ρ^third
 
-    Nspin = Ham.electrons.Nspin
-    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
-    Ngw = Ham.pw.gvecw.Ngw
-    Nstates = Ham.electrons.Nstates
+        ss_x, vxup, vxdn = XC_x_slater_spin( ρ, ζ )
+        ss_c, vcup, vcdn = XC_c_vwn_spin( rs, ζ )
+        
+        etxc = etxc + (ss_x + ss_c)*ρ
 
-    for ispin = 1:Nspin
-    for ik = 1:Nkpt
-        Ham.ik = ik
-        Ham.ispin = ispin
-        ikspin = ik + (ispin-1)*Nkpt
-        psiks[ikspin] = ones(Ngw[ik], Nstates)/Ngw[ik]
-        #
-        psiks[ikspin] = op_H(Ham, psiks[ikspin])
-        ss = sum(psiks[ikspin])
-        @printf("sum psiks[ikspin] = [%18.10f,%18.10f]\n", real(ss), imag(ss))
+        Vxc_v2[ip,1] = vxup + vcup
+        Vxc_v2[ip,2] = vxdn + vcdn
     end
+
+    @printf("E_xc v1 = %18.10f\n", E_xc)
+    @printf("E_xc v2 = %18.10f\n", etxc*dVol)
+
+    for ispin = 1:2
+        @printf("sum Vxc v1 = %18.10f\n", sum(Vxc[:,ispin]))
+        @printf("sum Vxc v2 = %18.10f\n", sum(Vxc_v2[:,ispin]))        
     end
 
 end
@@ -267,8 +259,8 @@ function test_GGA_PBE_spinpol()
 end
 
 
-test_LDA_VWN()
-#test_LDA_VWN_spinpol()
+#test_LDA_VWN()
+test_LDA_VWN_spinpol()
 #test_GGA_PBE()
 #test_GGA_PBE_spinpol()
 
