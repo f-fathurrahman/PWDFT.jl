@@ -159,6 +159,7 @@ function test_GGA_PBE()
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[1,1,1], xcfunc="PBE" )
 
     pw = Ham.pw
+    Npoints = prod(pw.Ns)
     dVol = pw.CellVolume/prod(pw.Ns)
 
     Rhoe = guess_rhoe_atomic(Ham)
@@ -167,29 +168,42 @@ function test_GGA_PBE()
     Vxc = calc_Vxc_PBE( pw, Rhoe )
 
     epsxc = calc_epsxc_PBE( pw, Rhoe )
-    E_xc = dot( Rhoe, epsxc ) * dVol
-    @printf("E_xc = %18.10f\n", E_xc)
 
-    psiks = rand_BlochWavefunc(Ham)
-    update!( Ham, Rhoe )
-
-    Nspin = Ham.electrons.Nspin
-    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
-    Ngw = Ham.pw.gvecw.Ngw
-    Nstates = Ham.electrons.Nstates
-
-    for ispin = 1:Nspin
-        for ik = 1:Nkpt
-            Ham.ik = ik
-            Ham.ispin = ispin
-            ikspin = ik + (ispin-1)*Nkpt
-            psiks[ikspin] = ones(Ngw[ik], Nstates)/Ngw[ik]
-            #
-            psiks[ikspin] = op_V_loc(Ham, psiks[ikspin])
-            ss = sum(psiks[ikspin])
-            @printf("sum psiks[ikspin] = [%18.10f,%18.10f]\n", real(ss), imag(ss))
-        end
+    etxc = 0.0
+    third = 1.0/3.0
+    pi34 = 0.6203504908994  # pi34=(3/4pi)^(1/3)
+    
+    Vxc_v2 = zeros(Npoints)
+    # calculate gRhoe2
+    gRhoe = op_nabla( pw, Rhoe[:,1] )
+    gRhoe2 = zeros( Float64, Npoints )
+    for ip = 1:Npoints
+        gRhoe2[ip] = dot( gRhoe[:,ip], gRhoe[:,ip] )
     end
+
+    etgxc = 0.0
+    for ip in 1:Npoints
+        rs = pi34/Rhoe[ip]^third
+        
+        ss_x, vx = XC_x_slater( rs )
+        gss_x, v1x, v2x = XC_x_pbe( Rhoe[ip], gRhoe2[ip] )
+        
+        ss_c, vc = XC_c_pw( rs )
+        gss_c, v1c, v2c = XC_c_pbe( Rhoe[ip], gRhoe2[ip] )
+
+        etxc = etxc + ( ss_x + ss_c )*Rhoe[ip]
+        etgxc = etgxc + ( gss_x + gss_c )
+        
+        Vxc_v2[ip] = vx + vc
+    end
+
+    println("etgxc = ", etgxc)
+    println("etxc  = ", etxc)
+
+    E_xc    = dot( Rhoe, epsxc ) * dVol
+    E_xc_v2 = (etxc + etgxc)*dVol
+    @printf("E_xc v1 = %18.10f\n", E_xc)
+    @printf("E_xc v2 = %18.10f\n", E_xc_v2)
 
 end
 
@@ -260,8 +274,8 @@ end
 
 
 #test_LDA_VWN()
-test_LDA_VWN_spinpol()
-#test_GGA_PBE()
+#test_LDA_VWN_spinpol()
+test_GGA_PBE()
 #test_GGA_PBE_spinpol()
 
 #test_spinpol(xc="VWN", Nspin=1)

@@ -2,6 +2,11 @@
 # iflag=1  J.P.Perdew, K.Burke, M.Ernzerhof, PRL 77, 3865 (1996)
 function XC_x_pbe( rho, grho )
 
+    SMALL = 1.e-10
+    if abs( rho ) < SMALL
+        return 0.0, 0.0, 0.0
+    end
+
     third = 1.0/3.0
     k = 0.804
     mu = 0.2195149727645171
