@@ -15,8 +15,8 @@ function XC_c_pw( rs )
     om = 2.0 * a * (b1 * rs12 + b2 * rs + b3 * rs32 + b4 * rs2)
     dom = 2.0 * a * (0.5 * b1 * rs12 + b2 * rs + 1.5 * b3 * rs32 + 2.0 * b4 * rs2)
     olog = log(1.0 + 1.0/om)
-    ec = - 2.0 * a * (1.0 + a1 * rs) * olog
-    vc = - 2.0*a*(1.0 + 2.0/3.0 * a1 * rs) * olog - 2.0/3.0 * a * (1.0 + a1*rs) * dom/ (om * (om + 1.0) )
+    ec = -2.0 * a * (1.0 + a1 * rs) * olog
+    vc = -2.0*a*(1.0 + 2.0/3.0 * a1 * rs) * olog - 2.0/3.0 * a * (1.0 + a1*rs) * dom/ (om * (om + 1.0) )
 
 
     return ec, vc
