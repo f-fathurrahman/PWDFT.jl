@@ -2,11 +2,6 @@
 # iflag=1  J.P.Perdew, K.Burke, M.Ernzerhof, PRL 77, 3865 (1996)
 function XC_x_pbe( rho, grho )
 
-    SMALL = 1.e-10
-    if abs( rho ) < SMALL
-        return 0.0, 0.0, 0.0
-    end
-
     third = 1.0/3.0
     k = 0.804
     mu = 0.2195149727645171
@@ -19,7 +14,7 @@ function XC_x_pbe( rho, grho )
     dsg = 0.5/kf
     s1 = agrho*dsg / rho
     s2 = s1 * s1
-    ds = - c5 * s1
+    ds = -c5 * s1
     
     # Energy
     f1 = s2 * mu/k

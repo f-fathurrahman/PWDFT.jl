@@ -1,6 +1,7 @@
 using LinearAlgebra
 using Random
 using Printf
+using Libxc
 using PWDFT
 
 import PWDFT: guess_rhoe_atomic
@@ -8,6 +9,8 @@ import PWDFT: guess_rhoe_atomic
 const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
 const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
 const DIR_STRUCTURES = joinpath(DIR_PWDFT, "structures")
+
+include("Libxc_GGA.jl")
 
 include("XC_x_slater.jl")
 include("XC_c_pw.jl")
@@ -182,7 +185,11 @@ function test_GGA_PBE()
     end
 
     etgxc = 0.0
+    ex_only = 0.0
+    ec_only = 0.0
+    SMALL = 1e-10
     for ip in 1:Npoints
+
         rs = pi34/Rhoe[ip]^third
         
         ss_x, vx = XC_x_slater( rs )
@@ -193,17 +200,38 @@ function test_GGA_PBE()
 
         etxc = etxc + ( ss_x + ss_c )*Rhoe[ip]
         etgxc = etgxc + ( gss_x + gss_c )
-        
+
+        ex_only = ex_only + ss_x*Rhoe[ip] + gss_x
+        ec_only = ec_only + ss_c*Rhoe[ip] + gss_c
+
         Vxc_v2[ip] = vx + vc
+
+        if Rhoe[ip] <= SMALL
+            println("Small Rhoe is encountered: ip = ", ip, " ", Rhoe[ip])
+        end
+
+        if gRhoe2[ip] <= SMALL
+            println("Small gRhoe2 is encountered: ip = ", ip, " ", gRhoe2[ip])
+            @printf("gss_x = %25.15f\n", gss_x)            
+            @printf("gss_c = %25.15f\n", gss_c)
+        end
+
+
     end
 
     println("etgxc = ", etgxc)
     println("etxc  = ", etxc)
 
-    E_xc    = dot( Rhoe, epsxc ) * dVol
-    E_xc_v2 = (etxc + etgxc)*dVol
-    @printf("E_xc v1 = %18.10f\n", E_xc)
-    @printf("E_xc v2 = %18.10f\n", E_xc_v2)
+    @printf("E_xc v1 = %18.10f\n", dot( Rhoe, epsxc ) * dVol)
+    @printf("E_xc v2 = %18.10f\n", (etxc + etgxc)*dVol )
+
+    epsxc = calc_epsxc_GGA( pw, Rhoe[:,1], Libxc.GGA_X_PBE )
+    @printf("E_xc v1 exchange only = %18.10f\n", dot( Rhoe, epsxc ) * dVol)
+    @printf("E_xc v2 exchange only = %18.10f\n", ex_only * dVol)
+
+    epsxc = calc_epsxc_GGA( pw, Rhoe[:,1], Libxc.GGA_C_PBE )
+    @printf("E_xc v1 correlation only = %18.10f\n", dot( Rhoe, epsxc ) * dVol)
+    @printf("E_xc v2 correlation only = %18.10f\n", ec_only * dVol)
 
 end
 
