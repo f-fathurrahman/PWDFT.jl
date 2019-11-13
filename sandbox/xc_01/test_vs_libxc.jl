@@ -158,7 +158,7 @@ function test_GGA_PBE()
         Si  0.25  0.25  0.25
         """, in_bohr=true, LatVecs=gen_lattice_fcc(10.2631))
     pspfiles = [joinpath(DIR_PWDFT, "pseudopotentials", "pbe_gth", "Si-q4.gth")]
-    ecutwfc = 15.0
+    ecutwfc = 30.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[1,1,1], xcfunc="PBE" )
 
     pw = Ham.pw
@@ -190,15 +190,15 @@ function test_GGA_PBE()
     SMALL = 1e-10
     for ip in 1:Npoints
 
-        rs = pi34/Rhoe[ip]^third
+        rs = pi34/Rhoe[ip,1]^third
         
         ss_x, vx = XC_x_slater( rs )
-        gss_x, v1x, v2x = XC_x_pbe( Rhoe[ip], gRhoe2[ip] )
+        gss_x, v1x, v2x = XC_x_pbe( Rhoe[ip,1], gRhoe2[ip] )
         
         ss_c, vc = XC_c_pw( rs )
-        gss_c, v1c, v2c = XC_c_pbe( Rhoe[ip], gRhoe2[ip] )
+        gss_c, v1c, v2c = XC_c_pbe( Rhoe[ip,1], gRhoe2[ip] )
 
-        etxc = etxc + ( ss_x + ss_c )*Rhoe[ip]
+        etxc = etxc + ( ss_x + ss_c )*Rhoe[ip,1]
         etgxc = etgxc + ( gss_x + gss_c )
 
         ex_only = ex_only + ss_x*Rhoe[ip] + gss_x
@@ -207,12 +207,12 @@ function test_GGA_PBE()
         Vxc_v2[ip] = vx + vc
 
         if Rhoe[ip] <= SMALL
-            println("Small Rhoe is encountered: ip = ", ip, " ", Rhoe[ip])
+            println("Small Rhoe is encountered: ip = ", ip, " ", Rhoe[ip,1])
         end
 
         if gRhoe2[ip] <= SMALL
             println("Small gRhoe2 is encountered: ip = ", ip, " ", gRhoe2[ip])
-            @printf("gss_x = %25.15f\n", gss_x)            
+            @printf("gss_x = %25.15f\n", gss_x)
             @printf("gss_c = %25.15f\n", gss_c)
         end
 
