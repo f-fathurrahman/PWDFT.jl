@@ -14,7 +14,27 @@ function calc_epsxc_GGA( pw::PWGrid, Rhoe::Array{Float64,1}, xc_id )
     epsxc = zeros(Float64,Npoints)
 
     ptr = Libxc.xc_func_alloc()
-    # exchange part
+
+    Libxc.xc_func_init(ptr, xc_id, Nspin)
+    Libxc.xc_gga_exc!(ptr, Npoints, Rhoe, gRhoe2, epsxc)
+    Libxc.xc_func_end(ptr)
+
+    Libxc.xc_func_free(ptr)
+
+    return epsxc
+
+end
+
+
+function calc_epsxc_GGA( Rhoe::Array{Float64,1}, gRhoe2::Array{Float64,1}, xc_id )
+
+    Npoints = size(Rhoe)[1]
+    Nspin = 1
+
+    epsxc = zeros(Float64,Npoints)
+
+    ptr = Libxc.xc_func_alloc()
+
     Libxc.xc_func_init(ptr, xc_id, Nspin)
     Libxc.xc_gga_exc!(ptr, Npoints, Rhoe, gRhoe2, epsxc)
     Libxc.xc_func_end(ptr)
@@ -27,57 +47,6 @@ end
 
 
 #=
-function calc_epsxc_PBE( pw::PWGrid, Rhoe::Array{Float64,2} )
-
-    Nspin = size(Rhoe)[2]
-    if Nspin == 1
-        return calc_epsxc_PBE( pw, Rhoe[:,1] )
-    end
-
-    Npoints = size(Rhoe)[1]
-
-    # calculate gRhoe2
-    gRhoe_up = op_nabla( pw, Rhoe[:,1] )
-    gRhoe_dn = op_nabla( pw, Rhoe[:,2] )
-    gRhoe2 = zeros( Float64, 3*Npoints )
-    ipp = 0
-    for ip = 1:3:3*Npoints
-        ipp = ipp + 1
-        gRhoe2[ip]   = dot( gRhoe_up[:,ipp], gRhoe_up[:,ipp] )
-        gRhoe2[ip+1] = dot( gRhoe_up[:,ipp], gRhoe_dn[:,ipp] )
-        gRhoe2[ip+2] = dot( gRhoe_dn[:,ipp], gRhoe_dn[:,ipp] )
-    end
-
-    Rhoe_tmp = zeros(2*Npoints)
-    ipp = 0
-    for ip = 1:2:2*Npoints
-        ipp = ipp + 1
-        Rhoe_tmp[ip] = Rhoe[ipp,1]
-        Rhoe_tmp[ip+1] = Rhoe[ipp,2]
-    end
-
-    eps_x = zeros(Float64,Npoints)
-    eps_c = zeros(Float64,Npoints)
-
-    ptr = Libxc.xc_func_alloc()
-    # exchange part
-    Libxc.xc_func_init(ptr, Libxc.GGA_X_PBE, Nspin)
-    Libxc.xc_gga_exc!(ptr, Npoints, Rhoe_tmp, gRhoe2, eps_x)
-    Libxc.xc_func_end(ptr)
-
-    #
-    # correlation part
-    Libxc.xc_func_init(ptr, Libxc.GGA_C_PBE, Nspin)
-    Libxc.xc_gga_exc!(ptr, Npoints, Rhoe_tmp, gRhoe2, eps_c)
-    Libxc.xc_func_end(ptr)
-
-    #
-    Libxc.xc_func_free(ptr)
-
-    return eps_x + eps_c
-
-end
-
 function calc_Vxc_PBE( pw::PWGrid, Rhoe::Array{Float64,1} )
 
     Npoints = size(Rhoe)[1]
