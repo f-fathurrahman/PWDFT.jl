@@ -1,4 +1,8 @@
-function XC_c_vwn( rs )
+function XC_c_vwn( Rhoe )
+
+    third = 1.0/3.0
+    pi34 = 0.6203504908994  # pi34=(3/4pi)^(1/3)
+    rs = pi34/Rhoe^third
 
     a = 0.0310907
     b = 3.72744
@@ -16,8 +20,8 @@ function XC_c_vwn( rs )
     
     tx = 2.0 * rs12 + b
     tt = tx * tx + q * q
-    vc = ec - rs12 * a / 6.0 * (2.0 / rs12 - tx / fx - 4.0 * b / tt 
-        - f2 * (2.0 / (rs12 - x0) - tx / fx - 4.0 * (2.0 * x0 + b) / tt) )
+    vc = ec - rs12 * a / 6.0 * (2.0 / rs12 - tx / fx - 4.0 * b / tt -
+         f2 * (2.0 / (rs12 - x0) - tx / fx - 4.0 * (2.0 * x0 + b) / tt) )
 
     return ec, vc
 

@@ -1,4 +1,9 @@
-function XC_c_pw_spin( rs, zeta )
+function XC_c_pw_spin( Rhoe, zeta )
+
+    third = 1.0/3.0
+    pi34 = 0.6203504908994  # pi34=(3/4pi)^(1/3)
+    rs = pi34/Rhoe^third
+
     # J.P. Perdew and Y. Wang, PRB 45, 13244 (1992)
     # xc parameters, unpolarised
     a = 0.031091

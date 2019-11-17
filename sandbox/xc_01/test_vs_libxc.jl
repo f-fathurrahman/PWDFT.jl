@@ -62,9 +62,9 @@ function test_LDA_VWN()
     
     Vxc_v2 = zeros(Npoints)
     for ip in 1:Npoints
-        rs = pi34/Rhoe[ip]^third
-        ss_x, vx = XC_x_slater( rs )
-        ss_c, vc = XC_c_vwn( rs )
+        #rs = pi34/Rhoe[ip]^third
+        ss_x, vx = XC_x_slater( Rhoe[ip] )
+        ss_c, vc = XC_c_vwn( Rhoe[ip] )
         etxc = etxc + (ss_x + ss_c)*Rhoe[ip]
         Vxc_v2[ip] = vx + vc
     end
@@ -122,7 +122,7 @@ function test_LDA_VWN_spinpol()
         rs = pi34/ρ^third
 
         ss_x, vxup, vxdn = XC_x_slater_spin( ρ, ζ )
-        ss_c, vcup, vcdn = XC_c_vwn_spin( rs, ζ )
+        ss_c, vcup, vcdn = XC_c_vwn_spin( ρ, ζ )
         
         etxc = etxc + (ss_x + ss_c)*ρ
 
@@ -302,8 +302,9 @@ end
 
 
 #test_LDA_VWN()
-#test_LDA_VWN_spinpol()
-test_GGA_PBE()
+@time test_LDA_VWN_spinpol()
+@time test_LDA_VWN_spinpol()
+#test_GGA_PBE()
 #test_GGA_PBE_spinpol()
 
 #test_spinpol(xc="VWN", Nspin=1)

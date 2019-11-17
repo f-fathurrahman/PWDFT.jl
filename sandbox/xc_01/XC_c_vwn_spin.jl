@@ -1,4 +1,8 @@
-function XC_c_vwn_spin( rs, zeta )
+function XC_c_vwn_spin( Rhoe, zeta )
+
+    third = 1.0/3.0
+    pi34 = 0.6203504908994  # pi34=(3/4pi)^(1/3)
+    rs = pi34/Rhoe^third
 
     A      = ( 0.0310907, 0.01554535, -0.01688686394039 )
     x0     = ( -0.10498, -0.32500, -0.0047584 )

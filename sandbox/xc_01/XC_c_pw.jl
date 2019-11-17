@@ -1,4 +1,8 @@
-function XC_c_pw( rs )
+function XC_c_pw( Rhoe )
+
+    third = 1.0/3.0
+    pi34 = 0.6203504908994  # pi34=(3/4pi)^(1/3)
+    rs = pi34/Rhoe^third
 
     a = 0.031091
     a1 = 0.21370

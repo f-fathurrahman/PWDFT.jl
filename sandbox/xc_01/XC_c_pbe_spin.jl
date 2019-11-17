@@ -15,7 +15,7 @@ function XC_c_pbe_spin( rho, zeta, grho )
 
     rs = pi34/rho^third
     
-    ec, vcup, vcdw = XC_c_pw_spin( rs, zeta )
+    ec, vcup, vcdw = XC_c_pw_spin( rho, zeta )
 
     kf = xkf / rs
     ks = xks * sqrt(kf)
