@@ -12,6 +12,7 @@ include("XC_c_vwn_spin.jl")
 
 include("XC_x_pbe.jl")
 include("XC_c_pbe.jl")
+include("XC_c_pbe_v2.jl")
 
 include("XC_c_pbe_spin.jl")
 
@@ -24,11 +25,14 @@ function test_C_PBE()
     gRhoe2 = 0.1
     res1, _ = XC_c_pbe(Rhoe, gRhoe2)
 
+    res4, _ = XC_c_pbe_v2(Rhoe, gRhoe2)
+
     res2 = calc_epsxc_GGA( [Rhoe], [gRhoe2], Libxc.GGA_C_PBE )
     res3 = calc_epsxc_LDA( [Rhoe], Libxc.LDA_C_PW )
 
-    @printf("QE    C PBE = %18.10f\n", res1)
-    @printf("Libxc C PBE = %18.10f\n", res2[1] - res3[1])
+    @printf("QE    C PBE v1 = %18.10f\n", res1)
+    @printf("QE    C PBE v2 = %18.10f\n", res4)
+    @printf("Libxc C PBE    = %18.10f\n", res2[1] - res3[1])
 
     @printf("QE    C PW = %18.10f\n", XC_c_pw(Rhoe)[1])
     @printf("Libxc C PW = %18.10f\n", res3[1])
