@@ -253,17 +253,83 @@ function test_GGA_PBE_spinpol()
     Vxc = calc_Vxc_PBE( pw, Rhoe )
 
     Npoints = prod(Ham.pw.Ns)
-    f = open("TEMP_Vxc_spinpol.dat", "w")
-    for ip = 1:Npoints
-        @printf(f, "%d %18.10f %18.10f\n", ip, Vxc[ip,1], Vxc[ip,2])
-    end
-    close(f)
+    #f = open("TEMP_Vxc_spinpol.dat", "w")
+    #for ip = 1:Npoints
+    #    @printf(f, "%d %18.10f %18.10f\n", ip, Vxc[ip,1], Vxc[ip,2])
+    #end
+    #close(f)
 
     epsxc = calc_epsxc_PBE( pw, Rhoe )
     Rhoe_total = Rhoe[:,1] + Rhoe[:,2]
     E_xc = dot( Rhoe_total, epsxc ) * dVol
-    @printf("E_xc = %18.10f\n", E_xc)
 
+
+    # calculate gRhoe2
+    gRhoe_up = op_nabla( pw, Rhoe[:,1] )
+    gRhoe2_up = zeros( Float64, Npoints )
+
+    gRhoe_dn = op_nabla( pw, Rhoe[:,2] )
+    gRhoe2_dn = zeros( Float64, Npoints )
+
+    gRhoe = op_nabla( pw, Rhoe_total )
+    gRhoe2 = zeros( Float64, Npoints )
+
+    for ip = 1:Npoints
+        gRhoe2_up[ip] = dot( gRhoe_up[:,ip], gRhoe_up[:,ip] )
+        gRhoe2_dn[ip] = dot( gRhoe_dn[:,ip], gRhoe_dn[:,ip] )
+        gRhoe2[ip] = dot( gRhoe[:,ip],  gRhoe[:,ip] )
+    end
+
+    #
+    Vxc_v2 = zeros(Npoints,2) # should depend also to Nspin
+    # h contains D(rho*Exc)/D(|grad rho|) * (grad rho) / |grad rho|
+    h_up = zeros(3,Npoints)
+    h_dn = zeros(3,Npoints)
+    #
+    dh_up = zeros(Npoints)
+    dh_dn = zeros(Npoints)
+
+    etxc = 0.0
+    etgxc = 0.0
+    for ip in 1:Npoints
+
+        ρ_up = Rhoe[ip,1]
+        ρ_dn = Rhoe[ip,2]
+        ρ = ρ_up + ρ_dn
+        ζ = (ρ_up - ρ_dn)/ρ
+
+        ss_x, vxup, vxdn = XC_x_slater_spin( ρ, ζ )
+        ss_c, vcup, vcdn = XC_c_pw_spin( ρ, ζ )
+
+        gss_xup, v1xup, v2xup = XC_x_pbe( 2*ρ_up, 4*gRhoe2_up[ip] )
+        gss_xdn, v1xdn, v2xdn = XC_x_pbe( 2*ρ_dn, 4*gRhoe2_dn[ip] )
+
+        gss_x = 0.5 * (gss_xup + gss_xdn)
+        v2xup = 2.0 * v2xup
+        v2xdn = 2.0 * v2xdn
+
+        gss_c, v1cup, v1cdn, v2c = XC_c_pbe_spin( ρ, ζ, gRhoe2[ip] )
+        v2cup = v2c
+        v2cdn = v2c
+        v2cud = v2c
+
+        Vxc_v2[ip,1] = vxup + vcup + v1xup + v1cup
+        Vxc_v2[ip,2] = vxdn + vcdn + v1xdn + v1cdn
+
+        for i in 1:3
+           grup = gRhoe_up[i,ip]
+           grdn = gRhoe_dn[i,ip]
+           h_up[i,ip] = ( v2xup + v2cup ) * grup + v2cud * grdn
+           h_dn[i,ip] = ( v2xdn + v2cdn ) * grdn + v2cud * grup
+        end
+
+        etxc = etxc + ( ss_x + ss_c )*ρ # use total Rhoe
+        etgxc = etgxc + ( gss_x + gss_c )
+
+    end
+
+    @printf("E_xc    = %18.10f\n", E_xc)
+    @printf("E_xc v2 = %18.10f\n", (etxc + etgxc)*dVol )
 
 end
 
@@ -272,8 +338,8 @@ end
 #test_LDA_VWN_spinpol()
 #@time test_LDA_VWN_spinpol()
 #@time test_LDA_VWN_spinpol()
-test_GGA_PBE()
-#test_GGA_PBE_spinpol()
+#test_GGA_PBE()
+test_GGA_PBE_spinpol()
 
 #test_spinpol(xc="VWN", Nspin=1)
 #test_spinpol(xc="VWN", Nspin=2)
