@@ -246,7 +246,7 @@ function test_GGA_PBE_spinpol()
     pw = Ham.pw
     dVol = pw.CellVolume/prod(pw.Ns)
 
-    Rhoe = guess_rhoe_atomic(Ham, starting_magnetization=[0.0])
+    Rhoe = guess_rhoe_atomic(Ham, starting_magnetization=[0.1])
 
     @printf("Integrated rhoe = %18.10f\n", sum(Rhoe)*dVol)
 
@@ -328,8 +328,28 @@ function test_GGA_PBE_spinpol()
 
     end
 
+    dh_up[:] = op_nabla_dot(pw, h_up)
+    dh_dn[:] = op_nabla_dot(pw, h_dn)
+
+    println("sum abs h  up = ", sum(abs.(h_up)))
+    println("sum abs dh up = ", sum(abs.(dh_up)))
+
+    println("sum abs h  dn = ", sum(abs.(h_dn)))
+    println("sum abs dh dn = ", sum(abs.(dh_dn)))
+
+    for ip in 1:Npoints
+        Vxc_v2[ip,1] = Vxc_v2[ip,1] - dh_up[ip]
+        Vxc_v2[ip,2] = Vxc_v2[ip,2] - dh_dn[ip]        
+    end
+
     @printf("E_xc    = %18.10f\n", E_xc)
     @printf("E_xc v2 = %18.10f\n", (etxc + etgxc)*dVol )
+
+    @printf("avg Vxc v1 up = %18.10f\n", sum(Vxc[:,1])/Npoints)
+    @printf("avg Vxc v2 up = %18.10f\n", sum(Vxc_v2[:,1])/Npoints)
+
+    @printf("avg Vxc v1 dn = %18.10f\n", sum(Vxc[:,2])/Npoints)
+    @printf("avg Vxc v2 dn = %18.10f\n", sum(Vxc_v2[:,2])/Npoints)
 
 end
 
