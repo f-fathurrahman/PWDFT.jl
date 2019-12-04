@@ -3,24 +3,6 @@ using LinearAlgebra
 
 using PWDFT
 
-struct CuGVectors
-    Ng::Int64
-    G::Array{Float64,2}
-    G2::Array{Float64,1}
-    idx_g2r::Array{Int64,1}
-    G2_shells::Array{Float64,1}
-    idx_g2shells::Array{Int64,1}
-end
-
-struct CuGVectorsW
-    Ngwx::Int64          # maximum(Ngk)
-    Ngw::Array{Int64,1}  # no of GvectorsW for each kpoints
-    idx_gw2g::Array{Array{Int64,1},1}
-    idx_gw2r::Array{Array{Int64,1},1}
-    kpoints::KPoints
-end
-
-
 function CuPWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2}; kpoints=nothing, Ns_=(0,0,0) )
 
     ecutrho = 4.0*ecutwfc
