@@ -28,4 +28,9 @@ function main( ; N=5)
     end
 end
 
+main(N=10)
+main(N=50)
+main(N=100)
+main(N=200)
+main(N=500)
 main(N=1000)
