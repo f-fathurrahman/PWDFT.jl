@@ -17,7 +17,7 @@ function CuGVectors( gvec::GVectors )
     G2 = CuArray( gvec.G2 )
     idx_g2r = CuArray( gvec.idx_g2r )
     G2_shells = CuArray( gvec.G2_shells )
-    idx_g2shells  = CuArray( gvec.idx_g2shells )
+    idx_g2shells = CuArray( gvec.idx_g2shells )
 
     return CuGVectors(gvec.Ng, G, G2, idx_g2r, G2_shells, idx_g2shells)
 end
