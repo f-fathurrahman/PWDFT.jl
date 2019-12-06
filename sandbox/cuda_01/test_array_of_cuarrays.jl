@@ -23,11 +23,7 @@ function main( ; Nbasis=1000, Nstates=10, Nkspin=5 )
     @printf("Operations with array: ")
     @time begin
     for i in 1:Nkspin
-        #psiks[i] = 2*psiks[i]
-        d_W, d_V = eigen( psiks[i]' * psiks[i] )
-        # retmat = (F.vectors * Diagonal(F.values)) * F.vectors'
-        #Udagger = inv( psiks[i]' * psiks[i] )
-        #psiks[i] = psiks[i]*Udagger
+        psiks[i] = 2*psiks[i]
     end
     end
 
@@ -49,11 +45,7 @@ function main_noGPU( ; Nbasis=1000, Nstates=10, Nkspin=5 )
     @printf("Operations with array: ")
     @time begin
     for i in 1:Nkspin
-        #psiks[i] = 2*psiks[i]
-        d_W, d_V = eigen( psiks[i]' * psiks[i] )
-        # retmat = (F.vectors * Diagonal(F.values)) * F.vectors'
-        #Udagger = inv( psiks[i]' * psiks[i] )
-        #psiks[i] = psiks[i]*Udagger
+        psiks[i] = 2*psiks[i]
     end
     end
 
@@ -63,7 +55,7 @@ end
 function driver()
 
     Nbasis = 5000
-    Nstates = 50
+    Nstates = 200
     Nkspin = 20
 
     println("No GPU")
