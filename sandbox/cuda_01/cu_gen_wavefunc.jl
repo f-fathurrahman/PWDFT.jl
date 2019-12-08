@@ -6,11 +6,11 @@
 #    return zeros_BlochWavefunc( Ham.pw, Ham.electrons )
 #end
 
-#function zeros_BlochWavefunc( pw::PWGrid, electrons::Electrons )
-#    Nspin = electrons.Nspin
-#    Nstates = electrons.Nstates
-#    return zeros_BlochWavefunc( pw, Nstates, Nspin )
-#end
+function zeros_CuBlochWavefunc( pw::CuPWGrid, electrons::Electrons )
+    Nspin = electrons.Nspin
+    Nstates = electrons.Nstates
+    return zeros_CuBlochWavefunc( pw, Nstates, Nspin )
+end
 
 function zeros_CuBlochWavefunc( pw::CuPWGrid, Nstates::Int64, Nspin::Int64 )
     Nkpt = pw.gvecw.kpoints.Nkpt
@@ -20,11 +20,9 @@ function zeros_CuBlochWavefunc( pw::CuPWGrid, Nstates::Int64, Nspin::Int64 )
 
     psiks = CuBlochWavefunc(undef,Nkspin)
 
-    for ispin = 1:Nspin
-    for ik = 1:Nkpt
+    for ispin in 1:Nspin, ik in 1:Nkpt
         ikspin = ik + (ispin-1)*Nkpt
-        psiks[ikspin] = zeros(ComplexF64,Ngw[ik],Nstates)
-    end
+        psiks[ikspin] = cu(zeros(ComplexF64,Ngw[ik],Nstates))
     end
     return psiks
 end
@@ -54,11 +52,9 @@ function rand_CuBlochWavefunc( pw::CuPWGrid, Nstates::Int64, Nspin::Int64 )
 
     psiks = CuBlochWavefunc(undef,Nkspin)
 
-    for ispin = 1:Nspin
-    for ik = 1:Nkpt
+    for ispin in 1:Nspin, ik in 1:Nkpt
         ikspin = ik + (ispin-1)*Nkpt
         psiks[ikspin] = rand_CuWavefunc(Ngw[ik],Nstates)
-    end
     end
 
     return psiks
