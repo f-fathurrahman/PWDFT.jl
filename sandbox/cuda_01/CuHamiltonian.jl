@@ -1,0 +1,3 @@
+struct CuHamiltonian
+
+end

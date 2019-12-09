@@ -2,6 +2,7 @@ using Printf
 using FFTW
 using LinearAlgebra
 
+using CUDAnative
 using CuArrays
 
 using PWDFT

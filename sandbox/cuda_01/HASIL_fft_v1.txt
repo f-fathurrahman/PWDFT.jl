@@ -1,0 +1,90 @@
+# Cubic lattice 10 bohr (real to complex FFT) with conversion first
+      36    46656 CPU:   661.358 μs (8 allocations: 1.42 MiB)
+      36    46656 GPU:   498.741 μs (93 allocations: 1.78 MiB)
+      45    91125 CPU:   1.137 ms (8 allocations: 2.78 MiB)
+      45    91125 GPU:   1.153 ms (93 allocations: 3.48 MiB)
+      48   110592 CPU:   2.223 ms (8 allocations: 3.38 MiB)
+      48   110592 GPU:   1.226 ms (93 allocations: 4.22 MiB)
+      54   157464 CPU:   2.919 ms (8 allocations: 4.81 MiB)
+      54   157464 GPU:   1.524 ms (93 allocations: 6.01 MiB)
+      60   216000 CPU:   2.795 ms (8 allocations: 6.59 MiB)
+      60   216000 GPU:   2.046 ms (93 allocations: 8.24 MiB)
+      60   216000 CPU:   2.888 ms (8 allocations: 6.59 MiB)
+      60   216000 GPU:   2.027 ms (93 allocations: 8.24 MiB)
+      64   262144 CPU:   3.501 ms (8 allocations: 8.00 MiB)
+      64   262144 GPU:   2.469 ms (97 allocations: 10.00 MiB)
+      72   373248 CPU:   5.946 ms (8 allocations: 11.39 MiB)
+      72   373248 GPU:   4.707 ms (97 allocations: 14.24 MiB)
+
+# Cubic lattice 20 bohr, complex to complex FFT with conversion
+
+ecut = 30.0
+  502479      100  1000000 CPU:   11.471 ms (6 allocations: 15.26 MiB)
+  502479      100  1000000 GPU:   3.199 ms (87 allocations: 3.61 KiB)
+ecut = 35.0
+  632851      108  1259712 CPU:   22.620 ms (6 allocations: 19.22 MiB)
+  632851      108  1259712 GPU:   4.408 ms (87 allocations: 3.61 KiB)
+ecut = 40.0
+  773489      120  1728000 CPU:   24.862 ms (6 allocations: 26.37 MiB)
+  773489      120  1728000 GPU:   6.046 ms (87 allocations: 3.61 KiB)
+ecut = 45.0
+  922329      125  1953125 CPU:   31.084 ms (6 allocations: 29.80 MiB)
+  922329      125  1953125 GPU:   7.466 ms (87 allocations: 3.61 KiB)
+ecut = 50.0
+ 1080751      135  2460375 CPU:   62.628 ms (6 allocations: 37.54 MiB)
+ 1080751      135  2460375 GPU:   9.929 ms (87 allocations: 3.61 KiB)
+ecut = 55.0
+ 1247513      135  2460375 CPU:   59.468 ms (6 allocations: 37.54 MiB)
+ 1247513      135  2460375 GPU:   10.115 ms (87 allocations: 3.61 KiB)
+ecut = 60.0
+ 1420755      144  2985984 CPU:   75.095 ms (6 allocations: 45.56 MiB)
+ 1420755      144  2985984 GPU:   9.584 ms (87 allocations: 3.61 KiB)
+
+# Cubic lattice 20 bohr, real to complex FFT
+
+ecut = 30.0
+  502479      100  1000000 CPU:   13.683 ms (8 allocations: 30.52 MiB)
+  502479      100  1000000 GPU:   13.110 ms (102 allocations: 38.15 MiB)
+ecut = 35.0
+  632851      108  1259712 CPU:   24.844 ms (8 allocations: 38.44 MiB)
+  632851      108  1259712 GPU:   17.101 ms (102 allocations: 48.06 MiB)
+ecut = 40.0
+  773489      120  1728000 CPU:   29.138 ms (8 allocations: 52.73 MiB)
+  773489      120  1728000 GPU:   23.284 ms (102 allocations: 65.92 MiB)
+ecut = 45.0
+  922329      125  1953125 CPU:   37.111 ms (8 allocations: 59.61 MiB)
+  922329      125  1953125 GPU:   27.047 ms (102 allocations: 74.51 MiB)
+ecut = 50.0
+ 1080751      135  2460375 CPU:   57.006 ms (8 allocations: 75.09 MiB)
+ 1080751      135  2460375 GPU:   48.212 ms (102 allocations: 93.86 MiB)
+ecut = 55.0
+ 1247513      135  2460375 CPU:   66.000 ms (8 allocations: 75.09 MiB)
+ 1247513      135  2460375 GPU:   43.959 ms (102 allocations: 93.86 MiB)
+ecut = 60.0
+ 1420755      144  2985984 CPU:   86.553 ms (8 allocations: 91.13 MiB)
+ 1420755      144  2985984 GPU:   39.890 ms (102 allocations: 113.91 MiB)
+
+
+# without plan
+
+ ecut = 30.0
+  502479      100  1000000 CPU:   14.244 ms (63 allocations: 30.52 MiB)
+  502479      100  1000000 GPU:   13.304 ms (117 allocations: 38.15 MiB)
+ecut = 35.0
+  632851      108  1259712 CPU:   24.657 ms (63 allocations: 38.45 MiB)
+  632851      108  1259712 GPU:   17.260 ms (117 allocations: 48.06 MiB)
+ecut = 40.0
+  773489      120  1728000 CPU:   28.969 ms (63 allocations: 52.74 MiB)
+  773489      120  1728000 GPU:   23.602 ms (117 allocations: 65.92 MiB)
+ecut = 45.0
+  922329      125  1953125 CPU:   36.090 ms (63 allocations: 59.61 MiB)
+  922329      125  1953125 GPU:   27.376 ms (117 allocations: 74.51 MiB)
+ecut = 50.0
+ 1080751      135  2460375 CPU:   69.544 ms (63 allocations: 75.09 MiB)
+ 1080751      135  2460375 GPU:   44.518 ms (117 allocations: 93.86 MiB)
+ecut = 55.0
+ 1247513      135  2460375 CPU:   69.124 ms (63 allocations: 75.09 MiB)
+ 1247513      135  2460375 GPU:   45.217 ms (117 allocations: 93.86 MiB)
+ecut = 60.0
+ 1420755      144  2985984 CPU:   83.639 ms (63 allocations: 91.13 MiB)
+ 1420755      144  2985984 GPU:   40.192 ms (117 allocations: 113.91 MiB)
