@@ -47,10 +47,12 @@ julia> typeof(v), typeof(d_v)
 
 Using `cu` and `CuArray` involve copy from CPU to GPU. We can use
 `CuArrays.fill` to initialize device array directly: (does not involve copy?)
-```
-julia> d_v = CuArrays.fill( zero(Float64), 5);
+```julia
+d_v = CuArrays.fill( zero(Float64), 5) # or
+d_v = CuArrays.fill( 0.0, 5 )
 
-julia> d_v = CuArrays.fill( zero(ComplexF64), (5,4,2) );
+d_v = CuArrays.fill( zero(ComplexF64), (5,4,2) ) # or
+d_v = CuArrays.fill( 0.0 + im*0.0, (5,4,2) )
 ```
 
 The function collect can be used to copy the result back to CPU.
@@ -58,6 +60,13 @@ The function collect can be used to copy the result back to CPU.
 julia> d_v = d_v .+ 1.1;
 
 julia> v = collect(d_v);
+```
+
+
+More functions:
+```julia
+d_x = CuArrays.zeros(ComplexF64, 10, 10)
+d_c = CuArrays.rand(ComplexF64, 10, 10)
 ```
 
 
@@ -72,15 +81,4 @@ d_A = cu(A)
 We can calculate FFT of `d_A` directly using `fft` function from FFTW.
 ```julia
 d_A_G = fft(d_A)
-```
-
-The function \jlinline{collect} can be used copy the result back to CPU.
-```
-A_G = collect(d_A_G)
-```
-
-# About initializing CuArrays
-
-```
-d_x = CuArrays.zeros(ComplexF64, 10, 10)
 ```
