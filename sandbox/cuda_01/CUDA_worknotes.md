@@ -19,11 +19,8 @@ julia> v = zeros(Float64,10);
 
 julia> d_v = cu(v);
 
-julia> typeof(v)
-Array{Float64,1}
-
-julia> typeof(d_v)
-CuArray{Float32,1,Nothing}
+julia> typeof(v), typeof(d_v)
+(Array{Float64,1}, CuArray{Float32,1,Nothing})
 ```
 
 However:
