@@ -1,6 +1,6 @@
 mutable struct CuHamiltonian
     pw::CuPWGrid
-    potentials::Potentials
+    potentials::CuPotentials
     energies::Energies
     rhoe::CuArray{Float64,2} # spin dependent
     electrons::Electrons
@@ -8,7 +8,7 @@ mutable struct CuHamiltonian
     sym_info::SymmetryInfo
     rhoe_symmetrizer::RhoeSymmetrizer
     pspots::Array{PsPot_GTH,1}
-    pspotNL::CuPsPotNL
+    pspotNL::PsPotNL   # should be CuArrays
     xcfunc::String
     ik::Int64   # current kpoint index
     ispin::Int64 # current spin index
@@ -43,30 +43,36 @@ function CuHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
     # Initialize plane wave grids
     pw = CuPWGrid( ecutwfc, atoms.LatVecs, kpoints=kpoints, Ns_=Ns_ )
 
+    # XXX Need to calculate PWGrid again because it is needed in several places
+    pw_ = PWGrid( ecutwfc, atoms.LatVecs, kpoints=kpoints, Ns_=Ns_ )
+
     Nspecies = atoms.Nspecies
     if Nspecies != size(pspfiles)[1]
         error( @sprintf("Length of pspfiles is not equal to %d\n", Nspecies) )
     end
 
     Npoints = prod(pw.Ns)
-    CellVolume = pw.CellVolume
-    G2 = pw.gvec.G2
-    Ng = pw.gvec.Ng
-    idx_g2r = pw.gvec.idx_g2r
+    CellVolume = pw_.CellVolume
+    G2 = pw_.gvec.G2
+    Ng = pw_.gvec.Ng
+    idx_g2r = pw_.gvec.idx_g2r
 
-    strf = calc_strfact( atoms, pw )
+    strf = calc_strfact( atoms, pw_ )
 
     #
     # Initialize pseudopotentials and local potentials
     #
     Pspots = Array{PsPot_GTH}(undef,Nspecies)
-    G2_shells = pw.gvec.G2_shells
+
+    G2_shells = pw_.gvec.G2_shells
+    idx_g2shells = pw_.gvec.idx_g2shells
+
     Ngl = length(G2_shells)
     Vgl = zeros(Float64, Ngl)
-    idx_g2shells = pw.gvec.idx_g2shells
     V_Ps_loc = zeros(Float64, Npoints)
     Vg = zeros(ComplexF64, Npoints)
 
+    # TODO: using kernel (CUDAnative.erf is available)
     for isp = 1:Nspecies
         Pspots[isp] = PsPot_GTH( pspfiles[isp] )
         psp = Pspots[isp]
@@ -81,14 +87,14 @@ function CuHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
             Vg[ip] = strf[ig,isp] * Vgl[igl]
         end
         #
-        V_Ps_loc[:] = V_Ps_loc[:] + real( G_to_R(pw, Vg) ) * Npoints / CellVolume
+        V_Ps_loc[:] = V_Ps_loc[:] + real( G_to_R(pw_, Vg) ) * Npoints / CellVolume
     end
 
     # other potential terms are set to zero
-    V_Hartree = zeros( Float64, Npoints )
-    V_xc = zeros( Float64, Npoints, Nspin )
-    V_loc_tot = zeros( Float64, Npoints, Nspin )
-    potentials = Potentials( V_Ps_loc, V_Hartree, V_xc, V_loc_tot )
+    V_Hartree = CuArrays.zeros( Float64, Npoints )
+    V_xc = CuArrays.zeros( Float64, Npoints, Nspin )
+    V_loc_tot = CuArrays.zeros( Float64, Npoints, Nspin )
+    potentials = CuPotentials( CuArray(V_Ps_loc), V_Hartree, V_xc, V_loc_tot )
     #
     energies = Energies()
     #
@@ -98,7 +104,7 @@ function CuHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
                            Nstates_empty=extra_states )
 
     # NL pseudopotentials
-    pspotNL = PsPotNL( atoms, pw, Pspots, check_norm=false )
+    pspotNL = PsPotNL( atoms, pw_, Pspots, check_norm=false ) # XXX should be done on GPU?
 
     atoms.Zvals = get_Zvals( Pspots )
 
@@ -106,12 +112,12 @@ function CuHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
     ispin = 1
 
     if sym_info.Nsyms > 1
-        rhoe_symmetrizer = RhoeSymmetrizer( atoms, pw, sym_info )
+        rhoe_symmetrizer = RhoeSymmetrizer( atoms, pw_, sym_info )
     else
         rhoe_symmetrizer = RhoeSymmetrizer() # dummy rhoe_symmetrizer
     end
 
-    return Hamiltonian( pw, potentials, energies, rhoe,
-                        electrons, atoms, sym_info, rhoe_symmetrizer,
-                        Pspots, pspotNL, xcfunc, ik, ispin )
+    return CuHamiltonian( pw, potentials, energies, rhoe,
+                          electrons, atoms, sym_info, rhoe_symmetrizer,
+                          Pspots, pspotNL, xcfunc, ik, ispin )
 end
