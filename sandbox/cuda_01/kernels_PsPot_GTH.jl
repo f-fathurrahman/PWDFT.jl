@@ -44,7 +44,9 @@ function kernel_eval_proj_G_GTH(
 
     ig = ( blockIdx().x - 1 ) * blockDim().x + threadIdx().x
 
-    pre =  4.0 * pi^(5.0/4.0) * CUDAnative.sqrt( 2.0^(l+1) * rrl^(2*l+3) / CellVolume )
+    perOmega = CUDAnative.pow(2.0, (l+1)) * CUDAnative.pow(rrl, (2*l+3)) / CellVolume
+    pre =  4.0 * CUDAnative.pow(Float64(pi), (5.0/4.0)) * CUDAnative.sqrt( perOmega )
+
     Ng = length(Gm)
 
     # s-channel
@@ -156,24 +158,25 @@ function cu_eval_proj_G( rrl, l::Int64, iproj::Int64, Gm::Float64, CellVolume::F
         end # if iproj
 
     # d-channel
-    elseif l == 2
-        if iproj == 1
-            Gr2 = ( Gm*rrl )^2
-            Vprj = (1.0/CUDAnative.sqrt(15.0)) * CUDAnative.exp(-0.5*Gr2) * Gm^2
-        elseif iproj == 2
-            Gr2 = ( Gm*rrl )^2
-            Vprj = (2.0/3.0)/CUDAnative.sqrt(105.0) * CUDAnative.exp(-0.5*Gr2) * Gm^2 * (7.0 - Gr2)
-        end # if iproj
+    #elseif l == 2
+    #    if iproj == 1
+    #        Gr2 = ( Gm*rrl )^2
+    #        Vprj = (1.0/CUDAnative.sqrt(15.0)) * CUDAnative.exp(-0.5*Gr2) * Gm^2
+    #    elseif iproj == 2
+    #        Gr2 = ( Gm*rrl )^2
+    #        Vprj = (2.0/3.0)/CUDAnative.sqrt(105.0) * CUDAnative.exp(-0.5*Gr2) * Gm^2 * (7.0 - Gr2)
+    #    end # if iproj
 
     # f-channel
-    elseif l == 3
-        # XXX only one projector
-        Gr2 = ( Gm*rrl )^2
-        Vprj = Gm^3 * CUDAnative.exp(-0.5*Gr2)/CUDAnative.sqrt(105.0)
+    #elseif l == 3
+    #    # XXX only one projector
+    #    Gr2 = ( Gm*rrl )^2
+    #    Vprj = Gm^3 * CUDAnative.exp(-0.5*Gr2)/CUDAnative.sqrt(105.0)
 
     end  # if l
 
-    pre =  4.0 * pi^(5.0/4.0) * CUDAnative.sqrt( 2.0^(l+1) * rrl^(2*l+3) / CellVolume )
+    perOmega = CUDAnative.pow(2.0, (l+1)) * CUDAnative.pow(rrl, (2*l+3)) / CellVolume
+    pre =  4.0 * CUDAnative.pow(Float64(pi), (5.0/4.0)) * CUDAnative.sqrt( perOmega )
     Vprj = pre * Vprj
     return Vprj
 end
