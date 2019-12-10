@@ -12,6 +12,8 @@ allowscalar(false)
 
 include("CuPWGrid.jl")
 
+include("cu_calc_strfact.jl")
+
 include("cu_wrappers_fft.jl")
 
 include("cu_types_aliases.jl")
