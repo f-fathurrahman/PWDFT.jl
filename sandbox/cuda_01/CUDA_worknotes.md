@@ -12,12 +12,53 @@ CUBLAS, CUFFT, CUSOLVER, etc.
 
 # Initialization
 
-
 The function `cu` can be used to copy array from CPU to GPU, but I am having
-several difficulties because the default type would be Int32 or Float32 instead
-of Int64 or Float64.
+several difficulties because the resulting type is not what I expected:
+```
+julia> v = zeros(Float64,10);
 
-The constructor CuArray(A) can be used instead.
+julia> d_v = cu(v);
+
+julia> typeof(v)
+Array{Float64,1}
+
+julia> typeof(d_v)
+CuArray{Float32,1,Nothing}
+```
+
+However:
+```
+julia> v = rand(ComplexF64,10);
+
+julia> d_v = cu(v);
+
+julia> typeof(v), typeof(d_v)
+(Array{Complex{Float64},1}, CuArray{Complex{Float64},1,Nothing})
+```
+
+
+I think it is advisable to use `CuArray` constructor directly.
+```
+julia> d_v = CuArray(v);
+
+julia> typeof(v), typeof(d_v)
+(Array{Float64,1}, CuArray{Float64,1,Nothing})
+```
+
+Using `cu` and `CuArray` involve copy from CPU to GPU. We can use
+`CuArrays.fill` to initialize device array directly: (does not involve copy?)
+```
+julia> d_v = CuArrays.fill( zero(Float64), 5);
+
+julia> d_v = CuArrays.fill( zero(ComplexF64), (5,4,2) );
+```
+
+The function collect can be used to copy the result back to CPU.
+```
+julia> d_v = d_v .+ 1.1;
+
+julia> v = collect(d_v);
+```
 
 
 # Using FFT
@@ -43,4 +84,3 @@ A_G = collect(d_A_G)
 ```
 d_x = CuArrays.zeros(ComplexF64, 10, 10)
 ```
-
