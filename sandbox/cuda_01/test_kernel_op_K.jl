@@ -1,8 +1,4 @@
-using CUDAnative
-using CuArrays
-using PWDFT
-
-include("CuPWGrid.jl")
+include("PWDFT_cuda.jl")
 
 function main()
 
@@ -13,8 +9,10 @@ function main()
 
     ik = 1
     Ngwk = cu_gvecw.Ngw[ik]
-    psi = CuArray( rand(ComplexF64,Ngwk) )
-    Kpsi = CuArrays.fill( 0.0 + im*0.0, Ngwk )
+    Nstates = 4
+
+    psi = CuArrays.rand( ComplexF64, Ngwk, Nstates )
+    Kpsi = CuArrays.zeros( ComplexF64, Ngwk, Nstates )
 
     Nthreads = 256 # Nthreads per block
     Nblocks = ceil(Int64, Ngwk/Nthreads)
@@ -24,7 +22,12 @@ function main()
     k2 = cu_gvecw.kpoints.k[2,ik]
     k3 = cu_gvecw.kpoints.k[3,ik]
 
-    @cuda threads=Nthreads blocks=Nblocks kernel_op_K( cu_gvec.G, cu_gvecw.idx_gw2g[ik], k1, k2, k3, psi, Kpsi )
+    G = cu_gvec.G
+    idx_gw2g_k = cu_gvecw.idx_gw2g[ik]
+
+    for ist in 1:Nstates
+        @cuda threads=Nthreads blocks=Nblocks kernel_op_K!( ist, G, idx_gw2g_k, k1, k2, k3, psi, Kpsi )
+    end
 
     println("Pass here")
 
