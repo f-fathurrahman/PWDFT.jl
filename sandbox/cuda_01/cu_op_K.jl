@@ -38,3 +38,20 @@ function op_K( Ham::CuHamiltonian, psi::CuArray{ComplexF64,2} )
 
     return Kpsi # factor of 0.5 is already included
 end
+
+
+function op_K( Ham::CuHamiltonian, psiks::CuBlochWavefunc )
+    Nstates = size(psiks[1])[2] # Nstates should be similar for all Bloch states
+    
+    Nspin = Ham.electrons.Nspin
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+    out = zeros_CuBlochWavefunc( Ham )
+    
+    for ispin = 1:Nspin, ik = 1:Nkpt
+        Ham.ik = ik
+        Ham.ispin = ispin
+        ikspin = ik + (ispin - 1)*Nkpt
+        out[ikspin] = op_K( Ham, psiks[ikspin] )
+    end
+    return out
+end
