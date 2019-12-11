@@ -2,9 +2,9 @@
 # Generate "zeros" wavefunction
 # -----------------------------------------------------------------------------
 
-#function zeros_BlochWavefunc( Ham::Hamiltonian )
-#    return zeros_BlochWavefunc( Ham.pw, Ham.electrons )
-#end
+function zeros_CuBlochWavefunc( Ham::CuHamiltonian )
+    return zeros_CuBlochWavefunc( Ham.pw, Ham.electrons )
+end
 
 function zeros_CuBlochWavefunc( pw::CuPWGrid, electrons::Electrons )
     Nspin = electrons.Nspin
@@ -22,7 +22,7 @@ function zeros_CuBlochWavefunc( pw::CuPWGrid, Nstates::Int64, Nspin::Int64 )
 
     for ispin in 1:Nspin, ik in 1:Nkpt
         ikspin = ik + (ispin-1)*Nkpt
-        psiks[ikspin] = cu(zeros(ComplexF64,Ngw[ik],Nstates))
+        psiks[ikspin] = CuArrays.zeros( ComplexF64, Ngw[ik], Nstates )
     end
     return psiks
 end
@@ -33,15 +33,15 @@ end
 # Generate random wavefunction
 # -----------------------------------------------------------------------------
 
-#function rand_CuBlochWavefunc( Ham::Hamiltonian )
-#    return rand_BlochWavefunc( Ham.pw, Ham.electrons.Nstates, Ham.electrons.Nspin )
-#end
+function rand_CuBlochWavefunc( Ham::CuHamiltonian )
+    return rand_CuBlochWavefunc( Ham.pw, Ham.electrons.Nstates, Ham.electrons.Nspin )
+end
 
-#function rand_BlochWavefunc( pw::PWGrid, electrons::Electrons )
-#    Nspin = electrons.Nspin
-#    Nstates = electrons.Nstates
-#    return rand_BlochWavefunc( pw, Nstates, Nspin )
-#end
+function rand_BlochWavefunc( pw::PWGrid, electrons::Electrons )
+    Nspin = electrons.Nspin
+    Nstates = electrons.Nstates
+    return rand_CuBlochWavefunc( pw, Nstates, Nspin )
+end
 
 function rand_CuBlochWavefunc( pw::CuPWGrid, Nstates::Int64, Nspin::Int64 )
     
@@ -61,7 +61,7 @@ function rand_CuBlochWavefunc( pw::CuPWGrid, Nstates::Int64, Nspin::Int64 )
 end
 
 function rand_CuWavefunc( Nbasis, Nstates )
-    return ortho_gram_schmidt( cu(rand(ComplexF64,Nbasis,Nstates)) )
+    return ortho_gram_schmidt( CuArrays.rand(ComplexF64,Nbasis,Nstates) )
 end
 
 #
