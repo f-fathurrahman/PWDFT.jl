@@ -3,6 +3,10 @@ struct PsPotNL
     prj2beta::Array{Int64,4}
     betaNL::Array{ComplexF64,3}
 end
+# XXX: betaNL should have similar structure with psiks
+# Array{Array{ComplexF64,2},1}
+# calc_betaNL_psi should utilize matrix multiplication
+
 
 function PsPotNL()
     # return dummy PsPotNL
@@ -40,8 +44,6 @@ function PsPotNL( atoms::Atoms, pw::PWGrid, Pspots::Array{PsPot_GTH,1}; check_no
                 for m = -l:l
                     NbetaNL = NbetaNL + 1
                     prj2beta[iprj,ia,l+1,m+psp.lmax+1] = NbetaNL
-                    #@printf("ibeta=%d ia=%d isp=%d l=%d m=%d iprj=%d\n",
-                    #         NbetaNL, ia, isp, l, m, iprj)
                 end
             end
         end
