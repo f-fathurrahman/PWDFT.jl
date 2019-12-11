@@ -2,16 +2,16 @@ mutable struct CuHamiltonian
     pw::CuPWGrid
     potentials::CuPotentials
     energies::Energies
-    rhoe::CuArray{Float64,2} # spin dependent
+    rhoe::CuArray{Float64,2}
     electrons::Electrons
     atoms::Atoms
     sym_info::SymmetryInfo
     rhoe_symmetrizer::RhoeSymmetrizer
     pspots::Array{PsPot_GTH,1}
-    pspotNL::PsPotNL   # should be CuArrays
+    pspotNL::CuPsPotNL
     xcfunc::String
-    ik::Int64   # current kpoint index
-    ispin::Int64 # current spin index
+    ik::Int64
+    ispin::Int64
 end
 
 
@@ -104,7 +104,8 @@ function CuHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
                            Nstates_empty=extra_states )
 
     # NL pseudopotentials
-    pspotNL = PsPotNL( atoms, pw_, Pspots, check_norm=false ) # XXX should be done on GPU?
+    pspotNL_ = PsPotNL( atoms, pw_, Pspots, check_norm=false ) # XXX should be done on GPU?
+    pspotNL = CuPsPotNL( pspotNL_ ) # copy
 
     atoms.Zvals = get_Zvals( Pspots )
 

@@ -23,4 +23,5 @@ include("cu_gen_wavefunc.jl")
 include("cu_ortho_check.jl")
 
 include("CuPotentials.jl")
+include("CuPsPotNL.jl")
 include("CuHamiltonian.jl")
