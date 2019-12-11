@@ -7,7 +7,7 @@ using CuArrays
 
 using PWDFT
 
-import CuArrays: allowscalar
+import CuArrays: allowscalar, @allowscalar
 allowscalar(false)
 
 include("CuPWGrid.jl")
@@ -27,3 +27,5 @@ include("CuHamiltonian.jl")
 
 include("cu_gen_wavefunc.jl")
 include("cu_op_K.jl")
+
+include("cu_Poisson_solve.jl")
