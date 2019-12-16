@@ -9,7 +9,7 @@ function main()
     Nstates = 10
     Nspin = 1
 
-    ctmp = CuArrays.fill( 0.0 + im*0.0, (Npoints,Nstates) )
+    ctmp = CuArrays.zeros( ComplexF64, Npoints, Nstates )
     
     psiks = rand_CuBlochWavefunc( pw, Nstates, Nspin )
 
@@ -39,7 +39,7 @@ function main()
     dVol = pw.CellVolume/Npoints
     ctmp[:] = ctmp[:]/sqrt(dVol)
 
-    Rhoe = CuArrays.fill( 0.0, Npoints )
+    Rhoe = CuArrays.zeros( Float64, Npoints )
 
     for ist in 1:Nstates
         @views psi = ctmp[:,ist]
