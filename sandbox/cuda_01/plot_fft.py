@@ -9,6 +9,7 @@ plt.plot(dat[:,0]/1e6, dat[:,2], marker="o", label="GPU timing")
 plt.ylabel("Timing (ms)")
 plt.xlabel("Data size (x$10^6$)")
 plt.grid()
+plt.legend()
 plt.title("Complex to complex 3D FFT operation")
 plt.savefig("DATA_c2c.pdf")
 
