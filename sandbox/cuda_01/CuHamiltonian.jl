@@ -122,3 +122,54 @@ function CuHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
                           electrons, atoms, sym_info, rhoe_symmetrizer,
                           Pspots, pspotNL, xcfunc, ik, ispin )
 end
+
+
+import PWDFT: update!
+
+function update!( Ham::CuHamiltonian, rhoe::CuArray{Float64,1} )
+
+    Ham.rhoe[:,1] = rhoe
+    Ham.potentials.Hartree = real( G_to_R( Ham.pw, Poisson_solve(Ham.pw, rhoe) ) )
+    #if Ham.xcfunc == "PBE"
+    #    Ham.potentials.XC[:,1] = calc_Vxc_PBE( Ham.pw, rhoe )
+    #else  # VWN is the default
+    #    Ham.potentials.XC[:,1] = calc_Vxc_VWN( rhoe )
+    #end
+    Npoints = prod(Ham.pw.Ns)
+    for ip = 1:Npoints
+        Ham.potentials.Total[ip,1] = Ham.potentials.Ps_loc[ip] + Ham.potentials.Hartree[ip] +
+                                     Ham.potentials.XC[ip,1]  
+    end
+    return
+end
+
+function update!( Ham::CuHamiltonian, rhoe::CuArray{Float64,2} )
+    
+    Nspin = size(rhoe)[2]
+    
+    if Nspin == 1
+        update!(Ham, rhoe[:,1])
+        return
+    end
+    
+    Ham.rhoe = rhoe[:,:]
+    Rhoe_total = Ham.rhoe[:,1] + Ham.rhoe[:,2] # Nspin is 2
+    Ham.potentials.Hartree = real( G_to_R( Ham.pw, Poisson_solve(Ham.pw, Rhoe_total) ) )
+    
+    #if Ham.xcfunc == "PBE"
+    #    Ham.potentials.XC = calc_Vxc_PBE( Ham.pw, rhoe )
+    #else  # VWN is the default
+    #    Ham.potentials.XC = calc_Vxc_VWN( rhoe )
+    #end
+    
+    Npoints = prod(Ham.pw.Ns)
+    
+    for ispin = 1:Nspin
+        for ip = 1:Npoints
+            Ham.potentials.Total[ip,ispin] = Ham.potentials.Ps_loc[ip] + Ham.potentials.Hartree[ip] +
+                                             Ham.potentials.XC[ip,ispin]  
+        end
+    end
+    
+    return
+end

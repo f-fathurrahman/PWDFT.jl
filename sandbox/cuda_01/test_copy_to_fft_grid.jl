@@ -1,5 +1,4 @@
 include("PWDFT_cuda.jl")
-include("cu_op_V_loc.jl")
 
 function main()
 
@@ -22,10 +21,7 @@ function main()
 
     idx = pw.gvecw.idx_gw2r[ik]
     for ist in 1:Nstates
-        @views psi = psiks[ik][:,ist]
-        @views cc = ctmp[:,ist]
-        println( dot(psi,psi) )
-        @cuda threads=Nthreads blocks=Nblocks kernel_copy_to_fft_grid_gw2r(idx, psi, cc )
+        @cuda threads=Nthreads blocks=Nblocks kernel_copy_to_fft_grid_gw2r!( ist, idx, psiks[ik], ctmp )
     end
 
     G_to_R!( pw, ctmp )
