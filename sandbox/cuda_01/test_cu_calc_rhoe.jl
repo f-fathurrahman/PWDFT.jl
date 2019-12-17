@@ -8,7 +8,7 @@ function main()
     H   0.0  0.0  0.0
     H   0.0  1.5  0.0
     H   1.5  0.0  0.0
-    """, LatVecs=gen_lattice_sc(10.0))
+    """, LatVecs=gen_lattice_fcc(10.0))
 
     pspfiles = ["../../pseudopotentials/pade_gth/H-q1.gth"]
     ecutwfc = 15.0

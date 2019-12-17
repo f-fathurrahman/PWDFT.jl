@@ -39,8 +39,10 @@ function calc_rhoe!( Ham::CuHamiltonian, psiks::CuBlochWavefunc, Rhoe::CuArray{F
 
         # orthonormalization in real space
         ortho_gram_schmidt!( psiR ) # is this needed or simply scaling ?
-
         psiR[:] = sqrt(Npoints/CellVolume)*psiR[:]
+
+        #psiR[:] = sqrt(Npoints)*psiR[:] # by pass orthonormalization, only use scaling
+
         #
         for ist in 1:Nstates
             w = wk[ik]*Focc[ist,ikspin]

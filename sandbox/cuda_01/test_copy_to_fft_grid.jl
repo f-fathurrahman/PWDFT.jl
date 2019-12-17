@@ -29,7 +29,7 @@ function main()
     ortho_check( ctmp )
     
     ortho_gram_schmidt!( ctmp )
-    
+
     ortho_check( ctmp )
 
     dVol = pw.CellVolume/Npoints
