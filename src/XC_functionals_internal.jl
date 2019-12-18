@@ -1,3 +1,6 @@
+# Adapted from PWSCF
+# I found slight difference with Libxc for PBE correlation.
+
 # PBE correlation (without LDA part)
 # iflag=1: J.P.Perdew, K.Burke, M.Ernzerhof, PRL 77, 3865 (1996).
 
@@ -397,7 +400,7 @@ function XC_x_pbe( rho, grho )
     return sx, v1x, v2x
 end
 
-# Adapted from PWSCF
+
 function XC_x_slater( Rhoe::Float64 )
 
     third = 1.0/3.0
