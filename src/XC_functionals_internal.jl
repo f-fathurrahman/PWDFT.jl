@@ -217,14 +217,14 @@ function XC_c_pw_spin( Rhoe, zeta )
   
     # polarized
     omp = 2.0 * ap * (b1p * rs12 + b2p * rs + b3p * rs32 + b4p * rs2)
-    domp = 2.0 * ap * (0.5d0 * b1p * rs12 + b2p * rs + 1.5 * b3p * rs32 + 2.0 * b4p * rs2)
+    domp = 2.0 * ap * (0.5 * b1p * rs12 + b2p * rs + 1.5 * b3p * rs32 + 2.0 * b4p * rs2)
     ologp = log(1.0 + 1.0 / omp)
     epwcp = -2.0 * ap * (1.0 + a1p * rs) * ologp
     vpwcp = -2.0 * ap * (1.0 + 2.0 / 3.0 * a1p * rs) * ologp - 2.0/3.0 * ap * (1.0 + a1p * rs) * domp / (omp * (omp + 1.0) )
   
     # antiferro
     oma = 2.0 * aa * (b1a * rs12 + b2a * rs + b3a * rs32 + b4a * rs2)
-    doma = 2.0 * aa * (0.5d0 * b1a * rs12 + b2a * rs + 1.5 * b3a * rs32 + 2.0 * b4a * rs2)
+    doma = 2.0 * aa * (0.5 * b1a * rs12 + b2a * rs + 1.5 * b3a * rs32 + 2.0 * b4a * rs2)
     ologa = log(1.0 + 1.0 / oma)
     alpha = 2.0 * aa * (1.0 + a1a * rs) * ologa
     vpwca = 2.0 * aa * (1.0 + 2.0 / 3.0 * a1a * rs) * ologa + 2.0/3.0 * aa * (1.0 + a1a * rs) * doma / (oma * (oma + 1.0) )
