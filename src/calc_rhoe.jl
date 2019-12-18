@@ -47,9 +47,9 @@ function calc_rhoe!( Ham::Hamiltonian, psiks::BlochWavefunc, Rhoe::Array{Float64
     end # ikspin
 
     # Ensure that there is no negative rhoe
-    for rho in Rhoe
-        if rho < eps()
-            rho = eps()
+    for i in 1:length(Rhoe)
+        if Rhoe[i] < eps()
+            Rhoe[i] = eps()
         end
     end
 

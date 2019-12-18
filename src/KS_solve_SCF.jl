@@ -264,9 +264,9 @@ function KS_solve_SCF!(
 
         end
 
-        for rho in Rhoe
-            if rho < eps()
-                rho = 0.0
+        for i in 1:length(Rhoe)
+            if Rhoe[i] < eps()
+                Rhoe[i] = eps()
             end
         end
 
