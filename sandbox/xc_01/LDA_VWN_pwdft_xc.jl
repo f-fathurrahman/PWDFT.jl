@@ -1,25 +1,25 @@
-import PWDFT: calc_Vxc_VWN, calc_epsxc_VWN
+import PWDFT: calc_epsxc_VWN, calc_Vxc_VWN
 
 # epsxc is always of type Array{Float64,1}
 # Vxc is always of type Array{Float64,2}
 
 # Rhoe can be spinpol or not
-function calc_epsxc_VWN( pwdft_xc::PWDFT_XC, Rhoe )
+function calc_epsxc_VWN( xc_calc::XCCalculator, Rhoe )
     Npoints = size(Rhoe,1)
     epsxc = zeros(Float64,Npoints)
-    calc_epsxc_VWN!( pwdft_xc, Rhoe, epsxc )
+    calc_epsxc_VWN!( xc_calc, Rhoe, epsxc )
     return epsxc
 end
 
-function calc_Vxc_VWN( pwdft_xc::PWDFT_XC, Rhoe )
+function calc_Vxc_VWN( xc_calc::XCCalculator, Rhoe )
     Npoints = size(Rhoe,1)
     Nspin = size(Rhoe,2)
     Vxc = zeros(Float64, Npoints, Nspin)
     if Nspin == 1
-        calc_Vxc_VWN!( pwdft_xc, Rhoe[:,1], Vxc )
+        calc_Vxc_VWN!( xc_calc, Rhoe[:,1], Vxc )
         return Vxc        
     else
-        calc_Vxc_VWN!( pwdft_xc, Rhoe, Vxc )
+        calc_Vxc_VWN!( xc_calc, Rhoe, Vxc )
         return Vxc
     end
 
@@ -32,7 +32,7 @@ end
 #
 
 # Spin unpolarized version
-function calc_epsxc_VWN!( pwdft_xc::PWDFT_XC, Rhoe::Array{Float64,1}, epsxc )
+function calc_epsxc_VWN!( xc_calc::XCCalculator, Rhoe::Array{Float64,1}, epsxc )
     Npoints = size(Rhoe,1)    
     for ip in 1:Npoints
         ss_x, _ = XC_x_slater( Rhoe[ip] )
@@ -43,7 +43,7 @@ function calc_epsxc_VWN!( pwdft_xc::PWDFT_XC, Rhoe::Array{Float64,1}, epsxc )
 end
 
 # Spin unpolarized version
-function calc_Vxc_VWN!( pwdft_xc::PWDFT_XC, Rhoe::Array{Float64,1}, Vxc )
+function calc_Vxc_VWN!( xc_calc::XCCalculator, Rhoe::Array{Float64,1}, Vxc )
     Npoints = size(Rhoe,1)
     for ip in 1:Npoints
         _, vx = XC_x_slater( Rhoe[ip] )
@@ -55,11 +55,11 @@ end
 
 
 # Spin-polarized version
-function calc_epsxc_VWN!( pwdft_xc::PWDFT_XC, Rhoe::Array{Float64,2}, epsxc::Array{Float64,1} )    
+function calc_epsxc_VWN!( xc_calc::XCCalculator, Rhoe::Array{Float64,2}, epsxc::Array{Float64,1} )    
     Npoints = size(Rhoe,1)
     Nspin = size(Rhoe,2)
     if Nspin == 1
-        calc_epsxc_VWN!( pwdft_xc, Rhoe[:,1], epsxc )
+        calc_epsxc_VWN!( xc_calc, Rhoe[:,1], epsxc )
         return
     end
 
@@ -75,11 +75,11 @@ function calc_epsxc_VWN!( pwdft_xc::PWDFT_XC, Rhoe::Array{Float64,2}, epsxc::Arr
     return
 end
 
-function calc_Vxc_VWN!( pwdft_xc::PWDFT_XC, Rhoe::Array{Float64,2}, Vxc::Array{Float64,2} )
+function calc_Vxc_VWN!( xc_calc::XCCalculator, Rhoe::Array{Float64,2}, Vxc::Array{Float64,2} )
     Npoints = size(Rhoe,1)
     Nspin = size(Rhoe,2)
     if Nspin == 1
-        calc_Vxc_VWN!( pwdft_xc, Rhoe[:,1], Vxc )
+        calc_Vxc_VWN!( xc_calc, Rhoe[:,1], Vxc )
         return
     end
     for ip in 1:Npoints

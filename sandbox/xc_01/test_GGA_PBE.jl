@@ -7,7 +7,7 @@ const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
 const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
 const DIR_STRUCTURES = joinpath(DIR_PWDFT, "structures")
 
-include("PWDFT_XC.jl")
+include("XCCalculator.jl")
 
 include("GGA_PBE_pwdft_xc.jl")
 
@@ -41,9 +41,9 @@ function main_nospin()
     E_xc = dot( Rhoe, epsxc ) * dVol
     Vxc = calc_Vxc_PBE( pw, Rhoe )
 
-    epsxc = calc_epsxc_PBE( PWDFT_XC(), pw, Rhoe )
+    epsxc = calc_epsxc_PBE( XCCalculator(), pw, Rhoe )
     E_xc_v2 = dot( Rhoe, epsxc ) * dVol
-    Vxc_v2 = calc_Vxc_PBE( PWDFT_XC(), pw, Rhoe )
+    Vxc_v2 = calc_Vxc_PBE( XCCalculator(), pw, Rhoe )
 
     @printf("E_xc v1 = %18.10f\n", E_xc)
     @printf("E_xc v2 = %18.10f\n", E_xc_v2)
@@ -88,9 +88,9 @@ function main_spin()
     E_xc = dot( Rhoe_total, epsxc ) * dVol
     Vxc = calc_Vxc_PBE( pw, Rhoe )
 
-    epsxc = calc_epsxc_PBE( PWDFT_XC(), pw, Rhoe )
+    epsxc = calc_epsxc_PBE( XCCalculator(), pw, Rhoe )
     E_xc_v2 = dot( Rhoe_total, epsxc ) * dVol
-    Vxc_v2 = calc_Vxc_PBE( PWDFT_XC(), pw, Rhoe )
+    Vxc_v2 = calc_Vxc_PBE( XCCalculator(), pw, Rhoe )
 
     @printf("E_xc v1 = %18.10f\n", E_xc)
     @printf("E_xc v2 = %18.10f\n", E_xc_v2)

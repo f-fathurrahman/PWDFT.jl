@@ -1,25 +1,25 @@
-import PWDFT: calc_Vxc_PBE, calc_epsxc_PBE
+import PWDFT: calc_epsxc_PBE, calc_Vxc_PBE
 
 # epsxc is always of type Array{Float64,1}
 # Vxc is always of type Array{Float64,2}
 
 # Rhoe can be spinpol or not
-function calc_epsxc_PBE( pwdft_xc::PWDFT_XC, pw::PWGrid, Rhoe )
+function calc_epsxc_PBE( xc_calc::XCCalculator, pw::PWGrid, Rhoe )
     Npoints = size(Rhoe,1)
     epsxc = zeros(Float64,Npoints)
-    calc_epsxc_PBE!( pwdft_xc, pw, Rhoe, epsxc )
+    calc_epsxc_PBE!( xc_calc, pw, Rhoe, epsxc )
     return epsxc
 end
 
-function calc_Vxc_PBE( pwdft_xc::PWDFT_XC, pw::PWGrid, Rhoe )
+function calc_Vxc_PBE( xc_calc::XCCalculator, pw::PWGrid, Rhoe )
     Npoints = size(Rhoe,1)
     Nspin = size(Rhoe,2)
     Vxc = zeros(Float64, Npoints, Nspin)
     if Nspin == 1
-        calc_Vxc_PBE!( pwdft_xc, pw, Rhoe[:,1], Vxc )
+        calc_Vxc_PBE!( xc_calc, pw, Rhoe[:,1], Vxc )
         return Vxc        
     else
-        calc_Vxc_PBE!( pwdft_xc, pw, Rhoe, Vxc )
+        calc_Vxc_PBE!( xc_calc, pw, Rhoe, Vxc )
         return Vxc
     end
 end
@@ -28,7 +28,7 @@ end
 # Inplace version
 #
 
-function calc_epsxc_PBE!( pwdft_xc::PWDFT_XC, pw::PWGrid, Rhoe::Array{Float64,1}, epsxc )
+function calc_epsxc_PBE!( xc_calc::XCCalculator, pw::PWGrid, Rhoe::Array{Float64,1}, epsxc )
 
     Npoints = size(Rhoe,1)
 
@@ -56,12 +56,12 @@ function calc_epsxc_PBE!( pwdft_xc::PWDFT_XC, pw::PWGrid, Rhoe::Array{Float64,1}
 end
 
 
-function calc_epsxc_PBE!( pwdft_xc::PWDFT_XC, pw::PWGrid, Rhoe::Array{Float64,2}, epsxc )
+function calc_epsxc_PBE!( xc_calc::XCCalculator, pw::PWGrid, Rhoe::Array{Float64,2}, epsxc )
 
     Npoints = size(Rhoe,1)
     Nspin = size(Rhoe,2)
     if Nspin == 1
-        calc_epsxc_PBE!( pwdft_xc, pw, Rhoe[:,1], epsxc )
+        calc_epsxc_PBE!( xc_calc, pw, Rhoe[:,1], epsxc )
         return
     end
 
@@ -107,7 +107,7 @@ function calc_epsxc_PBE!( pwdft_xc::PWDFT_XC, pw::PWGrid, Rhoe::Array{Float64,2}
 end
 
 
-function calc_Vxc_PBE!( pwdft_xc::PWDFT_XC, pw::PWGrid, Rhoe::Array{Float64,1}, Vxc )
+function calc_Vxc_PBE!( xc_calc::XCCalculator, pw::PWGrid, Rhoe::Array{Float64,1}, Vxc )
     
     Npoints = size(Rhoe,1)
 
@@ -147,12 +147,12 @@ function calc_Vxc_PBE!( pwdft_xc::PWDFT_XC, pw::PWGrid, Rhoe::Array{Float64,1}, 
 end
 
 
-function calc_Vxc_PBE!( pwdft_xc::PWDFT_XC, pw::PWGrid, Rhoe::Array{Float64,2}, Vxc::Array{Float64,2} )
+function calc_Vxc_PBE!( xc_calc::XCCalculator, pw::PWGrid, Rhoe::Array{Float64,2}, Vxc::Array{Float64,2} )
     
     Npoints = size(Rhoe,1)
     Nspin = size(Rhoe,2)
     if Nspin == 1
-        calc_Vxc_PBE!( pwdft_xc, pw, Rhoe[:,1], Vxc )
+        calc_Vxc_PBE!( xc_calc, pw, Rhoe[:,1], Vxc )
         return
     end
 

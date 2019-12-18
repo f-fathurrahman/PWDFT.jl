@@ -1,4 +1,10 @@
-struct PWDFT_XC
+abstract type AbstractXCCalculator
+end
+
+struct XCCalculator <: AbstractXCCalculator
+end
+
+struct LibxcXCCalculator <: AbstractXCCalculator
 end
 
 include("XC_x_slater.jl")
