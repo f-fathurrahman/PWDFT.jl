@@ -64,9 +64,9 @@ function calc_E_local( Ham::Hamiltonian )
     E_Ps_loc = dot( potentials.Ps_loc, Rhoe_tot ) * dVol
 
     if Ham.xcfunc == "PBE"
-        epsxc = calc_epsxc_PBE( Ham.pw, Ham.rhoe )
+        epsxc = calc_epsxc_PBE( Ham.xc_calc, Ham.pw, Ham.rhoe )
     else
-        epsxc = calc_epsxc_VWN( Ham.rhoe )
+        epsxc = calc_epsxc_VWN( Ham.xc_calc, Ham.rhoe )
     end
     E_xc = dot( epsxc, Rhoe_tot ) * dVol
 

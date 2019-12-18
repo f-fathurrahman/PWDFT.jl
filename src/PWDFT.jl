@@ -121,10 +121,8 @@ export calc_PspCore_ene
 include("calc_E_NN.jl")
 export calc_E_NN
 
-# mutable struct XCFuncType
-# end
-#
-# export XCFuncType
+include("XCCalculator.jl")
+export AbstractXCCalculator, XCCalculator, LibxcXCCalculator
 
 include("LDA_VWN.jl")
 export calc_epsxc_VWN, calc_Vxc_VWN

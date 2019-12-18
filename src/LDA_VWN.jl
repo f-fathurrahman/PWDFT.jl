@@ -1,6 +1,6 @@
 using Libxc
 
-function calc_epsxc_VWN( Rhoe::Array{Float64,1} )
+function calc_epsxc_VWN( xc_calc::LibxcXCCalculator, Rhoe::Array{Float64,1} )
 
     Npoints = size(Rhoe)[1]
     Nspin = 1
@@ -30,13 +30,13 @@ end
 Calculate XC energy per particle using VWN functional.
 This function works for both spin-polarized and spin-unpolarized system.
 """
-function calc_epsxc_VWN( Rhoe::Array{Float64,2} )
+function calc_epsxc_VWN( xc_calc::LibxcXCCalculator, Rhoe::Array{Float64,2} )
 
     Nspin = size(Rhoe)[2]
     Npoints = size(Rhoe)[1]
 
     if Nspin == 1
-        return calc_epsxc_VWN( Rhoe[:,1] )
+        return calc_epsxc_VWN( xc_calc, Rhoe[:,1] )
     end
 
     # Do the transpose manually
@@ -71,7 +71,7 @@ function calc_epsxc_VWN( Rhoe::Array{Float64,2} )
 end
 
 
-function calc_Vxc_VWN( Rhoe::Array{Float64,1} )
+function calc_Vxc_VWN( xc_calc::LibxcXCCalculator, Rhoe::Array{Float64,1} )
 
     Npoints = size(Rhoe)[1]
     Nspin = 1
@@ -101,11 +101,11 @@ end
 Calculate XC potential using VWN functional.
 This function works for both spin-polarized and spin-unpolarized system.
 """
-function calc_Vxc_VWN( Rhoe::Array{Float64,2} )
+function calc_Vxc_VWN( xc_calc::LibxcXCCalculator, Rhoe::Array{Float64,2} )
 
     Nspin = size(Rhoe)[2]
     if Nspin == 1
-        return calc_Vxc_VWN( Rhoe[:,1] )
+        return calc_Vxc_VWN( xc_calc, Rhoe[:,1] )
     end
 
     Npoints = size(Rhoe)[1]

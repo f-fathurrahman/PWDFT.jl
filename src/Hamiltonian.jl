@@ -10,6 +10,7 @@ mutable struct Hamiltonian
     pspots::Array{PsPot_GTH,1}
     pspotNL::PsPotNL
     xcfunc::String
+    xc_calc::AbstractXCCalculator
     ik::Int64   # current kpoint index
     ispin::Int64 # current spin index
 end
@@ -22,6 +23,7 @@ function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
                       kpoints=nothing,
                       kpts_str="",
                       xcfunc="VWN",
+                      use_xc_internal=false,
                       extra_states=0 )
 
     sym_info = SymmetryInfo(atoms)
@@ -110,22 +112,32 @@ function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
         rhoe_symmetrizer = RhoeSymmetrizer() # dummy rhoe_symmetrizer
     end
 
+    if use_xc_internal
+        xc_calc = XCCalculator()
+    else
+        # Using Libxc is the default
+        xc_calc = LibxcXCCalculator()
+    end
+
     return Hamiltonian( pw, potentials, energies, rhoe,
                         electrons, atoms, sym_info, rhoe_symmetrizer,
-                        Pspots, pspotNL, xcfunc, ik, ispin )
+                        Pspots, pspotNL, xcfunc, xc_calc, ik, ispin )
 end
 
 
 #
 # No pspfiles given. Use Coulomb potential (all electrons)
 #
+# WARNING: This is not tested extensively
 function Hamiltonian( atoms::Atoms, ecutwfc::Float64;
                       Nspin=1,
                       meshk=[1,1,1],
                       shiftk=[0,0,0],
                       kpts_str="",
                       kpoints=nothing,   
-                      xcfunc="VWN", extra_states=0 )
+                      xcfunc="VWN",
+                      use_xc_internal=false,
+                      extra_states=0 )
 
     sym_info = SymmetryInfo(atoms)
 
@@ -189,10 +201,16 @@ function Hamiltonian( atoms::Atoms, ecutwfc::Float64;
         rhoe_symmetrizer = RhoeSymmetrizer() # dummy rhoe_symmetrizer
     end
 
+    if use_xc_internal
+        xc_calc = XCCalculator()
+    else
+        # Using Libxc is the default
+        xc_calc = LibxcXCCalculator()
+    end
 
     return Hamiltonian( pw, potentials, energies, rhoe,
                         electrons, atoms, sym_info, rhoe_symmetrizer,
-                        Pspots, pspotNL, xcfunc, ik, ispin )
+                        Pspots, pspotNL, xcfunc, xc_calc, ik, ispin )
 end
 
 
@@ -204,9 +222,9 @@ function update!(Ham::Hamiltonian, rhoe::Array{Float64,1})
     Ham.rhoe[:,1] = rhoe
     Ham.potentials.Hartree = real( G_to_R( Ham.pw, Poisson_solve(Ham.pw, rhoe) ) )
     if Ham.xcfunc == "PBE"
-        Ham.potentials.XC[:,1] = calc_Vxc_PBE( Ham.pw, rhoe )
+        Ham.potentials.XC[:,1] = calc_Vxc_PBE( Ham.xc_calc, Ham.pw, rhoe )
     else  # VWN is the default
-        Ham.potentials.XC[:,1] = calc_Vxc_VWN( rhoe )
+        Ham.potentials.XC[:,1] = calc_Vxc_VWN( Ham.xc_calc, rhoe )
     end
     Npoints = prod(Ham.pw.Ns)
     for ip = 1:Npoints
@@ -226,9 +244,9 @@ function update!(Ham::Hamiltonian, rhoe::Array{Float64,2})
     Rhoe_total = Ham.rhoe[:,1] + Ham.rhoe[:,2] # Nspin is 2
     Ham.potentials.Hartree = real( G_to_R( Ham.pw, Poisson_solve(Ham.pw, Rhoe_total) ) )
     if Ham.xcfunc == "PBE"
-        Ham.potentials.XC = calc_Vxc_PBE( Ham.pw, rhoe )
+        Ham.potentials.XC = calc_Vxc_PBE( Ham.xc_calc, Ham.pw, rhoe )
     else  # VWN is the default
-        Ham.potentials.XC = calc_Vxc_VWN( rhoe )
+        Ham.potentials.XC = calc_Vxc_VWN( Ham.xc_calc, rhoe )
     end
     Npoints = prod(Ham.pw.Ns)
     for ispin = 1:Nspin
