@@ -4,8 +4,6 @@ using Printf
 using Libxc
 using PWDFT
 
-import PWDFT: guess_rhoe_atomic
-
 const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
 const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
 const DIR_STRUCTURES = joinpath(DIR_PWDFT, "structures")
