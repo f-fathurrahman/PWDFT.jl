@@ -1,0 +1,51 @@
+using Random
+using LinearAlgebra
+using Printf
+using PWDFT
+
+const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
+const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
+const DIR_STRUCTURES = joinpath(DIR_PWDFT, "structures")
+
+include("PWDFT_XC.jl")
+
+include("LDA_VWN_pwdft_xc.jl")
+
+function main()
+    Random.seed!(1234)
+    
+    atoms = Atoms(xyz_string_frac=
+        """
+        2
+
+        Si  0.0  0.0  0.0
+        Si  0.25  0.25  0.25
+        """, in_bohr=true, LatVecs=gen_lattice_fcc(10.2631))
+    pspfiles = [joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth", "Si-q4.gth")]
+    ecutwfc = 15.0
+    Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3] )
+
+    pw = Ham.pw
+    Npoints = prod(pw.Ns)
+    dVol = pw.CellVolume/Npoints
+
+    Rhoe = guess_rhoe_atomic(Ham)
+    @printf("Integrated rhoe = %18.10f\n", sum(Rhoe)*dVol)
+
+    epsxc = calc_epsxc_VWN( Rhoe )
+    E_xc = dot( Rhoe, epsxc ) * dVol
+    Vxc = calc_Vxc_VWN( Rhoe )
+
+    epsxc = calc_epsxc_VWN( PWDFT_XC(), Rhoe )
+    E_xc_v2 = dot( Rhoe, epsxc ) * dVol
+    Vxc_v2 = calc_Vxc_VWN( PWDFT_XC(), Rhoe )
+
+    @printf("E_xc v1 = %18.10f\n", E_xc)
+    @printf("E_xc v2 = %18.10f\n", E_xc_v2)
+    
+    @printf("sum Vxc v1 = %18.10f\n", sum(Vxc))
+    @printf("sum Vxc v2 = %18.10f\n", sum(Vxc_v2))
+
+end
+
+main()
