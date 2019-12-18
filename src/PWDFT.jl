@@ -130,6 +130,10 @@ export calc_epsxc_VWN, calc_Vxc_VWN
 include("GGA_PBE.jl")
 export calc_epsxc_PBE, calc_Vxc_PBE
 
+include("XC_functionals_internal.jl")
+include("LDA_VWN_internal.jl")
+include("GGA_PBE_internal.jl")
+
 include("Energies.jl")
 export Energies
 
