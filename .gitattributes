@@ -1,1 +1,2 @@
 *.c linguist-vendored
+LOG_* linguist-vendored
