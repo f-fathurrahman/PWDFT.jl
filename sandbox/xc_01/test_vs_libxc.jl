@@ -49,9 +49,9 @@ function test_LDA_VWN()
     Rhoe = guess_rhoe_atomic(Ham)
     @printf("Integrated rhoe = %18.10f\n", sum(Rhoe)*dVol)
 
-    Vxc = calc_Vxc_VWN( Rhoe )
+    Vxc = calc_Vxc_VWN( Ham.xc_calc, Rhoe )
 
-    epsxc = calc_epsxc_VWN( Rhoe )
+    epsxc = calc_epsxc_VWN( Ham.xc_calc, Rhoe )
     E_xc = dot( Rhoe, epsxc ) * dVol
 
     etxc = 0.0
@@ -100,9 +100,9 @@ function test_LDA_VWN_spinpol()
     Rhoe = guess_rhoe_atomic(Ham, starting_magnetization=[0.1])
     @printf("Integrated rhoe = %18.10f\n", sum(Rhoe)*dVol)
 
-    Vxc = calc_Vxc_VWN( Rhoe )
+    Vxc = calc_Vxc_VWN( Ham.xc_calc, Rhoe )
 
-    epsxc = calc_epsxc_VWN( Rhoe )
+    epsxc = calc_epsxc_VWN( Ham.xc_calc, Rhoe )
     Rhoe_total = Rhoe[:,1] + Rhoe[:,2]
     E_xc = dot( Rhoe_total, epsxc ) * dVol
 
@@ -160,9 +160,9 @@ function test_GGA_PBE()
     Rhoe = guess_rhoe_atomic(Ham)
     @printf("Integrated rhoe = %18.10f\n", sum(Rhoe)*dVol)
 
-    Vxc = calc_Vxc_PBE( pw, Rhoe )
+    Vxc = calc_Vxc_PBE( Ham.xc_calc, pw, Rhoe )
 
-    epsxc = calc_epsxc_PBE( pw, Rhoe )
+    epsxc = calc_epsxc_PBE( Ham.xc_calc, pw, Rhoe )
     
     # calculate gRhoe2
     gRhoe = op_nabla( pw, Rhoe[:,1] )
@@ -248,7 +248,7 @@ function test_GGA_PBE_spinpol()
 
     @printf("Integrated rhoe = %18.10f\n", sum(Rhoe)*dVol)
 
-    Vxc = calc_Vxc_PBE( pw, Rhoe )
+    Vxc = calc_Vxc_PBE( Ham.xc_calc, pw, Rhoe )
 
     Npoints = prod(Ham.pw.Ns)
     #f = open("TEMP_Vxc_spinpol.dat", "w")
@@ -257,7 +257,7 @@ function test_GGA_PBE_spinpol()
     #end
     #close(f)
 
-    epsxc = calc_epsxc_PBE( pw, Rhoe )
+    epsxc = calc_epsxc_PBE( Ham.xc_calc, pw, Rhoe )
     Rhoe_total = Rhoe[:,1] + Rhoe[:,2]
     E_xc = dot( Rhoe_total, epsxc ) * dVol
 

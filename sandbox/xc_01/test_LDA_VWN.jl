@@ -37,9 +37,9 @@ function main_nospin()
     Rhoe = guess_rhoe_atomic(Ham)
     @printf("Integrated rhoe = %18.10f\n", sum(Rhoe)*dVol)
 
-    epsxc = calc_epsxc_VWN( Rhoe )
+    epsxc = calc_epsxc_VWN( Ham.xc_calc, Rhoe )
     E_xc = dot( Rhoe, epsxc ) * dVol
-    Vxc = calc_Vxc_VWN( Rhoe )
+    Vxc = calc_Vxc_VWN( Ham.xc_calc, Rhoe )
 
     epsxc = calc_epsxc_VWN( XCCalculator(), Rhoe )
     E_xc_v2 = dot( Rhoe, epsxc ) * dVol
@@ -81,9 +81,9 @@ function main_spin()
 
     Rhoe_total = Rhoe[:,1] + Rhoe[:,2]
 
-    epsxc = calc_epsxc_VWN( Rhoe )
+    epsxc = calc_epsxc_VWN( Ham.xc_calc, Rhoe )
     E_xc = dot( Rhoe_total, epsxc ) * dVol
-    Vxc = calc_Vxc_VWN( Rhoe )
+    Vxc = calc_Vxc_VWN( Ham.xc_calc, Rhoe )
 
     epsxc = calc_epsxc_VWN( XCCalculator(), Rhoe )
     E_xc_v2 = dot( Rhoe_total, epsxc ) * dVol
@@ -99,5 +99,5 @@ function main_spin()
 
 end
 
-#main_nospin()
+main_nospin()
 main_spin()
