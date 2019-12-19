@@ -1,16 +1,17 @@
+using LinearAlgebra
 using Random
 using Printf
 
 using PWDFT
 
 const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
-const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pbe_gth")
+const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
 const DIR_STRUCTURES = joinpath(DIR_PWDFT, "structures")
 
 import InteractiveUtils
 InteractiveUtils.versioninfo()
 
-function main( ; method="SCF" )
+function main()
 
     Random.seed!(1234)
 
@@ -26,26 +27,16 @@ function main( ; method="SCF" )
     # Initialize Hamiltonian
     pspfiles = [joinpath(DIR_PSP, "Si-q4.gth")]
     ecutwfc = 15.0
-    Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3], xcfunc="PBE", use_xc_internal=false )
+    Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3],
+        use_xc_internal=true, Nspin=2 )
     println(Ham)
 
     #
     # Solve the KS problem
     #
-    if method == "SCF"
-        KS_solve_SCF!( Ham, mix_method="anderson" )
-
-    elseif method == "Emin"
-        KS_solve_Emin_PCG!( Ham, verbose=true )
-
-    else
-        error( @sprintf("Unknown method %s", method) )
-    end
+    KS_solve_SCF!( Ham, mix_method="rpulay", betamix=0.5 )
     
 end
 
-@time main(method="SCF")
-@time main(method="Emin")
-
-@time main(method="SCF")
-@time main(method="Emin")
+@time main()
+@time main()

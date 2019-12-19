@@ -27,7 +27,7 @@ function main( ; method="SCF" )
     pspfiles = [joinpath(DIR_PSP, "Si-q4.gth")]
     ecutwfc = 15.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3],
-        xcfunc="PBE", use_xc_internal=false, Nspin=2 )
+        xcfunc="PBE", use_xc_internal=true, Nspin=2 )
     println(Ham)
 
     #
