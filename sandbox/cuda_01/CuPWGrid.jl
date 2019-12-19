@@ -34,17 +34,17 @@ end
 
 # Naive copy
 function CuGVectorsW( gvecw::GVectorsW )
-    
+
     Ngwx = gvecw.Ngwx
     Ngw = gvecw.Ngw
 
     kpoints = gvecw.kpoints
     Nkpt = kpoints.Nkpt
-    
+
     TYP = typeof(CuArray([1]))
     idx_gw2g = Array{TYP,1}(undef,Nkpt)
     idx_gw2r = Array{TYP,1}(undef,Nkpt)
-    
+
     # Copy to GPU
     for ik in 1:Nkpt
         idx_gw2g[ik] = CuArray( gvecw.idx_gw2g[ik] )
@@ -99,7 +99,7 @@ function CuPWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2}; kpoints=nothing,
 
     Npoints = prod(Ns)
     r = PWDFT.init_grid_R( Ns, LatVecs )  # FIXME: Not really used for now
-    
+
     gvec_ = PWDFT.init_gvec( Ns, RecVecs, ecutrho )
     gvec = CuGVectors( gvec_ )
 
@@ -115,4 +115,75 @@ function CuPWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2}; kpoints=nothing,
 
     return CuPWGrid( ecutwfc, ecutrho, Ns, LatVecs, RecVecs, CellVolume, r, gvec, gvecw,
                      planfw, planbw )
+end
+
+import PWDFT: op_nabla, op_nabla_dot
+
+function kernel_op_nabla!( idx_g2r, G, RhoeG, res )
+    ig = ( blockIdx().x - 1 )*blockDim().x + threadIdx().x
+    Ng = length(idx_g2r)
+    if ig <= Ng
+        ip = idx_g2r[ig]
+        res[1,ip] = im*G[1,ig]*RhoeG[ip]
+        res[2,ip] = im*G[2,ig]*RhoeG[ip]
+        res[3,ip] = im*G[3,ig]*RhoeG[ip]
+    end
+    return
+end
+
+function op_nabla( pw::CuPWGrid, Rhoe::CuArray{Float64,1} )
+    G = pw.gvec.G
+    Ng = pw.gvec.Ng
+    idx_g2r = pw.gvec.idx_g2r
+    Npoints = prod(pw.Ns)
+
+    RhoeG = R_to_G(pw,Rhoe)  # We are not taking indexing here
+
+    ∇RhoeG_full = CuArrays.zeros(ComplexF64,3,Npoints)
+    ∇Rhoe = CuArrays.zeros(Float64,3,Npoints)
+
+    Nthreads = 256
+    Nblocks = ceil(Int64, Ng/Nthreads)
+
+    @cuda threads=Nthreads blocks=Nblocks kernel_op_nabla!( idx_g2r, G, RhoeG, ∇RhoeG_full )
+
+    ∇Rhoe[1,:] = real(G_to_R(pw,∇RhoeG_full[1,:]))
+    ∇Rhoe[2,:] = real(G_to_R(pw,∇RhoeG_full[2,:]))
+    ∇Rhoe[3,:] = real(G_to_R(pw,∇RhoeG_full[3,:]))
+    return ∇Rhoe
+
+end
+
+function kernel_op_nabla_dot!( idx_g2r, G, hG, res )
+    ig = ( blockIdx().x - 1 )*blockDim().x + threadIdx().x
+    Ng = length(idx_g2r)
+    if ig <= Ng
+        ip = idx_g2r[ig]
+        res[ip] = im*( G[1,ig]*hG[1,ip] + G[2,ig]*hG[2,ip] + G[3,ig]*hG[3,ip] )
+    end
+    return
+end
+
+function op_nabla_dot( pw::CuPWGrid, h::CuArray{Float64,2} )
+    G = pw.gvec.G
+    Ng = pw.gvec.Ng
+    idx_g2r = pw.gvec.idx_g2r
+    Npoints = prod(pw.Ns)
+
+    # hG is using Npoints instead of Ng
+    hG = CuArrays.zeros(ComplexF64,3,Npoints)
+    hG[1,:] = R_to_G( pw, h[1,:] )
+    hG[2,:] = R_to_G( pw, h[2,:] )
+    hG[3,:] = R_to_G( pw, h[3,:] )
+
+    divhG_full = zeros(ComplexF64,Npoints)
+
+    Nthreads = 256
+    Nblocks = ceil(Int64, Ng/Nthreads)
+
+    @cuda threads=Nthreads blocks=Nblocks kernel_op_nabla_dot!( idx_g2r, G, hG, divhG_full )
+
+    divh = real( G_to_R( pw, divhG_full ) )
+    return divh
+
 end
