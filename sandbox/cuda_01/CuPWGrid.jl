@@ -176,7 +176,7 @@ function op_nabla_dot( pw::CuPWGrid, h::CuArray{Float64,2} )
     hG[2,:] = R_to_G( pw, h[2,:] )
     hG[3,:] = R_to_G( pw, h[3,:] )
 
-    divhG_full = zeros(ComplexF64,Npoints)
+    divhG_full = CuArrays.zeros(ComplexF64,Npoints)
 
     Nthreads = 256
     Nblocks = ceil(Int64, Ng/Nthreads)
