@@ -79,6 +79,25 @@ function calc_Vxc_VWN!( xc_calc::XCCalculator, Rhoe::CuArray{Float64,1}, Vxc )
 end
 
 
+
+function kernel_epsxc_VWN_spin!( Rhoe, epsxc )
+    ip = ( blockIdx().x - 1 )*blockDim().x + threadIdx().x
+    
+    Npoints = size(Rhoe,1)
+    if ip <= Npoints
+        ρ = Rhoe[ip,1] + Rhoe[ip,2]
+        ζ = (Rhoe[ip,1] - Rhoe[ip,2])/ρ
+        
+        ss_x, _, _ = cu_XC_x_slater_spin( ρ, ζ )
+        ss_c, _, _ = cu_XC_c_vwn_spin( ρ, ζ )
+        
+        epsxc[ip] = ss_x + ss_c
+    end
+    
+    return
+end
+
+
 # Spin-polarized version
 function calc_epsxc_VWN!( xc_calc::XCCalculator, Rhoe::CuArray{Float64,2}, epsxc::CuArray{Float64,1} )    
     Npoints = size(Rhoe,1)
@@ -88,17 +107,34 @@ function calc_epsxc_VWN!( xc_calc::XCCalculator, Rhoe::CuArray{Float64,2}, epsxc
         return
     end
 
-    for ip in 1:Npoints
-        ρ = Rhoe[ip,1] + Rhoe[ip,2]
-        ζ = (Rhoe[ip,1] - Rhoe[ip,2])/ρ
-        
-        ss_x, _, _ = XC_x_slater_spin( ρ, ζ )
-        ss_c, _, _ = XC_c_vwn_spin( ρ, ζ )
-        
-        epsxc[ip] = ss_x + ss_c
-    end
+    Nthreads = 256
+    Nblocks = ceil(Int64, Npoints/Nthreads)
+    @cuda threads=Nthreads blocks=Nblocks kernel_epsxc_VWN_spin!( Rhoe, epsxc )
+
     return
 end
+
+
+function kernel_Vxc_VWN_spin!( Rhoe, Vxc )
+    
+    ip = ( blockIdx().x - 1 )*blockDim().x + threadIdx().x
+    
+    Npoints = size(Rhoe,1)
+    if ip <= Npoints
+        ρ = Rhoe[ip,1] + Rhoe[ip,2]
+        ζ = (Rhoe[ip,1] - Rhoe[ip,2])/ρ
+
+        _, vxup, vxdn = cu_XC_x_slater_spin( ρ, ζ )
+        _, vcup, vcdn = cu_XC_c_vwn_spin( ρ, ζ )
+
+        Vxc[ip,1] = vxup + vcup
+        Vxc[ip,2] = vxdn + vcdn
+    end
+    
+    return
+end
+
+
 
 function calc_Vxc_VWN!( xc_calc::XCCalculator, Rhoe::CuArray{Float64,2}, Vxc::CuArray{Float64,2} )
     Npoints = size(Rhoe,1)
@@ -107,15 +143,10 @@ function calc_Vxc_VWN!( xc_calc::XCCalculator, Rhoe::CuArray{Float64,2}, Vxc::Cu
         calc_Vxc_VWN!( xc_calc, Rhoe[:,1], Vxc )
         return
     end
-    for ip in 1:Npoints
-        ρ = Rhoe[ip,1] + Rhoe[ip,2]
-        ζ = (Rhoe[ip,1] - Rhoe[ip,2])/ρ
 
-        _, vxup, vxdn = XC_x_slater_spin( ρ, ζ )
-        _, vcup, vcdn = XC_c_vwn_spin( ρ, ζ )
+    Nthreads = 256
+    Nblocks = ceil(Int64, Npoints/Nthreads)
+    @cuda threads=Nthreads blocks=Nblocks kernel_Vxc_VWN_spin!( Rhoe, Vxc )
 
-        Vxc[ip,1] = vxup + vcup
-        Vxc[ip,2] = vxdn + vcdn
-    end    
     return
 end
