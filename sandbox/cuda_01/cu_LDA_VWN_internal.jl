@@ -1,7 +1,7 @@
 import PWDFT: calc_epsxc_VWN, calc_Vxc_VWN
 
-# epsxc is always of type Array{Float64,1}
-# Vxc is always of type Array{Float64,2}
+# epsxc is always of type CuArray{Float64,1}
+# Vxc is always of type CuArray{Float64,2}
 
 # Rhoe can be spinpol or not
 function calc_epsxc_VWN( xc_calc::XCCalculator, Rhoe::CuArray{Float64,2} )
