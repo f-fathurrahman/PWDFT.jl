@@ -2,9 +2,6 @@ using Test
 
 include("PWDFT_cuda.jl")
 
-include("cu_XC_functionals_internal.jl")
-include("cu_GGA_PBE_internal.jl")
-
 using Random
 
 function main_nospin()

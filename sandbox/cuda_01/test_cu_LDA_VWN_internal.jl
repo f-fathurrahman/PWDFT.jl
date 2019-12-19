@@ -1,10 +1,6 @@
 using Test
-using Printf
-using PWDFT
-using CUDAnative, CuArrays
 
-include("cu_XC_functionals_internal.jl")
-include("cu_LDA_VWN_internal.jl")
+include("PWDFT_cuda.jl")
 
 function main_nospin()
     Npoints = 1000

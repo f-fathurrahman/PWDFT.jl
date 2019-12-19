@@ -23,6 +23,10 @@ include("cu_types_aliases.jl")
 include("cu_ortho_gram_schmidt.jl")
 include("cu_ortho_check.jl")
 
+include("cu_XC_functionals_internal.jl")
+include("cu_LDA_VWN_internal.jl")
+include("cu_GGA_PBE_internal.jl")
+
 include("CuPotentials.jl")
 include("CuPsPotNL.jl")
 include("CuHamiltonian.jl")

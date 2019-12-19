@@ -21,6 +21,8 @@ function main()
     dVol = Ham.pw.CellVolume/prod(Ham.pw.Ns)
     println("integ Rhoe = ", sum(Rhoe)*dVol)
 
+    update!( Ham, Rhoe )
+
     println("Pass here")
 end
 
