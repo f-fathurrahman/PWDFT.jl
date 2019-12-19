@@ -19,8 +19,6 @@ function XC_c_pbe_spin_E( rho, zeta, grho )
     
     fz2 = fz * fz
     fz3 = fz2 * fz
-    fz4 = fz3 * fz
-    dfz = ( (1.0 + zeta)^(-1.0/3.0) - (1.0 - zeta)^( -1.0 / 3.0) ) / 3.0
     
     t = sqrt(grho) / (2.0 * fz * ks * rho)
     expe = exp( - ec / (fz3 * ga) )

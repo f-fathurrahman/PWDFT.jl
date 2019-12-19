@@ -9,7 +9,7 @@ function XC_c_pbe_E( rho, grho )
     xks = 1.128379167095513
 
     rs = pi34/rho^third
-    ec, vc = XC_c_pw( rho )
+    ec = XC_c_pw_E( rho )
     
     kf = xkf/rs
     ks = xks * sqrt(kf)
@@ -17,8 +17,6 @@ function XC_c_pbe_E( rho, grho )
     
     expe = exp(-ec/ga)
     af = be / ga * (1.0 / (expe - 1.0) )
-    
-    bf = expe * (vc - ec)
   
     y = af * t * t
   

@@ -8,6 +8,7 @@ include("XC_funcs/XC_c_pbe_spin.jl")
 include("XC_funcs/XC_c_pbe_spin_E.jl")
 
 include("XC_funcs/XC_c_pw.jl")
+include("XC_funcs/XC_c_pw_E.jl")
 
 include("XC_funcs/XC_c_pw_spin.jl")
 include("XC_funcs/XC_c_pw_spin_E.jl")
