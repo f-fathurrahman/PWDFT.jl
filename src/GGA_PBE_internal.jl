@@ -118,8 +118,8 @@ function calc_Vxc_PBE!( xc_calc::XCCalculator, pw::PWGrid, Rhoe::Array{Float64,1
     end
 
     # h contains D(rho*Exc)/D(|grad rho|) * (grad rho) / |grad rho|
-    h = zeros(3,Npoints)
-    dh = zeros(Npoints)
+    h = zeros(Float64,3,Npoints)
+    dh = zeros(Float64,Npoints)
 
     for ip in 1:Npoints
 
@@ -177,11 +177,11 @@ function calc_Vxc_PBE!( xc_calc::XCCalculator, pw::PWGrid, Rhoe::Array{Float64,2
     end
 
     # h contains D(rho*Exc)/D(|grad rho|) * (grad rho) / |grad rho|
-    h_up = zeros(3,Npoints)
-    h_dn = zeros(3,Npoints)
+    h_up = zeros(Float64,3,Npoints)
+    h_dn = zeros(Float64,3,Npoints)
     #
-    dh_up = zeros(Npoints)
-    dh_dn = zeros(Npoints)
+    dh_up = zeros(Float64,Npoints)
+    dh_dn = zeros(Float64,Npoints)
 
     for ip in 1:Npoints
 
