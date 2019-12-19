@@ -34,7 +34,7 @@ function calc_epsxc_PBE!( xc_calc::XCCalculator, pw::PWGrid, Rhoe::Array{Float64
     gRhoe = op_nabla( pw, Rhoe )
     gRhoe2 = zeros( Float64, Npoints )
     for ip = 1:Npoints
-        gRhoe2[ip] = dot( gRhoe[:,ip], gRhoe[:,ip] )
+        gRhoe2[ip] = gRhoe[1,ip]*gRhoe[1,ip] + gRhoe[2,ip]*gRhoe[2,ip] + gRhoe[3,ip]*gRhoe[3,ip]
     end
 
     for ip in 1:Npoints
@@ -72,11 +72,12 @@ function calc_epsxc_PBE!( xc_calc::XCCalculator, pw::PWGrid, Rhoe::Array{Float64
     gRhoe2_up = zeros( Float64, Npoints )
     gRhoe2_dn = zeros( Float64, Npoints )
     gRhoe2 = zeros( Float64, Npoints )
-    #
+
+    # This is ugly but can save memory allocation a little bit
     for ip = 1:Npoints
-        gRhoe2_up[ip] = dot( gRhoe_up[:,ip], gRhoe_up[:,ip] )
-        gRhoe2_dn[ip] = dot( gRhoe_dn[:,ip], gRhoe_dn[:,ip] )
-        gRhoe2[ip] = dot( gRhoe[:,ip],  gRhoe[:,ip] )
+        gRhoe2_up[ip] = gRhoe_up[1,ip]*gRhoe_up[1,ip] + gRhoe_up[2,ip]*gRhoe_up[2,ip] + gRhoe_up[3,ip]*gRhoe_up[3,ip]
+        gRhoe2_dn[ip] = gRhoe_dn[1,ip]*gRhoe_dn[1,ip] + gRhoe_dn[2,ip]*gRhoe_dn[2,ip] + gRhoe_dn[3,ip]*gRhoe_dn[3,ip]
+        gRhoe2[ip] = gRhoe[1,ip]*gRhoe[1,ip] + gRhoe[2,ip]*gRhoe[2,ip] + gRhoe[3,ip]*gRhoe[3,ip]
     end
 
     for ip in 1:Npoints
@@ -86,15 +87,15 @@ function calc_epsxc_PBE!( xc_calc::XCCalculator, pw::PWGrid, Rhoe::Array{Float64
         ρ = ρ_up + ρ_dn
         ζ = (ρ_up - ρ_dn)/ρ
 
-        ss_x, _, _ = XC_x_slater_spin( ρ, ζ )
-        ss_c, _, _ = XC_c_pw_spin( ρ, ζ )
+        ss_x = XC_x_slater_spin_E( ρ, ζ )
+        ss_c = XC_c_pw_spin_E( ρ, ζ )
 
-        gss_xup, _, _ = XC_x_pbe( 2*ρ_up, 4*gRhoe2_up[ip] )
-        gss_xdn, _, _ = XC_x_pbe( 2*ρ_dn, 4*gRhoe2_dn[ip] )
+        gss_xup = XC_x_pbe_E( 2*ρ_up, 4*gRhoe2_up[ip] )
+        gss_xdn = XC_x_pbe_E( 2*ρ_dn, 4*gRhoe2_dn[ip] )
 
         gss_x = 0.5 * (gss_xup + gss_xdn)
 
-        gss_c, _, _, _ = XC_c_pbe_spin( ρ, ζ, gRhoe2[ip] )
+        gss_c = XC_c_pbe_spin_E( ρ, ζ, gRhoe2[ip] )
 
         epsxc[ip] = ( ss_x + ss_c ) + ( gss_x + gss_c )/ρ
 
@@ -113,7 +114,7 @@ function calc_Vxc_PBE!( xc_calc::XCCalculator, pw::PWGrid, Rhoe::Array{Float64,1
     gRhoe = op_nabla( pw, Rhoe )
     gRhoe2 = zeros( Float64, Npoints )
     for ip = 1:Npoints
-        gRhoe2[ip] = dot( gRhoe[:,ip], gRhoe[:,ip] )
+        gRhoe2[ip] = gRhoe[1,ip]*gRhoe[1,ip] + gRhoe[2,ip]*gRhoe[2,ip] + gRhoe[3,ip]*gRhoe[3,ip]
     end
 
     # h contains D(rho*Exc)/D(|grad rho|) * (grad rho) / |grad rho|
@@ -168,10 +169,11 @@ function calc_Vxc_PBE!( xc_calc::XCCalculator, pw::PWGrid, Rhoe::Array{Float64,2
     gRhoe2_dn = zeros( Float64, Npoints )
     gRhoe2 = zeros( Float64, Npoints )
 
+    # This is ugly but can save memory allocation a little bit
     for ip = 1:Npoints
-        gRhoe2_up[ip] = dot( gRhoe_up[:,ip], gRhoe_up[:,ip] )
-        gRhoe2_dn[ip] = dot( gRhoe_dn[:,ip], gRhoe_dn[:,ip] )
-        gRhoe2[ip] = dot( gRhoe[:,ip],  gRhoe[:,ip] )
+        gRhoe2_up[ip] = gRhoe_up[1,ip]*gRhoe_up[1,ip] + gRhoe_up[2,ip]*gRhoe_up[2,ip] + gRhoe_up[3,ip]*gRhoe_up[3,ip]
+        gRhoe2_dn[ip] = gRhoe_dn[1,ip]*gRhoe_dn[1,ip] + gRhoe_dn[2,ip]*gRhoe_dn[2,ip] + gRhoe_dn[3,ip]*gRhoe_dn[3,ip]
+        gRhoe2[ip] = gRhoe[1,ip]*gRhoe[1,ip] + gRhoe[2,ip]*gRhoe[2,ip] + gRhoe[3,ip]*gRhoe[3,ip]
     end
 
     # h contains D(rho*Exc)/D(|grad rho|) * (grad rho) / |grad rho|

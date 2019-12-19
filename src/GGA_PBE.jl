@@ -11,7 +11,7 @@ function calc_epsxc_PBE( xc_calc::LibxcXCCalculator, pw::PWGrid, Rhoe::Array{Flo
     gRhoe = op_nabla( pw, Rhoe )
     gRhoe2 = zeros( Float64, Npoints )
     for ip = 1:Npoints
-        gRhoe2[ip] = dot( gRhoe[:,ip], gRhoe[:,ip] )
+        gRhoe2[ip] = gRhoe[1,ip]*gRhoe[1,ip] + gRhoe[2,ip]*gRhoe[2,ip] + gRhoe[3,ip]*gRhoe[3,ip]
     end
 
     eps_x = zeros(Float64,Npoints)
@@ -52,9 +52,9 @@ function calc_epsxc_PBE( xc_calc::LibxcXCCalculator, pw::PWGrid, Rhoe::Array{Flo
     ipp = 0
     for ip = 1:3:3*Npoints
         ipp = ipp + 1
-        gRhoe2[ip]   = dot( gRhoe_up[:,ipp], gRhoe_up[:,ipp] )
-        gRhoe2[ip+1] = dot( gRhoe_up[:,ipp], gRhoe_dn[:,ipp] )
-        gRhoe2[ip+2] = dot( gRhoe_dn[:,ipp], gRhoe_dn[:,ipp] )
+        gRhoe2[ip]   = gRhoe_up[1,ipp]*gRhoe_up[1,ipp] + gRhoe_up[2,ipp]*gRhoe_up[2,ipp] + gRhoe_up[3,ipp]*gRhoe_up[3,ipp]
+        gRhoe2[ip+1] = gRhoe_up[1,ipp]*gRhoe_dn[1,ipp] + gRhoe_up[2,ipp]*gRhoe_dn[2,ipp] + gRhoe_up[3,ipp]*gRhoe_dn[3,ipp]
+        gRhoe2[ip+2] = gRhoe_dn[1,ipp]*gRhoe_dn[1,ipp] + gRhoe_dn[2,ipp]*gRhoe_dn[2,ipp] + gRhoe_dn[3,ipp]*gRhoe_dn[3,ipp]
     end
 
     Rhoe_tmp = zeros(2*Npoints)
@@ -96,7 +96,7 @@ function calc_Vxc_PBE( xc_calc::LibxcXCCalculator, pw::PWGrid, Rhoe::Array{Float
     gRhoe = op_nabla( pw, Rhoe )
     gRhoe2 = zeros( Float64, Npoints )
     for ip = 1:Npoints
-        gRhoe2[ip] = dot( gRhoe[:,ip], gRhoe[:,ip] )
+        gRhoe2[ip] = gRhoe[1,ip]*gRhoe[1,ip] + gRhoe[2,ip]*gRhoe[2,ip] + gRhoe[3,ip]*gRhoe[3,ip]
     end
 
     V_x = zeros(Float64,Npoints)
@@ -160,9 +160,9 @@ function calc_Vxc_PBE( xc_calc::LibxcXCCalculator, pw::PWGrid, Rhoe::Array{Float
     ipp = 0
     for ip = 1:3:3*Npoints
         ipp = ipp + 1
-        gRhoe2[ip]   = dot( gRhoe_up[:,ipp], gRhoe_up[:,ipp] )
-        gRhoe2[ip+1] = dot( gRhoe_up[:,ipp], gRhoe_dn[:,ipp] )
-        gRhoe2[ip+2] = dot( gRhoe_dn[:,ipp], gRhoe_dn[:,ipp] )
+        gRhoe2[ip]   = gRhoe_up[1,ipp]*gRhoe_up[1,ipp] + gRhoe_up[2,ipp]*gRhoe_up[2,ipp] + gRhoe_up[3,ipp]*gRhoe_up[3,ipp]
+        gRhoe2[ip+1] = gRhoe_up[1,ipp]*gRhoe_dn[1,ipp] + gRhoe_up[2,ipp]*gRhoe_dn[2,ipp] + gRhoe_up[3,ipp]*gRhoe_dn[3,ipp]
+        gRhoe2[ip+2] = gRhoe_dn[1,ipp]*gRhoe_dn[1,ipp] + gRhoe_dn[2,ipp]*gRhoe_dn[2,ipp] + gRhoe_dn[3,ipp]*gRhoe_dn[3,ipp]
     end
 
     V_xc = zeros(Float64, Npoints, 2)
