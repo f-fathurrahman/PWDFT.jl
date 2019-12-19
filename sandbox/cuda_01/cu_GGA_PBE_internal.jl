@@ -95,14 +95,15 @@ function calc_epsxc_PBE!( xc_calc::XCCalculator, pw::CuPWGrid, Rhoe::CuArray{Flo
     end
 
     Rhoe_total = Rhoe[:,1] + Rhoe[:,2]
+
     # calculate gRhoe2
     gRhoe_up = op_nabla( pw, Rhoe[:,1] )
     gRhoe_dn = op_nabla( pw, Rhoe[:,2] )
     gRhoe = op_nabla( pw, Rhoe_total )
     #
-    gRhoe2_up = zeros( Float64, Npoints )
-    gRhoe2_dn = zeros( Float64, Npoints )
-    gRhoe2 = zeros( Float64, Npoints )
+    gRhoe2_up = CuArrays.zeros( Float64, Npoints )
+    gRhoe2_dn = CuArrays.zeros( Float64, Npoints )
+    gRhoe2 = CuArrays.zeros( Float64, Npoints )
 
     # This is ugly but can save memory allocation a little bit
     for ip = 1:Npoints
@@ -137,30 +138,21 @@ function calc_epsxc_PBE!( xc_calc::XCCalculator, pw::CuPWGrid, Rhoe::CuArray{Flo
 end
 
 
-function calc_Vxc_PBE!( xc_calc::XCCalculator, pw::CuPWGrid, Rhoe::Array{Float64,1}, Vxc )
-    
+
+function kernel_Vxc_PBE!( Rhoe, gRhoe, gRhoe2, h, Vxc )
+
+    ip = ( blockIdx().x - 1 )*blockDim().x + threadIdx().x
     Npoints = size(Rhoe,1)
-
-    # calculate gRhoe2
-    gRhoe = op_nabla( pw, Rhoe )
-    gRhoe2 = zeros( Float64, Npoints )
-    for ip = 1:Npoints
-        gRhoe2[ip] = gRhoe[1,ip]*gRhoe[1,ip] + gRhoe[2,ip]*gRhoe[2,ip] + gRhoe[3,ip]*gRhoe[3,ip]
-    end
-
-    # h contains D(rho*Exc)/D(|grad rho|) * (grad rho) / |grad rho|
-    h = zeros(3,Npoints)
-    dh = zeros(Npoints)
-
-    for ip in 1:Npoints
-
+    
+    if ip <= Npoints
+        
         ρ = Rhoe[ip]
 
-        _, vx = XC_x_slater( ρ )
-        _, v1x, v2x = XC_x_pbe( ρ, gRhoe2[ip] )
+        _, vx = cu_XC_x_slater( ρ )
+        _, v1x, v2x = cu_XC_x_pbe( ρ, gRhoe2[ip] )
         
-        _, vc = XC_c_pw( ρ )
-        _, v1c, v2c = XC_c_pbe( ρ, gRhoe2[ip] )
+        _, vc = cu_XC_c_pw( ρ )
+        _, v1c, v2c = cu_XC_c_pbe( ρ, gRhoe2[ip] )
 
         Vxc[ip] = vx + vc + v1x + v1c
         
@@ -171,17 +163,36 @@ function calc_Vxc_PBE!( xc_calc::XCCalculator, pw::CuPWGrid, Rhoe::Array{Float64
 
     end
 
-    dh[:] = op_nabla_dot(pw, h)
+    return
+end
 
-    for ip in 1:Npoints
-        Vxc[ip] = Vxc[ip] - dh[ip]
-    end
+
+function calc_Vxc_PBE!( xc_calc::XCCalculator, pw::CuPWGrid, Rhoe::CuArray{Float64,1}, Vxc )
+    
+    Npoints = size(Rhoe,1)
+
+    # calculate gRhoe2
+    gRhoe = op_nabla( pw, Rhoe )
+    gRhoe2 = CuArrays.zeros( Float64, Npoints )
+    
+    Nthreads = 256
+    Nblocks = ceil( Int64, Npoints/Nthreads )
+    
+    @cuda threads=Nthreads blocks=Nblocks kernel_calc_v_3_squared!( gRhoe, gRhoe2 )
+
+    h = CuArrays.zeros(Float64,3,Npoints)
+
+    @cuda threads=Nthreads blocks=Nblocks kernel_Vxc_PBE!( Rhoe, gRhoe, gRhoe2, h, Vxc )
+
+    dh = op_nabla_dot(pw, h)
+
+    Vxc[:] = Vxc[:] - dh[:]
 
     return
 end
 
 
-function calc_Vxc_PBE!( xc_calc::XCCalculator, pw::CuPWGrid, Rhoe::Array{Float64,2}, Vxc::Array{Float64,2} )
+function calc_Vxc_PBE!( xc_calc::XCCalculator, pw::CuPWGrid, Rhoe::CuArray{Float64,2}, Vxc::CuArray{Float64,2} )
     
     Npoints = size(Rhoe,1)
     Nspin = size(Rhoe,2)
@@ -196,9 +207,9 @@ function calc_Vxc_PBE!( xc_calc::XCCalculator, pw::CuPWGrid, Rhoe::Array{Float64
     gRhoe_dn = op_nabla( pw, Rhoe[:,2] )
     gRhoe = op_nabla( pw, Rhoe_total )
 
-    gRhoe2_up = zeros( Float64, Npoints )
-    gRhoe2_dn = zeros( Float64, Npoints )
-    gRhoe2 = zeros( Float64, Npoints )
+    gRhoe2_up = CuArrays.zeros( Float64, Npoints )
+    gRhoe2_dn = CuArrays.zeros( Float64, Npoints )
+    gRhoe2 = CuArrays.zeros( Float64, Npoints )
 
     # This is ugly but can save memory allocation a little bit
     for ip = 1:Npoints
@@ -208,11 +219,11 @@ function calc_Vxc_PBE!( xc_calc::XCCalculator, pw::CuPWGrid, Rhoe::Array{Float64
     end
 
     # h contains D(rho*Exc)/D(|grad rho|) * (grad rho) / |grad rho|
-    h_up = zeros(3,Npoints)
-    h_dn = zeros(3,Npoints)
+    h_up = Cuarrays.zeros(Float64,3,Npoints)
+    h_dn = Cuarrays.zeros(Float64,3,Npoints)
     #
-    dh_up = zeros(Npoints)
-    dh_dn = zeros(Npoints)
+    dh_up = CuArrays.zeros(Float64,Npoints)
+    dh_dn = CuArrays.zeros(Float64,Npoints)
 
     for ip in 1:Npoints
 

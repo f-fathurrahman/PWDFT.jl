@@ -23,26 +23,26 @@ function main_nospin()
 
     epsxc = calc_epsxc_PBE( XCCalculator(), pw, Rhoe )
     
-    #Vxc = calc_Vxc_VWN( XCCalculator(), Rhoe )
+    Vxc = calc_Vxc_PBE( XCCalculator(), pw, Rhoe )
 
     epsxc_cpu = calc_epsxc_PBE( XCCalculator(), pw_cpu, collect(Rhoe) )
-    #Vxc_cpu = calc_Vxc_VWN( XCCalculator(), collect(Rhoe) )
+    Vxc_cpu = calc_Vxc_PBE( XCCalculator(), pw_cpu, collect(Rhoe) )
 
     epsxc_gpu = collect( epsxc )
-    #Vxc_gpu = collect( Vxc )
+    Vxc_gpu = collect( Vxc )
 
     println("Some epsxc")
     for i in 1:5
         @printf("%18.10f %18.10f\n", epsxc_cpu[i], epsxc_gpu[i])
     end
 
-    #println("Some Vxc")
-    #for i in 1:5
-    #    @printf("%18.10f %18.10f\n", Vxc_cpu[i], Vxc_gpu[i])
-    #end
+    println("Some Vxc")
+    for i in 1:5
+        @printf("%18.10f %18.10f\n", Vxc_cpu[i], Vxc_gpu[i])
+    end
 
     @test epsxc_cpu ≈ epsxc_gpu
-    #@test Vxc_cpu ≈ Vxc_gpu
+    @test Vxc_cpu ≈ Vxc_gpu
 
     println("Pass here")
 end
