@@ -85,6 +85,38 @@ function calc_epsxc_PBE!( xc_calc::XCCalculator, pw::CuPWGrid, Rhoe::CuArray{Flo
 end
 
 
+
+function kernel_epsxc_PBE_spin!( Rhoe, gRhoe2, gRhoe2_up, gRhoe2_dn, epsxc )
+
+    ip = ( blockIdx().x - 1 )*blockDim().x + threadIdx().x
+    Npoints = size(Rhoe,1)
+    
+    if ip <= Npoints
+
+        ρ_up = Rhoe[ip,1]
+        ρ_dn = Rhoe[ip,2]
+        ρ = ρ_up + ρ_dn
+        ζ = (ρ_up - ρ_dn)/ρ
+
+        ss_x = cu_XC_x_slater_spin_E( ρ, ζ )
+        ss_c = cu_XC_c_pw_spin_E( ρ, ζ )
+
+        gss_xup = cu_XC_x_pbe_E( 2*ρ_up, 4*gRhoe2_up[ip] )
+        gss_xdn = cu_XC_x_pbe_E( 2*ρ_dn, 4*gRhoe2_dn[ip] )
+
+        gss_x = 0.5*( gss_xup + gss_xdn )
+
+        gss_c = cu_XC_c_pbe_spin_E( ρ, ζ, gRhoe2[ip] )
+
+        epsxc[ip] = ( ss_x + ss_c ) + ( gss_x + gss_c )/ρ
+
+    end
+
+    return
+end
+
+
+
 function calc_epsxc_PBE!( xc_calc::XCCalculator, pw::CuPWGrid, Rhoe::CuArray{Float64,2}, epsxc )
 
     Npoints = size(Rhoe,1)
@@ -105,33 +137,14 @@ function calc_epsxc_PBE!( xc_calc::XCCalculator, pw::CuPWGrid, Rhoe::CuArray{Flo
     gRhoe2_dn = CuArrays.zeros( Float64, Npoints )
     gRhoe2 = CuArrays.zeros( Float64, Npoints )
 
-    # This is ugly but can save memory allocation a little bit
-    for ip = 1:Npoints
-        gRhoe2_up[ip] = gRhoe_up[1,ip]*gRhoe_up[1,ip] + gRhoe_up[2,ip]*gRhoe_up[2,ip] + gRhoe_up[3,ip]*gRhoe_up[3,ip]
-        gRhoe2_dn[ip] = gRhoe_dn[1,ip]*gRhoe_dn[1,ip] + gRhoe_dn[2,ip]*gRhoe_dn[2,ip] + gRhoe_dn[3,ip]*gRhoe_dn[3,ip]
-        gRhoe2[ip] = gRhoe[1,ip]*gRhoe[1,ip] + gRhoe[2,ip]*gRhoe[2,ip] + gRhoe[3,ip]*gRhoe[3,ip]
-    end
+    Nthreads = 256
+    Nblocks = ceil( Int64, Npoints/Nthreads )
 
-    for ip in 1:Npoints
+    @cuda threads=Nthreads blocks=Nblocks kernel_calc_v_3_squared!( gRhoe, gRhoe2 )
+    @cuda threads=Nthreads blocks=Nblocks kernel_calc_v_3_squared!( gRhoe_up, gRhoe2_up )
+    @cuda threads=Nthreads blocks=Nblocks kernel_calc_v_3_squared!( gRhoe_dn, gRhoe2_dn )
 
-        ρ_up = Rhoe[ip,1]
-        ρ_dn = Rhoe[ip,2]
-        ρ = ρ_up + ρ_dn
-        ζ = (ρ_up - ρ_dn)/ρ
-
-        ss_x = XC_x_slater_spin_E( ρ, ζ )
-        ss_c = XC_c_pw_spin_E( ρ, ζ )
-
-        gss_xup = XC_x_pbe_E( 2*ρ_up, 4*gRhoe2_up[ip] )
-        gss_xdn = XC_x_pbe_E( 2*ρ_dn, 4*gRhoe2_dn[ip] )
-
-        gss_x = 0.5 * (gss_xup + gss_xdn)
-
-        gss_c = XC_c_pbe_spin_E( ρ, ζ, gRhoe2[ip] )
-
-        epsxc[ip] = ( ss_x + ss_c ) + ( gss_x + gss_c )/ρ
-
-    end
+    @cuda threads=Nthreads blocks=Nblocks kernel_epsxc_PBE_spin!( Rhoe, gRhoe2, gRhoe2_up, gRhoe2_dn, epsxc )
 
     return
 
@@ -192,6 +205,48 @@ function calc_Vxc_PBE!( xc_calc::XCCalculator, pw::CuPWGrid, Rhoe::CuArray{Float
 end
 
 
+function kernel_Vxc_PBE_spin!( Rhoe, gRhoe_up, gRhoe_dn, gRhoe2, gRhoe2_up, gRhoe2_dn, h_up, h_dn, Vxc )
+0
+    ip = ( blockIdx().x - 1 )*blockDim().x + threadIdx().x
+    Npoints = size(Rhoe,1)
+
+    if ip <= Npoints
+        ρ_up = Rhoe[ip,1]
+        ρ_dn = Rhoe[ip,2]
+        ρ = ρ_up + ρ_dn
+        ζ = (ρ_up - ρ_dn)/ρ
+
+        _, vxup, vxdn = cu_XC_x_slater_spin( ρ, ζ )
+        _, vcup, vcdn = cu_XC_c_pw_spin( ρ, ζ )
+
+        _, v1xup, v2xup = cu_XC_x_pbe( 2*ρ_up, 4*gRhoe2_up[ip] )
+        _, v1xdn, v2xdn = cu_XC_x_pbe( 2*ρ_dn, 4*gRhoe2_dn[ip] )
+
+        v2xup = 2.0 * v2xup
+        v2xdn = 2.0 * v2xdn
+
+        _, v1cup, v1cdn, v2c = cu_XC_c_pbe_spin( ρ, ζ, gRhoe2[ip] )
+        v2cup = v2c
+        v2cdn = v2c
+        v2cud = v2c
+
+        Vxc[ip,1] = vxup + vcup + v1xup + v1cup
+        Vxc[ip,2] = vxdn + vcdn + v1xdn + v1cdn
+
+        for i in 1:3
+           grup = gRhoe_up[i,ip]
+           grdn = gRhoe_dn[i,ip]
+           h_up[i,ip] = ( v2xup + v2cup ) * grup + v2cud * grdn
+           h_dn[i,ip] = ( v2xdn + v2cdn ) * grdn + v2cud * grup
+        end
+    end
+
+    return
+
+end
+
+
+
 function calc_Vxc_PBE!( xc_calc::XCCalculator, pw::CuPWGrid, Rhoe::CuArray{Float64,2}, Vxc::CuArray{Float64,2} )
     
     Npoints = size(Rhoe,1)
@@ -211,60 +266,26 @@ function calc_Vxc_PBE!( xc_calc::XCCalculator, pw::CuPWGrid, Rhoe::CuArray{Float
     gRhoe2_dn = CuArrays.zeros( Float64, Npoints )
     gRhoe2 = CuArrays.zeros( Float64, Npoints )
 
-    # This is ugly but can save memory allocation a little bit
-    for ip = 1:Npoints
-        gRhoe2_up[ip] = gRhoe_up[1,ip]*gRhoe_up[1,ip] + gRhoe_up[2,ip]*gRhoe_up[2,ip] + gRhoe_up[3,ip]*gRhoe_up[3,ip]
-        gRhoe2_dn[ip] = gRhoe_dn[1,ip]*gRhoe_dn[1,ip] + gRhoe_dn[2,ip]*gRhoe_dn[2,ip] + gRhoe_dn[3,ip]*gRhoe_dn[3,ip]
-        gRhoe2[ip] = gRhoe[1,ip]*gRhoe[1,ip] + gRhoe[2,ip]*gRhoe[2,ip] + gRhoe[3,ip]*gRhoe[3,ip]
-    end
+    Nthreads = 256
+    Nblocks = ceil( Int64, Npoints/Nthreads )
 
-    # h contains D(rho*Exc)/D(|grad rho|) * (grad rho) / |grad rho|
-    h_up = Cuarrays.zeros(Float64,3,Npoints)
-    h_dn = Cuarrays.zeros(Float64,3,Npoints)
-    #
+    @cuda threads=Nthreads blocks=Nblocks kernel_calc_v_3_squared!( gRhoe, gRhoe2 )
+    @cuda threads=Nthreads blocks=Nblocks kernel_calc_v_3_squared!( gRhoe_up, gRhoe2_up )
+    @cuda threads=Nthreads blocks=Nblocks kernel_calc_v_3_squared!( gRhoe_dn, gRhoe2_dn )
+
+    h_up = CuArrays.zeros(Float64,3,Npoints)
+    h_dn = CuArrays.zeros(Float64,3,Npoints)
+
     dh_up = CuArrays.zeros(Float64,Npoints)
     dh_dn = CuArrays.zeros(Float64,Npoints)
 
-    for ip in 1:Npoints
-
-        ρ_up = Rhoe[ip,1]
-        ρ_dn = Rhoe[ip,2]
-        ρ = ρ_up + ρ_dn
-        ζ = (ρ_up - ρ_dn)/ρ
-
-        _, vxup, vxdn = XC_x_slater_spin( ρ, ζ )
-        _, vcup, vcdn = XC_c_pw_spin( ρ, ζ )
-
-        _, v1xup, v2xup = XC_x_pbe( 2*ρ_up, 4*gRhoe2_up[ip] )
-        _, v1xdn, v2xdn = XC_x_pbe( 2*ρ_dn, 4*gRhoe2_dn[ip] )
-
-        v2xup = 2.0 * v2xup
-        v2xdn = 2.0 * v2xdn
-
-        _, v1cup, v1cdn, v2c = XC_c_pbe_spin( ρ, ζ, gRhoe2[ip] )
-        v2cup = v2c
-        v2cdn = v2c
-        v2cud = v2c
-
-        Vxc[ip,1] = vxup + vcup + v1xup + v1cup
-        Vxc[ip,2] = vxdn + vcdn + v1xdn + v1cdn
-
-        for i in 1:3
-           grup = gRhoe_up[i,ip]
-           grdn = gRhoe_dn[i,ip]
-           h_up[i,ip] = ( v2xup + v2cup ) * grup + v2cud * grdn
-           h_dn[i,ip] = ( v2xdn + v2cdn ) * grdn + v2cud * grup
-        end
-
-    end
+    @cuda threads=Nthreads blocks=Nblocks kernel_Vxc_PBE_spin!( Rhoe, gRhoe_up, gRhoe_dn, gRhoe2, gRhoe2_up, gRhoe2_dn, h_up, h_dn, Vxc )
 
     dh_up[:] = op_nabla_dot(pw, h_up)
     dh_dn[:] = op_nabla_dot(pw, h_dn)
 
-    for ip in 1:Npoints
-        Vxc[ip,1] = Vxc[ip,1] - dh_up[ip]
-        Vxc[ip,2] = Vxc[ip,2] - dh_dn[ip]        
-    end
+    Vxc[:,1] = Vxc[:,1] - dh_up[:]
+    Vxc[:,2] = Vxc[:,2] - dh_dn[:]        
 
     return
 end

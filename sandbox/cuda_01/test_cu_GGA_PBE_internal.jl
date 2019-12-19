@@ -47,16 +47,27 @@ function main_nospin()
     println("Pass here")
 end
 
-#=
+
 function main_spin()
-    Npoints = 1000
+
+    Random.seed!(1234)
+
+    ecutwfc = 15.0
+    LatVecs = gen_lattice_sc(10.0)
+
+    pw = CuPWGrid( ecutwfc, LatVecs )
+    pw_cpu = PWGrid( ecutwfc, LatVecs )
+
+    Npoints = prod(pw.Ns)
+
     Rhoe = abs.( CuArrays.rand(Float64, Npoints, 2) )
 
-    epsxc = calc_epsxc_VWN( XCCalculator(), Rhoe )
-    Vxc = calc_Vxc_VWN( XCCalculator(), Rhoe )
+    epsxc = calc_epsxc_PBE( XCCalculator(), pw, Rhoe )
+    
+    Vxc = calc_Vxc_PBE( XCCalculator(), pw, Rhoe )
 
-    epsxc_cpu = calc_epsxc_VWN( XCCalculator(), collect(Rhoe) )
-    Vxc_cpu = calc_Vxc_VWN( XCCalculator(), collect(Rhoe) )
+    epsxc_cpu = calc_epsxc_PBE( XCCalculator(), pw_cpu, collect(Rhoe) )
+    Vxc_cpu = calc_Vxc_PBE( XCCalculator(), pw_cpu, collect(Rhoe) )
 
     epsxc_gpu = collect( epsxc )
     Vxc_gpu = collect( Vxc )
@@ -66,12 +77,12 @@ function main_spin()
         @printf("%18.10f %18.10f\n", epsxc_cpu[i], epsxc_gpu[i])
     end
 
-    println("Some Vxc spin up")
+    println("Some Vxc up")
     for i in 1:5
         @printf("%18.10f %18.10f\n", Vxc_cpu[i,1], Vxc_gpu[i,1])
     end
 
-    println("Some Vxc spin down")
+    println("Some Vxc dn")
     for i in 1:5
         @printf("%18.10f %18.10f\n", Vxc_cpu[i,2], Vxc_gpu[i,2])
     end
@@ -81,7 +92,6 @@ function main_spin()
 
     println("Pass here")
 end
-=#
 
-main_nospin()
-#main_spin()
+#main_nospin()
+main_spin()
