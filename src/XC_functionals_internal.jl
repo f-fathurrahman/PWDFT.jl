@@ -47,7 +47,46 @@ function XC_c_pbe( rho, grho )
 
 end
 
+# energy (epsxc) only
+function XC_c_pbe_E( rho, grho )
+
+    ga = 0.0310906908696548950
+    be = 0.06672455060314922
+    third = 1.0/3.0
+    pi34 = 0.6203504908994
+    xkf = 1.919158292677513
+    xks = 1.128379167095513
+
+    rs = pi34/rho^third
+    ec, vc = XC_c_pw( rho )
+    
+    kf = xkf/rs
+    ks = xks * sqrt(kf)
+    t = sqrt(grho) / (2.0 * ks * rho)
+    
+    expe = exp(-ec/ga)
+    af = be / ga * (1.0 / (expe - 1.0) )
+    
+    bf = expe * (vc - ec)
+  
+    y = af * t * t
+  
+    xy = (1.0 + y) / (1.0 + y + y * y)
+  
+    qy = y * y * (2.0 + y) / (1.0 + y + y * y)^2
+  
+    s1 = 1.0 + be / ga * t * t * xy
+    h0 = ga * log(s1)
+  
+    sc = rho * h0
+
+    return sc
+
+end
+
+
 function XC_c_pbe_spin( rho, zeta, grho )
+    #
     # PBE correlation (without LDA part) - spin-polarized
     # iflag = 1: J.P.Perdew, K.Burke, M.Ernzerhof, PRL 77, 3865 (1996).
   
@@ -58,9 +97,6 @@ function XC_c_pbe_spin( rho, zeta, grho )
   
     xkf = 1.919158292677513
     xks = 1.128379167095513
-
-    # pi34=(3/4pi)^(1/3), xkf=(9 pi/4)^(1/3), xks= sqrt(4/pi)
-
 
     rs = pi34/rho^third
     
@@ -110,6 +146,77 @@ function XC_c_pbe_spin( rho, zeta, grho )
     return sc, v1cup, v1cdw, v2c
 
 end
+
+
+function XC_c_pbe_spin_E( rho, zeta, grho )
+    #
+    # PBE correlation (without LDA part) - spin-polarized
+    # iflag = 1: J.P.Perdew, K.Burke, M.Ernzerhof, PRL 77, 3865 (1996).
+  
+    ga = 0.031091
+    be = 0.06672455060314922
+    third = 1.0/3.0
+    pi34 = 0.6203504908994
+  
+    xkf = 1.919158292677513
+    xks = 1.128379167095513
+
+    rs = pi34/rho^third
+    
+    #ec, vcup, vcdw = XC_c_pw_spin( rho, zeta )
+    ec = XC_c_pw_spin_E( rho, zeta )
+
+    kf = xkf / rs
+    ks = xks * sqrt(kf)
+    fz = 0.5 * ( (1.0 + zeta)^(2.0 / 3.0) + (1.0 - zeta)^(2.0 / 3.0) )
+    
+    fz2 = fz * fz
+    fz3 = fz2 * fz
+    fz4 = fz3 * fz
+    dfz = ( (1.0 + zeta)^(-1.0/3.0) - (1.0 - zeta)^( -1.0 / 3.0) ) / 3.0
+    
+    t = sqrt(grho) / (2.0 * fz * ks * rho)
+    expe = exp( - ec / (fz3 * ga) )
+    af = be / ga * (1.0 / (expe - 1.0) )
+    
+    #bfup = expe * (vcup - ec) / fz3
+    #bfdw = expe * (vcdw - ec) / fz3
+    
+    y = af * t * t
+    
+    xy = (1.0 + y) / (1.0 + y + y * y)
+    qy = y * y * (2.0 + y) / (1.0 + y + y * y)^2
+    
+    s1 = 1.0 + be / ga * t * t * xy
+    h0 = fz3 * ga * log(s1)
+    
+    #dh0up = be * t * t * fz3 / s1 * ( - 7.0 / 3.0 * xy - qy * (af * bfup / be - 7.0 / 3.0) )
+    
+    #dh0dw = be * t * t * fz3 / s1 * ( - 7.0 / 3.0 * xy - qy * (af * bfdw / be - 7.0 / 3.0) )
+    
+    #dh0zup = (3.0 * h0 / fz - be * t * t * fz2 / s1 * (2.0 * xy - 
+    #         qy * (3.0 * af * expe * ec / fz3 / be + 2.0) ) ) * dfz * (1.0 - zeta)
+    
+    #dh0zdw = -(3.0 * h0 / fz - be * t * t * fz2 / s1 * (2.0 * xy -
+    #         qy * (3.0 * af * expe * ec / fz3 / be + 2.0) ) ) * dfz * (1.0 + zeta)
+
+    #ddh0 = be * fz / (2.0 * ks * ks * rho) * (xy - qy) / s1
+  
+    sc = rho * h0
+    
+    #v1cup = h0 + dh0up + dh0zup
+    #v1cdw = h0 + dh0dw + dh0zdw
+    #v2c = ddh0
+  
+    return sc
+
+end
+
+
+
+
+
+
 
 function XC_c_pw( Rhoe )
 
@@ -246,6 +353,97 @@ function XC_c_pw_spin( Rhoe, zeta )
 end
 
 
+# energy (epsxc) only
+function XC_c_pw_spin_E( Rhoe, zeta )
+
+    third = 1.0/3.0
+    pi34 = 0.6203504908994  # pi34=(3/4pi)^(1/3)
+    rs = pi34/Rhoe^third
+
+    # J.P. Perdew and Y. Wang, PRB 45, 13244 (1992)
+    # xc parameters, unpolarised
+    a = 0.031091
+    a1 = 0.21370
+    b1 = 7.5957
+    b2 = 3.5876
+    b3 = 1.6382
+    b4 = 0.49294
+    c0 = a
+    c1 = 0.046644
+    c2 = 0.00664
+    c3 = 0.01043
+    d0 = 0.4335
+    d1 = 1.4408
+    
+    # xc parameters, polarised
+    ap = 0.015545
+    a1p = 0.20548
+    b1p = 14.1189
+    b2p = 6.1977
+    b3p = 3.3662
+    b4p = 0.62517
+    c0p = ap
+    c1p = 0.025599
+    c2p = 0.00319
+    c3p = 0.00384
+    d0p = 0.3287
+    d1p = 1.7697
+  
+    # xc parameters, antiferro
+    aa = 0.016887
+    a1a = 0.11125
+    b1a = 10.357
+    b2a = 3.6231
+    b3a = 0.88026
+    b4a = 0.49671
+    c0a = aa
+    c1a = 0.035475
+    c2a = 0.00188
+    c3a = 0.00521
+    d0a = 0.2240
+    d1a = 0.3969
+  
+    fz0 = 1.709921
+  
+    zeta2 = zeta * zeta
+    zeta3 = zeta2 * zeta
+    zeta4 = zeta3 * zeta
+  
+    rs12 = sqrt(rs)
+    rs32 = rs * rs12
+    rs2 = rs^2
+  
+    # unpolarised
+    om = 2.0 * a * (b1 * rs12 + b2 * rs + b3 * rs32 + b4 * rs2)
+    dom = 2.0 * a * (0.5 * b1 * rs12 + b2 * rs + 1.5 * b3 * rs32 + 2.0 * b4 * rs2)
+    olog = log(1.0 + 1.0 / om)
+    epwc = -2.0 * a * (1.0 + a1 * rs) * olog
+    vpwc = -2.0 * a * (1.0 + 2.0 / 3.0 * a1 * rs) * olog - 2.0/3.0 * a * (1.0 + a1 * rs) * dom / (om * (om + 1.0) )
+  
+    # polarized
+    omp = 2.0 * ap * (b1p * rs12 + b2p * rs + b3p * rs32 + b4p * rs2)
+    domp = 2.0 * ap * (0.5 * b1p * rs12 + b2p * rs + 1.5 * b3p * rs32 + 2.0 * b4p * rs2)
+    ologp = log(1.0 + 1.0 / omp)
+    epwcp = -2.0 * ap * (1.0 + a1p * rs) * ologp
+    vpwcp = -2.0 * ap * (1.0 + 2.0 / 3.0 * a1p * rs) * ologp - 2.0/3.0 * ap * (1.0 + a1p * rs) * domp / (omp * (omp + 1.0) )
+  
+    # antiferro
+    oma = 2.0 * aa * (b1a * rs12 + b2a * rs + b3a * rs32 + b4a * rs2)
+    doma = 2.0 * aa * (0.5 * b1a * rs12 + b2a * rs + 1.5 * b3a * rs32 + 2.0 * b4a * rs2)
+    ologa = log(1.0 + 1.0 / oma)
+    alpha = 2.0 * aa * (1.0 + a1a * rs) * ologa
+    vpwca = 2.0 * aa * (1.0 + 2.0 / 3.0 * a1a * rs) * ologa + 2.0/3.0 * aa * (1.0 + a1a * rs) * doma / (oma * (oma + 1.0) )
+  
+    fz = ( (1.0 + zeta)^(4.0/3.0) + (1.0 - zeta)^(4.0/3.0) - 2.0) / (2.0^(4.0/3.0) - 2.0)
+    dfz = ( (1.0 + zeta)^(1.0/3.0) - (1.0 - zeta)^(1.0/3.0) ) * 4.0 / (3.0 * (2.0^(4.0/3.0) - 2.0) )
+  
+    ec = epwc + alpha * fz * (1.0 - zeta4) / fz0 + (epwcp - epwc) * fz * zeta4
+
+    return ec
+end
+
+
+
 function XC_c_vwn( Rhoe )
 
     third = 1.0/3.0
@@ -362,9 +560,10 @@ function padefit(x, i, x0, Q, b, c, A, tbQ, bx0fx0)
 end
 
 
-# PBE exchange (without Slater exchange):
-# iflag=1  J.P.Perdew, K.Burke, M.Ernzerhof, PRL 77, 3865 (1996)
 function XC_x_pbe( rho, grho )
+
+    # PBE exchange (without Slater exchange):
+    # iflag=1  J.P.Perdew, K.Burke, M.Ernzerhof, PRL 77, 3865 (1996)
 
     third = 1.0/3.0
     k = 0.804
@@ -401,6 +600,36 @@ function XC_x_pbe( rho, grho )
 end
 
 
+# epsxc only version
+function XC_x_pbe_E( rho, grho )
+
+    third = 1.0/3.0
+    k = 0.804
+    mu = 0.2195149727645171
+    c1 = 0.75/pi
+    c2 = 3.093667726280136
+    c5 = 4.0*third
+
+    agrho = sqrt(grho)
+    kf = c2 * rho^third
+    dsg = 0.5/kf
+    s1 = agrho*dsg / rho
+    s2 = s1 * s1
+    ds = -c5 * s1
+    
+    # Energy
+    f1 = s2 * mu/k
+    f2 = 1.0 + f1
+    f3 = k / f2
+    fx = k - f3
+    exunif = -c1 * kf
+    sx = exunif * fx * rho
+
+    return sx
+end
+
+
+
 function XC_x_slater( Rhoe::Float64 )
 
     third = 1.0/3.0
@@ -417,7 +646,8 @@ end
 
 
 function XC_x_slater_spin( rho, zeta )
-    #     Slater exchange with alpha=2/3, spin-polarized case
+    #
+    # Slater exchange with alpha=2/3, spin-polarized case
     #
     f = -1.10783814957303361 # f = -9/8*(3/pi)^(1/3)
     alpha = 2.0/3.0
@@ -434,4 +664,26 @@ function XC_x_slater_spin( rho, zeta )
     ex = 0.5 * ( (1.0 + zeta) * exup + (1.0 - zeta) * exdw)
 
     return ex, vxup, vxdw
+end
+
+
+# energy (epsxc) only version
+function XC_x_slater_spin_E( rho, zeta )
+    #
+    # Slater exchange with alpha=2/3, spin-polarized case
+    #
+    f = -1.10783814957303361 # f = -9/8*(3/pi)^(1/3)
+    alpha = 2.0/3.0
+    third = 1.0/3.0
+    p43 = 4.0/3.0
+
+    rho13 = ( (1.0 + zeta) * rho)^third
+    exup = f * alpha * rho13
+    
+    rho13 = ( (1.0 - zeta) * rho)^third
+    exdw = f * alpha * rho13
+
+    ex = 0.5 * ( (1.0 + zeta) * exup + (1.0 - zeta) * exdw)
+
+    return ex
 end
