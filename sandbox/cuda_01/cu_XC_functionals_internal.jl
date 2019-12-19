@@ -12,9 +12,8 @@ function cu_XC_c_pbe( rho, grho )
     pi34 = 0.6203504908994
     xkf = 1.919158292677513
     xks = 1.128379167095513
-    # pi34=(3/4pi)^(1/3), xkf=(9 pi/4)^(1/3), xks= sqrt(4/pi)
 
-    rs = pi34/rho^third
+    rs = pi34/CUDAnative.pow(rho, third)
     ec, vc = cu_XC_c_pw( rho )
     
     kf = xkf/rs
@@ -59,24 +58,21 @@ function cu_XC_c_pbe_spin( rho, zeta, grho )
     xkf = 1.919158292677513
     xks = 1.128379167095513
 
-    # pi34=(3/4pi)^(1/3), xkf=(9 pi/4)^(1/3), xks= sqrt(4/pi)
-
-
-    rs = pi34/rho^third
+    rs = pi34/CUDAnative.pow(rho, third)
     
     ec, vcup, vcdw = cu_XC_c_pw_spin( rho, zeta )
 
     kf = xkf / rs
     ks = xks * CUDAnative.sqrt(kf)
-    fz = 0.5 * ( (1.0 + zeta)^(2.0 / 3.0) + (1.0 - zeta)^(2.0 / 3.0) )
+    fz = 0.5 * ( CUDAnative.pow( 1.0 + zeta, 2.0/3.0 ) + CUDAnative.pow( 1.0 - zeta, 2.0/3.0) )
     
     fz2 = fz * fz
     fz3 = fz2 * fz
     fz4 = fz3 * fz
-    dfz = ( (1.0 + zeta)^(-1.0/3.0) - (1.0 - zeta)^( -1.0 / 3.0) ) / 3.0
+    dfz = ( CUDAnative.pow( 1.0 + zeta, -1.0/3.0 ) - CUDAnative.pow( 1.0 - zeta, -1.0/3.0) ) / 3.0
     
     t = CUDAnative.sqrt(grho) / (2.0 * fz * ks * rho)
-    expe = CUDAnative.exp( - ec / (fz3 * ga) )
+    expe = CUDAnative.exp( -ec / (fz3 * ga) )
     af = be / ga * (1.0 / (expe-1.0) )
     
     bfup = expe * (vcup - ec) / fz3
@@ -90,9 +86,9 @@ function cu_XC_c_pbe_spin( rho, zeta, grho )
     s1 = 1.0 + be / ga * t * t * xy
     h0 = fz3 * ga * CUDAnative.log(s1)
     
-    dh0up = be * t * t * fz3 / s1 * ( - 7.0 / 3.0 * xy - qy * (af * bfup / be - 7.0 / 3.0) )
+    dh0up = be * t * t * fz3 / s1 * ( -7.0 / 3.0 * xy - qy * (af * bfup / be - 7.0 / 3.0) )
     
-    dh0dw = be * t * t * fz3 / s1 * ( - 7.0 / 3.0 * xy - qy * (af * bfdw / be - 7.0 / 3.0) )
+    dh0dw = be * t * t * fz3 / s1 * ( -7.0 / 3.0 * xy - qy * (af * bfdw / be - 7.0 / 3.0) )
     
     dh0zup = (3.0 * h0 / fz - be * t * t * fz2 / s1 * (2.0 * xy - 
              qy * (3.0 * af * expe * ec / fz3 / be + 2.0) ) ) * dfz * (1.0 - zeta)
@@ -115,7 +111,8 @@ function cu_XC_c_pw( Rhoe )
 
     third = 1.0/3.0
     pi34 = 0.6203504908994  # pi34=(3/4pi)^(1/3)
-    rs = pi34/Rhoe^third
+    rs = pi34/CUDAnative.pow(Rhoe, third)
+    #rs = pi34/Rhoe^third
 
     a = 0.031091
     a1 = 0.21370
@@ -135,7 +132,6 @@ function cu_XC_c_pw( Rhoe )
     ec = -2.0 * a * (1.0 + a1 * rs) * olog
     vc = -2.0*a*(1.0 + 2.0/3.0 * a1 * rs) * olog - 2.0/3.0 * a * (1.0 + a1*rs) * dom/ (om * (om + 1.0) )
 
-
     return ec, vc
 end
 
@@ -143,7 +139,7 @@ function cu_XC_c_pw_spin( Rhoe, zeta )
 
     third = 1.0/3.0
     pi34 = 0.6203504908994  # pi34=(3/4pi)^(1/3)
-    rs = pi34/Rhoe^third
+    rs = pi34/CUDAnative.pow(Rhoe, third)
 
     # J.P. Perdew and Y. Wang, PRB 45, 13244 (1992)
     # xc parameters, unpolarised
@@ -206,7 +202,7 @@ function cu_XC_c_pw_spin( Rhoe, zeta )
   
     rs12 = CUDAnative.sqrt(rs)
     rs32 = rs * rs12
-    rs2 = rs^2
+    rs2 = CUDAnative.pow(rs, 2)
   
     # unpolarised
     om = 2.0 * a * (b1 * rs12 + b2 * rs + b3 * rs32 + b4 * rs2)
@@ -217,20 +213,25 @@ function cu_XC_c_pw_spin( Rhoe, zeta )
   
     # polarized
     omp = 2.0 * ap * (b1p * rs12 + b2p * rs + b3p * rs32 + b4p * rs2)
-    domp = 2.0 * ap * (0.5d0 * b1p * rs12 + b2p * rs + 1.5 * b3p * rs32 + 2.0 * b4p * rs2)
+    domp = 2.0 * ap * (0.5 * b1p * rs12 + b2p * rs + 1.5 * b3p * rs32 + 2.0 * b4p * rs2)
     ologp = CUDAnative.log(1.0 + 1.0 / omp)
     epwcp = -2.0 * ap * (1.0 + a1p * rs) * ologp
     vpwcp = -2.0 * ap * (1.0 + 2.0 / 3.0 * a1p * rs) * ologp - 2.0/3.0 * ap * (1.0 + a1p * rs) * domp / (omp * (omp + 1.0) )
   
     # antiferro
     oma = 2.0 * aa * (b1a * rs12 + b2a * rs + b3a * rs32 + b4a * rs2)
-    doma = 2.0 * aa * (0.5d0 * b1a * rs12 + b2a * rs + 1.5 * b3a * rs32 + 2.0 * b4a * rs2)
+    doma = 2.0 * aa * (0.5 * b1a * rs12 + b2a * rs + 1.5 * b3a * rs32 + 2.0 * b4a * rs2)
     ologa = CUDAnative.log(1.0 + 1.0 / oma)
     alpha = 2.0 * aa * (1.0 + a1a * rs) * ologa
     vpwca = 2.0 * aa * (1.0 + 2.0 / 3.0 * a1a * rs) * ologa + 2.0/3.0 * aa * (1.0 + a1a * rs) * doma / (oma * (oma + 1.0) )
   
-    fz = ( (1.0 + zeta)^(4.0/3.0) + (1.0 - zeta)^(4.0/3.0) - 2.0) / (2.0^(4.0/3.0) - 2.0)
-    dfz = ( (1.0 + zeta)^(1.0/3.0) - (1.0 - zeta)^(1.0/3.0) ) * 4.0 / (3.0 * (2.0^(4.0/3.0) - 2.0) )
+    fz = ( CUDAnative.pow( 1.0 + zeta, 4.0/3.0 ) +
+           CUDAnative.pow( 1.0 - zeta, 4.0/3.0 ) - 2.0 ) /
+           ( CUDAnative.pow( 2.0, 4.0/3.0 ) - 2.0 )
+    
+    dfz = ( CUDAnative.pow( 1.0 + zeta, 1.0/3.0 ) -
+            CUDAnative.pow( 1.0 - zeta, 1.0/3.0) ) * 4.0 /
+          ( 3.0 * ( CUDAnative.pow( 2.0, 4.0/3.0 ) - 2.0 ) )
   
     ec = epwc + alpha * fz * (1.0 - zeta4) / fz0 + (epwcp - epwc) * fz * zeta4
   
@@ -250,7 +251,8 @@ function cu_XC_c_vwn( Rhoe )
 
     third = 1.0/3.0
     pi34 = 0.6203504908994  # pi34=(3/4pi)^(1/3)
-    rs = pi34/Rhoe^third
+    rs = pi34/CUDAnative.pow(Rhoe, third)
+    #rs = pi34/Rhoe^third
 
     a = 0.0310907
     b = 3.72744
@@ -280,7 +282,7 @@ function cu_XC_c_vwn_spin( Rhoe, zeta )
 
     third = 1.0/3.0
     pi34 = 0.6203504908994  # pi34=(3/4pi)^(1/3)
-    rs = pi34/Rhoe^third
+    rs = pi34/CUDAnative.pow(Rhoe, third)
 
     A      = ( 0.0310907, 0.01554535, -0.01688686394039 )
     x0     = ( -0.10498, -0.32500, -0.0047584 )
@@ -297,17 +299,17 @@ function cu_XC_c_vwn_spin( Rhoe, zeta )
     # fx0 = X(x_0) = x_0^2 + b*x_0 + c
     # bx0fx0 = b*x_0/X(x_0)
 
-    cfz = 2.0^(4.0/3.0) - 2.0
+    cfz = CUDAnative.pow(2.0, 4.0/3.0) - 2.0
     cfz1 = 1.0 / cfz
     cfz2 = 4.0/3.0 * cfz1
     iddfz0 = 9.0 / 8.0 *cfz
     sqrtrs = CUDAnative.sqrt(rs)
-    zeta3 = zeta^3
+    zeta3 = zeta*zeta*zeta
     zeta4 = zeta3*zeta
     trup = 1.0 + zeta
     trdw = 1.0 - zeta
-    trup13 = trup^(1.0/3.0)
-    trdw13 = trdw^(1.0/3.0)
+    trup13 = CUDAnative.pow( trup, 1.0/3.0 )
+    trdw13 = CUDAnative.pow( trdw, 1.0/3.0 )
     fz = cfz1 * (trup13*trup + trdw13*trdw - 2.0)         # f(zeta)
     dfz = cfz2 * (trup13 - trdw13)     # d f / d zeta
 
@@ -374,7 +376,7 @@ function cu_XC_x_pbe( rho, grho )
     c5 = 4.0*third
 
     agrho = CUDAnative.sqrt(grho)
-    kf = c2 * rho^third
+    kf = c2 * CUDAnative.pow(rho, third)
     dsg = 0.5/kf
     s1 = agrho*dsg / rho
     s2 = s1 * s1
@@ -401,11 +403,11 @@ function cu_XC_x_pbe( rho, grho )
 end
 
 
-function cu_XC_x_slater( Rhoe::Float64 )
+function cu_XC_x_slater( Rhoe )
 
     third = 1.0/3.0
     pi34 = 0.6203504908994  # pi34=(3/4pi)^(1/3)
-    rs = pi34/Rhoe^third
+    rs = pi34/CUDAnative.pow(Rhoe, third)
 
     f = -0.687247939924714
     alpha = 2.0/3.0
@@ -417,18 +419,19 @@ end
 
 
 function cu_XC_x_slater_spin( rho, zeta )
-    #     Slater exchange with alpha=2/3, spin-polarized case
+    #
+    # Slater exchange with alpha=2/3, spin-polarized case
     #
     f = -1.10783814957303361 # f = -9/8*(3/pi)^(1/3)
     alpha = 2.0/3.0
     third = 1.0/3.0
     p43 = 4.0/3.0
 
-    rho13 = ( (1.0 + zeta) * rho)^third
+    rho13 = CUDAnative.pow( (1.0 + zeta)*rho, third )
     exup = f * alpha * rho13
     vxup = p43 * f * alpha * rho13
     
-    rho13 = ( (1.0 - zeta) * rho)^third
+    rho13 = CUDAnative.pow( (1.0 - zeta)*rho, third )
     exdw = f * alpha * rho13
     vxdw = p43 * f * alpha * rho13
     ex = 0.5 * ( (1.0 + zeta) * exup + (1.0 - zeta) * exdw)
