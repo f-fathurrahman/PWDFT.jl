@@ -26,24 +26,19 @@ function calc_rhoe!( Ham::CuHamiltonian, psiks::CuBlochWavefunc, Rhoe::CuArray{F
 
         ikspin = ik + (ispin - 1)*Nkpt
 
-        psiR[:] .= 0.0 + im*0.0
+        psiR[:,:] .= 0.0 + im*0.0
         
         idx = pw.gvecw.idx_gw2r[ik]
         psi = psiks[ikspin]
 
-        Ngw_k = length(idx)
-        Nblocks = ceil( Int64, Ngw_k/Nthreads )
+        Nblocks = ceil( Int64, Ngw[ik]/Nthreads )
 
         for ist in 1:Nstates
             @cuda threads=Nthreads blocks=Nblocks kernel_copy_to_fft_grid_gw2r!( ist, idx, psi, psiR )
         end
 
-        println("sum psiR before fft = ", sum(psiR))
-
         # Transform to real space
         G_to_R!( pw, psiR )
-
-        println("sum psiR after fft = ", sum(psiR))
 
         # orthonormalization in real space
         #ortho_gram_schmidt!( psiR ) # is this needed or simply scaling ?
@@ -53,7 +48,7 @@ function calc_rhoe!( Ham::CuHamiltonian, psiks::CuBlochWavefunc, Rhoe::CuArray{F
 
         for ist in 1:Nstates
             w = wk[ik]*Focc[ist,ikspin]
-            Rhoe[:,ispin] = Rhoe[:,ispin] + w*real( conj(psiR[:,ist]) .* psiR[:,ist] )
+            Rhoe[:,ispin] = Rhoe[:,ispin] .+ w*real( conj(psiR[:,ist]) .* psiR[:,ist] )
         end
     end
 
