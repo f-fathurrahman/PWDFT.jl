@@ -25,9 +25,22 @@ function CuHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
                         kpts_str="",
                         xcfunc="VWN",
                         use_xc_internal=true,
-                        extra_states=0 )
+                        extra_states=0,
+                        use_symmetry=true )
 
-    sym_info = SymmetryInfo(atoms)
+    if use_symmetry == false
+        sym_info = SymmetryInfo()
+    else
+        sym_info = SymmetryInfo(atoms)
+    end
+
+    if sym_info.Nsyms != 1
+        println("-------------------------------------------------------------------")
+        println("Your system has high symmetry: Nsyms = ", sym_info.Nsyms)
+        println("Please break the symmetry of your system or set use_symmetry=false.")
+        println("-------------------------------------------------------------------")
+        error("We only support Nsyms = 1 for CUDA-enabled calculations")
+    end
 
     # kpoints
     if kpoints == nothing
