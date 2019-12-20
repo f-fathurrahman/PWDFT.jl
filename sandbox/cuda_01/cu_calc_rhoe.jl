@@ -21,7 +21,6 @@ function calc_rhoe!( Ham::CuHamiltonian, psiks::CuBlochWavefunc, Rhoe::CuArray{F
     Rhoe[:,:] .= 0.0
 
     Nthreads = 256
-    Nblocks = ceil( Int64, pw.gvecw.Ngwx/Nthreads )
 
     for ispin = 1:Nspin, ik = 1:Nkpt
 
@@ -31,31 +30,44 @@ function calc_rhoe!( Ham::CuHamiltonian, psiks::CuBlochWavefunc, Rhoe::CuArray{F
         
         idx = pw.gvecw.idx_gw2r[ik]
         psi = psiks[ikspin]
+
+        Ngw_k = length(idx)
+        Nblocks = ceil( Int64, Ngw_k/Nthreads )
+
         for ist in 1:Nstates
             @cuda threads=Nthreads blocks=Nblocks kernel_copy_to_fft_grid_gw2r!( ist, idx, psi, psiR )
         end
+
+        println("sum psiR before fft = ", sum(psiR))
+
         # Transform to real space
         G_to_R!( pw, psiR )
+
+        println("sum psiR after fft = ", sum(psiR))
 
         # orthonormalization in real space
         ortho_gram_schmidt!( psiR ) # is this needed or simply scaling ?
         psiR[:] = sqrt(Npoints/CellVolume)*psiR[:]
 
         #psiR[:] = sqrt(Npoints)*psiR[:] # by pass orthonormalization, only use scaling
+        #psiR[:] = sqrt(Npoints/CellVolume)*psiR[:] # by pass orthonormalization, only use scaling
 
-        #
         for ist in 1:Nstates
             w = wk[ik]*Focc[ist,ikspin]
+            println("w = ", w)
             Rhoe[:,ispin] = Rhoe[:,ispin] + w*real( conj(psiR[:,ist]) .* psiR[:,ist] )
         end
     end
 
     # renormalize
-    if renormalize
-        integ_rho = sum(Rhoe)*CellVolume/Npoints
-        Rhoe[:] = Nelectrons_true/integ_rho * Rhoe[:]
-    end
+    #if renormalize
+    #    integ_rho = sum(Rhoe)*CellVolume/Npoints
+    #    Rhoe[:] = Nelectrons_true/integ_rho * Rhoe[:]
+    #end
 
+    #
+    # XXX This is rather difficult to parallelize
+    #
     # Symmetrize Rhoe if needed
     #if Ham.sym_info.Nsyms > 1
     #    symmetrize_rhoe!( Ham.pw, Ham.sym_info, Ham.rhoe_symmetrizer, Rhoe )
