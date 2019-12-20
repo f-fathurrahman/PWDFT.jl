@@ -6,6 +6,18 @@ struct SymmetryInfo
     non_symmorphic::Array{Bool,1}
 end
 
+# Dummy SymmetryInfo
+function SymmetryInfo()
+    Nsyms = 1
+    s = zeros(Int64,3,3,1)
+    s[1,1,1] = 1
+    s[2,2,1] = 1
+    s[3,3,1] = 1
+    inv_s = copy(s)
+    ft = zeros(3,1)
+    non_symmorphic = [false]
+    return SymmetryInfo(Nsyms, s, inv_s, ft, non_symmorphic)
+end
 
 function SymmetryInfo( atoms::Atoms )
     Nsyms, s, ft = spg_get_symmetry(atoms)    

@@ -24,9 +24,14 @@ function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
                       kpts_str="",
                       xcfunc="VWN",
                       use_xc_internal=false,
-                      extra_states=0 )
+                      extra_states=0,
+                      use_symmetry=true )
 
-    sym_info = SymmetryInfo(atoms)
+    if use_symmetry == false
+        sym_info = SymmetryInfo()
+    else
+        sym_info = SymmetryInfo(atoms)
+    end
 
     # kpoints
     if kpoints == nothing
