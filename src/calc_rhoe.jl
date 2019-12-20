@@ -23,7 +23,6 @@ function calc_rhoe!( Ham::Hamiltonian, psiks::BlochWavefunc, Rhoe::Array{Float64
 
         ikspin = ik + (ispin - 1)*Nkpt
 
-        #cpsi[:,:] .= 0.0 + im*0.0
         psiR .= 0.0 + im*0.0
         
         # Transform to real space
@@ -31,12 +30,17 @@ function calc_rhoe!( Ham::Hamiltonian, psiks::BlochWavefunc, Rhoe::Array{Float64
         psi = psiks[ikspin]
 
         psiR[idx,:] = psi[:,:]
+        
         G_to_R!(pw, psiR)
 
         # orthonormalization in real space
-        ortho_sqrt!( psiR )
-        psiR = sqrt(Npoints/CellVolume)*psiR
-        #
+        #ortho_sqrt!( psiR )
+        #ortho_gram_schmidt!( psiR ) # for comparison
+        #psiR = sqrt(Npoints/CellVolume)*psiR
+        
+        # by pass orthonormalization, only use scaling
+        psiR = sqrt(Npoints/CellVolume)*sqrt(Npoints)*psiR
+
         for ist = 1:Nstates
             w = wk[ik]*Focc[ist,ikspin]
             for ip = 1:Npoints
@@ -47,11 +51,11 @@ function calc_rhoe!( Ham::Hamiltonian, psiks::BlochWavefunc, Rhoe::Array{Float64
     end # ikspin
 
     # Ensure that there is no negative rhoe
-    for i in 1:length(Rhoe)
-        if Rhoe[i] < eps()
-            Rhoe[i] = eps()
-        end
-    end
+    #for i in 1:length(Rhoe)
+    #    if Rhoe[i] < eps()
+    #        Rhoe[i] = eps()
+    #    end
+    #end
 
     # renormalize
     if renormalize
