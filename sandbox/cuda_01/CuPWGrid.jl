@@ -51,7 +51,7 @@ function CuGVectorsW( gvecw::GVectorsW )
         idx_gw2r[ik] = CuArray( gvecw.idx_gw2r[ik] )
     end
 
-    return CuGVectorsW( Ngwx, Ngw, idx_gw2g, idx_gw2g, kpoints )
+    return CuGVectorsW( Ngwx, Ngw, idx_gw2g, idx_gw2r, kpoints )
 
 end
 
