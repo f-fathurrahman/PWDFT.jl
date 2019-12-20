@@ -12,15 +12,15 @@ function main()
     """
     3
 
-    H   0.0  0.0  0.0
-    H   0.0  1.5  0.0
-    H   1.5  0.0  0.0
+    H   0.0  0.0   0.0
+    H   0.0  1.51   0.0
+    H   1.5  0.0   0.0
     """, LatVecs=gen_lattice_sc(5.0))
 
     pspfiles = ["../../pseudopotentials/pade_gth/H-q1.gth"]
     ecutwfc = 5.0
 
-    Ham = CuHamiltonian( atoms, pspfiles, ecutwfc )
+    Ham = CuHamiltonian( atoms, pspfiles, ecutwfc, use_symmetry=false )
 
     Npoints = prod(Ham.pw.Ns)
 
@@ -31,7 +31,7 @@ function main()
     # Compare with CPU calculation
     #
     Nkspin = length(psiks)
-    Ham_cpu = Hamiltonian( atoms, pspfiles, ecutwfc )
+    Ham_cpu = Hamiltonian( atoms, pspfiles, ecutwfc, use_symmetry=false )
     psiks_cpu = BlochWavefunc(undef, Nkspin)
     for i in 1:Nkspin
         psiks_cpu[i] = collect(psiks[i])
