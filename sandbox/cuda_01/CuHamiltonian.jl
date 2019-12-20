@@ -120,6 +120,7 @@ function CuHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
         rhoe_symmetrizer = RhoeSymmetrizer() # dummy rhoe_symmetrizer
     end
 
+    @assert use_xc_internal == true
     xc_calc = XCCalculator()
 
     return CuHamiltonian( pw, potentials, energies, rhoe,
@@ -144,7 +145,7 @@ function update!( Ham::CuHamiltonian, rhoe::CuArray{Float64,2} )
     
     if Ham.xcfunc == "PBE"
         Ham.potentials.XC = calc_Vxc_PBE( Ham.xc_calc, Ham.pw, rhoe )
-    else  # VWN is the default
+    else
         Ham.potentials.XC = calc_Vxc_VWN( Ham.xc_calc, rhoe )
     end
     
