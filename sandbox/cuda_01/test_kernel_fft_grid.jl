@@ -24,27 +24,18 @@ function main()
         @cuda threads=Nthreads blocks=Nblocks kernel_copy_to_fft_grid_gw2r!( ist, idx, psiks[ik], ctmp )
     end
 
-    G_to_R!( pw, ctmp )
-    
-    ortho_check( ctmp )
-    
-    ortho_gram_schmidt!( ctmp )
+    ctmp_cpu = zeros( ComplexF64, Npoints, Nstates )
+    psi_cpu = collect(psiks[1])
 
-    ortho_check( ctmp )
+    idx_cpu = collect(idx)
+    ctmp_cpu[idx_cpu,:] = psi_cpu
 
-    dVol = pw.CellVolume/Npoints
-    ctmp[:] = ctmp[:]/sqrt(dVol)
+    ctmp_gpu = collect(ctmp)
 
-    Rhoe = CuArrays.zeros( Float64, Npoints )
-
-    for ist in 1:Nstates
-        @views psi = ctmp[:,ist]
-        Rhoe[:] = Rhoe[:] + real( conj(psi) .* psi )
+    ISTATES = 2
+    for ip in 1:10
+        @printf("%18.10f %18.10f\n", real(ctmp_cpu[ip,ISTATES]), real(ctmp_gpu[ip,ISTATES]))
     end
-    println("integ Rhoe = ", sum(Rhoe)*dVol)
-
-
-    println(1.0/Npoints)
 
     println("Pass here")
 end

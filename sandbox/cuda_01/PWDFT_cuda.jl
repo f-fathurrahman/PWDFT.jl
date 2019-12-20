@@ -33,6 +33,7 @@ include("CuHamiltonian.jl")
 
 include("cu_gen_wavefunc.jl")
 include("cu_op_K.jl")
+include("cu_op_V_loc.jl")
 
 include("cu_calc_rhoe.jl")
 

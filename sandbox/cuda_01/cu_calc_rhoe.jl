@@ -46,15 +46,13 @@ function calc_rhoe!( Ham::CuHamiltonian, psiks::CuBlochWavefunc, Rhoe::CuArray{F
         println("sum psiR after fft = ", sum(psiR))
 
         # orthonormalization in real space
-        ortho_gram_schmidt!( psiR ) # is this needed or simply scaling ?
-        psiR[:] = sqrt(Npoints/CellVolume)*psiR[:]
+        #ortho_gram_schmidt!( psiR ) # is this needed or simply scaling ?
+        #psiR[:] = sqrt(Npoints/CellVolume)*psiR[:]
 
-        #psiR[:] = sqrt(Npoints)*psiR[:] # by pass orthonormalization, only use scaling
-        #psiR[:] = sqrt(Npoints/CellVolume)*psiR[:] # by pass orthonormalization, only use scaling
+        psiR[:] = sqrt(Npoints/CellVolume)*sqrt(Npoints)*psiR[:] # by pass orthonormalization, only use scaling
 
         for ist in 1:Nstates
             w = wk[ik]*Focc[ist,ikspin]
-            println("w = ", w)
             Rhoe[:,ispin] = Rhoe[:,ispin] + w*real( conj(psiR[:,ist]) .* psiR[:,ist] )
         end
     end
