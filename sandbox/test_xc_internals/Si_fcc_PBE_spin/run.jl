@@ -45,5 +45,5 @@ function main( ; method="SCF" )
     
 end
 
-@time main(method="SCF")
+main(method="SCF")
 @time main(method="SCF")

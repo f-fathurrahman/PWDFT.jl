@@ -45,8 +45,8 @@ function main( ; method="SCF" )
     
 end
 
-@time main(method="SCF")
-@time main(method="Emin")
+main(method="SCF")
+main(method="Emin")
 
 @time main(method="SCF")
 @time main(method="Emin")
