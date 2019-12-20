@@ -17,7 +17,7 @@ function G_to_R( pw::CuPWGrid, fG::CuArray{ComplexF64,2} )
     Ns = pw.Ns
     Npoints = prod(Ns)
     plan = pw.planbw
-    out = CuArrays.fill( 0.0 + 0.0*im, size(fG) )
+    out = CuArrays.zeros( ComplexF64, size(fG) )
     for ic = 1:size(fG,2)
         out[:,ic] = reshape( plan*reshape(fG[:,ic],Ns), Npoints )
     end
@@ -69,7 +69,7 @@ function R_to_G( pw::CuPWGrid, fR::CuArray{ComplexF64,2} )
     plan = pw.planfw
     Npoints = prod(Ns)
     Ncol = size(fR,2)
-    out = CuArrays.fill(0.0 + im*0.0, size(fR))
+    out = CuArrays.zeros(ComplexF64, size(fR))
     for ic = 1:Ncol
         out[:,ic] = reshape( plan*reshape(fR[:,ic],Ns), Npoints )
     end
@@ -112,7 +112,7 @@ end
 # multicolumn
 function G_to_R( Ns::Tuple{Int64,Int64,Int64}, fG::CuArray{ComplexF64,2} )
     Npoints = prod(Ns)
-    out = CuArrays.fill(0.0 + im*0.0, size(fG))
+    out = CuArrays.zeros(ComplexF64, size(fG))
     for ic = 1:size(fG)[2]
         out[:,ic] = reshape( ifft( reshape(fG[:,ic],Ns) ), Npoints )
     end
@@ -137,7 +137,7 @@ end
 function R_to_G( Ns::Tuple{Int64,Int64,Int64}, fR::CuArray{ComplexF64,2} )
     Npoints = prod(Ns)
     Ncol = size(fR)[2]
-    out = CuArrays.fill( 0.0 + im*0.0, size(fR) )
+    out = CuArrays.zeros( ComplexF64, size(fR) )
     for ic = 1:Ncol
         out[:,ic] = reshape( fft( reshape(fR[:,ic],Ns) ), Npoints )
     end
