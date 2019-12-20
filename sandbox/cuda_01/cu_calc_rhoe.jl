@@ -53,10 +53,10 @@ function calc_rhoe!( Ham::CuHamiltonian, psiks::CuBlochWavefunc, Rhoe::CuArray{F
     end
 
     # renormalize
-    #if renormalize
-    #    integ_rho = sum(Rhoe)*CellVolume/Npoints
-    #    Rhoe[:] = Nelectrons_true/integ_rho * Rhoe[:]
-    #end
+    if renormalize
+        integ_rho = sum(Rhoe)*CellVolume/Npoints
+        Rhoe[:] = Nelectrons_true/integ_rho * Rhoe[:]
+    end
 
     #
     # XXX This is rather difficult to parallelize
