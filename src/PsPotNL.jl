@@ -153,7 +153,7 @@ function calc_betaNL_psi(
 
     Nstates = size(psi)[2]
     NbetaNL = size(betaNL[1],2)
-    Ngw_ik = size(psi)[1]
+
     betaNL_psi = zeros( ComplexF64, Nstates, NbetaNL )
     betaNL_psi[:,:] = conj( psi' * betaNL[ik] )
     return betaNL_psi
@@ -165,7 +165,7 @@ function calc_betaNL_psi(
     psi::Array{ComplexF64,1}
 )
     NbetaNL = size(betaNL[1],2)
-    Ngw_ik = size(psi)[1]
+
     betaNL_psi = zeros( ComplexF64, NbetaNL )
     betaNL_psi[:] = conj( psi' * betaNL[ik] )
     return betaNL_psi
