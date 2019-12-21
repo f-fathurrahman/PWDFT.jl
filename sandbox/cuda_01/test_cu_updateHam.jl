@@ -55,30 +55,38 @@ function main()
     Rhoe_gpu = collect(Rhoe)
     println("Some Rhoe")
     for ip = 1:5
-        @printf("%18.10f %18.10f\n", Rhoe_cpu[ip,1], Rhoe_gpu[ip,1])
+        @printf("%18.10f %18.10f\n", Rhoe_cpu[ip,ispin], Rhoe_gpu[ip,ispin])
     end
+
+    @test Rhoe_cpu ≈ Rhoe_gpu
 
     VH_cpu = Ham_cpu.potentials.Hartree
     VH_gpu = collect(Ham.potentials.Hartree)
     println("Some V Hartree")
     for ip = 1:5
-        @printf("%18.10f %18.10f\n", VH_cpu[ip,1], VH_gpu[ip,1])
+        @printf("%18.10f %18.10f\n", VH_cpu[ip], VH_gpu[ip])
     end
+
+    @test VH_cpu ≈ VH_gpu
 
     Vps_loc_cpu = Ham_cpu.potentials.Ps_loc
     Vps_loc_gpu = collect(Ham.potentials.Ps_loc)
     println("Some V Ps_loc")
     for ip = 1:5
-        @printf("%18.10f %18.10f\n", Vps_loc_cpu[ip,1], Vps_loc_gpu[ip,1])
+        @printf("%18.10f %18.10f\n", Vps_loc_cpu[ip], Vps_loc_gpu[ip])
     end
+
+    @test Vps_loc_cpu ≈ Vps_loc_gpu
 
     Vxc_cpu = Ham_cpu.potentials.XC
     Vxc_gpu = collect(Ham.potentials.XC)
 
     println("Some Vxc")
     for ip = 1:5
-        @printf("%18.10f %18.10f\n", Vxc_cpu[ip,1], Vxc_gpu[ip,1])
+        @printf("%18.10f %18.10f\n", Vxc_cpu[ip,ispin], Vxc_gpu[ip,ispin])
     end
+
+    @test Vxc_cpu ≈ Vxc_gpu
 
     println("Pass here")
 end
