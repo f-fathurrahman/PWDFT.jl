@@ -73,7 +73,7 @@ function op_V_loc( ik::Int64, pw::CuPWGrid, V_loc, psi::CuArray{ComplexF64,2} )
     G_to_R!( pw, ctmp )
 
     for ist in 1:Nstates
-        ctmp[:,ist] = V_loc[:]*ctmp[:,ist]
+        ctmp[:,ist] = V_loc[:].*ctmp[:,ist]
     end
 
     R_to_G!( pw, ctmp )
