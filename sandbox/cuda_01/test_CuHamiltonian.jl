@@ -11,7 +11,7 @@ function main()
     pspfiles = ["../../pseudopotentials/pade_gth/H-q1.gth"]
     ecutwfc = 15.0
 
-    Ham = CuHamiltonian( atoms, pspfiles, ecutwfc )
+    Ham = CuHamiltonian( atoms, pspfiles, ecutwfc, use_symmetry=false )
 
     println("Pass here")
 end
