@@ -12,7 +12,7 @@ function main()
     """
     1
 
-    H   0.0  0.0  0.0
+    Si   0.0  0.0  0.0
     """, LatVecs=gen_lattice_sc(10.0))
 
     pspfiles = ["../../pseudopotentials/pade_gth/Si-q4.gth"]
