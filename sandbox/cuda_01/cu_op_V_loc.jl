@@ -121,7 +121,7 @@ function op_V_loc( ik::Int64, pw::CuPWGrid, V_loc, psi::CuArray{ComplexF64,1} )
     # get values of psi in real space grid
     G_to_R!( pw, ctmp )
 
-    ctmp[:] = V_loc[:]*ctmp[:]
+    ctmp[:] = V_loc[:].*ctmp[:]
 
     R_to_G!( pw, ctmp )
     cVpsi = CuArrays.zeros(ComplexF64, Ngw_k)
