@@ -2,7 +2,12 @@ using Test
 
 include("PWDFT_cuda.jl")
 
+using Random
+
 function main()
+
+    Random.seed!(1234)
+
     atoms = Atoms(xyz_string=
     """
     1
@@ -41,7 +46,7 @@ function main()
         @printf("%18.10f + im*%18.10f, %18.10f + im*%18.10f\n", real(v1), imag(v1), real(v2), imag(v2) )
     end
 
-    #@test Kpsi_cpu ≈ Kpsi_gpu
+    @test Vpsi_cpu ≈ Vpsi_gpu
 
     println("Pass here")
 end
