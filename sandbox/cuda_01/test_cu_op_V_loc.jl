@@ -64,8 +64,6 @@ function main()
 
     @test Vpsi_cpu ≈ Vpsi_gpu
 
-    println("diff = ", sum(Vpsi_cpu - Vpsi_gpu)/Npoints )
-
     println("Pass here")
 end
 

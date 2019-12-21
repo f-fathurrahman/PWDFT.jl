@@ -21,19 +21,20 @@ function op_K( Ham::CuHamiltonian, psi::CuArray{ComplexF64,2} )
 
     Nstates = size(psi)[2]
 
-    Ngwx = Ham.pw.gvecw.Ngwx
     Ngw = Ham.pw.gvecw.Ngw
     idx_gw2g_k = Ham.pw.gvecw.idx_gw2g[ik]
     G = Ham.pw.gvec.G
-    k = Ham.pw.gvecw.kpoints.k[:,ik]
+    k1 = Ham.pw.gvecw.kpoints.k[1,ik]
+    k2 = Ham.pw.gvecw.kpoints.k[2,ik]
+    k3 = Ham.pw.gvecw.kpoints.k[3,ik]
 
     Kpsi = CuArrays.zeros( ComplexF64, size(psi) )
 
     Nthreads = 256
-    Nblocks = ceil( Int64, Ngwx/Nthreads )
+    Nblocks = ceil( Int64, Ngw[ik]/Nthreads )
 
     for ist = 1:Nstates
-        @cuda threads=Nthreads blocks=Nblocks kernel_op_K!( ist, G, idx_gw2g_k, k[1], k[2], k[3], psi, Kpsi )
+        @cuda threads=Nthreads blocks=Nblocks kernel_op_K!( ist, G, idx_gw2g_k, k1, k2, k3, psi, Kpsi )
     end
 
     return Kpsi # factor of 0.5 is already included

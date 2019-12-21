@@ -40,8 +40,6 @@ function main()
 
     @test Kpsi_cpu ≈ Kpsi_gpu
 
-    println("diff = ", sum(Kpsi_cpu - Kpsi_gpu) )
-
     println("Pass here")
 end
 
