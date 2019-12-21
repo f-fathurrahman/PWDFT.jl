@@ -1,3 +1,5 @@
+using Test
+
 include("PWDFT_cuda.jl")
 
 function main()
@@ -11,11 +13,13 @@ function main()
     pspfiles = ["../../pseudopotentials/pade_gth/H-q1.gth"]
     ecutwfc = 15.0
 
-    Ham = CuHamiltonian( atoms, pspfiles, ecutwfc )
+    Ham = CuHamiltonian( atoms, pspfiles, ecutwfc, use_symmetry=false )
     psiks = rand_CuBlochWavefunc( Ham )
     Kpsi = op_K( Ham, psiks[1] )
 
-    Ham_ = Hamiltonian( atoms, pspfiles, ecutwfc )
+    # Compare with CPU
+
+    Ham_ = Hamiltonian( atoms, pspfiles, ecutwfc, use_symmetry=false )
     Nkspin = length(psiks)
     psiks_ = BlochWavefunc(undef, Nkspin)
     for i in 1:Nkspin
@@ -24,6 +28,17 @@ function main()
     Kpsi_cpu = op_K( Ham_, psiks_[1] )
 
     Kpsi_gpu = collect( Kpsi )
+
+
+    ist = 1
+    println("Some Kpsi:")
+    for ig in 1:5
+        v1 = Kpsi_cpu[ig,ist]
+        v2 = Kpsi_gpu[ig,ist]
+        @printf("%18.10f + im*%18.10f, %18.10f + im*%18.10f\n", real(v1), imag(v1), real(v2), imag(v2) )
+    end
+
+    @test Kpsi_cpu ≈ Kpsi_gpu
 
     println("diff = ", sum(Kpsi_cpu - Kpsi_gpu) )
 
