@@ -1,16 +1,14 @@
 struct PsPotNL
     NbetaNL::Int64
     prj2beta::Array{Int64,4}
-    betaNL::Array{ComplexF64,3}
+    betaNL::Array{Array{ComplexF64,2},1}
 end
-# XXX: betaNL should have similar structure with psiks
-# Array{Array{ComplexF64,2},1}
-# calc_betaNL_psi should utilize matrix multiplication
-
 
 function PsPotNL()
     # return dummy PsPotNL
-    return PsPotNL(0, zeros(Int64,1,1,1,1), zeros(ComplexF64,1,1,1) )
+    betaNL = Array{Array{ComplexF64,2},1}(undef,1)
+    betaNL[1] = zeros(ComplexF64,1,1)
+    return PsPotNL(0, zeros(Int64,1,1,1,1), betaNL )
 end
 
 function PsPotNL( atoms::Atoms, pw::PWGrid, Pspots::Array{PsPot_GTH,1}; check_norm=false )
@@ -52,14 +50,19 @@ function PsPotNL( atoms::Atoms, pw::PWGrid, Pspots::Array{PsPot_GTH,1}; check_no
     # No nonlocal components
     if NbetaNL == 0
         # return dummy PsPotNL
-        return PsPotNL(0, zeros(Int64,1,1,1,1), zeros(ComplexF64,1,1,1) )
+        betaNL = Array{Array{ComplexF64,2},1}(undef,1)
+        betaNL[1] = zeros(ComplexF64,1,1)
+        return PsPotNL(0, zeros(Int64,1,1,1,1), betaNL )
     end
 
     Nkpt = kpoints.Nkpt
     k = kpoints.k
     Ngw = pw.gvecw.Ngw
     Ngwx = pw.gvecw.Ngwx
-    betaNL = zeros( ComplexF64, Ngwx, NbetaNL, Nkpt )
+    betaNL = Array{Array{ComplexF64,2},1}(undef,Nkpt)
+    for ik = 1:Nkpt
+        betaNL[ik] = zeros(ComplexF64, Ngw[ik], NbetaNL)
+    end
     G = pw.gvec.G
     g = zeros(3)
 
@@ -81,7 +84,7 @@ function PsPotNL( atoms::Atoms, pw::PWGrid, Pspots::Array{PsPot_GTH,1}; check_no
                     Gm = norm(g)
                     GX = atpos[1,ia]*g[1] + atpos[2,ia]*g[2] + atpos[3,ia]*g[3]
                     Sf = cos(GX) - im*sin(GX)
-                    betaNL[igk,ibeta,ik] =
+                    betaNL[ik][igk,ibeta] =
                     (-1.0*im)^l * Ylm_real(l,m,g)*eval_proj_G(psp,l,iprj,Gm,pw.CellVolume)*Sf
                 end
             end
@@ -101,12 +104,12 @@ end
 
 function check_betaNL_norm(
     pw::PWGrid,
-    betaNL::Array{ComplexF64,3},
+    betaNL::Array{Array{ComplexF64,2},1},
     kpoints::KPoints
 )
 
     Npoints = prod(pw.Ns)
-    NbetaNL = size(betaNL)[2]
+    NbetaNL = size(betaNL[1],2)
 
     Nkpt = kpoints.Nkpt
     Ngw = pw.gvecw.Ngw
@@ -120,9 +123,13 @@ function check_betaNL_norm(
         idx_gw2r = pw.gvecw.idx_gw2r[ik]
         #
         for ibeta = 1:NbetaNL
-            norm_G = dot( betaNL[1:Ngw[ik],ibeta,ik], betaNL[1:Ngw[ik],ibeta,ik] )
+            
+            norm_G = dot( betaNL[ik][:,ibeta], betaNL[ik][:,ibeta] )
+            
             ctmp[:] .= 0.0 + im*0.0
-            ctmp[idx_gw2r] = betaNL[1:Ngw[ik],ibeta,ik]
+            
+            ctmp[idx_gw2r] = betaNL[ik][:,ibeta]
+
             ctmp = G_to_R(pw, ctmp)*Npoints
             data3d = real(ctmp)
             data3d_im = imag(ctmp)
@@ -138,27 +145,29 @@ function check_betaNL_norm(
 end
 
 
-function calc_betaNL_psi( ik::Int64, betaNL::Array{ComplexF64,3}, psi::Array{ComplexF64,2} )
+function calc_betaNL_psi(
+    ik::Int64,
+    betaNL::Array{Array{ComplexF64,2},1},
+    psi::Array{ComplexF64,2}
+)
+
     Nstates = size(psi)[2]
-    NbetaNL = size(betaNL)[2]
+    NbetaNL = size(betaNL[1],2)
     Ngw_ik = size(psi)[1]
     betaNL_psi = zeros( ComplexF64, Nstates, NbetaNL )
-    for ist = 1:Nstates
-        for ibeta = 1:NbetaNL
-            betaNL_psi[ist,ibeta] = dot( betaNL[1:Ngw_ik,ibeta,ik], psi[:,ist] )
-        end
-    end
+    betaNL_psi[:,:] = conj( psi' * betaNL[ik] )
     return betaNL_psi
 end
 
-function calc_betaNL_psi( ik::Int64, betaNL::Array{ComplexF64,3}, psi::Array{ComplexF64,1} )
-    NbetaNL = size(betaNL)[2]
+function calc_betaNL_psi(
+    ik::Int64,
+    betaNL::Array{Array{ComplexF64,2},1},
+    psi::Array{ComplexF64,1}
+)
+    NbetaNL = size(betaNL[1],2)
     Ngw_ik = size(psi)[1]
     betaNL_psi = zeros( ComplexF64, NbetaNL )
-    for ibeta = 1:NbetaNL
-        betaNL_psi[ibeta] = dot( betaNL[1:Ngw_ik,ibeta,ik], psi )
-    end
+    betaNL_psi[:] = conj( psi' * betaNL[ik] )
     return betaNL_psi
 end
 
-include("PsPotNL_io.jl")

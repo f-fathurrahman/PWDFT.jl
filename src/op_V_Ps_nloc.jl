@@ -48,7 +48,7 @@ function op_V_Ps_nloc( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
                     jbeta = prj2beta[jprj,ia,l+1,m+psp.lmax+1]
                     hij = psp.h[l+1,iprj,jprj]
                     for ig = 1:Ngw[ik]
-                        Vpsi[ig,ist] = Vpsi[ig,ist] + hij*betaNL[ig,ibeta,ik]*betaNL_psi[ist,jbeta]
+                        Vpsi[ig,ist] = Vpsi[ig,ist] + hij*betaNL[ik][ig,ibeta]*betaNL_psi[ist,jbeta]
                     end
                 end # iprj
                 end # jprj
@@ -89,7 +89,7 @@ function op_V_Ps_nloc( Ham::Hamiltonian, psi::Array{ComplexF64,1} )
                 jbeta = prj2beta[jprj,ia,l+1,m+psp.lmax+1]
                 hij = psp.h[l+1,iprj,jprj]
                 for ig = 1:Ngw[ik]
-                    Vpsi[ig] = Vpsi[ig] + hij*betaNL[ig,ibeta,ik]*betaNL_psi[jbeta]
+                    Vpsi[ig] = Vpsi[ig] + hij*betaNL[ik][ig,ibeta]*betaNL_psi[jbeta]
                 end
             end # iprj
             end # jprj
