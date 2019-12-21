@@ -20,7 +20,9 @@ function main()
     pspfiles = ["../../pseudopotentials/pade_gth/H-q1.gth"]
     ecutwfc = 5.0
 
-    Ham = CuHamiltonian( atoms, pspfiles, ecutwfc, use_symmetry=false )
+    Nspin = 2
+
+    Ham = CuHamiltonian( atoms, pspfiles, ecutwfc, use_symmetry=false, Nspin=Nspin )
 
     Npoints = prod(Ham.pw.Ns)
 
@@ -33,7 +35,7 @@ function main()
     # Compare with CPU calculation
     #
     Nkspin = length(psiks)
-    Ham_cpu = Hamiltonian( atoms, pspfiles, ecutwfc, use_symmetry=false )
+    Ham_cpu = Hamiltonian( atoms, pspfiles, ecutwfc, use_symmetry=false, Nspin=Nspin )
 
     println("Nsyms = ", Ham_cpu.sym_info.Nsyms)
 
