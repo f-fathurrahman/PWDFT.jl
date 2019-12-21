@@ -30,7 +30,7 @@ function main()
     update!( Ham, Rhoe )
     
     Vpsi = op_V_loc( Ham, psiks[1] )
-    @time Vpsi = op_V_loc( Ham, psiks[1] )
+    CuArrays.@sync @time Vpsi = op_V_loc( Ham, psiks[1] )
 
     #
     # Compare with CPU calculation
@@ -48,7 +48,7 @@ function main()
     update!( Ham_cpu, Rhoe_cpu )
 
     Vpsi_cpu = op_V_loc( Ham_cpu, psiks_cpu[1] )
-    @time CuArrays.@sync Vpsi_cpu = op_V_loc( Ham_cpu, psiks_cpu[1] )
+    @time Vpsi_cpu = op_V_loc( Ham_cpu, psiks_cpu[1] )
 
     #
     # Compare
