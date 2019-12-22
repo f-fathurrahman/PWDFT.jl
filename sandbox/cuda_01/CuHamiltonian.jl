@@ -120,7 +120,8 @@ function CuHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
 
     # NL pseudopotentials
     pspotNL_ = PsPotNL( atoms, pw_, Pspots, check_norm=false ) # XXX should be done on GPU?
-    pspotNL = CuPsPotNL( pspotNL_ ) # copy
+    
+    pspotNL = CuPsPotNL( atoms, Pspots, kpoints, electrons, pspotNL_ ) # copy
 
     atoms.Zvals = get_Zvals( Pspots )
 
