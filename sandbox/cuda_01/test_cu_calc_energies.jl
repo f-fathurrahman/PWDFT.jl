@@ -33,22 +33,25 @@ function main()
     
     E_Ps_nloc = calc_E_Ps_nloc( Ham, psiks )
 
+    println("E_Ps_nloc = ", E_Ps_nloc)
+
     #
     # Compare with CPU calculation
     #
-    #Nkspin = length(psiks)
-    #Ham_cpu = Hamiltonian( atoms, pspfiles, ecutwfc, use_symmetry=false, Nspin=Nspin )
+    Nkspin = length(psiks)
+    Ham_cpu = Hamiltonian( atoms, pspfiles, ecutwfc, use_symmetry=false, Nspin=Nspin )
+    psiks_cpu = BlochWavefunc(undef, Nkspin)
+    for i in 1:Nkspin
+        psiks_cpu[i] = collect(psiks[i])
+    end
 
-    #println("Nsyms = ", Ham_cpu.sym_info.Nsyms)
+    Rhoe_cpu = calc_rhoe( Ham_cpu, psiks_cpu )
+    update!( Ham_cpu, Rhoe_cpu )
 
-    #psiks_cpu = BlochWavefunc(undef, Nkspin)
-    #for i in 1:Nkspin
-    #    psiks_cpu[i] = collect(psiks[i])
-    #end
+    E_Ps_nloc_cpu = calc_E_Ps_nloc( Ham_cpu, psiks_cpu )
+    println("E_Ps_nloc_cpu = ", E_Ps_nloc_cpu)
 
-    #Rhoe_cpu = calc_rhoe( Ham_cpu, psiks_cpu )
-
-    #update!( Ham_cpu, Rhoe_cpu )
+    @test E_Ps_nloc ≈ E_Ps_nloc_cpu
 
     println("Pass here")
 end

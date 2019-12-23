@@ -10,11 +10,14 @@ function kernel_calc_E_Ps_nloc!(
     ikspin::Int64,
     wk,
     Focc,
+    prj2beta,
     betaNL_psi,
     e_ps_nloc_k
 )
     
     ist = ( blockIdx().x - 1 )*blockDim().x + threadIdx().x
+
+    Nstates = length(e_ps_nloc_k)
 
     if ist <= Nstates
 
@@ -28,18 +31,14 @@ function kernel_calc_E_Ps_nloc!(
             for iprj = 1:psp_Nproj_l[l+1,isp]
             for jprj = 1:psp_Nproj_l[l+1,isp]
                 
-                ibeta = prj2beta[iprj, ia, l+1, m+psp_lmax[isp]+1, isp]
+                ibeta = prj2beta[iprj, ia, l+1, m+psp_lmax[isp]+1]
                 
-                jbeta = prj2beta[jprj, ia, l+1, m+psp_lmax[isp]+1, isp]
+                jbeta = prj2beta[jprj, ia, l+1, m+psp_lmax[isp]+1]
                 
                 hij = psp_h[l+1, iprj, jprj, isp]
 
-                # Z1 = A + Bj
-                # Z2 = C + Dj
-
-                # (A - Bj) * (C + Dj) = A*C + B*D - j*B*C - j*A*D 
-                
                 enl1 = enl1 + hij*real( conj(betaNL_psi[ist,ibeta]) * betaNL_psi[ist,jbeta] )
+
             end
             end
             end # m
@@ -67,7 +66,7 @@ function calc_E_Ps_nloc( Ham::CuHamiltonian, psiks::CuBlochWavefunc )
     Focc = Ham.pspotNL.Focc
     wk = Ham.pspotNL.wk
     psp_lmax = Ham.pspotNL.psp_lmax
-    psp_Nproj_l =Ham.pspotNL.psp_Nproj_l
+    psp_Nproj_l = Ham.pspotNL.psp_Nproj_l
     psp_h = Ham.pspotNL.psp_h
 
     E_Ps_nloc = 0.0
@@ -83,15 +82,15 @@ function calc_E_Ps_nloc( Ham::CuHamiltonian, psiks::CuBlochWavefunc )
         
         ikspin = ik + (ispin - 1)*Nkpt
         
-        betaNL_psi = calc_betaNL_psi( ik, Ham.pspotNL.betaNL, psiks[ikspin] )
+        betaNL_psi[:] = calc_betaNL_psi( ik, Ham.pspotNL.betaNL, psiks[ikspin] )
 
         @cuda threads=Nthreads blocks=Nblocks kernel_calc_E_Ps_nloc!(
                 Natoms, atm2species,
                 psp_lmax, psp_Nproj_l, psp_h,
                 ik, ikspin,
                 wk, Focc,
-                betaNL_psi, e_ps_nloc_k )
-
+                prj2beta, betaNL_psi,
+                e_ps_nloc_k )
 
         E_Ps_nloc = E_Ps_nloc + sum( e_ps_nloc_k )
     end
