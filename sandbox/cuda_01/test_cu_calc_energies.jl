@@ -31,14 +31,21 @@ function main()
 
     update!( Ham, Rhoe )
     
+    E_kin = calc_E_kin( Ham, psiks )
+
     E_Ps_loc, E_Hartree, E_xc = calc_E_local( Ham )
 
     E_Ps_nloc = calc_E_Ps_nloc( Ham, psiks )
 
+    energies = calc_energies( Ham, psiks )
+
+    @printf("E_kin     = %18.10f\n", E_kin)
     @printf("E_Ps_loc  = %18.10f\n", E_Ps_loc)
     @printf("E_Hartree = %18.10f\n", E_Hartree)
     @printf("E_xc      = %18.10f\n", E_xc)
     @printf("E_Ps_nloc = %18.10f\n", E_Ps_nloc)
+
+    println(energies)
 
     #
     # Compare with CPU calculation
@@ -53,15 +60,24 @@ function main()
     Rhoe_cpu = calc_rhoe( Ham_cpu, psiks_cpu )
     update!( Ham_cpu, Rhoe_cpu )
 
+    E_kin_cpu = calc_E_kin( Ham_cpu, psiks_cpu )
+
     E_Ps_loc_cpu, E_Hartree_cpu, E_xc_cpu = calc_E_local( Ham_cpu )
 
     E_Ps_nloc_cpu = calc_E_Ps_nloc( Ham_cpu, psiks_cpu )
 
+    energies_cpu = calc_energies( Ham_cpu, psiks_cpu )
+
+    @printf("E_kin_cpu     = %18.10f\n", E_kin_cpu)
     @printf("E_Ps_loc_cpu  = %18.10f\n", E_Ps_loc_cpu)
     @printf("E_Hartree_cpu = %18.10f\n", E_Hartree_cpu)
     @printf("E_xc_cpu      = %18.10f\n", E_xc_cpu)
     @printf("E_Ps_nloc_cpu = %18.10f\n", E_Ps_nloc_cpu)
 
+    @test E_kin ≈ E_kin_cpu
+    @test E_Ps_loc ≈ E_Ps_loc_cpu
+    @test E_Hartree ≈ E_Hartree_cpu
+    @test E_xc ≈ E_xc_cpu
     @test E_Ps_nloc ≈ E_Ps_nloc_cpu
 
     println("Pass here")

@@ -126,6 +126,28 @@ function calc_E_local( Ham::CuHamiltonian )
 end
 
 
+
+
+function kernel_calc_E_kin!( ist, idx_gw2g_ik, G, k1, k2, k3, psi, psiKpsi )
+    
+    igk = ( blockIdx().x - 1 )*blockDim().x + threadIdx().x
+
+    Ngw_ik = length( idx_gw2g_ik )
+
+    if igk <= Ngw_ik
+        
+        ig = idx_gw2g_ik[igk]
+        
+        Gw2 = ( G[1,ig] + k1 )^2 + ( G[2,ig] + k2 )^2 + ( G[3,ig] + k3 )^2
+        
+        psiKpsi[igk] = CUDAnative.abs( psi[igk,ist] )^2*Gw2
+    
+    end
+    
+    return
+end
+
+
 function calc_E_kin( Ham::CuHamiltonian, psiks::CuBlochWavefunc )
 
     Focc = Ham.electrons.Focc
@@ -139,6 +161,11 @@ function calc_E_kin( Ham::CuHamiltonian, psiks::CuBlochWavefunc )
     G = Ham.pw.gvec.G
     k = Ham.pw.gvecw.kpoints.k
 
+    Ngwx = Ham.pw.gvecw.Ngwx
+    psiKpsi = CuArrays.zeros(Float64, Ngwx)
+
+    Nthreads = 256
+
     E_kin = 0.0
     for ispin = 1:Nspin
     for ik = 1:Nkpt
@@ -146,14 +173,19 @@ function calc_E_kin( Ham::CuHamiltonian, psiks::CuBlochWavefunc )
         Ham.ispin = ispin
         ikspin = ik + (ispin - 1)*Nkpt
         psi = psiks[ikspin]
+        k1 = k[1,ik]
+        k2 = k[2,ik]
+        k3 = k[3,ik]
         for ist = 1:Nstates
-            psiKpsi = 0.0
-            for igk = 1:Ngw[ik]
-                ig = idx_gw2g[ik][igk]
-                Gw2 = (G[1,ig] + k[1,ik])^2 + (G[2,ig] + k[2,ik])^2 + (G[3,ig] + k[3,ik])^2
-                psiKpsi = psiKpsi + abs(psi[igk,ist])^2*Gw2
-            end
-            E_kin = E_kin + wk[ik]*Focc[ist,ikspin]*psiKpsi
+            
+            psiKpsi[:] .= 0.0 # need this ?
+            
+            Nblocks = ceil(Int64, Ngw[ik]/Nthreads)
+
+            @cuda threads=Nthreads blocks=Nblocks kernel_calc_E_kin!( ist, idx_gw2g[ik], G, k1, k2, k3, psi, psiKpsi )
+
+            E_kin = E_kin + wk[ik]*Focc[ist,ikspin]*sum( psiKpsi[1:Ngw[ik]] )
+
         end
     end
     end
