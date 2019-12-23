@@ -92,8 +92,8 @@ function KS_solve_Emin_PCG!( Ham::CuHamiltonian;
 
     if verbose
         @printf("\n")
-        @printf("Minimizing Kohn-Sham energy using PCG\n")
-        @printf("-------------------------------------\n")
+        @printf("Minimizing Kohn-Sham energy using PCG (CUDA version)\n")
+        @printf("----------------------------------------------------\n")
         @printf("NiterMax  = %d\n", NiterMax)
         @printf("α_t       = %e\n", α_t)
         @printf("conv_thr  = %e\n", etot_conv_thr)
@@ -174,7 +174,8 @@ function KS_solve_Emin_PCG!( Ham::CuHamiltonian;
 
             # Update wavefunction
             psiks[ikspin] = psiks[ikspin] + α[ikspin]*d[ikspin]
-            psiks[ikspin] = ortho_gram_schmidt(psiks[ikspin])
+            #psiks[ikspin] = ortho_gram_schmidt(psiks[ikspin])
+            ortho_gram_schmidt!( psiks[ikspin] )
         end
         end
 
@@ -213,27 +214,28 @@ function KS_solve_Emin_PCG!( Ham::CuHamiltonian;
     end
 
     # Calculate eigenvalues
-    #for ispin = 1:Nspin
-    #for ik = 1:Nkpt
-    #    Ham.ik = ik
-    #    Ham.ispin = ispin
-    #    ikspin = ik + (ispin - 1)*Nkpt
-    #    psiks[ikspin] = ortho_gram_schmidt(psiks[ikspin])
-    #    Hr = Hermitian(psiks[ikspin]' * op_H(Ham, psiks[ikspin]))
-    #    evals, evecs = eigen(Hr)
-    #    Ham.electrons.ebands[:,ik] = collect(evals) # copy to cpu
-    #    psiks[ikspin] = psiks[ikspin]*evecs
-    #end
-    #end
+    for ispin = 1:Nspin
+    for ik = 1:Nkpt
+        Ham.ik = ik
+        Ham.ispin = ispin
+        ikspin = ik + (ispin - 1)*Nkpt
+        ortho_gram_schmidt!( psiks[ikspin] )
+        Hr = psiks[ikspin]' * op_H(Ham, psiks[ikspin]) # no need to convert to Hermitian
+        evals, evecs = eigen(Hr)
+        Ham.electrons.ebands_gpu[:,ik] = evals # copy to cpu
+        psiks[ikspin] = psiks[ikspin]*evecs
+    end
+    end
 
-    #if verbose && print_final_ebands
-    #    @printf("\n")
-    #    @printf("----------------------------\n")
-    #    @printf("Final Kohn-Sham eigenvalues:\n")
-    #    @printf("----------------------------\n")
-    #    @printf("\n")
-    #    print_ebands(Ham.electrons, Ham.pw.gvecw.kpoints, unit="eV")
-    #end
+    if verbose && print_final_ebands
+        @printf("\n")
+        @printf("----------------------------\n")
+        @printf("Final Kohn-Sham eigenvalues:\n")
+        @printf("----------------------------\n")
+        @printf("\n")
+        Ham.electrons.ebands[:] = collect( Ham.electrons.ebands_gpu[:] )
+        print_ebands(Ham.electrons, Ham.pw.gvecw.kpoints, unit="eV")
+    end
 
     if verbose && print_final_energies
         @printf("\n")

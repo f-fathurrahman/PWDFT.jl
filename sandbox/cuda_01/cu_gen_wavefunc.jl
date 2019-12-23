@@ -6,7 +6,7 @@ function zeros_CuBlochWavefunc( Ham::CuHamiltonian )
     return zeros_CuBlochWavefunc( Ham.pw, Ham.electrons )
 end
 
-function zeros_CuBlochWavefunc( pw::CuPWGrid, electrons::Electrons )
+function zeros_CuBlochWavefunc( pw::CuPWGrid, electrons::CuElectrons )
     Nspin = electrons.Nspin
     Nstates = electrons.Nstates
     return zeros_CuBlochWavefunc( pw, Nstates, Nspin )
@@ -37,7 +37,7 @@ function rand_CuBlochWavefunc( Ham::CuHamiltonian )
     return rand_CuBlochWavefunc( Ham.pw, Ham.electrons.Nstates, Ham.electrons.Nspin )
 end
 
-function rand_BlochWavefunc( pw::PWGrid, electrons::Electrons )
+function rand_BlochWavefunc( pw::PWGrid, electrons::CuElectrons )
     Nspin = electrons.Nspin
     Nstates = electrons.Nstates
     return rand_CuBlochWavefunc( pw, Nstates, Nspin )

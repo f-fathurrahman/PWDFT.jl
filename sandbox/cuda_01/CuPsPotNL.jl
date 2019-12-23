@@ -22,7 +22,7 @@ function CuPsPotNL(
     atoms::Atoms,
     pspots::Array{PsPot_GTH,1},
     kpoints::KPoints,
-    electrons::Electrons,
+    electrons::CuElectrons,
     pspNL::PsPotNL,
 )
     Nkpt = length( pspNL.betaNL )
@@ -53,7 +53,7 @@ function CuPsPotNL(
 
     wk = CuArray( kpoints.wk )
 
-    Focc = CuArray( electrons.Focc )
+    Focc = copy( electrons.Focc_gpu )
 
     return CuPsPotNL(
         pspNL.NbetaNL,

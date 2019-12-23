@@ -14,6 +14,8 @@ include("utils_CuArrays.jl")
 
 include("kernels_fft_grid.jl")
 
+include("CuElectrons.jl")
+
 include("CuPWGrid.jl")
 
 include("cu_calc_strfact.jl")

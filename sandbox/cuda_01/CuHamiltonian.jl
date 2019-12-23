@@ -3,7 +3,7 @@ mutable struct CuHamiltonian
     potentials::CuPotentials
     energies::Energies
     rhoe::CuArray{Float64,2}
-    electrons::Electrons
+    electrons::CuElectrons
     atoms::Atoms
     sym_info::SymmetryInfo
     rhoe_symmetrizer::RhoeSymmetrizer
@@ -115,8 +115,9 @@ function CuHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
     #
     rhoe = zeros( Float64, Npoints, Nspin )
 
-    electrons = Electrons( atoms, Pspots, Nspin=Nspin, Nkpt=kpoints.Nkpt,
-                           Nstates_empty=extra_states )
+    electrons_ = Electrons( atoms, Pspots, Nspin=Nspin, Nkpt=kpoints.Nkpt,
+                            Nstates_empty=extra_states )
+    electrons = CuElectrons( electrons_ )
 
     # NL pseudopotentials
     pspotNL_ = PsPotNL( atoms, pw_, Pspots, check_norm=false ) # XXX should be done on GPU?
