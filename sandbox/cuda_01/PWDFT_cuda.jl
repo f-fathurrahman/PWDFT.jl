@@ -32,6 +32,7 @@ include("CuPsPotNL.jl")
 include("CuHamiltonian.jl")
 
 include("cu_gen_wavefunc.jl")
+include("cu_Kprec.jl")
 include("cu_op_K.jl")
 include("cu_op_V_loc.jl")
 include("cu_op_V_Ps_nloc.jl")
