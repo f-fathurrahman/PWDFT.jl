@@ -42,3 +42,5 @@ include("cu_calc_rhoe.jl")
 include("cu_Poisson_solve.jl")
 
 include("cu_calc_energies.jl")
+
+include("cu_calc_grad.jl")
