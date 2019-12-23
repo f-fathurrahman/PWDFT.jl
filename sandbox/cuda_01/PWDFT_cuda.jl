@@ -10,6 +10,8 @@ using PWDFT
 import CuArrays: allowscalar, @allowscalar
 allowscalar(false)
 
+include("utils_CuArrays.jl")
+
 include("kernels_fft_grid.jl")
 
 include("CuPWGrid.jl")
@@ -45,3 +47,5 @@ include("cu_Poisson_solve.jl")
 include("cu_calc_energies.jl")
 
 include("cu_calc_grad.jl")
+
+include("cu_KS_solve_Emin_PCG.jl")
