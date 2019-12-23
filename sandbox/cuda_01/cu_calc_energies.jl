@@ -100,14 +100,14 @@ function calc_E_Ps_nloc( Ham::CuHamiltonian, psiks::CuBlochWavefunc )
 end
 
 # Calculate Ps loc, Hartree, and XC components of total energy
-function calc_E_local( CuHam::Hamiltonian )
+function calc_E_local( Ham::CuHamiltonian )
 
     Npoints = prod(Ham.pw.Ns)
     dVol = Ham.pw.CellVolume/Npoints
     Nspin = Ham.electrons.Nspin
     potentials = Ham.potentials
 
-    Rhoe_tot = Ham.zeros(Float64, Npoints)
+    Rhoe_tot = CuArrays.zeros(Float64, Npoints)
     for ispin = 1:Nspin
         Rhoe_tot[:] = Rhoe_tot[:] + Ham.rhoe[:,ispin]
     end
@@ -126,7 +126,7 @@ function calc_E_local( CuHam::Hamiltonian )
 end
 
 
-function calc_E_kin( Ham::Hamiltonian, psiks::BlochWavefunc )
+function calc_E_kin( Ham::CuHamiltonian, psiks::CuBlochWavefunc )
 
     Focc = Ham.electrons.Focc
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt

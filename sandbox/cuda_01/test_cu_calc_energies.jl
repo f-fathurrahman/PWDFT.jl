@@ -31,9 +31,14 @@ function main()
 
     update!( Ham, Rhoe )
     
+    E_Ps_loc, E_Hartree, E_xc = calc_E_local( Ham )
+
     E_Ps_nloc = calc_E_Ps_nloc( Ham, psiks )
 
-    println("E_Ps_nloc = ", E_Ps_nloc)
+    @printf("E_Ps_loc  = %18.10f\n", E_Ps_loc)
+    @printf("E_Hartree = %18.10f\n", E_Hartree)
+    @printf("E_xc      = %18.10f\n", E_xc)
+    @printf("E_Ps_nloc = %18.10f\n", E_Ps_nloc)
 
     #
     # Compare with CPU calculation
@@ -48,8 +53,14 @@ function main()
     Rhoe_cpu = calc_rhoe( Ham_cpu, psiks_cpu )
     update!( Ham_cpu, Rhoe_cpu )
 
+    E_Ps_loc_cpu, E_Hartree_cpu, E_xc_cpu = calc_E_local( Ham_cpu )
+
     E_Ps_nloc_cpu = calc_E_Ps_nloc( Ham_cpu, psiks_cpu )
-    println("E_Ps_nloc_cpu = ", E_Ps_nloc_cpu)
+
+    @printf("E_Ps_loc_cpu  = %18.10f\n", E_Ps_loc_cpu)
+    @printf("E_Hartree_cpu = %18.10f\n", E_Hartree_cpu)
+    @printf("E_xc_cpu      = %18.10f\n", E_xc_cpu)
+    @printf("E_Ps_nloc_cpu = %18.10f\n", E_Ps_nloc_cpu)
 
     @test E_Ps_nloc ≈ E_Ps_nloc_cpu
 
