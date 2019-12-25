@@ -1,3 +1,5 @@
+module PWDFT_cuda
+
 using Printf
 using FFTW
 using LinearAlgebra
@@ -51,3 +53,6 @@ include("cu_calc_energies.jl")
 include("cu_calc_grad.jl")
 
 include("cu_KS_solve_Emin_PCG.jl")
+
+end  # end of module
+
