@@ -20,7 +20,7 @@ include("CuElectrons.jl")
 export CuElectrons
 
 include("CuPWGrid.jl")
-export CuPWGrid
+export CuPWGrid, CuGVectors, CuGVectorsW
 
 include("cu_calc_strfact.jl")
 
@@ -46,6 +46,8 @@ include("CuHamiltonian.jl")
 export CuHamiltonian
 
 include("cu_gen_wavefunc.jl")
+export zeros_CuBlochWavefunc, rand_CuBlochWavefunc
+
 include("cu_Kprec.jl")
 include("cu_op_K.jl")
 include("cu_op_V_loc.jl")
