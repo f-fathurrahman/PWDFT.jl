@@ -1,7 +1,6 @@
 using CuArrays
 using PWDFT
-
-include("CuPWGrid.jl")
+using PWDFT_cuda
 
 function main()
 

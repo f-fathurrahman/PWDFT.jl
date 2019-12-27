@@ -4,8 +4,7 @@ using Printf
 using LinearAlgebra
 
 using PWDFT
-
-include("utils_CuArrays.jl")
+using PWDFT_cuda
 
 function main( ; Nbasis=1000, Nstates=10, Nkspin=5 )
 

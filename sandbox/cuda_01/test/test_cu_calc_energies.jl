@@ -1,8 +1,12 @@
 using Test
-
-include("PWDFT_cuda.jl")
-
 using Random
+using Printf
+
+using PWDFT
+using PWDFT_cuda
+
+const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
+const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
 
 function main()
 
@@ -17,7 +21,7 @@ function main()
     Si   1.5  0.0  0.0
     """, LatVecs=gen_lattice_sc(5.0))
 
-    pspfiles = ["../../pseudopotentials/pade_gth/Si-q4.gth"]
+    pspfiles = [joinpath(DIR_PSP, "Si-q4.gth")]
     ecutwfc = 5.0
 
     Nspin = 1
