@@ -167,6 +167,8 @@ export Kprec
 
 include("calc_energies.jl")
 export calc_energies,
+       calc_E_kin,
+       calc_E_local,
        calc_E_xc,
        calc_E_Hartree,
        calc_E_Ps_nloc
