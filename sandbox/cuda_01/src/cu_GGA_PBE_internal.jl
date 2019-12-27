@@ -5,14 +5,14 @@ import PWDFT: calc_epsxc_PBE, calc_Vxc_PBE
 # Vxc is always of type CuArray{Float64,2}
 
 # Rhoe can be spinpol or not
-function calc_epsxc_PBE( xc_calc::XCCalculator, pw::CuPWGrid, Rhoe )
+function calc_epsxc_PBE( xc_calc::XCCalculator, pw::CuPWGrid, Rhoe::CuArray{Float64,2} )
     Npoints = size(Rhoe,1)
     epsxc = CuArrays.zeros(Float64,Npoints)
     calc_epsxc_PBE!( xc_calc, pw, Rhoe, epsxc )
     return epsxc
 end
 
-function calc_Vxc_PBE( xc_calc::XCCalculator, pw::CuPWGrid, Rhoe )
+function calc_Vxc_PBE( xc_calc::XCCalculator, pw::CuPWGrid, Rhoe::CuArray{Float64,2} )
     Npoints = size(Rhoe,1)
     Nspin = size(Rhoe,2)
     Vxc = CuArrays.zeros(Float64, Npoints, Nspin)

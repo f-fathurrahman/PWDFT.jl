@@ -17,14 +17,17 @@ include("utils_CuArrays.jl")
 include("kernels_fft_grid.jl")
 
 include("CuElectrons.jl")
+export CuElectrons
 
 include("CuPWGrid.jl")
+export CuPWGrid
 
 include("cu_calc_strfact.jl")
 
 include("cu_wrappers_fft.jl")
 
 include("cu_types_aliases.jl")
+export CuWavefunc, CuBlochWavefunc
 
 include("cu_ortho_gram_schmidt.jl")
 include("cu_ortho_check.jl")
@@ -34,8 +37,13 @@ include("cu_LDA_VWN_internal.jl")
 include("cu_GGA_PBE_internal.jl")
 
 include("CuPotentials.jl")
+export CuPotentials
+
 include("CuPsPotNL.jl")
+export CuPsPotNL
+
 include("CuHamiltonian.jl")
+export CuHamiltonian
 
 include("cu_gen_wavefunc.jl")
 include("cu_Kprec.jl")
