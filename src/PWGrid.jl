@@ -31,7 +31,6 @@ struct PWGrid
     LatVecs::Array{Float64,2}
     RecVecs::Array{Float64,2}
     CellVolume::Float64
-    r::Array{Float64,2}
     gvec::GVectors
     gvecw::GVectorsW
     planfw::FFTW.cFFTWPlan{Complex{Float64},-1,false,3}
@@ -77,7 +76,6 @@ function PWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2}; kpoints=nothing, N
     end
 
     Npoints = prod(Ns)
-    r = init_grid_R( Ns, LatVecs )
     
     gvec = init_gvec( Ns, RecVecs, ecutrho )
 
@@ -90,7 +88,7 @@ function PWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2}; kpoints=nothing, N
     planfw = plan_fft( zeros(ComplexF64,Ns) )
     planbw = plan_ifft( zeros(ComplexF64,Ns) )
 
-    return PWGrid( ecutwfc, ecutrho, Ns, LatVecs, RecVecs, CellVolume, r, gvec, gvecw,
+    return PWGrid( ecutwfc, ecutrho, Ns, LatVecs, RecVecs, CellVolume, gvec, gvecw,
                    planfw, planbw )
 end
 

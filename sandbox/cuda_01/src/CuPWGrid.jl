@@ -63,7 +63,6 @@ struct CuPWGrid
     LatVecs::Array{Float64,2}
     RecVecs::Array{Float64,2}
     CellVolume::Float64
-    r::Array{Float64,2} # not really used for now
     gvec::CuGVectors
     gvecw::CuGVectorsW
     planfw::CuArrays.CUFFT.cCuFFTPlan{Complex{Float64},-1,false,3}
@@ -98,7 +97,6 @@ function CuPWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2}; kpoints=nothing,
     end
 
     Npoints = prod(Ns)
-    r = PWDFT.init_grid_R( Ns, LatVecs )  # FIXME: Not really used for now
 
     gvec_ = PWDFT.init_gvec( Ns, RecVecs, ecutrho )
     gvec = CuGVectors( gvec_ )
@@ -113,7 +111,7 @@ function CuPWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2}; kpoints=nothing,
     planfw = plan_fft( CuArrays.fill(0.0 + im*0.0, Ns) )
     planbw = plan_ifft( CuArrays.fill(0.0 + im*0.0, Ns) )
 
-    return CuPWGrid( ecutwfc, ecutrho, Ns, LatVecs, RecVecs, CellVolume, r, gvec, gvecw,
+    return CuPWGrid( ecutwfc, ecutrho, Ns, LatVecs, RecVecs, CellVolume, gvec, gvecw,
                      planfw, planbw )
 end
 
