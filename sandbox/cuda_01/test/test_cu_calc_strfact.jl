@@ -1,6 +1,7 @@
 using Test
 
-include("PWDFT_cuda.jl")
+using PWDFT
+using PWDFT_cuda
 
 function main()
     LatVecs = gen_lattice_sc(10.0)

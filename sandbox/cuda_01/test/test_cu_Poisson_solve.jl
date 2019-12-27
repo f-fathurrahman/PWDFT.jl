@@ -1,4 +1,8 @@
-include("PWDFT_cuda.jl")
+using Printf
+
+using CuArrays
+using PWDFT
+using PWDFT_cuda
 
 function main()
 

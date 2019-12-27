@@ -1,8 +1,10 @@
 using Test
-
-include("PWDFT_cuda.jl")
-
 using Random
+using Printf
+
+using CuArrays
+using PWDFT
+using PWDFT_cuda
 
 function main_nospin()
 
@@ -90,5 +92,5 @@ function main_spin()
     println("Pass here")
 end
 
-#main_nospin()
+main_nospin()
 main_spin()

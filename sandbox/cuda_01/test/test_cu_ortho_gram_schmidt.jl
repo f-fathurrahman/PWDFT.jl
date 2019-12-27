@@ -3,8 +3,8 @@ using CuArrays
 using Printf
 using LinearAlgebra
 
-include("cu_ortho_gram_schmidt.jl")
-include("cu_ortho_check.jl")
+using PWDFT
+using PWDFT_cuda
 
 function main()
 

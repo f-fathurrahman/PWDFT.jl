@@ -1,4 +1,9 @@
-include("PWDFT_cuda.jl")
+using Test
+using Random
+using Printf
+
+using PWDFT
+using PWDFT_cuda
 
 function main()
 

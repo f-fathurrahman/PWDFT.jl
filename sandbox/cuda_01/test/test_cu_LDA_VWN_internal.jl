@@ -1,6 +1,10 @@
 using Test
+using Random
+using Printf
 
-include("PWDFT_cuda.jl")
+using CuArrays
+using PWDFT
+using PWDFT_cuda
 
 function main_nospin()
     Npoints = 1000
