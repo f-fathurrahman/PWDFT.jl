@@ -37,7 +37,7 @@ function rand_CuBlochWavefunc( Ham::CuHamiltonian )
     return rand_CuBlochWavefunc( Ham.pw, Ham.electrons.Nstates, Ham.electrons.Nspin )
 end
 
-function rand_BlochWavefunc( pw::PWGrid, electrons::CuElectrons )
+function rand_CuBlochWavefunc( pw::CuPWGrid, electrons::CuElectrons )
     Nspin = electrons.Nspin
     Nstates = electrons.Nstates
     return rand_CuBlochWavefunc( pw, Nstates, Nspin )
