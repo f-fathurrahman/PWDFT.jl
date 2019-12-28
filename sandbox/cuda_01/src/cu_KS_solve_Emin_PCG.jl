@@ -214,17 +214,22 @@ function KS_solve_Emin_PCG!( Ham::CuHamiltonian;
     end
 
     # Calculate eigenvalues
-    for ispin = 1:Nspin
-    for ik = 1:Nkpt
+    Hr = CuArrays.zeros(ComplexF64, Nstates, Nstates)
+    for ispin = 1:Nspin, ik = 1:Nkpt
         Ham.ik = ik
         Ham.ispin = ispin
         ikspin = ik + (ispin - 1)*Nkpt
         ortho_gram_schmidt!( psiks[ikspin] )
-        Hr = psiks[ikspin]' * op_H(Ham, psiks[ikspin]) # no need to convert to Hermitian
-        evals, evecs = eigen(Hr)
-        Ham.electrons.ebands_gpu[:,ik] = evals # copy to cpu
+        Hr[:] = psiks[ikspin]' * op_H(Ham, psiks[ikspin]) # no need to convert to Hermitian
+        Ham.electrons.ebands_gpu[:,ik], evecs = eigen_heevd_gpu(Hr)
         psiks[ikspin] = psiks[ikspin]*evecs
-    end
+        # XXX preallocate evecs?
+        #Hr_cpu = collect(Hr)
+        #println("Hr_cpu")
+        #println(Hr_cpu)
+        #evals, evecs = eigen( Hermitian(Hr_cpu) )  # do diagonalization at CPU
+        #Ham.electrons.ebands[:,ik] = evals
+        #psiks[ikspin] = psiks[ikspin]*CuArray(evecs) # duh!!!
     end
 
     if verbose && print_final_ebands
