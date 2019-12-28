@@ -108,8 +108,8 @@ function CuPWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2}; kpoints=nothing,
     gvecw_ = PWDFT.init_gvecw( ecutwfc, gvec_, kpoints )
     gvecw = CuGVectorsW( gvecw_ )
 
-    planfw = plan_fft( CuArrays.fill(0.0 + im*0.0, Ns) )
-    planbw = plan_ifft( CuArrays.fill(0.0 + im*0.0, Ns) )
+    planfw = plan_fft( CuArrays.zeros(ComplexF64, Ns) )
+    planbw = plan_ifft( CuArrays.zeros(ComplexF64, Ns) )
 
     return CuPWGrid( ecutwfc, ecutrho, Ns, LatVecs, RecVecs, CellVolume, gvec, gvecw,
                      planfw, planbw )
