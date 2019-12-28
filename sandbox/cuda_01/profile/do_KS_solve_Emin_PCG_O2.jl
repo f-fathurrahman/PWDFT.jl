@@ -1,4 +1,3 @@
-using Printf
 using Random
 
 using CUDAdrv
@@ -15,9 +14,8 @@ CuArrays.CURAND.seed!(1234)
 
 function main_GPU()
 
-    atoms = Atoms( xyz_file=joinpath(DIR_STRUCTURES, "H2.xyz"),
-                   LatVecs=gen_lattice_sc(16.0) )
-    pspfiles = [ joinpath(DIR_PSP, "H-q1.gth") ]
+    atoms = Atoms( ext_xyz_file=joinpath(DIR_STRUCTURES, "O2.xyz") )
+    pspfiles = [ joinpath(DIR_PSP, "O-q6.gth") ]
     ecutwfc = 15.0
 
     Nspin = 1

@@ -1,4 +1,4 @@
-using Printf
+using Random
 
 using CUDAdrv
 using CuArrays
@@ -9,9 +9,10 @@ const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
 const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
 const DIR_STRUCTURES = joinpath(DIR_PWDFT, "structures")
 
-function main_GPU()
+Random.seed!(1234)
+CuArrays.seed!(1234)
 
-    CuArrays.seed!(1234)
+function main_GPU()
 
     atoms = Atoms( ext_xyz_file=joinpath(DIR_STRUCTURES, "NH3.xyz") )
     pspfiles = [ joinpath(DIR_PSP, "N-q5.gth"),
