@@ -1,8 +1,8 @@
-using Test
-
-include("PWDFT_cuda.jl")
-
 using Random
+
+using CuArrays
+using PWDFT
+using PWDFT_cuda
 
 const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
 const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
@@ -47,5 +47,5 @@ function main_GPU()
 end
 
 
-#main_CPU()
+main_CPU()
 main_GPU()
