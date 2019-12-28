@@ -60,6 +60,10 @@ function KS_solve_Emin_PCG!( Ham::CuHamiltonian;
         diag_LOBPCG!( Ham, psiks, verbose=false, verbose_last=false, NiterMax=10 )
     end
 
+    # warm-up CuArrays.CUSOLVER
+    vv = CuArrays.rand(ComplexF64,1,1)
+    _, _ = eigen_heevd_gpu( vv )
+
     #
     # Variables for PCG
     #
@@ -75,8 +79,6 @@ function KS_solve_Emin_PCG!( Ham::CuHamiltonian;
     β = zeros(Nkspin)
     α = zeros(Nkspin)
 
-    Etot_old = 0.0
-
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( Ham.atoms )
 
@@ -86,7 +88,7 @@ function KS_solve_Emin_PCG!( Ham::CuHamiltonian;
     # Calculate energy at this psi
     energies = calc_energies(Ham, psiks)
     Ham.energies = energies
-    Etot = sum(energies)
+    Etot_old = sum(energies)
 
     Nconverges = 0
 
@@ -109,6 +111,8 @@ function KS_solve_Emin_PCG!( Ham::CuHamiltonian;
         @printf("\n")
     end
 
+    CuArrays.memory_status()
+    println()
 
     for iter = 1:NiterMax
 
@@ -212,6 +216,10 @@ function KS_solve_Emin_PCG!( Ham::CuHamiltonian;
 
         flush(stdout)
     end
+
+    #GC.gc(true)
+    println()
+    CuArrays.memory_status()
 
     # Calculate eigenvalues
     Hr = CuArrays.zeros(ComplexF64, Nstates, Nstates)
