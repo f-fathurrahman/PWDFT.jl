@@ -1,5 +1,7 @@
 using PWDFT
 
+import LibSymspg
+
 const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
 const DIR_STRUCTURES = joinpath(DIR_PWDFT, "structures")
 
@@ -16,7 +18,7 @@ function spg_get_symmetry( atoms::Atoms; symprec=1e-5 )
     out_translations = zeros(Float64,3,max_size)
 
     Nsym =
-    ccall((:spg_get_symmetry, PWDFT.LIBSYMSPG), Int32,
+    ccall((:spg_get_symmetry, LibSymspg.libsymspg), Int32,
           (Ptr{Int32}, Ptr{Float64}, Int32,
            Ptr{Float64}, Ptr{Float64}, Ptr{Int32}, Int32, Float64),
            out_rot, out_translations, cmax_size,
@@ -80,5 +82,5 @@ end
 
 
 test_Si_fcc()
-#test_GaAs()
-#test_CH4()
+test_GaAs()
+test_CH4()

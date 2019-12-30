@@ -67,7 +67,7 @@ function reduce_atoms( atoms::Atoms; symprec=1e-5 )
     types = Base.cconvert(Array{Int32,1}, atoms.atm2species)
 
     num_primitive_atom =
-    ccall( (:spg_find_primitive,LIBSYMSPG), Int32,
+    ccall( (:spg_find_primitive, LibSymspg.libsymspg), Int32,
            ( Ptr{Float64}, Ptr{Float64}, Ptr{Int32}, Int32, Float64 ),
            lattice, positions, types, num_atom, symprec )
 
@@ -104,7 +104,7 @@ function spg_find_primitive( atoms::Atoms; symprec=1e-5)
     types = Base.cconvert(Array{Int32,1}, atoms.atm2species)
 
     num_primitive_atom =
-    ccall( (:spg_find_primitive,LIBSYMSPG), Int32,
+    ccall( (:spg_find_primitive, LibSymspg.libsymspg), Int32,
            ( Ptr{Float64}, Ptr{Float64}, Ptr{Int32}, Int32, Float64 ),
            lattice, positions, types, num_atom, symprec )
 
@@ -119,8 +119,8 @@ function spg_get_ir_reciprocal_mesh(
          )
 
     #lattice = copy(atoms.LatVecs)'
-    lattice = transpose_m3x3(atoms.LatVecs)
-    positions = inv_m3x3(atoms.LatVecs)*atoms.positions # convert to fractional coordinates
+    lattice = PWDFT.transpose_m3x3(atoms.LatVecs)
+    positions = PWDFT.inv_m3x3(atoms.LatVecs)*atoms.positions # convert to fractional coordinates
 
     cmeshk = Base.cconvert( Array{Int32,1}, meshk )
     cis_shift = Base.cconvert( Array{Int32,1}, is_shift )
@@ -134,7 +134,7 @@ function spg_get_ir_reciprocal_mesh(
     mapping = zeros(Int32,Nkpts)
 
     num_ir =
-    ccall((:spg_get_ir_reciprocal_mesh, LIBSYMSPG), Int32,
+    ccall((:spg_get_ir_reciprocal_mesh, LibSymspg.libsymspg), Int32,
           (Ptr{Int32}, Ptr{Int32}, Ptr{Int32},
            Ptr{Int32}, Int32, Ptr{Float64}, Ptr{Float64}, 
            Ptr{Int32}, Int32, Float64),

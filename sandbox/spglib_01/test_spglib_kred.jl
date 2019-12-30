@@ -2,6 +2,10 @@ using Printf
 using LinearAlgebra
 using PWDFT
 
+import LibSymspg
+
+include("spglib_OLD.jl")
+
 function test_Si_fcc_get_ir()
     
     # Atoms
