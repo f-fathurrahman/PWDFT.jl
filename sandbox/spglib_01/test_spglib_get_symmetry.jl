@@ -44,6 +44,30 @@ function test_Si_fcc()
 end
 
 
+function test_Si8()
+    atoms = Atoms(xyz_string=
+        """
+        8
+
+        Ga     0.00000000000000     0.10000000000000     0.00000000000000
+        Si     1.35750000000000     1.35750000000000     1.35750000000000
+        Si     0.00000000000000     2.71500000000000     2.71500000000000
+        Si     1.35750000000000     4.07250000000000     4.07250000000000
+        Si     2.71500000000000     0.10000000000000     2.71500000000000
+        Si     4.07250000000000     1.35750000000000     4.07250000000000
+        Si     2.71500000000000     2.71500000000000     0.10000000000000
+        Si     4.07250000000000     4.07250000000000     1.35750000000000
+        """,
+        LatVecs=gen_lattice_sc(5.430*ANG2BOHR))
+
+    write_xsf("TEMP_Si8_pwdft.xsf", atoms)
+
+    println(atoms)
+    Nsyms, rots, trans = spg_get_symmetry(atoms)
+    println("Nsyms = ", Nsyms)
+end
+
+
 function test_GaAs()
     atoms = Atoms(xyz_string_frac=
         """
@@ -76,6 +100,7 @@ function test_CH4()
 end
 
 
+test_Si8()
 #test_Si_fcc()
-test_GaAs()
+#test_GaAs()
 #test_CH4()
