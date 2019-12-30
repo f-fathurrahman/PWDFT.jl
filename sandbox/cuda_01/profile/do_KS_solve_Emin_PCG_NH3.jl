@@ -10,7 +10,6 @@ const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
 const DIR_STRUCTURES = joinpath(DIR_PWDFT, "structures")
 
 Random.seed!(1234)
-CuArrays.seed!(1234)
 
 function main_GPU()
 
