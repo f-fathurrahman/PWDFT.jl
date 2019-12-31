@@ -212,6 +212,7 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
     end
 
     # Calculate eigenvalues
+    evecs = zeros(ComplexF64,Nstates,Nstates)
     for ispin = 1:Nspin
     for ik = 1:Nkpt
         Ham.ik = ik
