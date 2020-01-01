@@ -79,3 +79,6 @@ We can calculate FFT of `d_A` directly using `fft` function from FFTW.
 ```julia
 d_A_G = fft(d_A)
 ```
+
+
+Use `CUDAnative.function_name` to replace various math functions.
