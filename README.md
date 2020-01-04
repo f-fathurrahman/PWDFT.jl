@@ -29,7 +29,7 @@ structure package such as Quantum ESPRESSO, ABINIT, VASP, etc.
   - `FFTW`
   - `SpecialFunctions`
   - `Libxc` (a wrapper to [Libxc](https://gitlab.com/libxc/libxc))
-  - `LibSymspg` (a wrapper to [symspg](https://github.com/atztogo/spglib))
+  - `LibSymspg` (a wrapper to [spglib](https://github.com/atztogo/spglib))
 
 These packages are registered so they can be installed by using Julia's package manager.
 
