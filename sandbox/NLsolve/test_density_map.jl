@@ -15,11 +15,11 @@ import NLsolve
 NLsolve driver.
 Adapted from DFTK.jl
 """
-function scf_NLsolve_solver( m=5, method=:anderson; kwargs... )
+function scf_NLsolve_solver( m=5; kwargs... )
 
     function fix_point_solver( f, x0, tol, NiterMax )
         res = NLsolve.nlsolve(x -> f(x) - x, x0;
-            m=m, method=method, xtol=tol, ftol=0.0, show_trace=true,
+            m=m, method=:anderson, xtol=tol, ftol=0.0, show_trace=true,
             iterations=NiterMax, kwargs... )
         ( fixpoint=res.zero, converged=NLsolve.converged(res) )
     end
@@ -46,6 +46,12 @@ function create_Ham_Si_fcc()
 end
 
 
+function main_scf()
+    Random.seed!(1234)
+    Ham = create_Ham_Si_fcc()
+    KS_solve_SCF!( Ham, mix_method="simple", betamix=0.5 )
+end
+
 
 function main()
 
@@ -62,7 +68,9 @@ function main()
 
     Rhoe = zeros(Float64, Npoints, Nspin)
     psiks = rand_BlochWavefunc(Ham)
-    calc_rhoe!( Ham, psiks, Rhoe )
+    
+    #calc_rhoe!( Ham, psiks, Rhoe )
+    Rhoe[:,1] = guess_rhoe( Ham )
 
     # calculate E_NN and PspCore energies
     Ham.energies.NN = calc_E_NN( Ham.atoms )
@@ -71,7 +79,7 @@ function main()
     evals = zeros( Float64, Nstates, Nkspin )
 
     ethr_last = 1e-5
-    betamix = 0.1
+    betamix = 1.0
 
     function density_map( Rhoe_in )
     
@@ -91,7 +99,7 @@ function main()
 
     NiterMax = 100
     solver = scf_NLsolve_solver()
-    fpres = solver(density_map, Rhoe, 1e-6, NiterMax)
+    fpres = solver(density_map, Rhoe, 1e-7, NiterMax)
 
     println(fpres.converged)
     println(size(fpres.fixpoint))
@@ -105,3 +113,5 @@ function main()
 end
 
 main()
+
+#main_scf()
