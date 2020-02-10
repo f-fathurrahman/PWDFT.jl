@@ -1,13 +1,27 @@
 using SpecialFunctions: erfc
 
+"""
+    calc_E_NN(atoms)
+
+Calculate ion-ion interaction energy for a periodic structure defined by `atoms`.
+It is assumed that the atoms `atoms.Zvals` array is already set properly.
+"""
 function calc_E_NN( atoms::Atoms )
     return calc_E_NN( atoms.LatVecs, atoms, atoms.Zvals )
 end
 
+"""
+    calc_E_NN(atoms, Zvals)
+
+Calculate ion-ion interaction energy for periodic structure defined by `atoms`.
+The ionic charges for each species are defined in `Zvals`.
+"""
 function calc_E_NN( atoms::Atoms, Zvals::Array{Float64,1} )
     return calc_E_NN( atoms.LatVecs, atoms, Zvals )
 end
 
+
+# FIXME: Remove this?
 function calc_E_NN( pw::PWGrid, atoms::Atoms, Zvals::Array{Float64,1} )
     return calc_E_NN( pw.LatVecs, atoms, Zvals )
 end
@@ -15,7 +29,7 @@ end
 """
     calc_E_NN(LatVecs, atoms, Zvals)
 
-Calculate repulsive interaction energy of ions in periodic unit cell
+Calculate repulsive interaction energy of ions in a periodic unit cell
 given the following arguments:
 
 - `LatVecs`: lattice vectors
