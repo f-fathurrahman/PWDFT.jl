@@ -1,3 +1,9 @@
+"""
+    calc_E_Ps_nloc(Ham, psiks)
+
+Compute and return non-local pseudopotential energy for a given Hamiltonian `Ham` (with properly updated
+electron density) and BlochWavefunc `psiks`.
+"""
 function calc_E_Ps_nloc( Ham::Hamiltonian, psiks::BlochWavefunc )
 
     Nstates = Ham.electrons.Nstates
@@ -47,7 +53,13 @@ function calc_E_Ps_nloc( Ham::Hamiltonian, psiks::BlochWavefunc )
 
 end
 
-# Calculate Ps loc, Hartree, and XC components of total energy
+
+"""
+    calc_E_local(Ham)
+
+Compute and return local energy terms (local pseudopotential, Hartree, and XC) for a given
+Hamiltonian `Ham` with electron density stored in `Ham.rhoe`.
+"""
 function calc_E_local( Ham::Hamiltonian )
 
     Npoints = prod(Ham.pw.Ns)
@@ -74,6 +86,11 @@ function calc_E_local( Ham::Hamiltonian )
 end
 
 
+"""
+    calc_E_kin(Ham, psiks)
+
+Compute and return kinetic energy term for a given Hamiltonian `Ham` and BlochWavefunc `psiks`.
+"""
 function calc_E_kin( Ham::Hamiltonian, psiks::BlochWavefunc )
 
     Focc = Ham.electrons.Focc
@@ -109,12 +126,19 @@ function calc_E_kin( Ham::Hamiltonian, psiks::BlochWavefunc )
 
 end
 
-#
-# psi is assumed to be already orthonormalized elsewhere
-# `potentials` and `Rhoe` are not updated
-# Ham is assumed to be already updated at input psi
-#
-# Ham.energies.NN abd Ham.energies.PspCore should be calculated outside this function
+
+"""
+    calc_energies(Ham, psiks)
+
+Compute and return total energy components of type `Energies` for a given Hamiltonian `Ham`
+and BlochWavefunc `psiks`.
+
+Each `psiks` is assumed to be already orthonormalized elsewhere.
+
+`Ham.potentials` and `Ham.hoe` are not updated.
+
+`Ham.energies.NN` and `Ham.energies.PspCore` should be calculated outside this function if needed.
+"""
 function calc_energies( Ham::Hamiltonian, psiks::BlochWavefunc )
     
     E_kin = calc_E_kin( Ham, psiks )

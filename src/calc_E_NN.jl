@@ -13,8 +13,10 @@ function calc_E_NN( pw::PWGrid, atoms::Atoms, Zvals::Array{Float64,1} )
 end
 
 """
-Calculates repulsive interaction energy of ions in periodic unit cell
-given the following input
+    calc_E_NN(LatVecs, atoms, Zvals)
+
+Calculate repulsive interaction energy of ions in periodic unit cell
+given the following arguments:
 
 - `LatVecs`: lattice vectors
 
@@ -30,6 +32,8 @@ the charges are calculated based on `atoms.Zvals`. Value of
 So, in the usual case, one can simply call this method and
 save the result in an `Energies` instance and the proceed to
 calculate electronic energy components.
+
+# Acknowledgements and notes
 
 The code inspired from Prof. Natalie Holzwarth:
 http://users.wfu.edu/natalie/s18phy712/computerprograms/ewaldsum.f90
