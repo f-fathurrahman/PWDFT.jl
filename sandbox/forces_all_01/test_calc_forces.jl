@@ -18,8 +18,8 @@ include("create_Ham.jl")
 function test_main()
 
     #Ham = create_Ham_H2()
-    #Ham = create_Ham_Si_fcc()
-    Ham = create_Ham_Si_fcc(xcfunc="PBE")
+    Ham = create_Ham_Si_fcc()
+    #Ham = create_Ham_Si_fcc(xcfunc="PBE")
     #Ham = create_Ham_GaAs_v1()
     #Ham = create_Ham_GaAs_v2()
     #Ham = create_Ham_CO()
@@ -35,13 +35,11 @@ function test_main()
 
     psiks = read_psiks(Ham)
 
-    for psi in psiks
-        ortho_check(psi)
-    end
-
     atoms = Ham.atoms
     Natoms = atoms.Natoms
     atsymbs = atoms.atsymbs
+
+    # All forces are multiplied by 2 to match QE unit (Ry/bohr)
 
     F_NN = calc_forces_NN( Ham.atoms )*2.0
     println("NN forces:")

@@ -39,12 +39,6 @@ function symmetrize_vector!(pw::PWGrid, sym_info::SymmetryInfo, irt, v::Array{Fl
     end
     
     tmp[:,:] = v[:,:]/Nsyms
-    println(tmp)
-    
-
-    println("RecVecs = ", RecVecs)
-    println("should be identity = ", LatVecs*RecVecs'/(2*pi))
-
 
     # bring vector back to cartesian axis
     for i = 1:Nvecs
@@ -53,8 +47,6 @@ function symmetrize_vector!(pw::PWGrid, sym_info::SymmetryInfo, irt, v::Array{Fl
         v[:,i] = v[:,i]/(2*pi)
         println("After transformation back = ", v[:,i])
     end
-
-    #v[:,:] = v[:,:]/(2*pi)
 
     return
 end
