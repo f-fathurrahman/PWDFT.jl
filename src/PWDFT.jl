@@ -173,10 +173,7 @@ export calc_energies,
        calc_E_Hartree,
        calc_E_Ps_nloc
 
-include("calc_Focc.jl")
 include("occupations.jl")
-include("calc_entropy.jl")
-include("sum_upto_E_fermi.jl")
 export calc_Focc,
        calc_entropy,
        sum_upto_E_fermi
