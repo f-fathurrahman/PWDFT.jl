@@ -35,10 +35,8 @@ export gen_lattice_fcc, gen_lattice_bcc, gen_lattice_trigonal, gen_lattice_trigo
        gen_lattice_sc, gen_lattice_rhombohedral
 
 include("spglib.jl")
-export spg_find_primitive,
-       spg_get_symmetry,
-       spg_get_ir_reciprocal_mesh,
-       reduce_atoms, gen_kgrid_reduced
+export spg_get_symmetry,
+       spg_get_ir_reciprocal_mesh
 
 include("SymmetryInfo.jl")
 export SymmetryInfo
