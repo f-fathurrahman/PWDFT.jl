@@ -1,3 +1,12 @@
+function spg_get_symmetry( atoms::Atoms; symprec=1e-5 )
+
+    lattice = Matrix(atoms.LatVecs')
+    positions = Matrix(inv(atoms.LatVecs))*atoms.positions # convert to fractional coordinates
+
+    rots, trans = LibSymspg.get_symmetry(lattice, positions, atoms.atm2species, symprec)
+    return size(trans)[2], rots, trans
+end
+
 # This function is now included in the KPoints constructor
 function gen_kgrid_reduced( atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{Int64,1};
                             time_reversal=1 )
