@@ -59,6 +59,8 @@ const GBL_s0 = reshape([
    GBL_mcos3,  GBL_sin3, 0.0,  GBL_sin3,  GBL_cos3, 0.0, 0.0, 0.0, -1.0
 ], (3,3,32))
 
+
+
 function find_symm_bravais_latt( LatVecs_ )
 
     alat = norm(LatVecs_[:,1])
@@ -162,6 +164,7 @@ function find_symm_bravais_latt( LatVecs_ )
     end
 
     println("nrot = ", nrot)
+    return nrot, s, ft
 
 end
 
@@ -184,6 +187,232 @@ function _check_set_s!( overlap, rot, s, nrot )
     end
 
     return 0
+end
+
+
+function sgam_at!( atoms::Atoms, sym, no_z_inv, nrot, s, ft )
+    # Given the point group of the Bravais lattice, this routine finds
+    # the subgroup which is the point group of the considered crystal.  
+    # Non symmorphic groups are allowed, provided that fractional
+    # translations are allowed (nofrac=.false) and that the unit cell
+    # is not a supercell.
+    # On output, the array sym is set to .TRUE.. for each operation
+    # of the original point group that is also a symmetry operation
+    # of the crystal symmetry point group.
+    
+    # LOGICAL, INTENT(IN), OPTIONAL :: no_z_inv
+    # !! if .TRUE., disable symmetry operations sending z into -z.  
+    # !! Some calculations (e.g. gate fields) require this
+    # LOGICAL, INTENT(OUT) :: sym(48)
+    # !! flag indicating if sym.op. isym in the parent group
+    # !! is a true symmetry operation of the crystal.
+    # !
+    # ! ... local variables
+    # !
+    # INTEGER :: na, nb, irot, i
+    # ! counters
+    # REAL(DP) , ALLOCATABLE :: xau(:,:), rau(:,:)
+    # ! atomic coordinates in crystal axis
+    # LOGICAL :: fractional_translations
+    # INTEGER :: nfrac
+    # REAL(DP) :: ft_(3), ftaux(3)
+    
+    nat = atoms.Natoms
+    tau = atoms.positions
+    atm2species = atoms.atm2species
+
+    bg = inv(Matrix(atoms.LatVecs'))  # follows QE convention (no 2*pi factor)
+
+    xau = zeros(Float64,3,nat)
+    rau = zeros(Float64,3,nat)
+    ft_ = zeros(Float64,3)
+
+    # ... Compute the coordinates of each atom in the basis of
+    # the direct lattice vectors
+    for ia = 1:nat
+       xau[:,ia] = bg[1,:]*tau[1,ia] + bg[2,:]*tau[2,ia] + bg[3,:]*tau[3,ia]
+    end
+    
+    println("xau matrix")
+    display(xau'); println()
+
+    #
+    # ... check if the identity has fractional translations (this means
+    # that the cell is actually a supercell). When this happens, fractional
+    # translations are disabled, because there is no guarantee that the 
+    # generated sym.ops. form a group.
+    #
+    nb = 1
+    irot = 1
+
+    fractional_translations = true # FIXME true by default
+    
+    irt = zeros(Int64, 48, nat)
+    if fractional_translations
+        for na in 2:nat
+            if atm2species[nb] == atm2species[na]
+                #
+                ft_[:] = xau[:,na] - xau[:,nb] - round.( xau[:,na] - xau[:,nb] )
+                display(ft_); println()
+                println("Pass here 255")
+                sym[irot] = checksym!( irot, nat, atm2species, xau, xau, ft_, irt )
+                if sym[irot]
+                    fractional_translations = false
+                    println("Found symmetry operation: I + ", ft)
+                    println("This is a supercell")
+                    println("Fractional translations are disabled")
+                    println("Should GOTO 10")
+                    break # go outside the loop over na
+                end # if
+            end # if
+        end # for
+    end # if
+
+    #display(irt); println();
+    # continue 10
+
+
+    nsym_ns = 0
+    fft_fact = [1,1,1]
+    ftaux = zeros(Float64,3) 
+
+    for irot in 1:nrot
+        
+        for na in 1:nat
+           # rau = rotated atom coordinates
+           rau[:,na] = s[1,:,irot] * xau[1,na] +
+                       s[2,:,irot] * xau[2,na] +
+                       s[3,:,irot] * xau[3,na]
+        end
+        
+        # first attempt: no fractional translation
+        ft[:,irot] .= 0.0 #
+        ft_[:] .= 0.0
+        
+        sym[irot] = checksym!( irot, nat, atm2species, xau, rau, ft_, irt )
+        
+        if ( !sym[irot] && fractional_translations )
+            nb = 1
+            for na in 1:nat
+                if atm2species[nb] == atm2species[na]
+                 
+                    # ... second attempt: check all possible fractional translations
+                    ft_[:] = rau[:,na] - xau[:,nb] - round.( rau[:,na] - xau[:,nb] )
+                    
+                    # ... ft_ is in crystal axis and is a valid fractional translation
+                    # only if ft_(i)=0 or ft_(i)=1/n, with n=2,3,4,
+                    
+                    for i in 1:3
+                        if abs(ft_[i]) > GBL_eps2
+                            ftaux[i] = abs( 1.0/ft_[i] - round(Int64, 1.0/ft_[i]) )
+                            nfrac = round( Int64, 1.0/abs(ft_[i]) )
+                            if( (ftaux[i] < GBL_eps2) && (nfrac != 2) && (nfrac != 3) && (nfrac != 4) && (nfrac != 6) )
+                                ftaux[i] = 2*GBL_eps2
+                            end # if
+                        else
+                            ftaux[i] = 0.0
+                        end # if
+                    end # for
+                    
+                    if( any( ftaux .> GBL_eps2 ) ) continue #CYCLE
+                    end
+                    
+                    sym[irot] = checksym!( irot, nat, ityp, xau, rau, ft_, irt )
+                 
+                    if sym[irot]
+                        nsym_ns = nsym_ns + 1
+                        ft[:,irot] = ft_[:]
+                    
+                        # ... Find factors that must be present in FFT grid dimensions
+                        # in order to ensure that fractional translations are
+                        # commensurate with FFT grids.
+                        #for i in 1:3
+                        #    if ans(ft_[i]) > GBL_eps2
+                        #        nfrac = round( Int64, 1.0/abs(ft_[i]) )
+                        #    else
+                        #        nfrac = 0
+                        #    end # if
+                        #    fft_fact(i) = mcm(fft_fact(i),nfrac)
+                        #end # do
+                        println("Should GOTO 20")
+                        break # break from loop over na
+                    end # if
+                end # if
+
+            end # do
+           
+        end # if
+        
+        #20   CONTINUE next irot
+    end
+
+
+end
+
+
+function checksym!( irot, nat, ityp, xau, rau, ft_, irt )
+    # This function receives as input all the atomic positions xau,
+    # and the rotated rau by the symmetry operation ir. It returns
+    # .TRUE. if, for each atom na, it is possible to find an atom nb
+    # which is of the same type of na, and coincides with it after the
+    # symmetry operation. Fractional translations are allowed.
+
+    ACCEPT = 1e-5
+
+    display(rau); println()
+    display(xau); println()
+
+    continue_na = false
+    for na in 1:nat
+        for nb in 1:nat
+            if ityp[nb] == ityp[na]
+
+                #println("rau = ", rau[:,na])
+                #println("xau = ", xau[:,na])
+                #println("ft_ = ", ft_[:])
+
+                is_equal =  eqvect( rau[:,na], xau[:,nb], ft_ , ACCEPT )
+                if is_equal
+                   #!
+                   #! ... the rotated atom does coincide with one of the like atoms
+                   #! keep track of which atom the rotated atom coincides with
+                   irt[irot, na] = nb
+                   println("Should GOTO 10")
+                   continue_na = true
+                   break # move outside loop over nb
+                end # if
+            end # if
+        end # for
+        
+        # ... the rotated atom does not coincide with any of the like atoms
+        # s(ir) + ft is not a symmetry operation
+        if !continue_na
+            return false
+        else
+            #10   CONTINUE
+            println("This should be after GOTO 10")
+            continue
+        end
+    end
+
+    # ... s(ir) + ft is a symmetry operation
+    return true
+end
+
+
+function eqvect(x, y, f, accep)
+  
+    # This function test if the difference x-y-f is an integer.
+    # x, y = 3d vectors in crystal axis, f = fractional translation
+    # adapted from QE-6.4
+
+    cond1 = ( abs(x[1]-y[1]-f[1] - round(x[1]-y[1]-f[1]) ) < accep )
+    cond2 = ( abs(x[2]-y[2]-f[2] - round(x[2]-y[2]-f[2]) ) < accep )
+    cond3 = ( abs(x[3]-y[3]-f[3] - round(x[3]-y[3]-f[3]) ) < accep )
+
+    res = cond1 && cond2 && cond3
+  
+    return res
 end
 
 
@@ -257,10 +486,14 @@ function init_Ham_Si_fcc( meshk::Array{Int64,1} )
     return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=meshk )
 end
 
+
 function main()
     Ham = init_Ham_Si_fcc([3,3,3])
 
-    find_symm_bravais_latt( Ham.atoms.LatVecs )
+    nrot, s, ft = find_symm_bravais_latt( Ham.atoms.LatVecs )
+
+    sym = zeros(Bool, 48)
+    sgam_at!( Ham.atoms, sym, false, nrot, s, ft )
 
     println("Pass here")
 end
