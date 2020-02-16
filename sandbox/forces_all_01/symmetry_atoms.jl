@@ -16,26 +16,35 @@ function symmetrize_vector!(pw::PWGrid, sym_info::SymmetryInfo, irt, v::Array{Fl
     # bring vector to crystal axis
     for i = 1:Nvecs
         tmp[:,i] = v[1,i]*LatVecs[1,:] + v[2,i]*LatVecs[2,:] + v[3,i]*LatVecs[3,:]
-        #tmp[:,i] = v[1,i]*LatVecs[:,1] + v[2,i]*LatVecs[:,2] + v[3,i]*LatVecs[:,3]
     end
     
-    println(tmp)
+    println("LatVecs")
+    display(LatVecs); println()
+
+    println("RecVecs")
+    display(RecVecs); println()
+
+    println("vect in crystal axis:")
+    display(tmp); println()
+
+    println("irt matrix")
+    display(irt); println()
 
     # symmetrize in crystal axis
     v[:,:] .= 0.0
     dv = zeros(3)
     for i = 1:Nvecs
-        println("")
-        println("Before = ", tmp[:,i])
+        #println("")
+        #println("Before = ", tmp[:,i])
         for isym = 1:Nsyms
             iar = irt[isym,i]
             dv[:] = s[:,1,isym]*tmp[1,iar] +
                     s[:,2,isym]*tmp[2,iar] +
                     s[:,3,isym]*tmp[3,iar]
             v[:,i] = v[:,i] + dv[:]
-            println("dv = ", dv)
+            #println("dv = ", dv)
         end
-        println("After = ", v[:,i])
+        #println("After = ", v[:,i])
     end
     
     tmp[:,:] = v[:,:]/Nsyms
@@ -43,9 +52,7 @@ function symmetrize_vector!(pw::PWGrid, sym_info::SymmetryInfo, irt, v::Array{Fl
     # bring vector back to cartesian axis
     for i = 1:Nvecs
         v[:,i] = tmp[1,i]*RecVecs[:,1] + tmp[2,i]*RecVecs[:,2] + tmp[3,i]*RecVecs[:,3]
-        #v[:,i] = tmp[1,i]*RecVecs[1,:] + tmp[2,i]*RecVecs[2,:] + tmp[3,i]*RecVecs[3,:]
         v[:,i] = v[:,i]/(2*pi)
-        println("After transformation back = ", v[:,i])
     end
 
     return
@@ -65,7 +72,7 @@ function init_irt( atoms::Atoms, sym_info::SymmetryInfo )
     
     for ia = 1:Natoms
         xau[:,ia] = RecVecs[1,:]*tau[1,ia] + RecVecs[2,:]*tau[2,ia] + RecVecs[3,:]*tau[3,ia]
-        println(xau[:,ia])
+        #println(xau[:,ia])
     end
 
     # checking for supercell is skipped (probably not needed here)
@@ -110,13 +117,13 @@ function init_irt( atoms::Atoms, sym_info::SymmetryInfo )
         end
     end
 
-    for isym = 1:Nsyms
-        for ia = 1:Natoms
-            @printf("%d ", irt[isym,ia])
-        end
-        @printf("\n")
-    end
-    println("Nequal = ", Nequal)
+    #for isym = 1:Nsyms
+    #    for ia = 1:Natoms
+    #        @printf("%d ", irt[isym,ia])
+    #    end
+    #    @printf("\n")
+    #end
+    #println("Nequal = ", Nequal)
 
     return irt
 
