@@ -59,6 +59,72 @@ const GBL_s0 = reshape([
    GBL_mcos3,  GBL_sin3, 0.0,  GBL_sin3,  GBL_cos3, 0.0, 0.0, 0.0, -1.0
 ], (3,3,32))
 
+const GBL_s0name = [
+    "identity                                     ",
+    "180 deg rotation - cart. axis [0,0,1]        ",
+    "180 deg rotation - cart. axis [0,1,0]        ",
+    "180 deg rotation - cart. axis [1,0,0]        ",
+    "180 deg rotation - cart. axis [1,1,0]        ",
+    "180 deg rotation - cart. axis [1,-1,0]       ",
+    " 90 deg rotation - cart. axis [0,0,-1]       ",
+    " 90 deg rotation - cart. axis [0,0,1]        ",
+    "180 deg rotation - cart. axis [1,0,1]        ",
+    "180 deg rotation - cart. axis [-1,0,1]       ",
+    " 90 deg rotation - cart. axis [0,1,0]        ",
+    " 90 deg rotation - cart. axis [0,-1,0]       ",
+    "180 deg rotation - cart. axis [0,1,1]        ",
+    "180 deg rotation - cart. axis [0,1,-1]       ",
+    " 90 deg rotation - cart. axis [-1,0,0]       ",
+    " 90 deg rotation - cart. axis [1,0,0]        ",
+    "120 deg rotation - cart. axis [-1,-1,-1]     ",
+    "120 deg rotation - cart. axis [-1,1,1]       ",
+    "120 deg rotation - cart. axis [1,1,-1]       ",
+    "120 deg rotation - cart. axis [1,-1,1]       ",
+    "120 deg rotation - cart. axis [1,1,1]        ",
+    "120 deg rotation - cart. axis [-1,1,-1]      ",
+    "120 deg rotation - cart. axis [1,-1,-1]      ",
+    "120 deg rotation - cart. axis [-1,-1,1]      ",
+    " 60 deg rotation - cryst. axis [0,0,1]       ",
+    " 60 deg rotation - cryst. axis [0,0,-1]      ",
+    "120 deg rotation - cryst. axis [0,0,1]       ",
+    "120 deg rotation - cryst. axis [0,0,-1]      ",
+    "180 deg rotation - cryst. axis [1,-1,0]      ",
+    "180 deg rotation - cryst. axis [2,1,0]       ",
+    "180 deg rotation - cryst. axis [0,1,0]       ",
+    "180 deg rotation - cryst. axis [1,1,0]       ",
+    "inversion                                    ",
+    "inv. 180 deg rotation - cart. axis [0,0,1]   ",
+    "inv. 180 deg rotation - cart. axis [0,1,0]   ",
+    "inv. 180 deg rotation - cart. axis [1,0,0]   ",
+    "inv. 180 deg rotation - cart. axis [1,1,0]   ",
+    "inv. 180 deg rotation - cart. axis [1,-1,0]  ",
+    "inv.  90 deg rotation - cart. axis [0,0,-1]  ",
+    "inv.  90 deg rotation - cart. axis [0,0,1]   ",
+    "inv. 180 deg rotation - cart. axis [1,0,1]   ",
+    "inv. 180 deg rotation - cart. axis [-1,0,1]  ",
+    "inv.  90 deg rotation - cart. axis [0,1,0]   ",
+    "inv.  90 deg rotation - cart. axis [0,-1,0]  ",
+    "inv. 180 deg rotation - cart. axis [0,1,1]   ",
+    "inv. 180 deg rotation - cart. axis [0,1,-1]  ",
+    "inv.  90 deg rotation - cart. axis [-1,0,0]  ",
+    "inv.  90 deg rotation - cart. axis [1,0,0]   ",
+    "inv. 120 deg rotation - cart. axis [-1,-1,-1]",
+    "inv. 120 deg rotation - cart. axis [-1,1,1]  ",
+    "inv. 120 deg rotation - cart. axis [1,1,-1]  ",
+    "inv. 120 deg rotation - cart. axis [1,-1,1]  ",
+    "inv. 120 deg rotation - cart. axis [1,1,1]   ",
+    "inv. 120 deg rotation - cart. axis [-1,1,-1] ",
+    "inv. 120 deg rotation - cart. axis [1,-1,-1] ",
+    "inv. 120 deg rotation - cart. axis [-1,-1,1] ",
+    "inv.  60 deg rotation - cryst. axis [0,0,1]  ",
+    "inv.  60 deg rotation - cryst. axis [0,0,-1] ",
+    "inv. 120 deg rotation - cryst. axis [0,0,1]  ",
+    "inv. 120 deg rotation - cryst. axis [0,0,-1] ",
+    "inv. 180 deg rotation - cryst. axis [1,-1,0] ",
+    "inv. 180 deg rotation - cryst. axis [2,1,0]  ",
+    "inv. 180 deg rotation - cryst. axis [0,1,0]  ",
+    "inv. 180 deg rotation - cryst. axis [1,1,0]  "
+]
 
 
 function find_symm_bravais_latt( LatVecs_ )
@@ -96,6 +162,7 @@ function find_symm_bravais_latt( LatVecs_ )
     rot = zeros(Float64,3,3)
 
     s = zeros(Int64,3,3,48)
+    sname = [repeat(" ", 45) for i in 1:48]
 
     nrot = 1
     for irot in 1:32
@@ -123,6 +190,7 @@ function find_symm_bravais_latt( LatVecs_ )
             continue
         end
 
+        sname[nrot] = GBL_s0name[irot]
         imat[nrot] = irot
         nrot = nrot + 1
 
@@ -142,7 +210,7 @@ function find_symm_bravais_latt( LatVecs_ )
 
     # Set the inversion symmetry (Bravais lattices have always inversion symmetry)
     for irot = 1:nrot
-        #sname[irot+nrot] = s0name(imat(irot)+32)
+        sname[irot+nrot] = GBL_s0name[imat[irot]+32]
         for kpol in 1:3
             for jpol in 1:3
                 s[kpol,jpol,irot+nrot] = -s[kpol,jpol,irot]
@@ -164,7 +232,7 @@ function find_symm_bravais_latt( LatVecs_ )
     end
 
     println("nrot = ", nrot)
-    return nrot, s, ft
+    return nrot, s, ft, sname
 
 end
 
@@ -190,32 +258,15 @@ function _check_set_s!( overlap, rot, s, nrot )
 end
 
 
-function sgam_at!( atoms::Atoms, sym, no_z_inv, nrot, s, ft )
-    # Given the point group of the Bravais lattice, this routine finds
-    # the subgroup which is the point group of the considered crystal.  
-    # Non symmorphic groups are allowed, provided that fractional
-    # translations are allowed (nofrac=.false) and that the unit cell
-    # is not a supercell.
-    # On output, the array sym is set to .TRUE.. for each operation
-    # of the original point group that is also a symmetry operation
-    # of the crystal symmetry point group.
-    
-    # LOGICAL, INTENT(IN), OPTIONAL :: no_z_inv
-    # !! if .TRUE., disable symmetry operations sending z into -z.  
-    # !! Some calculations (e.g. gate fields) require this
-    # LOGICAL, INTENT(OUT) :: sym(48)
-    # !! flag indicating if sym.op. isym in the parent group
-    # !! is a true symmetry operation of the crystal.
-    # !
-    # ! ... local variables
-    # !
-    # INTEGER :: na, nb, irot, i
-    # ! counters
-    # REAL(DP) , ALLOCATABLE :: xau(:,:), rau(:,:)
-    # ! atomic coordinates in crystal axis
-    # LOGICAL :: fractional_translations
-    # INTEGER :: nfrac
-    # REAL(DP) :: ft_(3), ftaux(3)
+# Given the point group of the Bravais lattice, this routine finds
+# the subgroup which is the point group of the considered crystal.  
+# Non symmorphic groups are allowed, provided that fractional
+# translations are allowed (nofrac=.false) and that the unit cell
+# is not a supercell.
+# On output, the array sym is set to .TRUE.. for each operation
+# of the original point group that is also a symmetry operation
+# of the crystal symmetry point group.
+function sgam_at!( atoms::Atoms, sym, no_z_inv, nrot, s, ft, sname )
     
     nat = atoms.Natoms
     tau = atoms.positions
@@ -253,9 +304,9 @@ function sgam_at!( atoms::Atoms, sym, no_z_inv, nrot, s, ft )
             if atm2species[nb] == atm2species[na]
                 #
                 ft_[:] = xau[:,na] - xau[:,nb] - round.( xau[:,na] - xau[:,nb] )
-                display(ft_); println()
-                println("Pass here 255")
+
                 sym[irot] = checksym!( irot, nat, atm2species, xau, xau, ft_, irt )
+                
                 if sym[irot]
                     fractional_translations = false
                     println("Found symmetry operation: I + ", ft)
@@ -264,12 +315,16 @@ function sgam_at!( atoms::Atoms, sym, no_z_inv, nrot, s, ft )
                     println("Should GOTO 10")
                     break # go outside the loop over na
                 end # if
+            
             end # if
+        
         end # for
+    
     end # if
 
     #display(irt); println();
     # continue 10
+    println("This is GOTO 10")
 
 
     nsym_ns = 0
@@ -278,11 +333,13 @@ function sgam_at!( atoms::Atoms, sym, no_z_inv, nrot, s, ft )
 
     for irot in 1:nrot
         
+        println("\nirot = ", irot)
+
+        #println("rau matrix:")
         for na in 1:nat
            # rau = rotated atom coordinates
-           rau[:,na] = s[1,:,irot] * xau[1,na] +
-                       s[2,:,irot] * xau[2,na] +
-                       s[3,:,irot] * xau[3,na]
+           rau[:,na] = s[1,:,irot] * xau[1,na] + s[2,:,irot] * xau[2,na] + s[3,:,irot] * xau[3,na]
+           #@printf("%18.10f %18.10f %18.10f\n", rau[1,na], rau[2,na], rau[3,na])
         end
         
         # first attempt: no fractional translation
@@ -290,6 +347,9 @@ function sgam_at!( atoms::Atoms, sym, no_z_inv, nrot, s, ft )
         ft_[:] .= 0.0
         
         sym[irot] = checksym!( irot, nat, atm2species, xau, rau, ft_, irt )
+        if sym[irot]
+            println("true at the first attempt")
+        end
         
         if ( !sym[irot] && fractional_translations )
             nb = 1
@@ -298,6 +358,7 @@ function sgam_at!( atoms::Atoms, sym, no_z_inv, nrot, s, ft )
                  
                     # ... second attempt: check all possible fractional translations
                     ft_[:] = rau[:,na] - xau[:,nb] - round.( rau[:,na] - xau[:,nb] )
+                    #@printf("ft_ = %18.10f %18.10f %18.10f\n", ft_[1], ft_[2], ft_[3])
                     
                     # ... ft_ is in crystal axis and is a valid fractional translation
                     # only if ft_(i)=0 or ft_(i)=1/n, with n=2,3,4,
@@ -314,10 +375,13 @@ function sgam_at!( atoms::Atoms, sym, no_z_inv, nrot, s, ft )
                         end # if
                     end # for
                     
-                    if( any( ftaux .> GBL_eps2 ) ) continue #CYCLE
+                    if( any( ftaux .> GBL_eps2 ) )
+                        #println("Should be doing cycle here irot ", irot)
+                        continue #CYCLE
                     end
+                    #println("should not after cycle")
                     
-                    sym[irot] = checksym!( irot, nat, ityp, xau, rau, ft_, irt )
+                    sym[irot] = checksym!( irot, nat, atm2species, xau, rau, ft_, irt )
                  
                     if sym[irot]
                         nsym_ns = nsym_ns + 1
@@ -346,30 +410,36 @@ function sgam_at!( atoms::Atoms, sym, no_z_inv, nrot, s, ft )
         #20   CONTINUE next irot
     end
 
+    for i in 1:48
+        if sym[i]
+            println(i, " ", sym[i], " sname = ", sname[i])
+        end
+    end
+    println(count(sym))
 
 end
 
 
+# This function receives as input all the atomic positions xau,
+# and the rotated rau by the symmetry operation ir. It returns
+# .TRUE. if, for each atom na, it is possible to find an atom nb
+# which is of the same type of na, and coincides with it after the
+# symmetry operation. Fractional translations are allowed.
 function checksym!( irot, nat, ityp, xau, rau, ft_, irt )
-    # This function receives as input all the atomic positions xau,
-    # and the rotated rau by the symmetry operation ir. It returns
-    # .TRUE. if, for each atom na, it is possible to find an atom nb
-    # which is of the same type of na, and coincides with it after the
-    # symmetry operation. Fractional translations are allowed.
 
     ACCEPT = 1e-5
 
-    display(rau); println()
-    display(xau); println()
-
-    continue_na = false
+    continue_na = zeros(Bool, nat)
+    
     for na in 1:nat
+
         for nb in 1:nat
             if ityp[nb] == ityp[na]
 
-                #println("rau = ", rau[:,na])
-                #println("xau = ", xau[:,na])
-                #println("ft_ = ", ft_[:])
+                @printf("na = %3d nb = %3d\n", na, nb)
+                @printf("rau = %18.10f %18.10f %18.10f\n", rau[1,na], rau[2,na], rau[3,na])
+                @printf("xau = %18.10f %18.10f %18.10f\n", xau[1,na], xau[2,na], xau[3,na])
+                @printf("ft_ = %18.10f %18.10f %18.10f\n", ft_[1], ft_[2], ft_[3])
 
                 is_equal =  eqvect( rau[:,na], xau[:,nb], ft_ , ACCEPT )
                 if is_equal
@@ -377,8 +447,8 @@ function checksym!( irot, nat, ityp, xau, rau, ft_, irt )
                    #! ... the rotated atom does coincide with one of the like atoms
                    #! keep track of which atom the rotated atom coincides with
                    irt[irot, na] = nb
-                   println("Should GOTO 10")
-                   continue_na = true
+                   println("Will GOTO 10")
+                   continue_na[na] = true
                    break # move outside loop over nb
                 end # if
             end # if
@@ -386,11 +456,12 @@ function checksym!( irot, nat, ityp, xau, rau, ft_, irt )
         
         # ... the rotated atom does not coincide with any of the like atoms
         # s(ir) + ft is not a symmetry operation
-        if !continue_na
+        if !continue_na[na]
+            println("eqvect immediately returning false")
             return false
         else
             #10   CONTINUE
-            println("This should be after GOTO 10")
+            #println("This should be after GOTO 10")
             continue
         end
     end
@@ -416,15 +487,8 @@ function eqvect(x, y, f, accep)
 end
 
 
+# Checks that {S} is a group.
 function is_group( nsym_::Int64, s, ft )
-    # Checks that {S} is a group.
-    #
-    #!
-    #INTEGER, INTENT(IN) :: nsym_
-    #INTEGER :: isym, jsym, ksym, ss(3,3)
-    #REAL(DP) :: st(3), dt(3)
-    #LOGICAL :: found
-    #!
 
     ss = zeros(Int64,3,3)
     st = zeros(Float64,3)
@@ -490,10 +554,10 @@ end
 function main()
     Ham = init_Ham_Si_fcc([3,3,3])
 
-    nrot, s, ft = find_symm_bravais_latt( Ham.atoms.LatVecs )
+    nrot, s, ft, sname = find_symm_bravais_latt( Ham.atoms.LatVecs )
 
     sym = zeros(Bool, 48)
-    sgam_at!( Ham.atoms, sym, false, nrot, s, ft )
+    sgam_at!( Ham.atoms, sym, false, nrot, s, ft, sname )
 
     println("Pass here")
 end
