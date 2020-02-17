@@ -87,13 +87,18 @@ function init_irt( atoms::Atoms, sym_info::SymmetryInfo )
     
     println("Nsyms = ", Nsyms)
 
-    continue_outer = false
+    #continue_outer = false
+    continue_outer = zeros(Bool, Natoms)
+
     for isym = 1:Nsyms
 
         for ia = 1:Natoms
             rau[:,ia] = s[1,:,isym] * xau[1,ia] + 
                         s[2,:,isym] * xau[2,ia] + 
                         s[3,:,isym] * xau[3,ia]
+            
+            continue_outer[ia] = false
+
             for ib = 1:Natoms
                 if atm2species[ia] == atm2species[ib]
                     is_equal = eqvect( rau[:,ia], xau[:,ib], -ft[:,isym], 1e-5 )
@@ -103,12 +108,13 @@ function init_irt( atoms::Atoms, sym_info::SymmetryInfo )
                         #println("is_equal = ", is_equal)
                         irt[isym,ia] = ib
                         #irt[isym,ib] = ia
-                        continue_outer = true
+                        continue_outer[ia] = true
                         break
                     end
                 end
             end
-            if continue_outer
+
+            if continue_outer[ia]
                 #println("I am continuing")
                 continue
             else
