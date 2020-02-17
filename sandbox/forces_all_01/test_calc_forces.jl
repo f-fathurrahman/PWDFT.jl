@@ -10,7 +10,9 @@ const DIR_STRUCTURES = joinpath(DIR_PWDFT, "structures")
 include("calc_forces_NN.jl")
 include("calc_forces_Ps_loc.jl")
 include("calc_forces_Ps_nloc.jl")
-include("symmetry_atoms.jl")
+
+#include("symmetry_atoms.jl")
+include("../symmetry_qe/SymmetryBase.jl")
 
 include("create_Ham.jl")
 
@@ -25,8 +27,9 @@ function test_main()
     #Ham = create_Ham_CO()
     println(Ham)
 
-    println(Ham.sym_info)
-    irt = init_irt(Ham.atoms, Ham.sym_info)
+    sym_base = SymmetryBase(Ham.atoms)
+    #println(Ham.sym_info)
+    #irt = init_irt(Ham.atoms, Ham.sym_info)
 
     Random.seed!(1234)
     
@@ -63,7 +66,7 @@ function test_main()
                 F_Ps_nloc[1,ia], F_Ps_nloc[2,ia], F_Ps_nloc[3,ia] )
     end
     
-    symmetrize_vector!( Ham.pw, Ham.sym_info, irt, F_Ps_nloc )
+    symmetrize_vector!( Ham.pw.LatVecs, sym_base, F_Ps_nloc )
     println("Ps nloc forces symmetrized:")
     for ia = 1:Natoms
         @printf("%s %18.10f %18.10f %18.10f\n", atsymbs[ia],
