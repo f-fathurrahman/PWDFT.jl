@@ -7,15 +7,6 @@
 # or http://www.gnu.org/copyleft/gpl.txt .
 #
 
-using Printf
-using LinearAlgebra
-
-using PWDFT
-
-const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)), "..")
-const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
-const DIR_STRUCTURES = joinpath(DIR_PWDFT, "structures")
-
 const GBL_eps1 = 1.0e-6
 const GBL_eps2 = 1.0e-5
 
@@ -227,7 +218,7 @@ function find_symm_bravais_latt( LatVecs_ )
     if !is_group(nrot, s, ft)
         # ... This happens for instance for an hexagonal lattice with one axis 
         # oriented at 15 degrees from the x axis, the other along (-1,1,0)
-        println("NOTICE: Symmetry group for Bravais lattic is not a group")
+        println("NOTICE: Symmetry group for Bravais lattice is not a group")
         nrot = 1
     end
 
@@ -623,41 +614,3 @@ function is_group( nsym_::Int64, s, ft )
 
 end
 
-
-function init_Ham_Si_fcc( meshk::Array{Int64,1} )
-    atoms = Atoms(xyz_string_frac=
-        """
-        2
-
-        Si  0.0  0.0  0.25
-        Si  0.25  0.25  0.25
-        """, in_bohr=true, LatVecs=gen_lattice_fcc(5.431*ANG2BOHR))
-    pspfiles = [joinpath(DIR_PSP, "Si-q4.gth")]
-    ecutwfc = 15.0
-    return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=meshk )
-end
-
-
-function main()
-    Ham = init_Ham_Si_fcc([3,3,3])
-
-    nrot, s, ft, sname = find_symm_bravais_latt( Ham.atoms.LatVecs )
-
-    sym = zeros(Bool, 48)
-    irt = zeros(Int64, 48, Ham.atoms.Natoms)
-
-    sgam_at!( Ham.atoms, sym, false, nrot, s, ft, sname, irt )
-
-    Nsyms = copy_sym!( nrot, sym, s, ft, sname, irt )
-    println("Nsyms = ", Nsyms)
-
-    for i in 1:Nsyms
-        println("symmetry operation: ", sname[i])
-        display(s[:,:,i]); println()
-    end
-    println("irt = ", irt[1:Nsyms,:])
-
-    println("Pass here")
-end
-
-main()
