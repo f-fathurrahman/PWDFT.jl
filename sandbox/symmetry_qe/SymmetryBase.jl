@@ -137,16 +137,6 @@ function find_symm_bravais_latt( LatVecs_ )
 
     overlap = inv(rot)
 
-    #display(LatVecs); println()
-    #display(LatVecs'*LatVecs); println()
-    #display(rot); println()
-    #println("\noverlap matrix: ")
-    #display(overlap); println()
-
-    #display(GBL_s0[:,:,1]); println()
-    #display(GBL_s0[:,:,2]); println()
-
-
     imat = zeros(Int64,32)
 
     rat = zeros(Float64,3)
@@ -187,8 +177,6 @@ function find_symm_bravais_latt( LatVecs_ )
 
     end
 
-    #println("nrot after loop = ", nrot)
-
     nrot = nrot - 1
 
     if !(nrot in [1, 2, 4, 6, 8, 12, 24])
@@ -196,8 +184,6 @@ function find_symm_bravais_latt( LatVecs_ )
         println("symmetries are disabled")
         nrot = 1
     end
-
-    #display(s[:,:,2]); println()
 
     # Set the inversion symmetry (Bravais lattices have always inversion symmetry)
     for irot = 1:nrot
@@ -208,7 +194,6 @@ function find_symm_bravais_latt( LatVecs_ )
             end
         end
     end
-
 
     nrot = 2*nrot
     
@@ -221,8 +206,6 @@ function find_symm_bravais_latt( LatVecs_ )
         println("NOTICE: Symmetry group for Bravais lattice is not a group")
         nrot = 1
     end
-
-    println("nrot = ", nrot)
 
     return nrot, s, ft, sname
 
@@ -409,7 +392,7 @@ function sgam_at!( atoms::Atoms, sym, no_z_inv, nrot, s, ft, sname, irt )
     #end
     #println("count(Nsym) = ", count(sym))
     
-    println("fft_fact = ", fft_fact)
+    #println("fft_fact = ", fft_fact)
 
     # ... disable all symmetries z -> -z
     # skipped
@@ -614,3 +597,102 @@ function is_group( nsym_::Int64, s, ft )
 
 end
 
+
+struct SymmetryBase
+    Nrots::Int64
+    Nsyms::Int64
+    s::Array{Int64,3}
+    sname::Array{String}
+    ft::Array{Float64,2}
+    irt::Array{Int64,2}
+end
+
+
+function SymmetryBase( atoms::Atoms )
+
+    nrot, s, ft, sname = find_symm_bravais_latt( atoms.LatVecs )
+
+    sym = zeros(Bool, 48)
+    irt = zeros(Int64, 48, atoms.Natoms)
+
+    sgam_at!( atoms, sym, false, nrot, s, ft, sname, irt )
+
+    Nsyms = copy_sym!( nrot, sym, s, ft, sname, irt )
+
+    return SymmetryBase( nrot, Nsyms, s[:,:,1:Nsyms], sname[1:Nsyms], ft[:,1:Nsyms], irt[1:Nsyms,:] )
+
+end
+
+import Base: show
+function show( io::IO, sym_base::SymmetryBase )
+    
+    @printf(io, "Nsyms = %d\n", sym_base.Nsyms)
+    @printf(io, "Nrots = %d\n", sym_base.Nrots)
+
+    s = sym_base.s
+    sname = sym_base.sname
+    ft = sym_base.ft
+
+    for isym in 1:sym_base.Nsyms
+        @printf(io, "\nSymmetry operation #%d: %s\n", isym, sname[isym])
+        for i in 1:3
+            @printf(io, "%4d %4d %4d\n", s[i,1,isym], s[i,2,isym], s[i,3,isym])
+        end
+        @printf(io, "Fractional translation: %10.4f %10.4f %10.4f\n",
+            sym_base.ft[1,isym], sym_base.ft[2,isym], sym_base.ft[3,isym])
+    end
+end
+
+show( sym_base::SymmetryBase ) = show( stdout, sym_base )
+
+
+function symmetrize_vector!( LatVecs_, sym_base::SymmetryBase, v::Array{Float64,2} )
+
+    Nsyms = sym_base.Nsyms
+    
+    alat = norm(LatVecs_[:,1])
+    LatVecs = LatVecs_[:,:]/alat
+
+    RecVecs = inv(Matrix(LatVecs'))
+
+    println("Should be indentity: ")
+    display(LatVecs*RecVecs'); println()
+    
+    s = convert(Array{Float64,3}, sym_base.s)
+    
+    irt = sym_base.irt
+
+    if Nsyms == 1
+        return
+    end
+
+    Nvecs = size(v)[2]
+
+    tmp = zeros(3,Nvecs)
+    
+    # bring vector to crystal axis
+    for i = 1:Nvecs
+        tmp[:,i] = v[1,i]*LatVecs[1,:] + v[2,i]*LatVecs[2,:] + v[3,i]*LatVecs[3,:]
+    end
+
+    # symmetrize in crystal axis
+    v[:,:] .= 0.0
+    dv = zeros(3)
+    for i = 1:Nvecs
+        for isym = 1:Nsyms
+            iar = irt[isym,i]
+            v[:,i] = v[:,i] + s[:,1,isym]*tmp[1,iar] + s[:,2,isym]*tmp[2,iar] + s[:,3,isym]*tmp[3,iar]
+        end
+    end
+    
+    tmp[:,:] = v[:,:]/Nsyms
+
+    # bring vector back to cartesian axis
+    for i = 1:Nvecs
+        v[:,i] = tmp[1,i]*RecVecs[:,1] + tmp[2,i]*RecVecs[:,2] + tmp[3,i]*RecVecs[:,3]
+    end
+    println("in symmetrize_vector!:")
+    println(v)
+
+    return
+end

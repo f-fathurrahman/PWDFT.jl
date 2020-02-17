@@ -14,7 +14,7 @@ function create_Si_fcc()
         """
         2
 
-        Si  0.0  0.0  0.25
+        Si  0.0  0.0  0.0
         Si  0.25  0.25  0.25
         """, in_bohr=true, LatVecs=gen_lattice_fcc(5.431*ANG2BOHR))
     # FIXME: Zvals is not set
@@ -23,25 +23,18 @@ end
 
 function main()
     atoms = create_Si_fcc()
+    sym_base = SymmetryBase(atoms)
 
-    nrot, s, ft, sname = find_symm_bravais_latt( atoms.LatVecs )
+    println(sym_base)
 
-    sym = zeros(Bool, 48)
-    irt = zeros(Int64, 48, atoms.Natoms)
+    Natoms = atoms.Natoms
+    v = zeros(Float64,3,Natoms)
+    v[:,1] = [1.0, 0.0, 0.0]
+    v[:,2] = [0.0, 1.0, 1.0]
 
-    sgam_at!( atoms, sym, false, nrot, s, ft, sname, irt )
-
-    Nsyms = copy_sym!( nrot, sym, s, ft, sname, irt )
-    println("Nsyms = ", Nsyms)
-
-    for i in 1:Nsyms
-        println()
-        println("symmetry operation: ", sname[i])
-        display(s[:,:,i]); println()
-        println("fractional translations: ")
-        println(ft[:,i])
-    end
-    println("irt = ", irt[1:Nsyms,:])
+    symmetrize_vector!( atoms.LatVecs, sym_base, v )
+    println("v = ")
+    display(v); println()
 end
 
 main()
