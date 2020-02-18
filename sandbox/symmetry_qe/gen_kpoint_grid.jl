@@ -4,7 +4,7 @@
 # This file is distributed under the terms of the
 # GNU General Public License.
 
-function gen_kpoint_grid( LatVecs, nk1, nk2, nk3, k1, k2, k3, time_reversal, s, t_rev )
+function gen_kpoint_grid( LatVecs, nk1, nk2, nk3, k1, k2, k3, time_reversal, s )
 
     SMALL = 1.0e-5
 
@@ -50,10 +50,6 @@ function gen_kpoint_grid( LatVecs, nk1, nk2, nk3, k1, k2, k3, time_reversal, s, 
                 for i in 1:3
                     xkr[i] = s[i,1,irot]*xkg[1,ik] + s[i,2,irot]*xkg[2,ik] + s[i,3,irot]*xkg[3,ik]
                     xkr[i] = xkr[i] - round( xkr[i] )
-                end
-                
-                if t_rev[irot] == 1
-                    xkr = -xkr
                 end
                 
                 xx = xkr[1]*nk1 - 0.5*k1
@@ -132,14 +128,11 @@ function gen_kpoint_grid( LatVecs, nk1, nk2, nk3, k1, k2, k3, time_reversal, s, 
     for ik in 1:nkr
         if equiv[ik] == ik
             nks = nks + 1
-            #IF (nks>npk) CALL errore('kpoint_grid','too many k-points',1)
             wk[nks] = wkk[ik]
-            #append!( wk, wkk[ik])
             fact = fact + wk[nks]
             # bring back into to the first BZ
             for i in 1:3
                 xk[i,nks] = xkg[i,ik] - round(xkg[i,ik])
-                #append!( xk, [xkg[i,ik] - round(xkg[i,ik])] )
             end
         end
     end
@@ -149,9 +142,11 @@ function gen_kpoint_grid( LatVecs, nk1, nk2, nk3, k1, k2, k3, time_reversal, s, 
   
     # normalize weights to one
     wk[:] = wk[:]/fact
+    xk[:,:] = RecVecs*xk[:,:]
 
-    display(xk); println()
-    display(wk); println()
+    for ik in 1:nks
+        @printf("%18.10f %18.10f %18.10f: %18.10f\n", xk[1,ik], xk[2,ik], xk[3,ik], wk[ik])
+    end
 
     return
 
