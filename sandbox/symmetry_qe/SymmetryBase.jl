@@ -201,7 +201,7 @@ function find_symm_bravais_latt( LatVecs_ )
     ft = zeros(Float64,3,48)    
 
     if !is_group(nrot, s, ft)
-        # ... This happens for instance for an hexagonal lattice with one axis 
+        # This happens for instance for an hexagonal lattice with one axis 
         # oriented at 15 degrees from the x axis, the other along (-1,1,0)
         println("NOTICE: Symmetry group for Bravais lattice is not a group")
         nrot = 1
@@ -253,21 +253,18 @@ function sgam_at!( atoms::Atoms, sym, no_z_inv, nrot, s, ft, sname, irt )
     rau = zeros(Float64,3,nat)
     ft_ = zeros(Float64,3)
 
-    # ... Compute the coordinates of each atom in the basis of
-    # the direct lattice vectors
+    # Compute the coordinates of each atom in the basis of the direct lattice vectors
     for ia = 1:nat
-       xau[:,ia] = bg[1,:]*tau[1,ia] + bg[2,:]*tau[2,ia] + bg[3,:]*tau[3,ia]
+        for i = 1:3
+            xau[i,ia] = bg[1,i]*tau[1,ia] + bg[2,i]*tau[2,ia] + bg[3,i]*tau[3,ia]
+        end
     end
-    
-    #println("xau matrix")
-    #display(xau'); println()
 
     #
-    # ... check if the identity has fractional translations (this means
+    # Check if the identity has fractional translations (this means
     # that the cell is actually a supercell). When this happens, fractional
     # translations are disabled, because there is no guarantee that the 
     # generated sym.ops. form a group.
-    #
     nb = 1
     irot = 1
 
@@ -276,18 +273,18 @@ function sgam_at!( atoms::Atoms, sym, no_z_inv, nrot, s, ft, sname, irt )
     if fractional_translations
         for na in 2:nat
             if atm2species[nb] == atm2species[na]
-                #
-                ft_[:] = xau[:,na] - xau[:,nb] - round.( xau[:,na] - xau[:,nb] )
+                
+                for i in 1:3
+                    ft_[i] = xau[i,na] - xau[i,nb] - round( xau[i,na] - xau[i,nb] )
+                end
 
                 sym[irot] = checksym!( irot, nat, atm2species, xau, xau, ft_, irt )
                 
                 if sym[irot]
                     fractional_translations = false
-                    println("Found symmetry operation: I + ", ft)
+                    println("Found symmetry operation: I + ", ft_[:])
                     println("This is a supercell")
                     println("Fractional translations are disabled")
-                    
-                    #println("Should GOTO 10")
                     break # go outside the loop over na
                 end # if
             
@@ -297,52 +294,44 @@ function sgam_at!( atoms::Atoms, sym, no_z_inv, nrot, s, ft, sname, irt )
     
     end # if
 
-    #display(irt); println();
-    # continue 10
-    #println("This is GOTO 10")
-
-
     nsym_ns = 0
     fft_fact = [1,1,1]
     ftaux = zeros(Float64,3) 
 
     for irot in 1:nrot
-        
-        #println("\nirot = ", irot)
 
-        #println("rau matrix:")
+        # rau is rotated atom coordinates
         for na in 1:nat
-           # rau = rotated atom coordinates
-           rau[:,na] = s[1,:,irot] * xau[1,na] + s[2,:,irot] * xau[2,na] + s[3,:,irot] * xau[3,na]
-           #@printf("%18.10f %18.10f %18.10f\n", rau[1,na], rau[2,na], rau[3,na])
+            for i in 1:3
+               rau[i,na] = s[1,i,irot] * xau[1,na] + s[2,i,irot] * xau[2,na] + s[3,i,irot] * xau[3,na]
+            end
         end
         
         # first attempt: no fractional translation
-        ft[:,irot] .= 0.0 #
-        ft_[:] .= 0.0
+        for i in 1:3
+            ft[i,irot] = 0.0
+            ft_[i] = 0.0
+        end
         
         sym[irot] = checksym!( irot, nat, atm2species, xau, rau, ft_, irt )
-        #if sym[irot]
-        #    println("true at the first attempt")
-        #end
         
         if ( !sym[irot] && fractional_translations )
             nb = 1
             for na in 1:nat
                 if atm2species[nb] == atm2species[na]
                  
-                    # ... second attempt: check all possible fractional translations
-                    ft_[:] = rau[:,na] - xau[:,nb] - round.( rau[:,na] - xau[:,nb] )
-                    #@printf("ft_ = %18.10f %18.10f %18.10f\n", ft_[1], ft_[2], ft_[3])
+                    # Second attempt: check all possible fractional translations
+                    for i in 1:3
+                        ft_[i] = rau[i,na] - xau[i,nb] - round( rau[i,na] - xau[i,nb] )
+                    end
                     
-                    # ... ft_ is in crystal axis and is a valid fractional translation
+                    #  ft_ is in crystal axis and is a valid fractional translation
                     # only if ft_(i)=0 or ft_(i)=1/n, with n=2,3,4,
-                    
                     for i in 1:3
                         if abs(ft_[i]) > GBL_eps2
                             ftaux[i] = abs( 1.0/ft_[i] - round(Int64, 1.0/ft_[i]) )
                             nfrac = round( Int64, 1.0/abs(ft_[i]) )
-                            if( (ftaux[i] < GBL_eps2) && (nfrac != 2) && (nfrac != 3) && (nfrac != 4) && (nfrac != 6) )
+                            if( (ftaux[i] < GBL_eps2) && !(nfrac in [2, 3, 4, 6]) )
                                 ftaux[i] = 2*GBL_eps2
                             end # if
                         else
@@ -351,10 +340,8 @@ function sgam_at!( atoms::Atoms, sym, no_z_inv, nrot, s, ft, sname, irt )
                     end # for
                     
                     if( any( ftaux .> GBL_eps2 ) )
-                        #println("Should be doing cycle here irot ", irot)
-                        continue #CYCLE
+                        continue
                     end
-                    #println("should not after cycle")
                     
                     sym[irot] = checksym!( irot, nat, atm2species, xau, rau, ft_, irt )
                  
@@ -362,7 +349,7 @@ function sgam_at!( atoms::Atoms, sym, no_z_inv, nrot, s, ft, sname, irt )
                         nsym_ns = nsym_ns + 1
                         ft[:,irot] = ft_[:]
                     
-                        # ... Find factors that must be present in FFT grid dimensions
+                        # Find factors that must be present in FFT grid dimensions
                         # in order to ensure that fractional translations are
                         # commensurate with FFT grids.
                         for i in 1:3
@@ -373,7 +360,7 @@ function sgam_at!( atoms::Atoms, sym, no_z_inv, nrot, s, ft, sname, irt )
                             end # if
                             fft_fact[i] = _mcm( fft_fact[i], nfrac)
                         end # do
-                        #println("Should GOTO 20")
+
                         break # break from loop over na
                     end # if
                 end # if
@@ -381,21 +368,8 @@ function sgam_at!( atoms::Atoms, sym, no_z_inv, nrot, s, ft, sname, irt )
             end # do
            
         end # if
-        
-        #20   CONTINUE next irot
+
     end
-
-    #for i in 1:48
-    #    if sym[i]
-    #        println(i, " ", sym[i], " sname = ", sname[i])
-    #    end
-    #end
-    #println("count(Nsym) = ", count(sym))
-    
-    #println("fft_fact = ", fft_fact)
-
-    # ... disable all symmetries z -> -z
-    # skipped
 
     return
 
@@ -428,58 +402,47 @@ end
 # .TRUE. if, for each atom na, it is possible to find an atom nb
 # which is of the same type of na, and coincides with it after the
 # symmetry operation. Fractional translations are allowed.
-function checksym!( irot, nat, ityp, xau, rau, ft_, irt )
+function checksym!( irot, Natoms, ityp, xau, rau, ft_, irt )
 
     ACCEPT = 1e-5
 
-    continue_na = zeros(Bool, nat)
+    continue_ia = zeros(Bool, Natoms)
     
-    for na in 1:nat
+    for ia in 1:Natoms
 
-        for nb in 1:nat
-            if ityp[nb] == ityp[na]
-
-                #@printf("na = %3d nb = %3d\n", na, nb)
-                #@printf("rau = %18.10f %18.10f %18.10f\n", rau[1,na], rau[2,na], rau[3,na])
-                #@printf("xau = %18.10f %18.10f %18.10f\n", xau[1,na], xau[2,na], xau[3,na])
-                #@printf("ft_ = %18.10f %18.10f %18.10f\n", ft_[1], ft_[2], ft_[3])
-
-                is_equal =  eqvect( rau[:,na], xau[:,nb], ft_ , ACCEPT )
+        for ib in 1:Natoms
+            
+            if ityp[ib] == ityp[ia]
+                is_equal =  eqvect( rau[:,ia], xau[:,ib], ft_ , ACCEPT )
                 if is_equal
-                   #!
-                   #! ... the rotated atom does coincide with one of the like atoms
-                   #! keep track of which atom the rotated atom coincides with
-                   irt[irot, na] = nb
-                   
-                   #println("Will GOTO 10")
-                   continue_na[na] = true
+                   # the rotated atom does coincide with one of the like atoms
+                   # keep track of which atom the rotated atom coincides with
+                   irt[irot,ia] = ib
+                   continue_ia[ia] = true
                    break # move outside loop over nb
                 end # if
             end # if
+
         end # for
         
-        # ... the rotated atom does not coincide with any of the like atoms
+        # The rotated atom does not coincide with any of the like atoms
         # s(ir) + ft is not a symmetry operation
-        if !continue_na[na]
-            #println("eqvect immediately returning false")
+        if !continue_ia[ia]
             return false
         else
-            #10   CONTINUE
-            #println("This should be after GOTO 10")
             continue
         end
     end
 
-    # ... s(ir) + ft is a symmetry operation
+    # s(ir) + ft is a symmetry operation
     return true
 end
 
 
+# This function test if the difference x-y-f is an integer.
+# x, y = 3d vectors in crystal axis, f = fractional translation
+# adapted from QE-6.4
 function eqvect(x, y, f, accep)
-  
-    # This function test if the difference x-y-f is an integer.
-    # x, y = 3d vectors in crystal axis, f = fractional translation
-    # adapted from QE-6.4
 
     cond1 = ( abs(x[1]-y[1]-f[1] - round(x[1]-y[1]-f[1]) ) < accep )
     cond2 = ( abs(x[2]-y[2]-f[2] - round(x[2]-y[2]-f[2]) ) < accep )
@@ -501,48 +464,50 @@ end
 #
 # On exit \(\textrm{copy_sym}\) returns nsym.
 function copy_sym!( nrot_, sym, s, ft, sname, irt )
-    # INTEGER :: stemp(3,3), ttemp, irot, jrot
-    # REAL(DP) :: ft_(3)
-    # INTEGER, ALLOCATABLE :: irtemp(:)
-    # CHARACTER(LEN=45) :: nametemp
     
     stemp = zeros(Int64,3,3)
     ft_ = zeros(Float64,3)
 
-    irtemp = zeros(Int64, size(irt,2) )
-    #ALLOCATE ( irtemp(SIZE(irt,2)) )
+    Natoms = size(irt,2)
+    irtemp = zeros(Int64, Natoms )
     
     jrot = 0
     for irot in 1:nrot_
         if sym[irot]
             jrot = jrot + 1
             if irot > jrot
-                stemp[:,:] = s[:,:,jrot]
-                s[:,:,jrot] = s[:,:,irot]
-                s[:,:,irot] = stemp[:,:]
+                for j in 1:3, i in 1:3
+                    stemp[i,j] = s[i,j,jrot]
+                    s[i,j,jrot] = s[i,j,irot]
+                    s[i,j,irot] = stemp[i,j]
+                end
                 
-                ft_[:] = ft[:,jrot]
-                ft[:,jrot] = ft[:,irot]
-                ft[:,irot] = ft_[:]
+                for i in 1:3
+                    ft_[i] = ft[i,jrot]
+                    ft[i,jrot] = ft[i,irot]
+                    ft[i,irot] = ft_[i]
+                end
                 
-                irtemp[:] = irt[jrot,:]
-                irt[jrot,:] = irt[irot,:]
-                irt[irot,:] = irtemp[:]
+                for ia in 1:Natoms
+                    irtemp[ia] = irt[jrot,ia]
+                    irt[jrot,ia] = irt[irot,ia]
+                    irt[irot,ia] = irtemp[ia]
+                end
                 
                 nametemp = sname[jrot]
                 sname[jrot] = sname[irot]
                 sname[irot] = nametemp
-                
-                # for collinear magnetism, SKIPPED
-                #ttemp = t_rev[jrot]
-                #t_rev[jrot] = t_rev[irot]
-                #t_rev[irot] = ttemp
+
             end # if
         end # if
     end # for
     
-    sym[1:jrot] .= true
-    sym[jrot+1:nrot_] .= false
+    for i in 1:jrot
+        sym[i] = true
+    end
+    for i in jrot+1:nrot_
+        sym[i] = false
+    end
 
     return jrot
 end
@@ -560,9 +525,11 @@ function is_group( nsym_::Int64, s, ft )
             
             ss = s[:,:,isym] * s[:,:,jsym]
 
-            st[:] = ft[:,jsym] + s[1,:,jsym]*ft[1,isym] +
-                                 s[2,:,jsym]*ft[2,isym] +
-                                 s[3,:,jsym]*ft[3,isym]
+            for i in 1:3
+                st[i] = ft[i,jsym] + s[1,i,jsym]*ft[1,isym] +
+                                     s[2,i,jsym]*ft[2,isym] +
+                                     s[3,i,jsym]*ft[3,isym]
+            end
             #
             # ... here we check that the input matrices really form a group:
             # S(k) = S(i)*S(j)

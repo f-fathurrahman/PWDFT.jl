@@ -21,11 +21,32 @@ function create_Si_fcc()
     return atoms
 end
 
-function main()
-    atoms = create_Si_fcc()
-    sym_base = SymmetryBase(atoms)
+function create_Si_fcc_cubic()
+    atoms = Atoms(xyz_string_frac=
+        """
+        8
 
-    println(sym_base)
+        Si   0.000000000000000   0.000000000000000   0.000000000000000 
+        Si   0.750000000000000   0.750000000000000   0.250000000000000 
+        Si   0.500000000000000   0.000000000000000   0.500000000000000 
+        Si   0.750000000000000   0.250000000000000   0.750000000000000 
+        Si   0.000000000000000   0.500000000000000   0.500000000000000 
+        Si   0.250000000000000   0.250000000000000   0.250000000000000 
+        Si   0.250000000000000   0.750000000000000   0.750000000000000 
+        Si   0.500000000000000   0.500000000000000   0.000000000000000 
+        """, in_bohr=true, LatVecs=gen_lattice_cubic(5.43070*ANG2BOHR))
+    return atoms
+end
+
+function main()
+    
+    #atoms = create_Si_fcc()
+    atoms = create_Si_fcc_cubic()
+    
+    sym_base = SymmetryBase(atoms)
+    @time sym_base = SymmetryBase(atoms)
+
+    #println(sym_base)
 
     Natoms = atoms.Natoms
     v = zeros(Float64,3,Natoms)
