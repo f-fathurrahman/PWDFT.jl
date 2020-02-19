@@ -190,7 +190,7 @@ function symmetrize_rhoe!(
 
                     if non_symmorphic[isym]
                         arg = pw.gvec.G[1,isg]*fts[1,isym] + pw.gvec.G[2,isg]*fts[2,isym] + pw.gvec.G[3,isg]*fts[3,isym]
-                        fact = cos(arg) + im*sin(arg)
+                        fact = cos(arg) - im*sin(arg)
                         for ispin = 1:Nspin
                             rhosum[ispin] = rhosum[ispin] + RhoeG[ip,ispin]*fact
                         end
@@ -211,7 +211,7 @@ function symmetrize_rhoe!(
                     ip = pw.gvec.idx_g2r[isg]
                     if non_symmorphic[isym]
                         arg = pw.gvec.G[1,isg]*fts[1,isym] + pw.gvec.G[2,isg]*fts[2,isym] + pw.gvec.G[3,isg]*fts[3,isym]
-                        fact = cos(arg) - im*sin(arg)
+                        fact = cos(arg) + im*sin(arg)
                         for ispin = 1:Nspin
                             RhoeG[ip,ispin] = rhosum[ispin]*fact
                         end

@@ -20,7 +20,8 @@ function spg_get_symmetry( atoms::Atoms; symprec=1e-5 )
            out_rot, out_translations, cmax_size,
            lattice, positions, ctypes, num_atom, symprec)
 
-    return Nsyms, out_rot[:,:,1:Nsyms], out_translations[:,1:Nsyms]
+    # return minus of out_translations to match QE convention.
+    return Nsyms, out_rot[:,:,1:Nsyms], -out_translations[:,1:Nsyms]
 
     #rots, trans = LibSymspg.get_symmetry(lattice, positions, atoms.atm2species, symprec)
     #return size(trans)[2], rots, trans
