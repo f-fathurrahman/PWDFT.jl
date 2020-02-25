@@ -37,7 +37,7 @@ function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
     if kpoints == nothing
         if kpts_str == ""
             # automatic generation of kpoints
-            kpoints = KPoints( atoms, meshk, shiftk )
+            kpoints = KPoints( atoms, meshk, shiftk, sym_info.s )
         else
             # use the given kpoints
             kpoints = kpoints_from_string( atoms, kpts_str )
