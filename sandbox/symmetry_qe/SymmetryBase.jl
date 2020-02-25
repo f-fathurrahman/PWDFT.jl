@@ -1,4 +1,4 @@
-# Based on the file PW/src/symm_base.f90 of Quantum ESPRESS
+# Based on the file PW/src/symm_base.f90 of Quantum ESPRESSO
 #
 # Copyright (C) 2010-2017 Quantum ESPRESSO group
 # This file is distributed under the terms of the
@@ -117,7 +117,11 @@ const GBL_s0name = [
     "inv. 180 deg rotation - cryst. axis [1,1,0]  "
 ]
 
+"""
+    find_symm_bravais_latt( LatVecs_ )
 
+Find symmetry operations of a given Bravais lattice defined by `LatVecs_`.
+"""
 function find_symm_bravais_latt( LatVecs_ )
 
     alat = norm(LatVecs_[:,1])
@@ -198,16 +202,16 @@ function find_symm_bravais_latt( LatVecs_ )
     nrot = 2*nrot
     
     # Reset fractional translations to zero before checking the group
-    ft = zeros(Float64,3,48)    
+    ft_zero = zeros(Float64, 3, 48)    
 
-    if !is_group(nrot, s, ft)
+    if !is_group(nrot, s, ft_zero)
         # This happens for instance for an hexagonal lattice with one axis 
         # oriented at 15 degrees from the x axis, the other along (-1,1,0)
         println("NOTICE: Symmetry group for Bravais lattice is not a group")
         nrot = 1
     end
 
-    return nrot, s, ft, sname
+    return nrot, s, sname
 
 end
 
@@ -564,31 +568,56 @@ function is_group( nsym_::Int64, s, ft )
 
 end
 
-
+#
+# FIXME this struct should replace SymmetryInfo
+#
 struct SymmetryBase
     Nrots::Int64
     Nsyms::Int64
     s::Array{Int64,3}
+    inv_s::Array{Int64,3}
     sname::Array{String}
     ft::Array{Float64,2}
+    non_symmorphic::Array{Bool,1}
     irt::Array{Int64,2}
 end
 
 
 function SymmetryBase( atoms::Atoms )
 
-    nrot, s, ft, sname = find_symm_bravais_latt( atoms.LatVecs )
+    Nrots, s, sname = find_symm_bravais_latt( atoms.LatVecs )
 
+    # Allocate memory
     sym = zeros(Bool, 48)
     irt = zeros(Int64, 48, atoms.Natoms)
+    ft = zeros(Float64, 3, 48)
 
-    sgam_at!( atoms, sym, false, nrot, s, ft, sname, irt )
+    sgam_at!( atoms, sym, false, Nrots, s, ft, sname, irt )
 
-    Nsyms = copy_sym!( nrot, sym, s, ft, sname, irt )
+    Nsyms = copy_sym!( Nrots, sym, s, ft, sname, irt )
+    
+    inv_s = zeros(Int64,3,3,Nsyms)
+    for isym = 1:Nsyms
+        inv_s[:,:,isym] = Base.convert(Array{Int64,2}, inv(s[:,:,isym]))
+    end
 
-    return SymmetryBase( nrot, Nsyms, s[:,:,1:Nsyms], sname[1:Nsyms], ft[:,1:Nsyms], irt[1:Nsyms,:] )
+    non_symmorphic = zeros(Bool,Nsyms)
+    SMALL = 1e-10
+    for isym = 1:Nsyms
+        non_symmorphic[isym] = ( (abs(ft[1,isym]) >= SMALL) ||
+                                 (abs(ft[2,isym]) >= SMALL) ||
+                                 (abs(ft[3,isym]) >= SMALL) )
+    end
+
+    return SymmetryBase(
+        Nrots, Nsyms,
+        s[:,:,1:Nsyms], inv_s, sname[1:Nsyms],
+        ft[:,1:Nsyms], non_symmorphic,
+        irt[1:Nsyms,:]
+    )
 
 end
+
 
 import Base: show
 function show( io::IO, sym_base::SymmetryBase )
