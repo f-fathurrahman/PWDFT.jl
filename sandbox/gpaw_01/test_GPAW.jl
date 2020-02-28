@@ -15,16 +15,38 @@ function test_H2()
     ecutwfc = 15.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc )
 
-    run(`rm -rfv TEMP_gpaw_H2/\*`)
-    write_gpaw( Ham, use_smearing=true, kT=0.01, prefix_dir="./TEMP_gpaw_H2" )
-    cd("./TEMP_gpaw_H2")
-    run(pipeline(`gpaw-python main.py`, stdout="LOG1"))
-    cd("../")
+    #run(`rm -rfv TEMP_gpaw_H2/\*`)
+    #write_gpaw( Ham, use_smearing=true, kT=0.01, prefix_dir="./TEMP_gpaw_H2" )
+    #cd("./TEMP_gpaw_H2")
+    #run(pipeline(`gpaw-python main.py`, stdout="LOG1"))
+    #cd("../")
 
     energies = read_gpaw_etotal("TEMP_gpaw_H2/LOG1")
     #println(energies)
 end
 
+
+function test_Si_fcc()
+    atoms = Atoms(xyz_string_frac=
+        """
+        2
+
+        Si  0.0  0.0  0.0
+        Si  0.25  0.25  0.25
+        """, in_bohr=true, LatVecs=gen_lattice_fcc(10.2631))
+    pspfiles = [joinpath(DIR_PSP, "Si-q4.gth")]
+    ecutwfc = 15.0
+    Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3] )
+
+    #run(`rm -rfv TEMP_gpaw_Si_fcc/\*`)
+    #write_gpaw( Ham, use_smearing=true, kT=0.01, prefix_dir="./TEMP_gpaw_Si_fcc" )
+    #cd("./TEMP_gpaw_Si_fcc")
+    #run(pipeline(`gpaw-python main.py`, stdout="LOG1"))
+    #cd("../")
+
+    energies = read_gpaw_etotal("TEMP_gpaw_Si_fcc/LOG1")
+    println(energies)
+end
 
 function test_Al_fcc()
 
@@ -40,9 +62,9 @@ function test_Al_fcc()
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc, xcfunc="LDA",
                        Nspin=1, meshk=[8,8,8], extra_states=4 )
 
-    #run(`rm -rfv TEMP_gpaw/\*`)
-    #write_gpaw( Ham, use_smearing=true, kT=0.01, prefix_dir="./TEMP_gpaw" )
-    #cd("./TEMP_gpaw")
+    #run(`rm -rfv TEMP_gpaw_Al/\*`)
+    #write_gpaw( Ham, use_smearing=true, kT=0.01, prefix_dir="./TEMP_gpaw_Al" )
+    #cd("./TEMP_gpaw_Al")
     #run(pipeline(`gpaw-python main.py`, stdout="LOG1"))
     #cd("../")
 
@@ -69,7 +91,7 @@ function test_Pt_fcc()
 
 end
 
-#test_CuSO4()
-test_H2()
+test_Si_fcc()
+#test_H2()
 #test_Al_fcc()
 #test_Pt_fcc()

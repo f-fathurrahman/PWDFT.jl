@@ -101,6 +101,45 @@ function write_gpaw( Ham::Hamiltonian; filename="main.py",
     close(f)
 end
 
+
+# FIXME: need to know the exact meaning of these terms and their correspondence with PWDFT.jl
+
+struct EnergiesGPAW
+    Kinetic::Float64
+    Potential::Float64
+    External::Float64
+    XC::Float64
+    Entropy::Float64
+    Local::Float64
+    Free_energy::Float64
+    Extrapolated::Float64
+end
+
+# No `sum` method for this type
+
+
+# Smearing information is always printed out, no `use_smearing` keyword.
+
+import Base: show
+function show( io::IO, energies::EnergiesGPAW )
+    @printf(io, "Kinetic   energy: %18.10f\n", energies.Kinetic)
+    @printf(io, "Potential energy: %18.10f\n", energies.Potential)
+    @printf(io, "External  energy: %18.10f\n", energies.External)
+    @printf(io, "XC        energy: %18.10f\n", energies.XC)
+    @printf(io, "Entropy   energy: %18.10f\n", energies.Entropy)
+    @printf(io, "Local     energy: %18.10f\n", energies.Local)
+    @printf(io, "------------------------------------\n")
+    @printf(io, "Free energy     : %18.10f\n", energies.Free_energy)
+    @printf(io, "Extrapolated    : %18.10f\n", energies.Extrapolated)
+end
+
+show( energies::EnergiesGPAW ) = show( stdout, energies )
+
+import Base: println
+println( energies::EnergiesGPAW ) = show( energies )
+
+
+
 function read_gpaw_etotal( filename::String )
     
     Kinetic = 0.0
@@ -122,38 +161,30 @@ function read_gpaw_etotal( filename::String )
             l = readline(f) # skip
             #            
             l = readline(f)
-            Kinetic = parse( Float64, split(l, keepempty=false)[end] )
-            println("Kinetic = ", Kinetic)
+            Kinetic = parse( Float64, split(l, keepempty=false)[end] )/(2*Ry2eV)
             #
             l = readline(f)
-            Potential = parse( Float64, split(l, keepempty=false)[end] )
-            println("Potential = ", Potential)
+            Potential = parse( Float64, split(l, keepempty=false)[end] )/(2*Ry2eV)
             #
             l = readline(f)
-            External = parse( Float64, split(l, keepempty=false)[end] )
-            println("External = ", External)
+            External = parse( Float64, split(l, keepempty=false)[end] )/(2*Ry2eV)
             #
             l = readline(f)
-            XC = parse( Float64, split(l, keepempty=false)[end] )
-            println("XC = ", XC)
+            XC = parse( Float64, split(l, keepempty=false)[end] )/(2*Ry2eV)
             #
             l = readline(f)
-            Entropy = parse( Float64, split(l, keepempty=false)[end] )
-            println("Entropy = ", Entropy)
+            Entropy = parse( Float64, split(l, keepempty=false)[end] )/(2*Ry2eV)
             #
             l = readline(f)
-            Local = parse( Float64, split(l, keepempty=false)[end] )
-            println("Local = ", Local)
+            Local = parse( Float64, split(l, keepempty=false)[end] )/(2*Ry2eV)
             #
             l = readline(f)
             #
             l = readline(f)
-            Free_energy = parse( Float64, split(l, keepempty=false)[end] )
-            println("Free_energy = ", Free_energy)
+            Free_energy = parse( Float64, split(l, keepempty=false)[end] )/(2*Ry2eV)
             #
             l = readline(f)
-            Extrapolated = parse( Float64, split(l, keepempty=false)[end] )
-            println("Extrapolated = ", Extrapolated)
+            Extrapolated = parse( Float64, split(l, keepempty=false)[end] )/(2*Ry2eV)
             #
             break
         end
@@ -161,5 +192,6 @@ function read_gpaw_etotal( filename::String )
     end
 
     close(f)
-    return
+    
+    return EnergiesGPAW( Kinetic, Potential, External, XC, Entropy, Local, Free_energy, Extrapolated )
 end
