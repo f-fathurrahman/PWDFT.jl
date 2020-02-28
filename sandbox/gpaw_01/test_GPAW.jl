@@ -15,14 +15,14 @@ function test_H2()
     ecutwfc = 15.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc )
 
-    run(`rm -rfv TEMP_abinit/\*`)
-    write_abinit( Ham, prefix_dir="./TEMP_abinit/" )
-    cd("./TEMP_abinit")
-    run(pipeline(`abinit`, stdin="FILES", stdout="LOG1"))
+    run(`rm -rfv TEMP_gpaw_H2/\*`)
+    write_gpaw( Ham, use_smearing=true, kT=0.01, prefix_dir="./TEMP_gpaw_H2" )
+    cd("./TEMP_gpaw_H2")
+    run(pipeline(`gpaw-python main.py`, stdout="LOG1"))
     cd("../")
 
-    energies = read_abinit_etotal("TEMP_abinit/LOG1")
-    println(energies)
+    energies = read_gpaw_etotal("TEMP_gpaw_H2/LOG1")
+    #println(energies)
 end
 
 
@@ -40,15 +40,13 @@ function test_Al_fcc()
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc, xcfunc="LDA",
                        Nspin=1, meshk=[8,8,8], extra_states=4 )
 
-    write_gpaw( Ham, use_smearing=true, kT=0.01, prefix_dir="./" )
-
-    #run(`rm -rfv TEMP_abinit/\*`)
-    #write_abinit( Ham, use_smearing=true, kT=0.01, prefix_dir="./TEMP_abinit/" )
-    #cd("./TEMP_abinit")
-    #run(pipeline(`abinit`, stdin="FILES", stdout="LOG1"))
+    #run(`rm -rfv TEMP_gpaw/\*`)
+    #write_gpaw( Ham, use_smearing=true, kT=0.01, prefix_dir="./TEMP_gpaw" )
+    #cd("./TEMP_gpaw")
+    #run(pipeline(`gpaw-python main.py`, stdout="LOG1"))
     #cd("../")
-#
-#    #energies = read_abinit_etotal("TEMP_abinit/LOG1")
+
+    energies = read_gpaw_etotal("TEMP_gpaw_Al/LOG1")
     #println(energies)
 
 end
@@ -68,19 +66,10 @@ function test_Pt_fcc()
     ecutwfc = 30.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc, xcfunc="PBE",
                         meshk=[3,3,3], extra_states=4 )
-    
-    run(`rm -rfv TEMP_abinit/\*`)
-    write_abinit( Ham, use_smearing=true, kT=0.01, prefix_dir="TEMP_abinit/" )
-    cd("./TEMP_abinit")
-    run(pipeline(`abinit`, stdin="FILES", stdout="LOG1"))
-    cd("../")
-
-    energies = read_abinit_etotal("TEMP_abinit/LOG1")
-    println(energies)
 
 end
 
 #test_CuSO4()
-#test_H2()
-test_Al_fcc()
+test_H2()
+#test_Al_fcc()
 #test_Pt_fcc()
