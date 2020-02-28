@@ -1,3 +1,12 @@
+"""
+Write a GPAW input script (Python code) from a given `Hamiltonian` instance.
+
+FIXME:
+The keyword `etot_conv_thr` is in the function argument but it is not used.
+There are several convergence criteria for GPAW. The energy criteria is defined
+per number of electrons.
+For the moment I decided to use the default criteria.
+"""
 function write_gpaw( Ham::Hamiltonian; filename="main.py",
                      prefix_dir="./",
                      use_smearing=false, kT=0.001,
@@ -37,7 +46,7 @@ function write_gpaw( Ham::Hamiltonian; filename="main.py",
     @printf(f, "    ]\n")
     @printf(f, ")\n")
 
-    @printf(f, "atoms.write('ATOMS.xsf')\n")
+    @printf(f, "atoms.write('ATOMS.xsf')\n") # for comparison
 
     @printf(f, "ecutwfc = %f*Hartree\n", Ham.pw.ecutwfc)
     @printf(f, "calc = GPAW( mode=PW(ecutwfc),\n")
@@ -51,8 +60,10 @@ function write_gpaw( Ham::Hamiltonian; filename="main.py",
     if use_smearing
         @printf(f, "             occupations=FermiDirac(%f*Hartree),\n", kT)
     else
-        @printf(f, "              occupations=FermiDirac(0),\n")
+        @printf(f, "             occupations=FermiDirac(0),\n")
     end
+
+    # 'gamma': True is set for unshifted kpoint mesh
     meshk = Ham.pw.gvecw.kpoints.mesh
     @printf(f, "             kpts={'size': (%d, %d, %d), 'gamma':True},\n", meshk[1], meshk[2], meshk[3])
     @printf(f, "             txt='-')\n")
