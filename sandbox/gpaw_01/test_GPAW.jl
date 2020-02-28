@@ -15,11 +15,11 @@ function test_H2()
     ecutwfc = 15.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc )
 
-    #run(`rm -rfv TEMP_gpaw_H2/\*`)
-    #write_gpaw( Ham, use_smearing=true, kT=0.01, prefix_dir="./TEMP_gpaw_H2" )
-    #cd("./TEMP_gpaw_H2")
-    #run(pipeline(`gpaw-python main.py`, stdout="LOG1"))
-    #cd("../")
+    run(`rm -rfv TEMP_gpaw_H2/\*`)
+    write_gpaw( Ham, prefix_dir="./TEMP_gpaw_H2" )
+    cd("./TEMP_gpaw_H2")
+    run(pipeline(`gpaw-python main.py`, stdout="LOG1"))
+    cd("../")
 
     energies = read_gpaw_etotal("TEMP_gpaw_H2/LOG1")
     #println(energies)
@@ -38,11 +38,11 @@ function test_Si_fcc()
     ecutwfc = 15.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3] )
 
-    #run(`rm -rfv TEMP_gpaw_Si_fcc/\*`)
-    #write_gpaw( Ham, use_smearing=true, kT=0.01, prefix_dir="./TEMP_gpaw_Si_fcc" )
-    #cd("./TEMP_gpaw_Si_fcc")
-    #run(pipeline(`gpaw-python main.py`, stdout="LOG1"))
-    #cd("../")
+    run(`rm -rfv TEMP_gpaw_Si_fcc/\*`)
+    write_gpaw( Ham, prefix_dir="./TEMP_gpaw_Si_fcc" )
+    cd("./TEMP_gpaw_Si_fcc")
+    run(pipeline(`gpaw-python main.py`, stdout="LOG1"))
+    cd("../")
 
     energies = read_gpaw_etotal("TEMP_gpaw_Si_fcc/LOG1")
     println(energies)
