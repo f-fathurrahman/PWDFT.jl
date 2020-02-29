@@ -364,7 +364,7 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
         end
 
         if Nconverges >= 2
-            @printf("TRDCM is converged: iter: %d , diffE = %10.7e\n", iter, diffE)
+            @printf("\nTRDCM is converged in iter: %d\n", iter)
             break
         end
 

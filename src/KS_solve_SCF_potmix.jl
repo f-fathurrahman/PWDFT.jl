@@ -217,7 +217,7 @@ function KS_solve_SCF_potmix!(
 
         if (Nconverges >= 2)
             if verbose
-                @printf("SCF_potmix is converged in %d iterations\n", iterSCF)
+                @printf("\nSCF_potmix is converged in iter: %d\n", iterSCF)
             end
             break
         end

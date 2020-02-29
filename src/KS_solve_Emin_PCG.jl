@@ -198,7 +198,7 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
 
         if Nconverges >= 2
             if verbose
-                @printf("\nEmin_PCG is converged in iter: %d , diffE = %10.7e\n", iter, diffE)
+                @printf("\nEmin_PCG is converged in iter: %d\n", iter)
             end
             break
         end

@@ -251,7 +251,7 @@ function KS_solve_DCM!( Ham::Hamiltonian;
 
         if Nconverges >= 2
             if verbose
-                @printf("\nDCM is converged in iter: %d , diffE = %10.7e\n", iter, diffE)
+                @printf("\nDCM is converged in iter: %d\n", iter)
             end
             break
         end
