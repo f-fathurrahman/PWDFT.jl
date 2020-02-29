@@ -19,7 +19,27 @@ H_{\mathrm{KS}} \psi_{i\mathbf{k}}(\mathbf{r}) =
 
 \input{images/Energies_struct}
 
-Calculation of electron density and total energy
+\seubsection{Electron density}
+
+Electron density $\rho(\mathbf{r})$ is calculated as:
+\begin{equation}
+\rho(\mathbf{r}) = \sum_{i=1}^{N_{\mathrm{occ}}} f_{i} \psi^{*}_{i}(\mathbf{r})
+\psi_{i}(\mathbf{r})
+\end{equation}
+
+Function: \jlinline{calc_rhoe!} and \jlinline{calc_rhoe}.
+
+\subsection{Kinetic energy}
+
+Kinetic energy:
+
+
+
+\subsection{Local and nonlocal pseudopotential energy}
+
+
+\subsection{Hartree energy}
+
 
 \subsection{XC energy and potential}
 
