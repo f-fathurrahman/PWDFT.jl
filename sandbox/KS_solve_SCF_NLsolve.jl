@@ -19,7 +19,7 @@ end
 
 
 # A draft implementation of using NLsolve for
-function KS_solve_SCF_NLsolve!( Ham::Hamiltonian )
+function KS_solve_SCF_NLsolve!( Ham::Hamiltonian; use_smearing=false, kT=1e-3 )
 
     Random.seed!(1234)
 
@@ -45,32 +45,44 @@ function KS_solve_SCF_NLsolve!( Ham::Hamiltonian )
     ethr_last = 1e-5
     betamix = 1.0 # use Rhoe_out directly
 
+    Entropy = 0.0
+    E_fermi = 0.0
+    Nelectrons = Ham.electrons.Nelectrons
+    Focc = copy(Ham.electrons.Focc) # make sure to use the copy
+    wk = Ham.pw.gvecw.kpoints.wk
+
     function density_map( Rhoe_in )
-    
         update!( Ham, Rhoe_in )
-    
         evals =
         diag_LOBPCG!( Ham, psiks, verbose=false, verbose_last=false, tol=ethr_last,
                       Nstates_conv=Nstates_occ )
+        
+        if use_smearing
+            Focc, E_fermi = calc_Focc( Nelectrons, wk, kT, evals, Nspin )
+            Entropy = calc_entropy( wk, kT, evals, E_fermi, Nspin )
+            Ham.electrons.Focc = copy(Focc)
+        end
 
         Rhoe_out = calc_rhoe( Ham, psiks )
-
         # simple mixing here?
-        Rhoe_next = betamix*Rhoe_out + (1 - betamix)*Rhoe_in
-        return Rhoe_next
-
+        #Rhoe_next = betamix*Rhoe_out + (1 - betamix)*Rhoe_in
+        return Rhoe_out
     end
 
     NiterMax = 100
 
-    fpres = NLsolve.nlsolve(x -> density_map(x) - x, Rhoe,
-            m=5, method=:anderson, xtol=1e-5, ftol=0.0, show_trace=true,
-            iterations=NiterMax )
-    #( fixpoint=fpres.zero, converged=NLsolve.converged(fpres) )
+    println("\nNLsolve starting: \n")
 
-    #solver = scf_NLsolve_solver()
-    #fpres = solver(density_map, Rhoe, 1e-5, NiterMax)
+    fpres = NLsolve.nlsolve(x -> density_map(x) - x, Rhoe,
+            m=5, method=:anderson, xtol=1e-6, ftol=0.0, show_trace=true,
+            iterations=NiterMax )
     
+    println("\nNLsolve is converged in iter: ", fpres.iterations)
+    
+    #println(fieldnames(typeof(fpres)))
+    # fieldnames: (:method, :initial_x, :zero, :residual_norm, :iterations, :x_converged,
+    # :xtol, :f_converged, :ftol, :trace, :f_calls, :g_calls)
+
     update!( Ham, fpres.zero )
 
     println()
@@ -78,6 +90,9 @@ function KS_solve_SCF_NLsolve!( Ham::Hamiltonian )
     println("------------")
 
     Ham.energies = calc_energies( Ham, psiks )
+    if use_smearing
+        Ham.energies.mTS = Entropy
+    end
     println( Ham.energies )
 
 end
