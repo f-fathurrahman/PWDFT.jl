@@ -127,7 +127,7 @@ function write_pwscf( Ham::Hamiltonian; filename="PWINPUT",
 
     @printf(f, "&ELECTRONS\n")
     @printf(f, "  electron_maxstep = 150\n")
-    @printf(f, "  mixing_beta = 0.1\n")
+    #@printf(f, "  mixing_beta = 0.1\n") # use default mixing_beta
     @printf(f, "  conv_thr = %.10e\n", etot_conv_thr)
     @printf(f, "/\n\n")
 
