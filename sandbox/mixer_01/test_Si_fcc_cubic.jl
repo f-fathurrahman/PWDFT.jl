@@ -44,9 +44,7 @@ function precKerker( pw::PWGrid, R::Array{Float64,2} )
     Rout = zeros(Float64, Npoints, Nspin)
 
     for ispin in 1:Nspin
-
         Rg[:,ispin] = R_to_G( pw, R[:,ispin] )
-        
         for ig = 2:Ng
             ip = idx_g2r[ig]
             Rg[ip,ispin] = G2[ig]/(G2[ig] + Ag)*Rg[ip,ispin]
@@ -54,9 +52,6 @@ function precKerker( pw::PWGrid, R::Array{Float64,2} )
         end
         Rout[:,ispin] = real( G_to_R(pw, Rg[:,ispin]) )
     end
-
-    println("norm in:  ", norm(R))
-    println("norm out: ", norm(Rout))
 
     return Rout
 end
@@ -104,9 +99,8 @@ end
 
 
 
-
 function my_scf!( Ham::Hamiltonian; NiterMax=150, betamix=0.2, etot_conv_thr=1e-6 )
-    
+
     pw = Ham.pw
     Nelectrons = Ham.electrons.Nelectrons
 
@@ -140,7 +134,11 @@ function my_scf!( Ham::Hamiltonian; NiterMax=150, betamix=0.2, etot_conv_thr=1e-
         
         Rhoe_new = calc_rhoe( Ham, psiks )
         
-        println("norm diff Rhoe = ", norm(Rhoe_new - Rhoe))
+        ss = 0.0
+        for i in length(Rhoe)
+            ss = ss + (Rhoe_new[i] - Rhoe[i])^2
+        end
+        diffRhoe = sqrt(ss/Npoints)
 
         #Rhoe = betamix*Rhoe_new + (1-betamix)*Rhoe
         
@@ -156,7 +154,7 @@ function my_scf!( Ham::Hamiltonian; NiterMax=150, betamix=0.2, etot_conv_thr=1e-
         Etot = sum(Ham.energies)
         diffEtot = abs(Etot - Etot_old)
         
-        @printf("%5d %18.10f %18.10e\n", iterSCF, Etot, diffEtot)
+        @printf("%5d %18.10f %18.10e %18.10e\n", iterSCF, Etot, diffEtot, diffRhoe)
         
         if diffEtot <= etot_conv_thr
             Nconv = Nconv + 1
@@ -182,8 +180,8 @@ function main()
     Random.seed!(1234)
     Ham = init_Hamiltonian()
     #my_scf!( Ham, NiterMax=100, betamix=0.5 )
-    #KS_solve_SCF!( Ham, mix_method="linear_adaptive" )
-    KS_solve_SCF_NLsolve!( Ham )
+    KS_solve_SCF!( Ham, mix_method="linear_adaptive", betamix=0.1 )
 end
 
 main()
+@time main()
