@@ -180,7 +180,8 @@ function main()
     Random.seed!(1234)
     Ham = init_Hamiltonian()
     #my_scf!( Ham, NiterMax=100, betamix=0.5 )
-    KS_solve_SCF!( Ham, mix_method="linear_adaptive", betamix=0.1 )
+    #KS_solve_SCF!( Ham, mix_method="linear_adaptive", betamix=0.1 )
+    KS_solve_SCF_potmix!( Ham, mix_method="linear_adaptive", betamix=0.1 )
 end
 
 main()
