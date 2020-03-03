@@ -1,8 +1,12 @@
 """
-Solves Kohn-Sham problem using traditional self-consistent field (SCF)
-iterations with potential mixing.
+    KS_solve_SCF_potmix!( Ham, kwargs... )
 
-TODO: Not all mixing methods are implemented.
+Solve Kohn-Sham problem using traditional self-consistent field (SCF)
+iterations with potential mixing. Hartree and XC potentials are
+mixed separately.
+
+Most arguments in `KS_solve_SCF!` are supported however not all mixing
+methods are implemented.
 """
 function KS_solve_SCF_potmix!(
     Ham::Hamiltonian;

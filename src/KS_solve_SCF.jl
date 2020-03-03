@@ -1,6 +1,18 @@
 """
-Solves Kohn-Sham problem using traditional self-consistent field (SCF)
+    KS_solve_SCF!( Ham, kwargs... )
+
+Solve Kohn-Sham problem using traditional self-consistent field (SCF)
 iterations with density mixing.
+
+Commonly used arguments:
+- `NiterMax`: maximum number of SCF iterations.
+- `etot_conv_thr`: total energy convergence criteria. SCF will stop if difference
+  between total energy in the current iteration and the previous SCF iteration is
+  less than `etot_conv_thr` and this should happen in two consecutive times.
+- `mix_method`: mixing method
+- `betamix`: linear mixing parameter
+- `use_smearing`: if true then smearing scheme (fractional occupation) is used
+- `kT`: smearing parameter
 """
 function KS_solve_SCF!(
     Ham::Hamiltonian ;

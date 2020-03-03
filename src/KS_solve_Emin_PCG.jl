@@ -1,5 +1,7 @@
 """
-Solves Kohn-Sham problem using direct energy minimization as described
+    KS_solve_Emin_PCG!( Ham, kwargs... )
+
+Solve Kohn-Sham problem using direct energy minimization as described
 by Ismail-Beigi and Arias.
 """
 function KS_solve_Emin_PCG!( Ham::Hamiltonian;

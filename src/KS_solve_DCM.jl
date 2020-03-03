@@ -1,6 +1,8 @@
 """
-Solves Kohn-Sham problem using direct constrained minimization (DCM) as described
-by Prof. Chao Yang.
+    KS_solve_DCM!( Ham, kwargs... )
+
+Solve Kohn-Sham problem using direct constrained minimization (DCM) as described
+by Prof. Chao Yang (KSSOLV).
 """
 function KS_solve_DCM!( Ham::Hamiltonian;
                         NiterMax = 100, startingwfc=:random,

@@ -1,6 +1,8 @@
 """
-Solves Kohn-Sham problem using trust-region direct constrained minimization
-(DCM) as described by Prof. Chao Yang.
+    KS_solve_TRDCM!( Ham, kwargs... )
+
+Solve Kohn-Sham problem using trust-region direct constrained minimization
+(TRDCM) as described by Prof. Chao Yang (KSSOLV).
 """
 function KS_solve_TRDCM!( Ham::Hamiltonian;
                           NiterMax = 100, startingwfc=:random,
