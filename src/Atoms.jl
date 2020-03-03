@@ -15,6 +15,8 @@ end
 
 
 """
+    atoms = Atoms()
+
 Creates an instance of `Atoms`.
 
 If no arguments are given, then a dummy `Atoms` is returned.
@@ -73,9 +75,13 @@ function Atoms( ;xyz_file="", xyz_string="", xyz_string_frac="", ext_xyz_file=""
 end
 
 
-# extended XYZ format used in ASE
-function init_atoms_xyz_ext( filexyz; in_bohr=false, verbose=false )
-    f = open(filexyz, "r")
+"""
+    atoms = init_atoms_xyz_ext( xyz_file )
+
+Create an instance of `Atoms` from a file in extended XYZ format (used in ASE).
+"""
+function init_atoms_xyz_ext( xyz_file; in_bohr=false, verbose=false )
+    f = open(xyz_file, "r")
     l = readline(f)
     Natoms = parse(Int64, l)
     positions = zeros(3,Natoms)
@@ -127,7 +133,9 @@ end
 
 
 """
-Creates an instance of `Atoms` from a simple xyz file.
+    atoms = init_atoms_xyz( xyz_file )
+
+Create an instance of `Atoms` from a simple xyz file.
 """
 function init_atoms_xyz(xyz_file; in_bohr=false, verbose=false)
     f = open(xyz_file, "r")
@@ -171,7 +179,9 @@ function init_atoms_xyz(xyz_file; in_bohr=false, verbose=false)
 end
 
 """
-Just like `init_atoms_xyz` but instead of file, the contents (of type String)
+    atoms = init_atoms_xyz_string( str )
+
+Just like `init_atoms_xyz` but instead of file, the contents (of type `String`)
 are directly feed to the function.
 """
 function init_atoms_xyz_string(str::String; in_bohr=false, verbose=false)

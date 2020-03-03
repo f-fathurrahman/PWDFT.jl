@@ -15,6 +15,32 @@ mutable struct Hamiltonian
     ispin::Int64 # current spin index
 end
 
+"""
+    Ham = Hamiltonian(...)
+
+Create an instance of `Hamiltonian`.
+
+Mandatory arguments:
+
+- `atoms`: an instance of `Atoms`
+- `pspfiles`: an array of `String` containing path to the pseudopotential files.
+  They must be given such that they match the order of `atoms.SpeciesSymbols`.
+- `ecutwfc`: energy cutoff for constructing plane wave basis set.
+
+Thw following is the most commonly used optional arguments:
+- `Nspin`: number of spin components. Only `Nspin=1` (no spin polarization) and
+  `Nspin=2` (spin polarized) are supported.
+- `meshk`: an array of three integers specifying grid size for Monkhorst-Pack grid.
+  They will be reduced according the cell symmetry.
+  This should be specified for crystalline systems.
+- `shiftk`: specifying whether the grid will be shifted or not (using PWSCF convention).
+  Presently only `[0,0,0]` is tested.
+- `extra_states`: number of empty states. This must be specified for metallic systems.
+- `xcfunc`: currently only support "VWN" or "PBE".
+- `use_symmetry`: whether symmetry is used or not.
+- `Ns_`: a tuple of three integers for overriding FFT grid.
+- `use_xc_internal`: if false then Libxc will be used.
+"""
 function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
                       ecutwfc::Float64 ;
                       Nspin=1,
@@ -218,10 +244,7 @@ function Hamiltonian( atoms::Atoms, ecutwfc::Float64;
                         Pspots, pspotNL, xcfunc, xc_calc, ik, ispin )
 end
 
-
-"""
-Given rhoe in real space, update Ham.rhoe, Hartree and XC potentials.
-"""
+# FIXME: should be merged with Array{Float64,2} version.
 function update!(Ham::Hamiltonian, rhoe::Array{Float64,1})
     # assumption Nspin = 1
     Ham.rhoe[:,1] = rhoe
@@ -239,6 +262,11 @@ function update!(Ham::Hamiltonian, rhoe::Array{Float64,1})
     return
 end
 
+"""
+    update!(Ham, rhoe)
+
+Update Ham.rhoe and calculate Hartree and XC potentials for given `rhoe` in real space.
+"""
 function update!(Ham::Hamiltonian, rhoe::Array{Float64,2})
     Nspin = size(rhoe)[2]
     if Nspin == 1

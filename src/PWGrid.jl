@@ -38,14 +38,14 @@ struct PWGrid
 end
 
 """
-Creates an instance of `PWGrid` given the following inputs:
+    pw = PWGrid( ecutwfc, LatVecs [, kpoints] )
+
+Create an instance of `PWGrid` given the following inputs:
 
 - `ecutwfc`: cutoff energy for wave function
-
 - `LatVecs`: unit cell lattice vectors.
-  Convention used: The three lattice vectors v1, v2, and v3 arranged are
+  Convention used: The three lattice vectors v1, v2, and v3 are assumed to be
   arranged **by column**.
-
 - `kpoints`: optional, an instance of `KPoints`.
 """
 function PWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2}; kpoints=nothing, Ns_=(0,0,0) )
@@ -53,7 +53,6 @@ function PWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2}; kpoints=nothing, N
     ecutrho = 4.0*ecutwfc
     #
     RecVecs = 2*pi*inv(Matrix(LatVecs'))
-    #RecVecs = 2*pi*invTrans_m3x3(LatVecs)
 
     CellVolume = abs(det(LatVecs))
     #
@@ -138,9 +137,7 @@ end
 Creates an instance of `GVectors`, given the following inputs:
 
 - `Ns`: sampling points
-
 - `RecVecs`: reciprocal lattice vectors
-
 - `ecutrho`: cutoff energy (in hartree)
 """
 function init_gvec( Ns, RecVecs, ecutrho )
