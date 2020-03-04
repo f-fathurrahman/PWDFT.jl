@@ -39,7 +39,7 @@ function test_01( diag_method::String )
     # create random k-point
     kpoints.k = kpoints.RecVecs*rand( 0.0:0.01:0.5, (3,1) )
 
-    pspfiles = ["../pseudopotentials/pade_gth/H-q1.gth"]
+    pspfiles = [joinpath(DIR_PSP, "H-q1.gth")]
     ecutwfc = 15.0
     Nextra = 20
     Ham = free_electron_Hamiltonian(

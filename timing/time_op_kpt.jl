@@ -13,7 +13,7 @@ function time_op_kpt()
         Pt  0.0  0.0  0.0
         """, LatVecs=gen_lattice_fcc(3.9231*ANG2BOHR))
     
-    pspfiles = ["../pseudopotentials/pade_gth/Pt-q18.gth"]
+    pspfiles = [joinpath(DIR_PSP, "Pt-q18.gth")]
     ecutwfc = 15.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc,
                        meshk=[8,8,8], extra_states=4 )
