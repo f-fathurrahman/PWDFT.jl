@@ -10,7 +10,7 @@ per number of electrons.
 For the moment I decided to use the default criteria.
 """
 function write_gpaw( Ham::Hamiltonian; filename="main.py",
-                     prefix_dir="./",
+                     prefix_dir="./", setup_sc=false,
                      use_smearing=false, kT=0.001,
                      etot_conv_thr=1e-6 )
 
@@ -63,7 +63,11 @@ function write_gpaw( Ham::Hamiltonian; filename="main.py",
     @printf(f, "calc = GPAW( mode=PW(ecutwfc),\n")
 
     # HGH pseudopotentials.
-    @printf(f, "             setups='hgh',\n")
+    if setup_sc == true
+        @printf(f, "             setups='hgh.sc',\n")
+    else
+        @printf(f, "             setups='hgh',\n")
+    end
     
     # Default XC functional (via LibXC)
     @printf(f, "             xc='LDA_X+LDA_C_VWN',\n")
