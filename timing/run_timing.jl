@@ -9,6 +9,8 @@ const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
 const DIR_STRUCTURES = joinpath(DIR_PWDFT, "structures")
 const DIR_TIMING = joinpath(DIR_PWDFT, "timing")
 
+include(joinpath(DIR_PWDFT, "utilities", "PWSCF.jl"))
+
 import Dates
 function time_stamp(message::String)
     t1 = Dates.now()
