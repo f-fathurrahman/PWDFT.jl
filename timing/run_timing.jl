@@ -40,11 +40,13 @@ if Nargs == 0
         "time_gen_lattice.jl",
         "time_Atoms.jl",
         "time_PWGrid.jl",
+        "time_SymmetryInfo.jl",
+        "time_KPoints.jl",
         "time_calc_rhoe.jl",
         "time_Hamiltonian_H.jl",
         "time_Hamiltonian_Pt.jl",
         "time_op_kpt.jl",
-        "time_op_kpt_PBE.jl",        
+        "time_op_kpt_PBE.jl",
     ]    
     for fil in FILELIST
         include(joinpath(DIR_TIMING, fil))
