@@ -42,6 +42,7 @@ if Nargs == 0
         "time_PWGrid.jl",
         "time_SymmetryInfo.jl",
         "time_KPoints.jl",
+        "time_RhoeSymmetrizer.jl",
         "time_calc_rhoe.jl",
         "time_Hamiltonian_H.jl",
         "time_Hamiltonian_Pt.jl",
