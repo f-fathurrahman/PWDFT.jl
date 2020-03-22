@@ -1,7 +1,8 @@
 using LinearAlgebra
 using Printf
-using PWDFT
 using Random
+
+using PWDFT
 
 const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
 const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
