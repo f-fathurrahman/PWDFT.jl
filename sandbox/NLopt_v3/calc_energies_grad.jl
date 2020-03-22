@@ -27,6 +27,23 @@ function calc_energies_grad!( Ham, psiks, g, Kg; skip_ortho=false )
     return sum( Ham.energies )
 end
 
+# Modify Ham and psiks
+function calc_energies_only!( Ham, psiks; skip_ortho=false )
+    if !skip_ortho
+        for i = 1:length(psiks)
+            ortho_sqrt!(psiks[i])
+        end
+    end
+
+    Rhoe = calc_rhoe( Ham, psiks )
+    update!( Ham, Rhoe )
+    
+    Ham.energies = calc_energies( Ham, psiks )
+
+    return sum( Ham.energies )
+end
+
+
 function calc_grad!( Ham::Hamiltonian, ψ, g )
     
     ik = Ham.ik
