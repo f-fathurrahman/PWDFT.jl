@@ -1,3 +1,22 @@
+function create_Ham_ZnO()
+    atoms = Atoms( xyz_string_frac=
+        """
+        4
+
+        Zn      0.3333333   0.6666667   0.0000000
+        Zn      0.6666667   0.3333333   0.5000000
+        O       0.3333333   0.6666667   0.3450000
+        O       0.6666667   0.3333333   0.8450000
+        """, in_bohr=true,
+        LatVecs = gen_lattice_hexagonal( 3.2495*ANG2BOHR, 5.2069*ANG2BOHR ) )
+
+    # Initialize Hamiltonian
+    pspfiles = [joinpath(DIR_PSP, "Zn-q12.gth"),
+                joinpath(DIR_PSP, "O-q6.gth")]
+    ecutwfc = 15.0
+    return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[4,4,4] )
+end
+
 function create_Ham_Si_fcc( ; xcfunc="VWN", Nspin=1 )
 
     atoms = Atoms(xyz_string_frac=

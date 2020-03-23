@@ -6,11 +6,11 @@ function linmin_quad!( Ham, psiks, g, Kg, d, α, αt, E )
     Nkspin = length(psiks)
 
     αPrev = 0.0
-    Eorig = E
+    E_orig = E
     gdotd = dot_BlochWavefunc(g,d) # directional derivative at starting point
-    for i in 1:Nkspin
-        println("dot g d: ", dot(g[i], d[i]))
-    end
+    #for i in 1:Nkspin
+    #    println("dot g d: ", dot(g[i], d[i]))
+    #end
     println("gdotd = ", gdotd)
 
     if gdotd >= 0.0
@@ -21,9 +21,13 @@ function linmin_quad!( Ham, psiks, g, Kg, d, α, αt, E )
 
     # These should be parameters
     N_α_adjust_max = 3
-    αt_min = 1e-10
+    αt_min = 1e-8 #1e-10
     αt_reduceFactor = 0.1 # should less than 1
     αt_increaseFactor = 3.0
+
+    E_trial = 0.0
+    
+    #psiks_t = deepcopy(psiks)
 
     for s in 1:N_α_adjust_max
         
@@ -40,23 +44,24 @@ function linmin_quad!( Ham, psiks, g, Kg, d, α, αt, E )
             psiks[i] = psiks[i] + (αt - αPrev)*d[i]
         end
         αPrev = αt
-        ET = calc_energies_only!( Ham, psiks )
-        println("Etot trial = ", ET)
+        #E_trial = calc_energies_only!( Ham, psiks_t )
+        E_trial = calc_energies_grad!( Ham, psiks, g, Kg )
+        println("E_trial = ", E_trial)
         
         # Check if step crossed domain of validity of parameter space:
-        if !isfinite(ET)
+        if !isfinite(E_trial)
             αt = αt * αt_reduceFactor
-            @printf("Test step failed, ET = %le, reducing αt to %le.\n", ET, αt)
+            @printf("Test step failed, E_trial = %le, reducing αt to %le.\n", E_trial, αt)
             continue
         end
 
 
         # Predict step size:
-        α = 0.5 * αt^2 *gdotd / (αt * gdotd + E - ET)
+        α = 0.5 * αt^2 *gdotd / (αt * gdotd + E - E_trial)
 
         # Check reasonableness of predicted step size:
         
-        if α < 0    
+        if α < 0
             # Curvature has the wrong sign
             # That implies ET < E, so accept step for now, and try descending further next time
             αt = αt * αt_increaseFactor;
@@ -64,6 +69,7 @@ function linmin_quad!( Ham, psiks, g, Kg, d, α, αt, E )
             
             E = calc_energies_grad!( Ham, psiks, g, Kg )
             @printf("Before return: α = %f, αt = %f\n", α, αt)
+            @printf("linmin: dEtot = %18.10e\n", E_orig - E)
             return true, E, α, αt  # also return new energy
         end
         
@@ -92,6 +98,7 @@ function linmin_quad!( Ham, psiks, g, Kg, d, α, αt, E )
 
 
     # Actual step:
+    α_total = 0.0
     for s in 1:N_α_adjust_max
         
         # Try the step:
@@ -99,9 +106,11 @@ function linmin_quad!( Ham, psiks, g, Kg, d, α, αt, E )
         for i in 1:Nkspin
             psiks[i] = psiks[i] + (α - αPrev)*d[i]
         end
+        α_total = α_total + (α - αPrev)
         αPrev = α
         
         E = calc_energies_grad!( Ham, psiks, g, Kg )
+        @printf("linmin actual step: α = %18.10e E = %18.10f\n", α, E)
         
         if !isfinite(E)
             α = α * αt_reduceFactor;
@@ -109,9 +118,9 @@ function linmin_quad!( Ham, psiks, g, Kg, d, α, αt, E )
             continue
         end
         
-        if E > Eorig
+        if E > E_orig
             α = α * αt_reduceFactor
-            @printf("Step increased by: %le, reducing α to %le.\n", E-Eorig, α)
+            @printf("Step increased by: %le, reducing α to %le.\n", E - E_orig, α)
             continue
         end
         
@@ -119,11 +128,18 @@ function linmin_quad!( Ham, psiks, g, Kg, d, α, αt, E )
         break
     end
     
-    if !isfinite(E) || (E > Eorig)
+    if !isfinite(E) || (E > E_orig)
         @printf("Step failed to reduce after %d attempts. Quitting step.\n", N_α_adjust_max)
+        #println("α_total = ", α_total)
         return false, E, α, αt
     end
     
+    dE_trial = E_trial - E
+    if dE_trial < 0.0
+        @printf("*** WARNING linmin: E_trial - E is negative: %18.10e\n", dE_trial)
+    end
+    @printf("linmin: dEtot = %18.10e\n", E_orig - E)
+
     return true, E, α, αt
 
 end
