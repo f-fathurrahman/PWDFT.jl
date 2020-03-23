@@ -6,6 +6,7 @@ using PWDFT
 
 const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
 const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
+const DIR_STRUCTURES = joinpath(DIR_PWDFT, "structures")
 
 include("calc_energies_grad.jl")
 include("create_Ham.jl")
@@ -18,11 +19,13 @@ function main()
     
     #Ham = create_Ham_H2()
     #Ham = create_Ham_H_atom()
-    Ham = create_Ham_Si_fcc()
-    psiks = rand_BlochWavefunc( Ham )
+    #Ham = create_Ham_Si_fcc()
+    #Ham = create_Ham_GaAs()
+    Ham = create_Ham_NH3()
     
-    KS_solve_Emin_PCG_new!( Ham, psiks )
-
+    psiks = rand_BlochWavefunc( Ham )
+    #KS_solve_Emin_PCG_new!( Ham, psiks, startingrhoe=:random, skip_initial_diag=false, NiterMax=50 )
+    KS_solve_SCF!( Ham, mix_method="anderson" )
 end
 
 main()

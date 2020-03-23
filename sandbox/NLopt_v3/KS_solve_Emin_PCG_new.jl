@@ -1,5 +1,5 @@
 function KS_solve_Emin_PCG_new!( Ham, psiks;
-    etot_conv_thr=1e-6, skip_initial_diag=false, startingrhoe=:gaussian
+    etot_conv_thr=1e-6, skip_initial_diag=false, startingrhoe=:gaussian, NiterMax=5
 )
 
     Nkspin = length(psiks)
@@ -35,6 +35,10 @@ function KS_solve_Emin_PCG_new!( Ham, psiks;
 
     Etot = calc_energies_grad!( Ham, psiks, g, Kg, skip_ortho=true )
     println("Starting Etot = ", Etot)
+    for i in 1:Nkspin
+        println("dot g g: ", dot(g[i], g[i]))
+    end
+    println("dot_BlochWavefunc(g,g) = ", dot_BlochWavefunc(g,g))
 
     d = deepcopy(Kg)
 
@@ -56,13 +60,15 @@ function KS_solve_Emin_PCG_new!( Ham, psiks;
     gKnormPrev = 0.0
     force_grad_dir = true
 
-    NiterMax = 50
-
     Etot_old = Etot
     Nconverges = 0
     
     for iter in 1:NiterMax
+
+        println("\nBegin iter = ", iter)
+
         gKnorm = dot_BlochWavefunc(g, Kg)
+        println("gKnorm = ", gKnorm)
 
         β = 0.0
         
@@ -76,9 +82,11 @@ function KS_solve_Emin_PCG_new!( Ham, psiks;
             end
 
             β = (gKnorm - dotgPrevKg)/gKnormPrev
+            println("dotgPrevKg = ", dotgPrevKg)
+            println("gKnorm - dotgPrevKg = ", gKnorm - dotgPrevKg)
+            println("gKnormPrev = ", gKnormPrev)
         end
 
-        println("\nBegin iter = ", iter)
         println("β raw = ", β)
         if β < 0.0
             println("Resetting β")
@@ -102,12 +110,16 @@ function KS_solve_Emin_PCG_new!( Ham, psiks;
         constrain_search_dir!( d, psiks )
 
         # Line minimization
-        #linmin_success, Etot, α, αt = linmin_quad!( Ham, psiks, g, Kg, d, α, αt, Etot )
-        #println("linmin_success = ", linmin_success)
-        #@printf("α = %f, αt = %f\n", α, αt)
-1
-        linmin_success = true
-        Etot = linmin_grad!( Ham, psiks, g, Kg, d )
+        linmin_success, Etot, α, αt = linmin_quad!( Ham, psiks, g, Kg, d, α, αt, Etot )
+        println("linmin_success = ", linmin_success)
+        @printf("α = %f, αt = %f\n", α, αt)
+        for i in 1:Nkspin
+            println("dot g: ", dot(g[i], g[i]))
+        end
+        println("dot_BlochWavefunc(g,g) = ", dot_BlochWavefunc(g,g))
+
+        #linmin_success = true
+        #Etot = linmin_grad!( Ham, psiks, g, Kg, d )
 
         if linmin_success
             if updateTestStepSize
@@ -140,10 +152,13 @@ function KS_solve_Emin_PCG_new!( Ham, psiks;
             end
         end
         
-        diffE = abs(Etot - Etot_old)
-        @printf("Emin_PCG_new step %8d = %18.10f %10.7e\n", iter, Etot, diffE)
-        
-        if diffE < etot_conv_thr
+        diffE = Etot_old - Etot
+        @printf("Emin_PCG_new step %8d = %18.10f   %10.7e\n", iter, Etot, diffE)
+        if diffE < 0.0
+            println("*** WARNING: Etot is not decreasing")
+        end
+
+        if abs(diffE) < etot_conv_thr
             Nconverges = Nconverges + 1
         else
             Nconverges = 0
@@ -174,7 +189,7 @@ end
 
 function dot_BlochWavefunc(x::BlochWavefunc, y::BlochWavefunc)
     Nkspin = length(x)    
-    res = 2.0
+    res = 0.0 #2.0
     for i in 1:Nkspin
         res = res + real( dot(x[i], y[i]) )*2.0
     end

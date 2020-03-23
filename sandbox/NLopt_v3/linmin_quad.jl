@@ -2,12 +2,18 @@
 # alpha return E
 # modify psiks
 function linmin_quad!( Ham, psiks, g, Kg, d, α, αt, E )
+
+    Nkspin = length(psiks)
+
     αPrev = 0.0
     Eorig = E
     gdotd = dot_BlochWavefunc(g,d) # directional derivative at starting point
+    for i in 1:Nkspin
+        println("dot g d: ", dot(g[i], d[i]))
+    end
 
     if gdotd >= 0.0
-        @printf("Bad step direction: g.d > 0.0\n")
+        @printf("Bad step direction: g.d = %f > 0.0\n", gdotd)
         α = αPrev
         return false, E, α, αt
     end
@@ -17,8 +23,6 @@ function linmin_quad!( Ham, psiks, g, Kg, d, α, αt, E )
     αt_min = 1e-10
     αt_reduceFactor = 0.1 # should less than 1
     αt_increaseFactor = 3.0
-
-    Nkspin = length(psiks)
 
     for s in 1:N_α_adjust_max
         

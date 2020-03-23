@@ -26,6 +26,24 @@ function create_Ham_Si_fcc( ; xcfunc="VWN", Nspin=1 )
     end
 end
 
+function create_Ham_GaAs()
+
+    # Atoms
+    atoms = Atoms( xyz_string_frac=
+        """
+        2
+
+        Ga  0.0   0.0   0.0
+        As  0.25  0.25  0.25
+        """, in_bohr=true, LatVecs = gen_lattice_fcc(10.6839444516) )
+
+    # Initialize Hamiltonian
+    pspfiles = [joinpath(DIR_PSP, "Ga-q3.gth"),
+                joinpath(DIR_PSP, "As-q5.gth")]
+    ecutwfc = 15.0
+    return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3] )
+end
+
 function create_Ham_H2()
     atoms = Atoms(xyz_string=
         """
@@ -53,4 +71,18 @@ function create_Ham_H_atom()
 
     ecutwfc = 15.0
     return Hamiltonian( atoms, pspfiles, ecutwfc )
+end
+
+function create_Ham_NH3()
+    # Atoms
+    atoms = init_atoms_xyz(joinpath(DIR_STRUCTURES,"NH3.xyz"))
+    atoms.LatVecs = gen_lattice_cubic(16.0)
+
+    # Initialize Hamiltonian
+    ecutwfc = 15.0
+    pspfiles = [joinpath(DIR_PSP, "N-q5.gth"),
+                joinpath(DIR_PSP, "H-q1.gth")]
+    Ham = Hamiltonian( atoms, pspfiles, ecutwfc )
+
+    return Ham
 end
