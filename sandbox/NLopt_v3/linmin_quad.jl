@@ -11,6 +11,7 @@ function linmin_quad!( Ham, psiks, g, Kg, d, α, αt, E )
     for i in 1:Nkspin
         println("dot g d: ", dot(g[i], d[i]))
     end
+    println("gdotd = ", gdotd)
 
     if gdotd >= 0.0
         @printf("Bad step direction: g.d = %f > 0.0\n", gdotd)

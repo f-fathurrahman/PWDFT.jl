@@ -1,5 +1,5 @@
 function KS_solve_Emin_PCG_new!( Ham, psiks;
-    etot_conv_thr=1e-6, skip_initial_diag=false, startingrhoe=:gaussian, NiterMax=5
+    etot_conv_thr=1e-7, skip_initial_diag=false, startingrhoe=:gaussian, NiterMax=5
 )
 
     Nkspin = length(psiks)
@@ -114,7 +114,7 @@ function KS_solve_Emin_PCG_new!( Ham, psiks;
         println("linmin_success = ", linmin_success)
         @printf("α = %f, αt = %f\n", α, αt)
         for i in 1:Nkspin
-            println("dot g: ", dot(g[i], g[i]))
+            println("dot g g: ", dot(g[i], g[i]))
         end
         println("dot_BlochWavefunc(g,g) = ", dot_BlochWavefunc(g,g))
 
