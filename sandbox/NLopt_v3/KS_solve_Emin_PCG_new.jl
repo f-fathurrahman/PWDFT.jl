@@ -1,5 +1,5 @@
 function KS_solve_Emin_PCG_new!( Ham, psiks;
-    etot_conv_thr=1e-7, skip_initial_diag=false, startingrhoe=:gaussian, NiterMax=5
+    etot_conv_thr=1e-6, skip_initial_diag=false, startingrhoe=:gaussian, NiterMax=5
 )
 
     Nkspin = length(psiks)
@@ -70,8 +70,6 @@ function KS_solve_Emin_PCG_new!( Ham, psiks;
 
         gKnorm = dot_BlochWavefunc(g, Kg)
         #println("gKnorm = ", gKnorm)
-
-        β = 0.0
         
         if !force_grad_dir
             
@@ -86,9 +84,9 @@ function KS_solve_Emin_PCG_new!( Ham, psiks;
             #β = gKnorm/gKnormPrev # Fletcher-Reeves
             #β = 0.0
 
-            #println("dotgPrevKg = ", dotgPrevKg)
-            #println("gKnorm - dotgPrevKg = ", gKnorm - dotgPrevKg)
-            #println("gKnormPrev = ", gKnormPrev)
+            println("dotgPrevKg = ", dotgPrevKg)
+            println("gKnorm - dotgPrevKg = ", gKnorm - dotgPrevKg)
+            println("gKnormPrev = ", gKnormPrev)
 
             denum = sqrt( dot_BlochWavefunc(g,g) * dot_BlochWavefunc(d,d) )
             println("linmin test: ", dotgd/denum )
@@ -123,19 +121,25 @@ function KS_solve_Emin_PCG_new!( Ham, psiks;
         constrain_search_dir!( d, psiks )
 
         # Line minimization
-        linmin_success, Etot, α, αt = linmin_quad!( Ham, psiks, g, Kg, d, α, αt, Etot )
-        println("linmin_success = ", linmin_success)
-        @printf("α = %18.10e, αt = %18.10e\n", α, αt)
-        #for i in 1:Nkspin
-        #    println("dot g g: ", dot(g[i], g[i]))
-        #end
-        @printf("dot_BlochWavefunc(g,g) = %18.10e\n", dot_BlochWavefunc(g,g))
+        #linmin_success, α, αt = linmin_quad!( Ham, psiks, g, d, α, αt, Etot )
+        #println("linmin_success = ", linmin_success)
+        #@printf("α = %18.10e, αt = %18.10e\n", α, αt)
+        ##for i in 1:Nkspin
+        ##    println("dot g g: ", dot(g[i], g[i]))
+        ##end
+        #@printf("dot_BlochWavefunc(g,g) = %18.10e\n", dot_BlochWavefunc(g,g))
 
         # Using alternative line minimization
         #linmin_success = true
-        #Etot = linmin_grad!( Ham, psiks, g, Kg, d )
+        linmin_success, α = linmin_grad!( Ham, psiks, g, Kg, d )
 
         if linmin_success
+            #
+            for i in 1:Nkspin
+                psiks[i] = psiks[i] + α*d[i]
+            end
+            Etot = calc_energies_grad!( Ham, psiks, g, Kg )
+            #
             if updateTestStepSize
                 αt = α
                 if αt < αt_min    # bad step size
@@ -145,17 +149,14 @@ function KS_solve_Emin_PCG_new!( Ham, psiks;
             end
         else
             # linmin failed:
-            #step(d, -alpha)
-            #for s in 1:N_α_adjust_max
-                #α = α / αt_reduceFactor
-                @printf("linmin is failed: Undoing step with α = %18.10e\n", α)
-                for i in 1:Nkspin
-                    psiks[i] = psiks[i] - α*d[i]
-                end
-                Etot = calc_energies_grad!( Ham, psiks, g, Kg )
-                println("Etot after undoing step: ", Etot)
-            #end
+            for i in 1:Nkspin
+                psiks[i] = psiks[i] + αt*d[i]
+            end
+            Etot = calc_energies_grad!( Ham, psiks, g, Kg )            
             
+            @printf("linmin is failed: Update psiks by αt_min = %e, Etot = %18.10f\n", αt_min, Etot)
+            
+
             if β >= 1e-10   # should be compared with small number
                 # Failed, but not along the gradient direction:
                 @printf("Step failed: resetting search direction.\n")
