@@ -82,18 +82,19 @@ function KS_solve_Emin_PCG_new!( Ham, psiks;
 
             β = (gKnorm - dotgPrevKg)/gKnormPrev # Polak-Ribiere
             #β = gKnorm/gKnormPrev # Fletcher-Reeves
+            #β = (gKnorm - dotgPrevKg) / ( dotgd - dot_BlochWavefunc(d,gPrev) )
             #β = 0.0
 
-            println("dotgPrevKg = ", dotgPrevKg)
-            println("gKnorm - dotgPrevKg = ", gKnorm - dotgPrevKg)
-            println("gKnormPrev = ", gKnormPrev)
+            #println("dotgPrevKg = ", dotgPrevKg)
+            #println("gKnorm - dotgPrevKg = ", gKnorm - dotgPrevKg)
+            #println("gKnormPrev = ", gKnormPrev)
 
-            denum = sqrt( dot_BlochWavefunc(g,g) * dot_BlochWavefunc(d,d) )
-            println("linmin test: ", dotgd/denum )
+            #denum = sqrt( dot_BlochWavefunc(g,g) * dot_BlochWavefunc(d,d) )
+            #println("linmin test: ", dotgd/denum )
 
-            if gPrevUsed
-                println("CG test: ", dotgPrevKg/sqrt(gKnorm*gKnormPrev) )
-            end
+            #if gPrevUsed
+            #    println("CG test: ", dotgPrevKg/sqrt(gKnorm*gKnormPrev) )
+            #end
         end
 
         println("β raw = ", β)
