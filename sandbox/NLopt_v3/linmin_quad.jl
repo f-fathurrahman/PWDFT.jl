@@ -1,6 +1,6 @@
 # return succeed or not
-# alpha return E
-# modify psiks
+# modify Ham, psiks, g, Kg
+# return success_or_not, E, α, αt
 function linmin_quad!( Ham, psiks, g, Kg, d, α, αt, E )
 
     Nkspin = length(psiks)
@@ -40,7 +40,6 @@ function linmin_quad!( Ham, psiks, g, Kg, d, α, αt, E )
             psiks[i] = psiks[i] + (αt - αPrev)*d[i]
         end
         αPrev = αt
-        
         ET = calc_energies_only!( Ham, psiks )
         println("Etot trial = ", ET)
         
