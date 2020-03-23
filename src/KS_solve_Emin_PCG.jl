@@ -65,13 +65,13 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
     # Variables for PCG
     #
     g      = zeros_BlochWavefunc( Ham )
-    d      = copy(g)
-    g_old  = copy(g)
-    d_old  = copy(g)
-    Kg     = copy(g)
-    Kg_old = copy(g)
-    psic   = copy(g)
-    gt     = copy(g)
+    d      = deepcopy(g)
+    g_old  = deepcopy(g)
+    d_old  = deepcopy(g)
+    Kg     = deepcopy(g)
+    Kg_old = deepcopy(g)
+    psic   = deepcopy(g)
+    gt     = deepcopy(g)
     
     β = zeros(Nkspin)
     α = zeros(Nkspin)
