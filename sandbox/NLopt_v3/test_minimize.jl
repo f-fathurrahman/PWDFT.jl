@@ -14,6 +14,7 @@ include("KS_solve_Emin_PCG_new.jl")
 include("linmin_quad.jl")
 include("linmin_grad.jl")
 include("linmin_debug.jl")
+include("linmin_armijo.jl")
 
 function main()
     Random.seed!(1234)
@@ -21,8 +22,8 @@ function main()
 
     #Ham = create_Ham_H2()
     #Ham = create_Ham_H_atom()
-    Ham = create_Ham_Si_fcc()
-    #Ham = create_Ham_GaAs()
+    #Ham = create_Ham_Si_fcc()
+    Ham = create_Ham_GaAs()
     #Ham = create_Ham_NH3()
     #Ham = create_Ham_ZnO()
 

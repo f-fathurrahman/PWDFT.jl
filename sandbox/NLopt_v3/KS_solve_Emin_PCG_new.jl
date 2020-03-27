@@ -154,27 +154,28 @@ function KS_solve_Emin_PCG_new!( Ham, psiks;
 
         constrain_search_dir!( d, psiks )
 
-        if cg_test >= 0.8
-            if αt_start > αt_min
-                @printf("cg_test is large at αt = %e, resetting ...", αt)
-                αt = αt_start #*0.9
-                #αt_start = αt_start*0.9
-                @printf(" αt is now set to: %f\n", αt)
-            end
-        end
+        #if cg_test >= 0.8
+        #    if αt_start > αt_min
+        #        @printf("cg_test is large at αt = %e, resetting ...", αt)
+        #        αt = αt_start #*0.9
+        #        #αt_start = αt_start*0.9
+        #        @printf(" αt is now set to: %f\n", αt)
+        #    end
+        #end
 
         # Line minimization
-        linmin_success, α, αt = linmin_quad!( Ham, psiks, g, d, α, αt, Etot, minim_params )
-        println("linmin_success = ", linmin_success)
-        @printf("α = %18.10e, αt = %18.10e\n", α, αt)
-        #for i in 1:Nkspin
-        #    println("dot g g: ", dot(g[i], g[i]))
-        #end
-        @printf("dot_BlochWavefunc(g,g) = %18.10e\n", dot_BlochWavefunc(g,g))
+        #linmin_success, α, αt = linmin_quad!( Ham, psiks, g, d, α, αt, Etot, minim_params )
+        #println("linmin_success = ", linmin_success)
+        #@printf("α = %18.10e, αt = %18.10e\n", α, αt)
+        ##for i in 1:Nkspin
+        ##    println("dot g g: ", dot(g[i], g[i]))
+        ##end
+        #@printf("dot_BlochWavefunc(g,g) = %18.10e\n", dot_BlochWavefunc(g,g))
+
+        #linmin_success, α = linmin_armijo!( Ham, psiks, g, d, Etot )
 
         # Using alternative line minimization
-        #linmin_success = true
-        #linmin_success, α = linmin_grad!( Ham, psiks, g, Kg, d )
+        linmin_success, α = linmin_grad!( Ham, psiks, g, d )
 
         if linmin_success
             #
@@ -190,7 +191,7 @@ function KS_solve_Emin_PCG_new!( Ham, psiks;
             end
         else
             # linmin failed:
-            do_step!( psiks, αt, d )  # CHECK THIS ...
+            do_step!( psiks, -α, d )  # CHECK THIS ...
             Etot = calc_energies_grad!( Ham, psiks, g, Kg )            
             
             @printf("linmin is failed: Update psiks by αt_min = %e, Etot = %18.10f\n", αt_min, Etot)
@@ -238,21 +239,4 @@ function KS_solve_Emin_PCG_new!( Ham, psiks;
 
 end
 
-
-function constrain_search_dir!( d, psiks )
-    Nkspin = length(psiks)
-    for i in 1:Nkspin
-        d[i] = d[i] - psiks[i] * ( psiks[i]' * d[i] )
-    end
-    return
-end
-
-function dot_BlochWavefunc(x::BlochWavefunc, y::BlochWavefunc)
-    Nkspin = length(x)    
-    res = 0.0 #2.0
-    for i in 1:Nkspin
-        res = res + real( dot(x[i], y[i]) )*2.0
-    end
-    return res
-end
 

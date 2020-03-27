@@ -44,42 +44,49 @@ function linmin_quad_vector!( Ham::Hamiltonian,
         psiks_tmp = deepcopy(psiks)
         for i in 1:Nkspin
             psiks = deepcopy(psiks_tmp)
+            # Step only the i-th kpt
             do_step!( psiks[i], αt[i] - αPrev[i], d[i] )        
             αPrev[i] = αt[i]
             E_trial[i] = calc_energies_only!( Ham, psiks )
         end
         
         # Check if step crossed domain of validity of parameter space:
-        if !isfinite(E_trial)
-            αt = αt * αt_reduceFactor
-            @printf("Test step failed, E_trial = %le, reducing αt to %le.\n", E_trial, αt)
-            continue
-        end
+        #if !isfinite(E_trial)
+        #    αt = αt * αt_reduceFactor
+        #    @printf("Test step failed, E_trial = %le, reducing αt to %le.\n", E_trial, αt)
+        #    continue
+        #end
 
 
         # Predict step size:
-        α = 0.5 * αt^2 *gdotd / (αt * gdotd + E_orig - E_trial)
+        for i in 1:Nkspin
+            α[i] = 0.5 * αt[i]^2 *gdotd[i] / (αt[i] * gdotd[i] + E_orig - E_trial[i])
+        end
 
         # Check reasonableness of predicted step size:
-        if α < 0
-            # Curvature has the wrong sign
-            # That implies E_trial < E, so accept step for now, and try descending further next time
-            αt = αt * αt_increaseFactor;
-            @printf("Wrong curvature in test step, increasing αt to %le.\n", αt)
+        for i in 1:Nkspin
+            if α < 0
+                # Curvature has the wrong sign
+                # That implies E_trial < E, so accept step for now, and try descending further next time
+                αt = αt * αt_increaseFactor;
+                @printf("Wrong curvature in test step, increasing αt to %le.\n", αt)
+            end
+        end
+        if any(α <. 0)
             return true, α, αt
         end
         
-        if α/αt > αt_increaseFactor
-            αt = αt * αt_increaseFactor
-            @printf("Predicted α/αt > %lf, increasing αt to %le.\n", αt_increaseFactor, αt)
-            continue
-        end
+        #if α/αt > αt_increaseFactor
+        #    αt = αt * αt_increaseFactor
+        #    @printf("Predicted α/αt > %lf, increasing αt to %le.\n", αt_increaseFactor, αt)
+        #    continue
+        #end
 
-        if αt/α < αt_reduceFactor
-            αt = αt * αt_reduceFactor
-            @printf("Predicted α/αt < %lf, reducing αt to %le.\n", αt_reduceFactor, αt)
-            continue
-        end
+        #if αt/α < αt_reduceFactor
+        #    αt = αt * αt_reduceFactor
+        #    @printf("Predicted α/αt < %lf, reducing αt to %le.\n", αt_reduceFactor, αt)
+        #    continue
+        #end
         
         # Successful test step:
         break

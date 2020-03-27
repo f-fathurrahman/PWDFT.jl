@@ -1,14 +1,14 @@
 # return succeed or not
 # modify Ham (internally)
 # return success_or_not, α, αt
-function linmin_quad!( Ham, psiks_orig, g, d, α, αt, E_orig, minim_params )
+function linmin_quad!( Ham,
+    psiks_orig, g, d,
+    α::Float64, αt::Float64, E_orig, minim_params )
 
     psiks = deepcopy(psiks_orig)
-    Nkspin = length(psiks)
 
     αPrev = 0.0
     gdotd = dot_BlochWavefunc(g,d) # directional derivative at starting point
-    println("gdotd = ", gdotd)
 
     if gdotd >= 0.0
         @printf("Bad step direction: g.d = %f > 0.0\n", gdotd)
@@ -34,12 +34,9 @@ function linmin_quad!( Ham, psiks_orig, g, d, α, αt, E_orig, minim_params )
         end
 
         # Try the test step
-        #for i in 1:Nkspin
-        #    psiks[i] = psiks[i] + (αt - αPrev)*d[i]
-        #end
         do_step!( psiks, αt - αPrev, d )
         αPrev = αt
-        E_trial = calc_energies_no_modify!( Ham, psiks )
+        E_trial = calc_energies_only!( Ham, psiks )
         
         # Check if step crossed domain of validity of parameter space:
         if !isfinite(E_trial)
@@ -55,7 +52,7 @@ function linmin_quad!( Ham, psiks_orig, g, d, α, αt, E_orig, minim_params )
         # Check reasonableness of predicted step size:
         if α < 0
             # Curvature has the wrong sign
-            # That implies ET < E, so accept step for now, and try descending further next time
+            # That implies E_trial < E, so accept step for now, and try descending further next time
             αt = αt * αt_increaseFactor;
             @printf("Wrong curvature in test step, increasing αt to %le.\n", αt)
             return true, α, αt
@@ -88,12 +85,9 @@ function linmin_quad!( Ham, psiks_orig, g, d, α, αt, E_orig, minim_params )
     # Actual step:
     for s in 1:N_α_adjust_max        
         # Try the step:
-        #for i in 1:Nkspin
-        #    psiks[i] = psiks[i] + (α - αPrev)*d[i]
-        #end
-        do_step!( psiks, α-αPrev, d )
+        do_step!( psiks, α - αPrev, d )
         αPrev = α
-        E_actual = calc_energies_no_modify!( Ham, psiks )
+        E_actual = calc_energies_only!( Ham, psiks )
 
         @printf("linmin actual step: α = %18.10e E = %18.10f\n", α, E_actual)
         

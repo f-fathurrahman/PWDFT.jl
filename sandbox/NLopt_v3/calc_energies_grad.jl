@@ -94,10 +94,43 @@ function Kprec!( ik::Int64, pw::PWGrid, psi, Kpsi )
     return
 end
 
-function do_step!( psiks, α, d )
+function do_step!( psiks::BlochWavefunc, α::Float64, d::BlochWavefunc )
     for i in 1:length(psiks)
         psiks[i] = psiks[i] + α*d[i]
         ortho_sqrt!( psiks[i] )
     end
     return
+end
+
+# Per kpt component
+function do_step!( psiks::Array{Float64,2}, α::Float64, d::Array{Float64,2} )
+    psiks[:] = psiks[:] + α*d
+    ortho_sqrt!( psiks )
+    return
+end
+
+# α is a vector
+function do_step!( psiks::BlochWavefunc, α::Vector{Float64}, d::BlochWavefunc )
+    for i in 1:length(psiks)
+        psiks[i] = psiks[i] + α[i]*d[i]
+        ortho_sqrt!( psiks[i] )
+    end
+    return
+end
+
+function constrain_search_dir!( d, psiks )
+    Nkspin = length(psiks)
+    for i in 1:Nkspin
+        d[i] = d[i] - psiks[i] * ( psiks[i]' * d[i] )
+    end
+    return
+end
+
+function dot_BlochWavefunc(x::BlochWavefunc, y::BlochWavefunc)
+    Nkspin = length(x)    
+    res = 0.0 #2.0
+    for i in 1:Nkspin
+        res = res + real( dot(x[i], y[i]) )*2.0
+    end
+    return res
 end
