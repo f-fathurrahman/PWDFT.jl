@@ -29,30 +29,6 @@ function calc_energies_grad!( Ham, psiks, g, Kg )
 end
 
 
-function calc_energies_grad_no_modify!( Ham, psiks_orig, g, Kg )
-    
-    psiks = deepcopy(psiks_orig)
-
-    Rhoe = calc_rhoe( Ham, psiks )
-    update!( Ham, Rhoe )
-    
-    Ham.energies = calc_energies( Ham, psiks )
-
-    Nspin = Ham.electrons.Nspin
-    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
-
-    for ispin = 1:Nspin, ik = 1:Nkpt
-        Ham.ispin = ispin
-        Ham.ik = ik
-        i = ik + (ispin-1)*Nkpt
-        calc_grad!( Ham, psiks[i], g[i] )
-        Kprec!( ik, Ham.pw, g[i], Kg[i] )
-    end
-
-    return sum( Ham.energies )
-end
-
-
 # Modify Ham and psiks
 function calc_energies_only!( Ham, psiks )
     Rhoe = calc_rhoe( Ham, psiks )
@@ -61,15 +37,6 @@ function calc_energies_only!( Ham, psiks )
     return sum( Ham.energies )
 end
 
-
-# Modify Ham only, psiks is not modified
-function calc_energies_no_modify!( Ham, psiks_orig )
-    psiks = deepcopy(psiks_orig)
-    Rhoe = calc_rhoe( Ham, psiks )
-    update!( Ham, Rhoe )
-    Ham.energies = calc_energies( Ham, psiks )
-    return sum( Ham.energies )
-end
 
 # Wrapper for calc_grad! for BlochWavefunc
 function calc_grad!( Ham::Hamiltonian, psiks::BlochWavefunc, g::BlochWavefunc )
