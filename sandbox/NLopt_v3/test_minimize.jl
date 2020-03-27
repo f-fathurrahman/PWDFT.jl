@@ -33,7 +33,7 @@ function main()
     #linmin_debug!( Ham, psiks, startingrhoe=:random, skip_initial_diag=true )
     
     #KS_solve_SCF!( Ham, mix_method="anderson" )
-    #KS_solve_Emin_PCG!( Ham )
+    #KS_solve_Emin_PCG!( Ham, startingrhoe=:random, skip_initial_diag=true )
 end
 
 main()

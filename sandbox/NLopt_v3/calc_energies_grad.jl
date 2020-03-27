@@ -1,5 +1,5 @@
 function ortho_BlochWavefunc!( psiks )
-    for i = 1:length(psiks)
+    for i in 1:length(psiks)
         ortho_sqrt!(psiks[i])
     end
 end
@@ -17,7 +17,7 @@ function calc_energies_grad!( Ham, psiks, g, Kg )
     Nspin = Ham.electrons.Nspin
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
 
-    for ispin = 1:Nspin, ik = 1:Nkpt
+    for ispin in 1:Nspin, ik in 1:Nkpt
         Ham.ispin = ispin
         Ham.ik = ik
         i = ik + (ispin-1)*Nkpt

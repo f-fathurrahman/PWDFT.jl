@@ -1,5 +1,5 @@
 function linmin_armijo!( Ham,
-    psiks_orig, g, d, E_orig; α0 = 10.0, τ=0.1, c=0.1 )
+    psiks_orig, g, d, E_orig; α0 = 1.0, τ=0.1, c=0.1 )
 
     psiks = deepcopy(psiks_orig)
     m = dot_BlochWavefunc( g, d )
@@ -8,7 +8,7 @@ function linmin_armijo!( Ham,
     t = -c*m
     α = α0
 
-    for itry = 1:5
+    for itry = 1:3
         do_step!( psiks, α, d )
         E_trial = calc_energies_only!( Ham, psiks )
         dE = E_orig - E_trial

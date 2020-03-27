@@ -172,10 +172,10 @@ function KS_solve_Emin_PCG_new!( Ham, psiks;
         ##end
         #@printf("dot_BlochWavefunc(g,g) = %18.10e\n", dot_BlochWavefunc(g,g))
 
-        #linmin_success, α = linmin_armijo!( Ham, psiks, g, d, Etot )
+        linmin_success, α = linmin_armijo!( Ham, psiks, g, d, Etot )
 
         # Using alternative line minimization
-        linmin_success, α = linmin_grad!( Ham, psiks, g, d )
+        #linmin_success, α = linmin_grad!( Ham, psiks, g, d )
 
         if linmin_success
             #
