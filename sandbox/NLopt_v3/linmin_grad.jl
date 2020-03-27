@@ -18,7 +18,7 @@ function linmin_grad!( Ham, psiks, g, d; αt = 3e-5 )
         α = 0.0
     end
 
-    println("α = ", α)
+    #println("α = ", α)
     return true, α
 
 end

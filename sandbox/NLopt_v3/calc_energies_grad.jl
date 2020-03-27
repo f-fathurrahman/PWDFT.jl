@@ -37,6 +37,24 @@ function calc_energies_only!( Ham, psiks )
     return sum( Ham.energies )
 end
 
+# Wrapper for calc_grad! for BlochWavefunc
+function calc_grad!( Ham::Hamiltonian, psiks::BlochWavefunc, g::BlochWavefunc, Kg::BlochWavefunc )
+    #
+    Rhoe = calc_rhoe( Ham, psiks )
+    update!( Ham, Rhoe )
+    #
+    Nspin = Ham.electrons.Nspin
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+    #
+    for ispin in 1:Nspin, ik in 1:Nkpt
+        Ham.ispin = ispin
+        Ham.ik = ik
+        i = ik + (ispin-1)*Nkpt
+        calc_grad!( Ham, psiks[i], g[i] )
+        Kprec!( ik, Ham.pw, g[i], Kg[i] )
+    end
+    return
+end
 
 # Wrapper for calc_grad! for BlochWavefunc
 function calc_grad!( Ham::Hamiltonian, psiks::BlochWavefunc, g::BlochWavefunc )
