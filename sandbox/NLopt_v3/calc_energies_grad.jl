@@ -148,7 +148,7 @@ function dot_BlochWavefunc(x::BlochWavefunc, y::BlochWavefunc)
     Nkspin = length(x)    
     res = 0.0 #2.0
     for i in 1:Nkspin
-        res = res + real( dot(x[i], y[i]) )*2.0
+        res = res + real( dot(x[i], y[i]) )#*2.0
     end
     return res
 end

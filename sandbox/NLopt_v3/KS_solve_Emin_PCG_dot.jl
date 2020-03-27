@@ -140,10 +140,10 @@ function KS_solve_Emin_PCG_dot!(
             Nconverges = 0
         end
 
-        if (Nconverges >= 2) && (real(dot_BlochWavefunc(g,g)) >= 1e-5)
-            println("Probably early convergence, continuing ...")
-            Nconverges = 0
-        end
+        #if (Nconverges >= 2) && (dot_BlochWavefunc(g,g) >= 1e-5)
+        #    println("Probably early convergence, continuing ...")
+        #    Nconverges = 0
+        #end
         
         if Nconverges >= 2
             @printf("\nEmin_PCG_dot is converged in iter: %d\n", iter)
