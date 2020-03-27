@@ -121,8 +121,8 @@ function do_step!( psiks::BlochWavefunc, α::Float64, d::BlochWavefunc )
 end
 
 # Per kpt component
-function do_step!( psiks::Array{Float64,2}, α::Float64, d::Array{Float64,2} )
-    psiks[:] = psiks[:] + α*d
+function do_step!( psiks::Array{ComplexF64,2}, α::Float64, d::Array{ComplexF64,2} )
+    psiks[:] = psiks + α*d
     ortho_sqrt!( psiks )
     return
 end

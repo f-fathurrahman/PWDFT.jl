@@ -60,7 +60,7 @@ function create_Ham_GaAs()
     pspfiles = [joinpath(DIR_PSP, "Ga-q3.gth"),
                 joinpath(DIR_PSP, "As-q5.gth")]
     ecutwfc = 15.0
-    return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3] )
+    return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[8,8,8] )
 end
 
 function create_Ham_H2()
