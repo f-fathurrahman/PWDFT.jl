@@ -1,7 +1,7 @@
 # return succeed or not
 # modify Ham (internally)
 # return success_or_not, α, αt
-function linmin_quad!( Ham, psiks_orig, g, d, α, αt, E_orig )
+function linmin_quad!( Ham, psiks_orig, g, d, α, αt, E_orig, minim_params )
 
     psiks = deepcopy(psiks_orig)
     Nkspin = length(psiks)
@@ -17,10 +17,10 @@ function linmin_quad!( Ham, psiks_orig, g, d, α, αt, E_orig )
     end
 
     # These should be parameters
-    N_α_adjust_max = 3
-    αt_min = 1e-8 #1e-10
-    αt_reduceFactor = 0.1 # should less than 1
-    αt_increaseFactor = 3.0
+    N_α_adjust_max = minim_params.N_α_adjust_max
+    αt_min = minim_params.αt_min
+    αt_reduceFactor = minim_params.αt_reduceFactor
+    αt_increaseFactor = minim_params.αt_increaseFactor
 
     E_trial = 0.0
     E_actual = 0.0    
@@ -34,9 +34,10 @@ function linmin_quad!( Ham, psiks_orig, g, d, α, αt, E_orig )
         end
 
         # Try the test step
-        for i in 1:Nkspin
-            psiks[i] = psiks[i] + (αt - αPrev)*d[i]
-        end
+        #for i in 1:Nkspin
+        #    psiks[i] = psiks[i] + (αt - αPrev)*d[i]
+        #end
+        do_step!( psiks, αt - αPrev, d )
         αPrev = αt
         E_trial = calc_energies_no_modify!( Ham, psiks )
         
@@ -87,11 +88,11 @@ function linmin_quad!( Ham, psiks_orig, g, d, α, αt, E_orig )
     # Actual step:
     for s in 1:N_α_adjust_max        
         # Try the step:
-        for i in 1:Nkspin
-            psiks[i] = psiks[i] + (α - αPrev)*d[i]
-        end
+        #for i in 1:Nkspin
+        #    psiks[i] = psiks[i] + (α - αPrev)*d[i]
+        #end
+        do_step!( psiks, α-αPrev, d )
         αPrev = α
-        
         E_actual = calc_energies_no_modify!( Ham, psiks )
 
         @printf("linmin actual step: α = %18.10e E = %18.10f\n", α, E_actual)
@@ -104,7 +105,7 @@ function linmin_quad!( Ham, psiks_orig, g, d, α, αt, E_orig )
         
         if E_actual > E_orig
             α = α * αt_reduceFactor
-            @printf("Step increased by: %le, reducing α to %le.\n", E - E_orig, α)
+            @printf("Step increased by: %le, reducing α to %le.\n", E_actual - E_orig, α)
             continue
         end
         

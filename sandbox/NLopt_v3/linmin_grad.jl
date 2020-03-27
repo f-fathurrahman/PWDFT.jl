@@ -7,9 +7,10 @@ function linmin_grad!( Ham, psiks, g, Kg, d; αt = 3e-5 )
     Nkspin = length(psiks)
     for i in 1:Nkspin
         psic[i] = psiks[i] + αt*d[i]
+        ortho_sqrt!( psic[i] )
     end
-    
-    Etrial = calc_energies_grad!( Ham, psic, gt, Kg ) # Kg here is not really used 
+
+    calc_grad!( Ham, psic, gt )
 
     denum = dot_BlochWavefunc( g .- gt, d )
     if denum != 0.0
@@ -18,8 +19,8 @@ function linmin_grad!( Ham, psiks, g, Kg, d; αt = 3e-5 )
         α = 0.0
     end
 
+    println("α = ", α)
     return true, α
-#    println("α = ", α)
 #    # Update wavefunction
 #    for i in 1:Nkspin
 #        psiks[i] = psiks[i] + α * d[i]
