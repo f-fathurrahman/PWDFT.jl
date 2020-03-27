@@ -146,6 +146,7 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
                 end
             end
             if β[ikspin] < 0.0
+                #println("Resetting β")
                 β[ikspin] = 0.0
             end
 
@@ -186,13 +187,17 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
 
         Ham.energies = calc_energies( Ham, psiks )
         Etot = sum(Ham.energies)
-        diffE = abs(Etot-Etot_old)
+        diffE = Etot_old - Etot
 
         if verbose
-            @printf("Emin_PCG step %8d = %18.10f %10.7e\n", iter, Etot, diffE)
+            @printf("Emin_PCG step %8d = %18.10f   %10.7e\n", iter, Etot, diffE)
         end
         
-        if diffE < etot_conv_thr
+        if (diffE < 0.0) && (iter > 1)
+            println("*** WARNING: Etot is not decreasing")
+        end
+        
+        if abs(diffE) < etot_conv_thr
             Nconverges = Nconverges + 1
         else
             Nconverges = 0
