@@ -35,7 +35,7 @@ function main()
     #KS_solve_Emin_PCG_new!( Ham, psiks, startingrhoe=:random, skip_initial_diag=true, NiterMax=200 )
     #linmin_debug!( Ham, psiks, startingrhoe=:random, skip_initial_diag=true )
     
-    KS_solve_SCF!( Ham, mix_method="broyden" )
+    KS_solve_SCF!( Ham, mix_method="simple" )
     #KS_solve_SCF_NLsolve!( Ham )
     #KS_solve_Emin_PCG!( Ham, startingrhoe=:random, skip_initial_diag=true )
     #KS_solve_Emin_PCG_dot!( Ham, psiks, startingrhoe=:random, skip_initial_diag=true )
