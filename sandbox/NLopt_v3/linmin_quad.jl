@@ -3,7 +3,8 @@
 # return success_or_not, α, αt
 function linmin_quad!( Ham,
     psiks_orig, g, d,
-    α::Float64, αt::Float64, E_orig, minim_params )
+    α::Float64, αt::Float64, E_orig, minim_params
+)
 
     psiks = deepcopy(psiks_orig)
 

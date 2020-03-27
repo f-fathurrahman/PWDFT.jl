@@ -90,8 +90,8 @@ function KS_solve_Emin_PCG_dot!(
                 dotgPrevKg = 0.0
             end
 
-            #β = (gKnorm - dotgPrevKg)/gKnormPrev # Polak-Ribiere
-            β = gKnorm/gKnormPrev # Fletcher-Reeves
+            β = (gKnorm - dotgPrevKg)/gKnormPrev # Polak-Ribiere
+            #β = gKnorm/gKnormPrev # Fletcher-Reeves
             #β = (gKnorm - dotgPrevKg) / ( dotgd - dot_BlochWavefunc(d,gPrev) )
             #β = gKnorm/dot_BlochWavefunc(g .- gPrev, d_old)
             #β = 0.0
