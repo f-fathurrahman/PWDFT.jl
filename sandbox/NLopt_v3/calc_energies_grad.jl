@@ -94,7 +94,7 @@ function calc_grad!( Ham::Hamiltonian, ψ::Array{ComplexF64,2}, g::Array{Complex
 
 end
 
-function Kprec!( ik::Int64, pw::PWGrid, psi, Kpsi )
+function Kprec!( ik::Int64, pw::PWGrid, psi::Array{ComplexF64,2}, Kpsi::Array{ComplexF64,2} )
 
     Ngw_ik  = size(psi)[1]
     Nstates = size(psi)[2]
@@ -148,7 +148,7 @@ function dot_BlochWavefunc(x::BlochWavefunc, y::BlochWavefunc)
     Nkspin = length(x)    
     res = 0.0 #2.0
     for i in 1:Nkspin
-        res = res + real( dot(x[i], y[i]) )#*2.0
+        res = res + real( dot(x[i], y[i]) )*2.0
     end
     return res
 end
