@@ -6,13 +6,12 @@ function linmin_quad!( Ham::Hamiltonian,
     α::Float64, αt::Float64, E_orig::Float64, minim_params::MinimizeParams
 )
 
-    Nkspin = length(psiks_orig)
     psiks = deepcopy(psiks_orig)
+    αPrev = 0.0
     CellVolume = Ham.pw.CellVolume
     Npoints = prod(Ham.pw.Ns)
-    dVol = prod(Ham.pw.Ns)
-    αPrev = 0.0
-    gdotd = 2*real(dot(g,d)) #*dVol #/Npoints # directional derivative at starting point
+    dVol = CellVolume/Npoints
+    gdotd = 2.0*real(dot(g,d)) #*dVol #/Npoints # directional derivative at starting point
 
     println("gdotd = ", gdotd)
 
@@ -58,7 +57,7 @@ function linmin_quad!( Ham::Hamiltonian,
         println("E expected = ", E_orig + αt*gdotd)
 
         # Check reasonableness of predicted step size:
-        if α < 0
+        if (α < 0) && (E_trial < E_orig)
         #if E_trial < (E_orig + αt*gdotd)
             # Curvature has the wrong sign
             # That implies E_trial < E, so accept step for now, and try descending further next time

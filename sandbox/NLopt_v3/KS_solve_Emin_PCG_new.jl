@@ -71,6 +71,7 @@ function KS_solve_Emin_PCG_new!( Ham, psiks;
     Nconverges = 0
     
     cg_test = 0.0
+    norm_g = 0.0
 
     for iter in 1:NiterMax
 
@@ -88,26 +89,26 @@ function KS_solve_Emin_PCG_new!( Ham, psiks;
                 dotgPrevKg = 0.0
             end
             β = (gKnorm - dotgPrevKg)/gKnormPrev # Polak-Ribiere
+            #β = gKnorm/gKnormPrev # Fletcher-Reeves
+            #β = (gKnorm - dotgPrevKg) / ( dotgd - dot_BlochWavefunc(d,gPrev) )
+            #β = gKnorm/dot_BlochWavefunc(g .- gPrev, d_old)
+            #β = 0.0
             println("β raw = ", β)
             if β < 0.0
                 println("Resetting β")
                 β = 0.0
             end
-            #β = gKnorm/gKnormPrev # Fletcher-Reeves
-            #β = (gKnorm - dotgPrevKg) / ( dotgd - dot_BlochWavefunc(d,gPrev) )
-            #β = gKnorm/dot_BlochWavefunc(g .- gPrev, d_old)
-            #β = 0.0
 
             #println("dotgPrevKg = ", dotgPrevKg)
             #println("gKnorm - dotgPrevKg = ", gKnorm - dotgPrevKg)
             #println("gKnormPrev = ", gKnormPrev)
 
-            #denum = sqrt( dot_BlochWavefunc(g,g) * dot_BlochWavefunc(d,d) )
-            #println("linmin test: ", dotgd/denum )
-            #if gPrevUsed
-            #    cg_test  = dotgPrevKg/sqrt(gKnorm*gKnormPrev)
-            #    println("CG test: ", cg_test)
-            #end
+            denum = sqrt( dot_BlochWavefunc(g,g) * dot_BlochWavefunc(d,d) )
+            println("linmin test: ", dotgd/denum )
+            if gPrevUsed
+                cg_test  = dotgPrevKg/sqrt(gKnorm*gKnormPrev)
+                println("CG test: ", cg_test)
+            end
         end
 
         force_grad_dir = false
@@ -142,15 +143,11 @@ function KS_solve_Emin_PCG_new!( Ham, psiks;
         linmin_success, α, αt = linmin_quad!( Ham, psiks, g, d, α, αt, Etot, minim_params )
         println("linmin_success = ", linmin_success)
         @printf("α = %18.10e, αt = %18.10e\n", α, αt)
-        ##for i in 1:Nkspin
-        ##    println("dot g g: ", dot(g[i], g[i]))
-        ##end
-        #@printf("dot_BlochWavefunc(g,g) = %18.10e\n", dot_BlochWavefunc(g,g))
 
         #linmin_success, α = linmin_armijo!( Ham, psiks, g, d, Etot )
 
         # Using alternative line minimization
-        #linmin_success, α = linmin_grad!( Ham, psiks, g, d )
+        #linmin_success, α = linmin_grad!( Ham, psiks, g, d, Etot )
 
         if linmin_success
             #
@@ -183,10 +180,12 @@ function KS_solve_Emin_PCG_new!( Ham, psiks;
             end
         end
         
-        #norm_g = norm(g)/(Nkspin*Nstates)
-        norm_g = 2*real(dot(g,g))
+        norm_g = norm(g) #/(Nkspin*Nstates)
+        #norm_g = 2*real(dot(g,g))
         diffE = Etot_old - Etot
         @printf("Emin_PCG_new step %8d = %18.10f  %10.7e  %10.7e\n", iter, Etot, diffE, norm_g)
+        @printf("norm(g)  = %e\n", norm(g))
+        @printf("norm(Kg) = %e\n", norm(Kg))
         if diffE < 0.0
             println("*** WARNING: Etot is not decreasing")
         end
@@ -197,10 +196,10 @@ function KS_solve_Emin_PCG_new!( Ham, psiks;
             Nconverges = 0
         end
 
-        if (Nconverges >= 2) && (norm_g >= etot_conv_thr/10)
-            println("Probably early convergence, continuing ...")
-            Nconverges = 0
-        end
+        #if (Nconverges >= 2) && (norm_g >= etot_conv_thr*10)
+        #    println("Probably early convergence, continuing ...")
+        #    Nconverges = 0
+        #end
         
         if Nconverges >= 2
             @printf("\nEmin_PCG is converged in iter: %d\n", iter)
