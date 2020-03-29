@@ -190,7 +190,7 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
         diffE = Etot_old - Etot
 
         if verbose
-            @printf("Emin_PCG step %8d = %18.10f   %10.7e\n", iter, Etot, diffE)
+            @printf("Emin_PCG step %4d = %18.10f %16.6e\n", iter, Etot, diffE)
         end
         
         if (diffE < 0.0) && (iter > 1)
