@@ -76,6 +76,7 @@ function KS_solve_Emin_PCG_dot!(
         @printf("\n")
     end
 
+    Rhoe_old = zeros(Float64,Npoints,2)
 
     for iter in 1:NiterMax
 
@@ -125,12 +126,17 @@ function KS_solve_Emin_PCG_dot!(
 
         _, α = linmin_grad!( Ham, psiks, g, d, Etot )
 
+        Rhoe_old = copy(Ham.rhoe)
+        # Update psiks, Rhoe, etc
         do_step!( psiks, α, d )
+        #println("α = ", α)
         Etot = calc_energies_grad!( Ham, psiks, g, Kg )
         
         diffE = Etot_old - Etot
-        norm_g = 2*real(dot(g,g))
-        @printf("Emin_PCG_dot step %8d = %18.10f   %10.7e  %10.7e\n", iter, Etot, diffE, norm_g)
+        norm_g = norm(g)/length(g)
+        #norm_g = 2*real(dot(g,g))
+        mae_rhoe = sum( abs.( Ham.rhoe - Rhoe_old ) )/(Npoints*Nspin)
+        @printf("Emin_PCG_dot step %8d = %18.10f  %12.7e %12.7e %12.7e\n", iter, Etot, diffE, norm_g, mae_rhoe)
         if diffE < 0.0
             println("*** WARNING: Etot is not decreasing")
         end
@@ -141,10 +147,10 @@ function KS_solve_Emin_PCG_dot!(
             Nconverges = 0
         end
 
-        if (Nconverges >= 2) && (norm_g >= etot_conv_thr/10)
-            println("Probably early convergence, continuing ...")
-            Nconverges = 0
-        end
+        #if (Nconverges >= 2) && (norm_g > etot_conv_thr*5) # (mae_rhoe >= etot_conv_thr) #(norm_g >= etot_conv_thr/10)
+        #    println("Probably early convergence, continuing ...")
+        #    Nconverges = 0
+        #end
         
         if Nconverges >= 2
             @printf("\nEmin_PCG_dot is converged in iter: %d\n", iter)

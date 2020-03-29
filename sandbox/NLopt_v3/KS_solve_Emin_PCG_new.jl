@@ -45,7 +45,7 @@ function KS_solve_Emin_PCG_new!( Ham, psiks;
     # No need to orthonormalize
     Etot = calc_energies_grad!( Ham, psiks, g, Kg )
     println("Initial Etot = ", Etot)
-    println("Initial dot_BlochWavefunc(g,g) = ", dot_BlochWavefunc(g,g))
+    println("Initial dot(g,g) = ", 2.0*real(dot(g,g)))
 
     d = deepcopy(Kg)
 
@@ -88,8 +88,8 @@ function KS_solve_Emin_PCG_new!( Ham, psiks;
             else
                 dotgPrevKg = 0.0
             end
-            β = (gKnorm - dotgPrevKg)/gKnormPrev # Polak-Ribiere
-            #β = gKnorm/gKnormPrev # Fletcher-Reeves
+            #β = (gKnorm - dotgPrevKg)/gKnormPrev # Polak-Ribiere
+            β = gKnorm/gKnormPrev # Fletcher-Reeves
             #β = (gKnorm - dotgPrevKg) / ( dotgd - dot_BlochWavefunc(d,gPrev) )
             #β = gKnorm/dot_BlochWavefunc(g .- gPrev, d_old)
             #β = 0.0
@@ -184,8 +184,11 @@ function KS_solve_Emin_PCG_new!( Ham, psiks;
         #norm_g = 2*real(dot(g,g))
         diffE = Etot_old - Etot
         @printf("Emin_PCG_new step %8d = %18.10f  %10.7e  %10.7e\n", iter, Etot, diffE, norm_g)
-        @printf("norm(g)  = %e\n", norm(g))
-        @printf("norm(Kg) = %e\n", norm(Kg))
+        for i in 1:Nkspin
+            ng = norm(g[i])
+            nKg = norm(Kg[i])
+            @printf("ikspin = %2d norm(g) = %e norm(Kg) = %e, ratio = %f\n", i, ng, nKg, ng/nKg)
+        end
         if diffE < 0.0
             println("*** WARNING: Etot is not decreasing")
         end

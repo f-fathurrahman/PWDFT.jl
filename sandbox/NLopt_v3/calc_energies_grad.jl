@@ -133,16 +133,15 @@ function Kprec!( ik::Int64, pw::PWGrid, ψ::Array{ComplexF64,2}, Focc_ikspin::Ar
         for igk = 1:Ngw_ik
             ig = idx_gw2g[igk]
             Gw2 = (G[1,ig] + k[1])^2 + (G[2,ig] + k[2])^2 + (G[3,ig] + k[3])^2
-            #Ekin = Ekin + wk[ik] * Focc_ikspin[ist] * abs(ψ[igk,ist])^2 * Gw2
-            #Ekin = Ekin + Focc_ikspin[ist] * abs(ψ[igk,ist])^2 * Gw2 # excluding wk
             Ekin = Ekin + abs(ψ[igk,ist])^2 * Gw2 # excluding Focc and wk
         end
+        #Ekin = wk[ik]*Focc_ikspin[ist]*Ekin
         for igk = 1:Ngw_ik
             ig = idx_gw2g[igk]
             Gw2 = (G[1,ig] + k[1])^2 + (G[2,ig] + k[2])^2 + (G[3,ig] + k[3])^2
             x = Gw2/Ekin
-            num = 27 + 18*x + 12*x^2 + 8*x^3
-            denum = num + 16*x^4
+            num = (1 - x^8) #27 + 18*x + 12*x^2 + 8*x^3
+            denum = (1 - x^9) #num + 16*x^4
             Kv[igk,ist] = v[igk,ist]*num/denum
         end
     end

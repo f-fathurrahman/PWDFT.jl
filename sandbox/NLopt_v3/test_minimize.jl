@@ -36,15 +36,15 @@ function main()
 
     psiks = rand_BlochWavefunc( Ham )
     #KS_solve_Emin_PCG_new!( Ham, psiks, NiterMax=100 ) #, etot_conv_thr=1e-7 )
-    KS_solve_Emin_PCG_new!( Ham, psiks, startingrhoe=:random, skip_initial_diag=true, NiterMax=150 )
+    #KS_solve_Emin_PCG_new!( Ham, psiks, startingrhoe=:random, skip_initial_diag=true, NiterMax=150 )
     #linmin_debug!( Ham, psiks, startingrhoe=:random, skip_initial_diag=true )
     
-    #KS_solve_SCF!( Ham, mix_method="anderson", betamix=0.5 ) #, etot_conv_thr=1e-7 )
-    #KS_solve_SCF_NLsolve!( Ham )
-    #KS_solve_Emin_PCG!( Ham, startingrhoe=:random, skip_initial_diag=true )
-    #KS_solve_Emin_PCG!( Ham )
-    #KS_solve_Emin_PCG_dot!( Ham, psiks, startingrhoe=:random, skip_initial_diag=true )
-    #KS_solve_Emin_PCG_dot!( Ham, psiks )
+    #KS_solve_SCF!( Ham, mix_method="anderson", betamix=0.5 , etot_conv_thr=1e-8 )
+    KS_solve_SCF_NLsolve!( Ham )
+    #KS_solve_Emin_PCG!( Ham, startingrhoe=:random, skip_initial_diag=true, i_cg_beta=4 )
+    #KS_solve_Emin_PCG!( Ham, i_cg_beta=1 )
+    #KS_solve_Emin_PCG_dot!( Ham, psiks, startingrhoe=:random, skip_initial_diag=true, etot_conv_thr=1e-8 )
+    #KS_solve_Emin_PCG_dot!( Ham, psiks, etot_conv_thr=1e-8 )
 end
 
 main()
