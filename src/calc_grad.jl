@@ -18,7 +18,7 @@ function calc_grad( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
         for jst = 1:Nstates
             grad[:,ist] = grad[:,ist] - dot( psi[:,jst], H_psi[:,ist] ) * psi[:,jst]
         end
-        grad[:,ist] = Focc[ist,ikspin]*grad[:,ist]
+        grad[:,ist] = Focc[ist,ikspin]*grad[:,ist]*Ham.pw.gvecw.kpoints.wk[ik]
     end
 
     # the usual case of constant occupation numbers
