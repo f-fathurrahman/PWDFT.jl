@@ -83,12 +83,13 @@ function calc_grad!( Ham::Hamiltonian, ψ::Array{ComplexF64,2}, g::Array{Complex
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     ikspin = ik + (ispin - 1)*Nkpt
     Focc = Ham.electrons.Focc
+    wk = Ham.pw.gvecw.kpoints.wk
 
     Hψ = op_H( Ham, ψ )
     Hsub = ψ' * Hψ
     Hψ = Hψ - ψ*Hsub
     for ist in 1:Nstates
-        g[:,ist] = Focc[ist,ikspin] * Hψ[:,ist]
+        g[:,ist] = wk[ik] * Focc[ist,ikspin] * Hψ[:,ist]
     end
     return
 
