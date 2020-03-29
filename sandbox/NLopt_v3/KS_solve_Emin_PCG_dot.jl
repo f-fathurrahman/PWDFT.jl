@@ -123,13 +123,14 @@ function KS_solve_Emin_PCG_dot!(
 
         constrain_search_dir!( d, psiks )
 
-        _, α = linmin_grad!( Ham, psiks, g, d )
+        _, α = linmin_grad!( Ham, psiks, g, d, Etot )
 
         do_step!( psiks, α, d )
         Etot = calc_energies_grad!( Ham, psiks, g, Kg )
         
         diffE = Etot_old - Etot
-        @printf("Emin_PCG_dot step %8d = %18.10f   %10.7e\n", iter, Etot, diffE)
+        norm_g = 2*real(dot(g,g))
+        @printf("Emin_PCG_dot step %8d = %18.10f   %10.7e  %10.7e\n", iter, Etot, diffE, norm_g)
         if diffE < 0.0
             println("*** WARNING: Etot is not decreasing")
         end
@@ -140,10 +141,10 @@ function KS_solve_Emin_PCG_dot!(
             Nconverges = 0
         end
 
-        #if (Nconverges >= 2) && (dot_BlochWavefunc(g,g) >= 1e-5)
-        #    println("Probably early convergence, continuing ...")
-        #    Nconverges = 0
-        #end
+        if (Nconverges >= 2) && (norm_g >= etot_conv_thr/10)
+            println("Probably early convergence, continuing ...")
+            Nconverges = 0
+        end
         
         if Nconverges >= 2
             @printf("\nEmin_PCG_dot is converged in iter: %d\n", iter)

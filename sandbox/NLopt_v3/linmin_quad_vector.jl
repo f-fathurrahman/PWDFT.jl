@@ -1,20 +1,16 @@
 # return succeed or not
 # modify Ham (internally)
 # return success_or_not, α, αt
-function linmin_quad!( Ham::Hamiltonian,
-    psiks_orig::BlochWavefunc, g::BlochWavefunc, d::BlochWavefunc,
-    α::Float64, αt::Float64, E_orig::Float64, minim_params::MinimizeParams
+# vary psiks for one kpt
+function linmin_quad!( Ham, ikspin::Int64,
+    psiks_orig, g, d,
+    α::Float64, αt::Float64, E_orig, minim_params
 )
 
-    Nkspin = length(psiks_orig)
     psiks = deepcopy(psiks_orig)
-    CellVolume = Ham.pw.CellVolume
-    Npoints = prod(Ham.pw.Ns)
-    dVol = prod(Ham.pw.Ns)
-    αPrev = 0.0
-    gdotd = 2*real(dot(g,d)) #*dVol #/Npoints # directional derivative at starting point
 
-    println("gdotd = ", gdotd)
+    αPrev = 0.0
+    gdotd = dot_BlochWavefunc(g,d) # directional derivative at starting point
 
     if gdotd >= 0.0
         @printf("Bad step direction: g.d = %f > 0.0\n", gdotd)
@@ -40,10 +36,10 @@ function linmin_quad!( Ham::Hamiltonian,
         end
 
         # Try the test step
-        do_step!( psiks, αt - αPrev, d )
+        do_step!( psiks[ikspin], αt - αPrev, d[ikspin] )
         αPrev = αt
         E_trial = calc_energies_only!( Ham, psiks )
-
+        
         # Check if step crossed domain of validity of parameter space:
         if !isfinite(E_trial)
             αt = αt * αt_reduceFactor
@@ -51,15 +47,12 @@ function linmin_quad!( Ham::Hamiltonian,
             continue
         end
 
+
         # Predict step size:
         α = 0.5 * αt^2 *gdotd / (αt * gdotd + E_orig - E_trial)
 
-        println("E_trial    = ", E_trial)
-        println("E expected = ", E_orig + αt*gdotd)
-
         # Check reasonableness of predicted step size:
         if α < 0
-        #if E_trial < (E_orig + αt*gdotd)
             # Curvature has the wrong sign
             # That implies E_trial < E, so accept step for now, and try descending further next time
             αt = αt * αt_increaseFactor;
@@ -94,7 +87,7 @@ function linmin_quad!( Ham::Hamiltonian,
     # Actual step:
     for s in 1:N_α_adjust_max        
         # Try the step:
-        do_step!( psiks, α - αPrev, d )
+        do_step!( psiks[ikspin], α - αPrev, d[ikspin] )
         αPrev = α
         E_actual = calc_energies_only!( Ham, psiks )
 
@@ -123,4 +116,3 @@ function linmin_quad!( Ham::Hamiltonian,
 
     return true, α, αt
 end
-
