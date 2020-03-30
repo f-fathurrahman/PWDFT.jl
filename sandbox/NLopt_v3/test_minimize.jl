@@ -40,11 +40,11 @@ function main()
     #linmin_debug!( Ham, psiks, startingrhoe=:random, skip_initial_diag=true )
     
     #KS_solve_SCF!( Ham, mix_method="anderson", betamix=0.5 , etot_conv_thr=1e-8 )
-    KS_solve_SCF_NLsolve!( Ham )
+    #KS_solve_SCF_NLsolve!( Ham )
     #KS_solve_Emin_PCG!( Ham, startingrhoe=:random, skip_initial_diag=true, i_cg_beta=4 )
     #KS_solve_Emin_PCG!( Ham, i_cg_beta=1 )
     #KS_solve_Emin_PCG_dot!( Ham, psiks, startingrhoe=:random, skip_initial_diag=true, etot_conv_thr=1e-8 )
-    #KS_solve_Emin_PCG_dot!( Ham, psiks, etot_conv_thr=1e-8 )
+    KS_solve_Emin_PCG_dot!( Ham, psiks, etot_conv_thr=1e-8 )
 end
 
 main()
