@@ -1,6 +1,6 @@
 function KS_solve_Emin_PCG_dot!(
     Ham::Hamiltonian, psiks::BlochWavefunc;
-    startingwfc=:random, savewfc=false,
+    startingwfc=:random,
     startingrhoe=:gaussian,
     skip_initial_diag=false,
     α_t=3e-5, NiterMax=200, verbose=true,
@@ -133,7 +133,8 @@ function KS_solve_Emin_PCG_dot!(
         Etot = calc_energies_grad!( Ham, psiks, g, Kg )
         
         diffE = Etot_old - Etot
-        norm_g = norm(g)/length(g)
+        norm_g = sqrt(2.0*real(dot(g,Kg))/length(g))
+        #norm_g = norm(g)/length(g)
         #norm_g = 2*real(dot(g,g))
         mae_rhoe = sum( abs.( Ham.rhoe - Rhoe_old ) )/(Npoints*Nspin)
         @printf("Emin_PCG_dot step %8d = %18.10f  %12.7e %12.7e %12.7e\n", iter, Etot, diffE, norm_g, mae_rhoe)
@@ -195,14 +196,6 @@ function KS_solve_Emin_PCG_dot!(
         @printf("-------------------------\n")
         @printf("\n")
         println(Ham.energies)
-    end
-
-    if savewfc
-        for ikspin = 1:Nkpt*Nspin
-            wfc_file = open("WFC_ikspin_"*string(ikspin)*".data","w")
-            write( wfc_file, psiks[ikspin] )
-            close( wfc_file )
-        end
     end
 
     return
