@@ -1,4 +1,4 @@
-using SpecialFunctions: erf
+using SpecialFunctions: erf, gamma
 
 struct PsPot_GTH
     pspfile::String
@@ -112,7 +112,7 @@ end
 """
 Evaluate GTH local pseudopotential in R-space
 """
-function eval_Vloc_R( psp::PsPot_GTH, r::Array{Float64,2} )
+function eval_Vloc_R( psp::PsPot_GTH, r::Array{Float64,1} )
 
     Npoints = size(r)[1]
     Vloc = zeros(Npoints)
@@ -215,7 +215,7 @@ function eval_proj_R( psp::PsPot_GTH, l, i, r::Float64 )
     else
         rr = r^(l + 2*(i-1))
     end
-    fprj = sqrt(2) * rr * exp(-r^2/(2*psp.rc[l+1])) /
+    fprj = sqrt(2) * rr * exp( -r^2 / (2*psp.rc[l+1]^2) ) /
            ( psp.rc[l+1]^(l + (4*i-1)/2) * x )
     return fprj
 end
