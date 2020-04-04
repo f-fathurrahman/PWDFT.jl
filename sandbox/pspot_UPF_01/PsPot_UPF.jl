@@ -62,7 +62,7 @@ function PsPot_UPF( upf_file::String )
 
     V_local = zeros(Float64, Nr)
     for i = 1:Nr
-        V_local[i] = parse(Float64, spl_str[i])
+        V_local[i] = parse(Float64, spl_str[i])*0.5 # convert to Hartree
     end
 
     Nproj = parse(Int64,LightXML.attributes_dict(pp_header[1])["number_of_proj"])
@@ -83,9 +83,8 @@ function PsPot_UPF( upf_file::String )
         pp_beta_str = replace(pp_beta_str, "\n" => " ")
         spl_str = split(pp_beta_str, keepempty=false)
         for i = 1:Nr
-            proj_func[i,iprj] = parse(Float64,spl_str[i])
+            proj_func[i,iprj] = parse(Float64,spl_str[i])*0.5 # Convert to Hartree
         end
-        #plot_func_radial(r, proj_func[:,iprj], "TEMP_PP_BETA."*string(iprj)*".pdf")
     end
 
     Dij = zeros(Nproj,Nproj)
