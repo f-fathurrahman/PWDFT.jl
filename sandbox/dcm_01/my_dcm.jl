@@ -31,10 +31,12 @@ function my_dcm!( Ham )
     R = zeros(ComplexF64, Nbasis, Nstates)
 
     Y = zeros(ComplexF64, Nbasis, 3*Nstates)
+    KY = zeros(ComplexF64, Nbasis, 3*Nstates)
     B = zeros(Float64, 3*Nstates, 3*Nstates)
 
     T = zeros(ComplexF64, 3*Nstates, 3*Nstates )
 
+    ispin = 1
     V_loc = Ham.potentials.Hartree + Ham.potentials.XC[:,ispin]
 
     for iterDCM in 1:1
@@ -53,7 +55,7 @@ function my_dcm!( Ham )
         if iterDCM > 1
             B = real(Y'*Y)
         else
-            B[set5,set5] = real(Y'[set5,:] * Y[:,set5])
+            B[set5,set5] = real(Y[:,set5]' * Y[:,set5])
         end
         B = 0.5*(B + B')
         display(B)
@@ -68,11 +70,11 @@ function my_dcm!( Ham )
             T = real( Y' * KY )
         else
             # only set5=1:2*Nstates is active for iter=1
-            KY = op_K( Ham, Y[:,set5] ) + op_V_Ps_loc( Ham, Y[:,set5] )
+            KY[:,set5] = op_K( Ham, Y[:,set5] ) + op_V_Ps_loc( Ham, Y[:,set5] )
             if Ham.pspotNL.NbetaNL > 0
-                KY = KY + op_V_Ps_nloc( Ham, Y[:,set5] )
+                KY[:,set5] = KY[:,set5] + op_V_Ps_nloc( Ham, Y[:,set5] )
             end
-            T[set5,set5] = real( Y'[:,set5] * KY )
+            T[set5,set5] = real( Y[:,set5]' * KY[:,set5] )
         end
 
         Rhoe_old = copy(Ham.rhoe)
