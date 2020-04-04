@@ -85,7 +85,6 @@ function my_dcm!( Ham )
 
     end
 
-
     println("my_dcm is finished")
 
     return
