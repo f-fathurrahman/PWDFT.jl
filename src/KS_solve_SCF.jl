@@ -1,3 +1,9 @@
+# For compatibility
+function KS_solve_SCF!( Ham::Hamiltonian; kwargs... )
+    KS_solve_SCF!( Ham, rand_BlochWavefunc(Ham); kwargs... )
+    return
+end
+
 """
     KS_solve_SCF!( Ham, kwargs... )
 
@@ -15,9 +21,7 @@ Commonly used arguments:
 - `kT`: smearing parameter
 """
 function KS_solve_SCF!(
-    Ham::Hamiltonian ;
-    startingwfc=:random,
-    savewfc=false,
+    Ham::Hamiltonian, psiks::BlochWavefunc;
     startingrhoe=:gaussian,
     betamix=0.2,
     NiterMax=100,
@@ -75,16 +79,6 @@ function KS_solve_SCF!(
         println("")
     end
 
-    #
-    # Initial wave function
-    #
-    if startingwfc == :read
-        psiks = read_psiks( Ham )
-    else
-        # generate random BlochWavefunc
-        psiks = rand_BlochWavefunc( Ham )
-    end
-
     E_GAP_INFO = false
     if Nstates_occ < Nstates
         E_GAP_INFO = true
@@ -102,7 +96,7 @@ function KS_solve_SCF!(
     #
     Rhoe = zeros(Float64,Npoints,Nspin)
 
-    if startingrhoe == :gaussian && startingwfc == :random
+    if startingrhoe == :gaussian
         if Nspin == 1
             Rhoe[:,1] = guess_rhoe( Ham )
         else
@@ -371,14 +365,6 @@ function KS_solve_SCF!(
         @printf("-------------------------\n")
         @printf("\n")
         println(Ham.energies, use_smearing=use_smearing)
-    end
-
-    if savewfc
-        for ikspin = 1:Nkpt*Nspin
-            wfc_file = open("WFC_ikspin_"*string(ikspin)*".data","w")
-            write( wfc_file, psiks[ikspin] )
-            close( wfc_file )
-        end
     end
 
     return
