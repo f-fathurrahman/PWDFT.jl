@@ -37,7 +37,7 @@ function create_Ham_Si_fcc( ; xcfunc="VWN" )
         """
         2
 
-        Si  0.0  0.1  0.0
+        Si  0.0  0.0  0.0
         Si  0.25  0.25  0.25
         """, in_bohr=true, LatVecs=gen_lattice_fcc(5.431*ANG2BOHR))
 

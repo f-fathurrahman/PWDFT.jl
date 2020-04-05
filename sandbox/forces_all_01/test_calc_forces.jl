@@ -12,7 +12,7 @@ include("calc_forces_Ps_loc.jl")
 include("calc_forces_Ps_nloc.jl")
 
 #include("symmetry_atoms.jl")
-include("../symmetry_qe/SymmetryBase.jl")
+#include("../symmetry_qe/SymmetryBase.jl")
 
 include("create_Ham.jl")
 
@@ -27,16 +27,17 @@ function test_main()
     #Ham = create_Ham_CO()
     println(Ham)
 
-    sym_base = SymmetryBase(Ham.atoms)
+    #sym_base = SymmetryBase(Ham.atoms)
     #println(Ham.sym_info)
     #irt = init_irt(Ham.atoms, Ham.sym_info)
 
     Random.seed!(1234)
     
-    KS_solve_Emin_PCG!(Ham, savewfc=true)
-    #KS_solve_SCF!(Ham, mix_method="rpulay", etot_conv_thr=1e-8, savewfc=true)
+    #KS_solve_Emin_PCG!(Ham, savewfc=true)
+    #psiks = read_psiks(Ham)
 
-    psiks = read_psiks(Ham)
+    psiks = rand_BlochWavefunc(Ham)
+    KS_solve_SCF!( Ham, psiks, mix_method="anderson", etot_conv_thr=1e-6 )
 
     atoms = Ham.atoms
     Natoms = atoms.Natoms
@@ -66,7 +67,7 @@ function test_main()
                 F_Ps_nloc[1,ia], F_Ps_nloc[2,ia], F_Ps_nloc[3,ia] )
     end
     
-    symmetrize_vector!( Ham.pw.LatVecs, sym_base, F_Ps_nloc )
+    PWDFT.symmetrize_vector!( Ham.pw.LatVecs, Ham.sym_info, F_Ps_nloc )
     println("Ps nloc forces symmetrized:")
     for ia = 1:Natoms
         @printf("%s %18.10f %18.10f %18.10f\n", atsymbs[ia],
@@ -76,7 +77,7 @@ function test_main()
 
 
     F_total = F_NN + F_Ps_loc + F_Ps_nloc
-    println("Total forces:")
+    println("Total forces: (in Ry unit)")
     for ia = 1:Natoms
         @printf("%s %18.10f %18.10f %18.10f\n", atsymbs[ia],
                 F_total[1,ia], F_total[2,ia], F_total[3,ia] )
