@@ -1,9 +1,9 @@
+using LinearAlgebra
 using PWDFT
 
 include("smearing.jl")
 
-function main()
-    
+function test_01()
     evals = [1.0, 2.0, 3.0, 4.0]
     E_f = 2.5
     kT = 0.1
@@ -14,4 +14,20 @@ function main()
     println( PWDFT.wgauss.(x) )
 end
 
-main()
+#test_01()
+
+function test_02()
+    evals = [1.0, 2.0, 3.0, 4.0]
+    E_f = 2.1
+    kT = 0.1
+
+    Nstates = length(evals)
+    v = rand(ComplexF64,Nstates)
+    ∇F = diagm( 0 => v )
+    display(∇F); println()
+
+    ∇ϵ = grad_smear( smear_fermi, smear_fermi_prime, evals, E_f, kT, ∇F )
+    display(∇ϵ); println()
+end
+
+test_02()
