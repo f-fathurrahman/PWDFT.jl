@@ -580,6 +580,26 @@ struct SymmetryInfo
     irt::Array{Int64,2}
 end
 
+function SymmetryInfo()
+    Nrots = 1
+    Nsyms = 1
+    s = zeros(Int64,3,3,1)
+    s[1,1,1] = 1
+    s[2,2,1] = 1
+    s[3,3,1] = 1
+    #
+    inv_s = copy(s)
+    #
+    sname = ["identity"]
+    #
+    ft = zeros(3,1)
+    #
+    non_symmorphic = [false]
+    #
+    irt = zeros(Int64,1,1)
+    #
+    return SymmetryInfo( Nrots, Nsyms, s, inv_s, sname, ft, non_symmorphic, irt )
+end
 
 function SymmetryInfo( atoms::Atoms )
 
