@@ -133,8 +133,8 @@ function KS_solve_Emin_PCG_dot!(
         Etot = calc_energies_grad!( Ham, psiks, g, Kg )
         
         diffE = Etot_old - Etot
-        norm_g = sqrt(2.0*real(dot(g,Kg))/length(g))
-        #norm_g = norm(g)/length(g)
+        #norm_g = sqrt(2.0*real(dot(g,Kg))/length(g))
+        norm_g = norm(g)/length(g)
         #norm_g = 2*real(dot(g,g))
         mae_rhoe = sum( abs.( Ham.rhoe - Rhoe_old ) )/(Npoints*Nspin)
         @printf("Emin_PCG_dot step %8d = %18.10f  %12.7e %12.7e %12.7e\n", iter, Etot, diffE, norm_g, mae_rhoe)
@@ -153,7 +153,7 @@ function KS_solve_Emin_PCG_dot!(
         #    Nconverges = 0
         #end
         
-        if (Nconverges >= 2) && (norm_g > 1e-4)
+        if (Nconverges >= 2) && (norm_g > 1e-6)
             println("Probably early convergence, continuing ...")
             Nconverges = 0
         end

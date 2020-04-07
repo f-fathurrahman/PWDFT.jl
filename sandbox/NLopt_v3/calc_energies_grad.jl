@@ -22,6 +22,7 @@ function calc_energies_grad!( Ham, psiks, g, Kg )
         Ham.ik = ik
         i = ik + (ispin-1)*Nkpt
         calc_grad!( Ham, psiks[i], g[i] )
+        #Kg[i] = copy(g[i])
         #Kprec!( ik, Ham.pw, g[i], Kg[i] )
         Kprec!( ik, Ham.pw, psiks[i], Ham.electrons.Focc[:,i], g[i], Kg[i] )
     end
@@ -52,6 +53,7 @@ function calc_grad!( Ham::Hamiltonian, psiks::BlochWavefunc, g::BlochWavefunc, K
         Ham.ik = ik
         i = ik + (ispin-1)*Nkpt
         calc_grad!( Ham, psiks[i], g[i] )
+        #Kg[i] = copy(g[i])
         #Kprec!( ik, Ham.pw, g[i], Kg[i] )
         Kprec!( ik, Ham.pw, psiks[i], Ham.electrons.Focc[:,i], g[i], Kg[i] )        
     end
@@ -90,9 +92,11 @@ function calc_grad!( Ham::Hamiltonian, ψ::Array{ComplexF64,2}, g::Array{Complex
     Hψ = op_H( Ham, ψ )
     Hsub = ψ' * Hψ
     Hψ = Hψ - ψ*Hsub
+
     for ist in 1:Nstates
         g[:,ist] = wk_ik * Focc[ist,ikspin] * Hψ[:,ist]
     end
+
     return
 
 end
@@ -126,20 +130,26 @@ function Kprec!( ik::Int64, pw::PWGrid, ψ::Array{ComplexF64,2}, Focc_ikspin::Ar
     idx_gw2g = pw.gvecw.idx_gw2g[ik]
     G = pw.gvec.G
     k = pw.gvecw.kpoints.k[:,ik]
-    wk = pw.gvecw.kpoints.wk
+    wk = pw.gvecw.kpoints.wk[ik]
     
+    Ekin = 0.0
     for ist = 1:Nstates
-        Ekin = 0.0 # excluding 0.5 factor
         for igk = 1:Ngw_ik
             ig = idx_gw2g[igk]
             Gw2 = (G[1,ig] + k[1])^2 + (G[2,ig] + k[2])^2 + (G[3,ig] + k[3])^2
-            Ekin = Ekin + abs(ψ[igk,ist])^2 * Gw2 # excluding Focc and wk
+            Ekin = Ekin + Focc_ikspin[ist]*abs(ψ[igk,ist])^2 * Gw2
         end
-        #Ekin = wk[ik]*Focc_ikspin[ist]*Ekin
+    end
+    Ekin = 0.5*wk*Ekin
+    KE_rollover = Ekin/(wk*sum(Focc_ikspin))
+    for ist = 1:Nstates
         for igk = 1:Ngw_ik
             ig = idx_gw2g[igk]
             Gw2 = (G[1,ig] + k[1])^2 + (G[2,ig] + k[2])^2 + (G[3,ig] + k[3])^2
-            x = Gw2/Ekin
+            x = 0.5*Gw2/KE_rollover
+            #precondFactor = 1 + x*(1 + x*(1 + x*(1 + x*(1 + x*(1 + x*(1 + x*(1 + x)))))))
+            #precondFactor = precondFactor/(1 + x*precondFactor)
+            #Kv[igk,ist] = v[igk,ist]*precondFactor
             num = (1 - x^8) #27 + 18*x + 12*x^2 + 8*x^3
             denum = (1 - x^9) #num + 16*x^4
             Kv[igk,ist] = v[igk,ist]*num/denum

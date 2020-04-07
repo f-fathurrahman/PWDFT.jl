@@ -43,7 +43,8 @@ function create_Ham_Si_fcc( ; xcfunc="VWN", Nspin=1 )
         if Nspin == 2
             return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3], Nspin=2, extra_states=4 )
         else
-            return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3] )
+            #return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3], use_symmetry=false, time_reversal=false )
+            return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[8,8,8] )
         end
     end
 end
@@ -63,6 +64,7 @@ function create_Ham_GaAs()
     pspfiles = [joinpath(DIR_PSP, "Ga-q3.gth"),
                 joinpath(DIR_PSP, "As-q5.gth")]
     ecutwfc = 15.0
+    #return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3], use_symmetry=false, time_reversal=false )
     return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3] )
 end
 

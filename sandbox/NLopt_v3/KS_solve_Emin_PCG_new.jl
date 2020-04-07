@@ -88,8 +88,8 @@ function KS_solve_Emin_PCG_new!( Ham, psiks;
             else
                 dotgPrevKg = 0.0
             end
-            #β = (gKnorm - dotgPrevKg)/gKnormPrev # Polak-Ribiere
-            β = gKnorm/gKnormPrev # Fletcher-Reeves
+            β = (gKnorm - dotgPrevKg)/gKnormPrev # Polak-Ribiere
+            #β = gKnorm/gKnormPrev # Fletcher-Reeves
             #β = (gKnorm - dotgPrevKg) / ( dotgd - dot_BlochWavefunc(d,gPrev) )
             #β = gKnorm/dot_BlochWavefunc(g .- gPrev, d_old)
             #β = 0.0
@@ -184,11 +184,11 @@ function KS_solve_Emin_PCG_new!( Ham, psiks;
         #norm_g = 2*real(dot(g,g))
         diffE = Etot_old - Etot
         @printf("Emin_PCG_new step %8d = %18.10f  %10.7e  %10.7e\n", iter, Etot, diffE, norm_g)
-        for i in 1:Nkspin
-            ng = norm(g[i])
-            nKg = norm(Kg[i])
-            @printf("ikspin = %2d norm(g) = %e norm(Kg) = %e, ratio = %f\n", i, ng, nKg, ng/nKg)
-        end
+        #for i in 1:Nkspin
+        #    ng = norm(g[i])
+        #    nKg = norm(Kg[i])
+        #    @printf("ikspin = %2d norm(g) = %e norm(Kg) = %e, ratio = %f\n", i, ng, nKg, ng/nKg)
+        #end
         if diffE < 0.0
             println("*** WARNING: Etot is not decreasing")
         end
@@ -199,10 +199,10 @@ function KS_solve_Emin_PCG_new!( Ham, psiks;
             Nconverges = 0
         end
 
-        #if (Nconverges >= 2) && (norm_g >= etot_conv_thr*10)
-        #    println("Probably early convergence, continuing ...")
-        #    Nconverges = 0
-        #end
+        if (Nconverges >= 2) && (norm_g >= 1e-5)
+            println("Probably early convergence, continuing ...")
+            Nconverges = 0
+        end
         
         if Nconverges >= 2
             @printf("\nEmin_PCG is converged in iter: %d\n", iter)

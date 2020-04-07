@@ -27,8 +27,8 @@ function main()
 
     #Ham = create_Ham_H2()
     #Ham = create_Ham_H_atom()
-    #Ham = create_Ham_Si_fcc()
-    Ham = create_Ham_GaAs()
+    Ham = create_Ham_Si_fcc()
+    #Ham = create_Ham_GaAs()
     #Ham = create_Ham_NH3()
     #Ham = create_Ham_ZnO()
 
@@ -39,12 +39,12 @@ function main()
     #KS_solve_Emin_PCG_new!( Ham, psiks, startingrhoe=:random, skip_initial_diag=true, NiterMax=150 )
     #linmin_debug!( Ham, psiks, startingrhoe=:random, skip_initial_diag=true )
     
-    #KS_solve_SCF!( Ham, mix_method="anderson", betamix=0.5 , etot_conv_thr=1e-8 )
+    KS_solve_SCF!( Ham, mix_method="anderson", betamix=0.5 , etot_conv_thr=1e-8 )
     #KS_solve_SCF_NLsolve!( Ham )
     #KS_solve_Emin_PCG!( Ham, startingrhoe=:random, skip_initial_diag=true, i_cg_beta=4 )
-    #KS_solve_Emin_PCG!( Ham, i_cg_beta=1 )
+    #KS_solve_Emin_PCG!( Ham, i_cg_beta=2 )
     #KS_solve_Emin_PCG_dot!( Ham, psiks, startingrhoe=:random, skip_initial_diag=true, etot_conv_thr=1e-8 )
-    KS_solve_Emin_PCG_dot!( Ham, psiks, etot_conv_thr=1e-6 )
+    #KS_solve_Emin_PCG_dot!( Ham, psiks, etot_conv_thr=1e-5 )
 end
 
 main()
