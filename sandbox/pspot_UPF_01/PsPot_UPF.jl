@@ -1,4 +1,7 @@
 struct PsPot_UPF
+    pspfile::String
+    atsymb::String
+    zval::Float64
     Nr::Int64
     r::Array{Float64,1}
     rab::Array{Float64,1}
@@ -99,7 +102,7 @@ function PsPot_UPF( upf_file::String )
     end
     Dij = reshape(Dij_temp,(Nproj,Nproj))*2  # convert to Hartree
 
-    return PsPot_UPF(Nr, r, rab, V_local, Nproj, proj_l, rcut_l, proj_func, Dij)
+    return PsPot_UPF(upf_file, atsymb, zval, Nr, r, rab, V_local, Nproj, proj_l, rcut_l, proj_func, Dij)
 end
 
 
