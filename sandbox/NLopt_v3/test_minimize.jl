@@ -39,12 +39,11 @@ function main()
     g = zeros_BlochWavefunc(Ham)
     Kg = zeros_BlochWavefunc(Ham)
 
-    #KS_solve_Emin_PCG_new!( Ham, psiks, NiterMax=100, etot_conv_thr=1e-6 )
+    KS_solve_Emin_PCG_new!( Ham, psiks, NiterMax=100, etot_conv_thr=1e-6 )
     #KS_solve_Emin_PCG_new!( Ham, psiks, startingrhoe=:random, skip_initial_diag=true, NiterMax=150 )
     #linmin_debug!( Ham, psiks, startingrhoe=:random, skip_initial_diag=true )
     
-    KS_solve_SCF!( Ham, psiks, mix_method="anderson", betamix=0.5 , etot_conv_thr=1e-6 )
-    
+    #KS_solve_SCF!( Ham, psiks, mix_method="anderson", betamix=0.5 , etot_conv_thr=1e-6 )
     println("sum Ham.energies = ", sum(Ham.energies))
     println("calc_energies = ", sum(calc_energies(Ham, psiks)))
     println("calc_energies only = ", calc_energies_only!(Ham, psiks))
@@ -55,14 +54,14 @@ function main()
     #println("Etot = ", Etot)
     #println("dot(g,g) = ", 2*real(dot(g,g)))
 
-    #KS_solve_SCF!( Ham, psiks, mix_method="anderson", betamix=0.5 , etot_conv_thr=1e-6 )
+    KS_solve_SCF!( Ham, psiks, startingrhoe=:none, mix_method="simple", betamix=0.1, etot_conv_thr=1e-6 )
 
     #KS_solve_SCF_NLsolve!( Ham )
     #KS_solve_Emin_PCG!( Ham, startingrhoe=:random, skip_initial_diag=true, i_cg_beta=4 )
     #KS_solve_Emin_PCG!( Ham, i_cg_beta=2 )
     #KS_solve_Emin_PCG_dot!( Ham, psiks, startingrhoe=:random, skip_initial_diag=true, etot_conv_thr=1e-8 )
-    KS_solve_Emin_PCG_dot!( Ham, psiks, etot_conv_thr=1e-7, skip_initial_diag=true )
-    KS_solve_Emin_PCG_dot!( Ham, psiks, etot_conv_thr=1e-7, skip_initial_diag=true )
+    KS_solve_Emin_PCG_dot!( Ham, psiks, etot_conv_thr=1e-6, skip_initial_diag=true )
+    KS_solve_Emin_PCG_dot!( Ham, psiks, etot_conv_thr=1e-6, skip_initial_diag=true )
 end
 
 main()
