@@ -42,7 +42,6 @@ function main()
     d_old = zeros_BlochWavefunc( Ham )
 
     Ham.energies.NN = calc_E_NN( Ham.atoms )
-    Ham.energies.PspCore = calc_PspCore_ene( Ham.atoms, Ham.pspots )
 
     Etot = calc_energies_grad!( Ham, psiks, g, Kg )
     println("Etot = ", Etot)

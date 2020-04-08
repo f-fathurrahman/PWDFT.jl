@@ -30,12 +30,10 @@ function linmin_debug!( Ham, psiks;
 
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( Ham.atoms )
-    # calculate PspCore energy
-    Ham.energies.PspCore = calc_PspCore_ene( Ham.atoms, Ham.pspots )
 
     Etot = calc_energies_grad!( Ham, psiks, g, Kg )
-    println("Starting Etot = ", Etot)
-    println("dot_BlochWavefunc(g,g) = ", dot_BlochWavefunc(g,g))
+    #println("Starting Etot = ", Etot)
+    #println("dot_BlochWavefunc(g,g) = ", dot_BlochWavefunc(g,g))
 
     d = deepcopy(Kg)
 

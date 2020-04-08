@@ -39,8 +39,6 @@ function KS_solve_Emin_PCG_new!( Ham, psiks;
 
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( Ham.atoms )
-    # calculate PspCore energy
-    #Ham.energies.PspCore = calc_PspCore_ene( Ham.atoms, Ham.pspots )
 
     # No need to orthonormalize
     Etot = calc_energies_grad!( Ham, psiks, g, Kg )
