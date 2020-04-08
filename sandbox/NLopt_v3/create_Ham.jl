@@ -44,7 +44,7 @@ function create_Ham_Si_fcc( ; xcfunc="VWN", Nspin=1 )
             return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3], Nspin=2, extra_states=4 )
         else
             #return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3], use_symmetry=false, time_reversal=false )
-            return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[8,8,8] )
+            return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3] )
         end
     end
 end

@@ -25,12 +25,12 @@ function KS_solve_Emin_PCG_dot!(
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( Ham.atoms )
     # calculate PspCore energy
-    Ham.energies.PspCore = calc_PspCore_ene( Ham.atoms, Ham.pspots )
+    #Ham.energies.PspCore = calc_PspCore_ene( Ham.atoms, Ham.pspots )
 
     # No need to orthonormalize
     Etot = calc_energies_grad!( Ham, psiks, g, Kg )
-    println("Initial Etot = ", Etot)
-    println("Initial dot_BlochWavefunc(g,g) = ", dot_BlochWavefunc(g,g))
+    #println("Initial Etot = ", Etot)
+    #println("Initial dot_BlochWavefunc(g,g) = ", dot_BlochWavefunc(g,g))
 
     d = deepcopy(Kg)
 
@@ -77,16 +77,19 @@ function KS_solve_Emin_PCG_dot!(
     end
 
     Rhoe_old = zeros(Float64,Npoints,2)
+    kpoints = Ham.pw.gvecw.kpoints
 
     for iter in 1:NiterMax
 
         gKnorm = dot_BlochWavefunc(g, Kg)
+        #gKnorm = dot_BlochWavefunc(kpoints, g, Kg)
         
         if !force_grad_dir
             
             dotgd = dot_BlochWavefunc(g, d)
             if gPrevUsed
                 dotgPrevKg = dot_BlochWavefunc(gPrev, Kg)
+                #dotgPrevKg = dot_BlochWavefunc(kpoints, gPrev, Kg)
             else
                 dotgPrevKg = 0.0
             end
@@ -153,10 +156,10 @@ function KS_solve_Emin_PCG_dot!(
         #    Nconverges = 0
         #end
         
-        if (Nconverges >= 2) && (norm_g > 1e-6)
-            println("Probably early convergence, continuing ...")
-            Nconverges = 0
-        end
+        #if (Nconverges >= 2) && (norm_g > 1e-6)
+        #    println("Probably early convergence, continuing ...")
+        #    Nconverges = 0
+        #end
 
         if Nconverges >= 2
             @printf("\nEmin_PCG_dot is converged in iter: %d\n", iter)

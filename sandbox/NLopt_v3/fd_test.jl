@@ -20,9 +20,9 @@ function main()
     #Ham = create_Ham_H2()
     #Ham = create_Ham_H_atom()
     #Ham = create_Ham_Si_fcc()
-    #Ham = create_Ham_GaAs()
+    Ham = create_Ham_GaAs()
     #Ham = create_Ham_NH3()
-    Ham = create_Ham_ZnO()
+    #Ham = create_Ham_ZnO()
 
     psiks = rand_BlochWavefunc( Ham )
 
@@ -33,16 +33,24 @@ function main()
     Kg = zeros_BlochWavefunc( Ham )
 
     Ham.energies.NN = calc_E_NN( Ham.atoms )
-    Ham.energies.PspCore = calc_PspCore_ene( Ham.atoms, Ham.pspots )
 
     E0 = calc_energies_grad!( Ham, psiks, g, Kg )
     println("E0 = ", E0)
+
+    println("dot_BlochWavefunc (g,g) = ", dot_BlochWavefunc(Ham.pw.gvecw.kpoints, g,g))
+
+    exit()
 
     for i in 1:length(psiks)
         @printf("i = %d dot(psiks,g) = %18.10e\n", i, 2*real(dot(psiks[i],g[i])))
     end
 
-    d = -Kg
+    for i in 1:length(psiks)
+        @printf("i = %d dot(g,g) = %18.10e\n", i, 2*real(dot(g[i],g[i])))
+    end
+
+    #d = -Kg
+    d = -g
     #d = rand_BlochWavefunc( Ham )
     #for i in 1:length(psiks)
     #    ortho_sqrt!(d[i])
@@ -62,8 +70,10 @@ function main()
     psic = zeros_BlochWavefunc( Ham )
     for α in 10.0 .^ range(1,stop=-10,step=-1)
         #
-        dE = 2.0*real( dot(g, α*d) )
-        #@printf("α = %e, dE = %18.10e\n", α, dE)
+        #dE = 2.0*real( dot(g, α*d) )
+        dE = dot_BlochWavefunc(Ham.pw.gvecw.kpoints, g, α*d) #*length(g)/prod(Ham.pw.gvecw.kpoints.mesh)
+        #dE = real( dot(g, α*d) )
+        @printf("α = %e, dE = %18.10e\n", α, dE)
         #
         psic = deepcopy( psiks )
         do_step!( psic, α, d )

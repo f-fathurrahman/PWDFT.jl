@@ -40,12 +40,12 @@ function KS_solve_Emin_PCG_new!( Ham, psiks;
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( Ham.atoms )
     # calculate PspCore energy
-    Ham.energies.PspCore = calc_PspCore_ene( Ham.atoms, Ham.pspots )
+    #Ham.energies.PspCore = calc_PspCore_ene( Ham.atoms, Ham.pspots )
 
     # No need to orthonormalize
     Etot = calc_energies_grad!( Ham, psiks, g, Kg )
-    println("Initial Etot = ", Etot)
-    println("Initial dot(g,g) = ", 2.0*real(dot(g,g)))
+    #println("Initial Etot = ", Etot)
+    #println("Initial dot(g,g) = ", 2.0*real(dot(g,g)))
 
     d = deepcopy(Kg)
 
@@ -199,10 +199,10 @@ function KS_solve_Emin_PCG_new!( Ham, psiks;
             Nconverges = 0
         end
 
-        if (Nconverges >= 2) && (norm_g >= 1e-5)
-            println("Probably early convergence, continuing ...")
-            Nconverges = 0
-        end
+        #if (Nconverges >= 2) && (norm_g >= 1e-5)
+        #    println("Probably early convergence, continuing ...")
+        #    Nconverges = 0
+        #end
         
         if Nconverges >= 2
             @printf("\nEmin_PCG is converged in iter: %d\n", iter)

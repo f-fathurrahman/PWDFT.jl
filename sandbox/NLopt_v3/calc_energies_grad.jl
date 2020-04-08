@@ -23,8 +23,8 @@ function calc_energies_grad!( Ham, psiks, g, Kg )
         i = ik + (ispin-1)*Nkpt
         calc_grad!( Ham, psiks[i], g[i] )
         #Kg[i] = copy(g[i])
-        #Kprec!( ik, Ham.pw, g[i], Kg[i] )
-        Kprec!( ik, Ham.pw, psiks[i], Ham.electrons.Focc[:,i], g[i], Kg[i] )
+        Kprec!( ik, Ham.pw, g[i], Kg[i] )
+        #Kprec!( ik, Ham.pw, psiks[i], Ham.electrons.Focc[:,i], g[i], Kg[i] )
     end
 
     return sum( Ham.energies )
@@ -54,8 +54,8 @@ function calc_grad!( Ham::Hamiltonian, psiks::BlochWavefunc, g::BlochWavefunc, K
         i = ik + (ispin-1)*Nkpt
         calc_grad!( Ham, psiks[i], g[i] )
         #Kg[i] = copy(g[i])
-        #Kprec!( ik, Ham.pw, g[i], Kg[i] )
-        Kprec!( ik, Ham.pw, psiks[i], Ham.electrons.Focc[:,i], g[i], Kg[i] )        
+        Kprec!( ik, Ham.pw, g[i], Kg[i] )
+        #Kprec!( ik, Ham.pw, psiks[i], Ham.electrons.Focc[:,i], g[i], Kg[i] )        
     end
     return
 end
@@ -93,8 +93,12 @@ function calc_grad!( Ham::Hamiltonian, ψ::Array{ComplexF64,2}, g::Array{Complex
     Hsub = ψ' * Hψ
     Hψ = Hψ - ψ*Hsub
 
+    NkFull = prod(Ham.pw.gvecw.kpoints.mesh)
     for ist in 1:Nstates
-        g[:,ist] = wk_ik * Focc[ist,ikspin] * Hψ[:,ist]
+        g[:,ist] = wk_ik * Focc[ist,ikspin] * Hψ[:,ist] #/ sqrt(wk_ik*NkFull)
+        #g[:,ist] = wk_ik * Hψ[:,ist]
+        #g[:,ist] = Hψ[:,ist]/wk_ik
+        #g[:,ist] = Focc[ist,ikspin] * Hψ[:,ist]
     end
 
     return
@@ -197,4 +201,20 @@ function dot_BlochWavefunc(x::BlochWavefunc, y::BlochWavefunc)
         res = res + real( dot(x[i], y[i]) )*2.0
     end
     return res
+end
+
+function dot_BlochWavefunc( kpoints::KPoints, x::BlochWavefunc, y::BlochWavefunc )
+    Nkspin = length(x)    
+    res = 0.0
+    wk = kpoints.wk
+    NkFull = prod(kpoints.mesh)
+    for i in 1:Nkspin
+        #res = res + real( dot(x[i], y[i]) ) * 2 #* (wk[i]*NkFull)
+        #res = res + real( dot(x[i], y[i]) )*2.0/(wk[i]*Nelectrons) # FIXME use ikspin
+        res = res + real( dot(x[i], y[i]) )*2.0/(wk[i]*NkFull) # FIXME use ikspin
+        #res = res + real( dot(x[i], y[i]) )*2.0/(NkFull)
+        #res = res + real( dot(x[i], y[i]) )*2.0/(wk[i]*Nkspin) # FIXME use ikspin
+        #res = res + real( dot(x[i], y[i]) )*2.0*wk[i] # FIXME use ikspin
+    end
+    return res#*NkFull
 end
