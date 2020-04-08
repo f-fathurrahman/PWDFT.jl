@@ -107,7 +107,6 @@ function KS_solve_SCF_potmix!(
     update!(Ham, Rhoe)
 
     Ham.energies.NN = calc_E_NN(atoms)
-    Ham.energies.PspCore = calc_PspCore_ene(atoms, pspots)
 
     evals = zeros(Nstates,Nkspin)
 

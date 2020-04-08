@@ -135,9 +135,9 @@ and BlochWavefunc `psiks`.
 
 Each `psiks` is assumed to be already orthonormalized elsewhere.
 
-`Ham.potentials` and `Ham.hoe` are not updated.
+`Ham.potentials` and `Ham.rhoe` are not updated.
 
-`Ham.energies.NN` and `Ham.energies.PspCore` should be calculated outside this function if needed.
+`Ham.energies.NN` should be calculated outside this function if needed.
 """
 function calc_energies( Ham::Hamiltonian, psiks::BlochWavefunc )
     
@@ -158,7 +158,6 @@ function calc_energies( Ham::Hamiltonian, psiks::BlochWavefunc )
     energies.Hartree = E_Hartree
     energies.XC      = E_xc
     energies.NN      = Ham.energies.NN
-    energies.PspCore = Ham.energies.PspCore
 
     return energies
 end

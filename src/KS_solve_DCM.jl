@@ -56,9 +56,6 @@ function KS_solve_DCM!( Ham::Hamiltonian;
 
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( Ham.atoms )
-
-    # calculate PspCore energy
-    Ham.energies.PspCore = calc_PspCore_ene( Ham.atoms, Ham.pspots )
     
     # Starting eigenvalues and psi
     for ispin = 1:Nspin

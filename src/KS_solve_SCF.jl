@@ -150,9 +150,6 @@ function KS_solve_SCF!(
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( Ham.atoms )
 
-    # calculate PspCore energy
-    Ham.energies.PspCore = calc_PspCore_ene( Ham.atoms, Ham.pspots )
-
     Nconverges = 0
 
     E_fermi = 0.0

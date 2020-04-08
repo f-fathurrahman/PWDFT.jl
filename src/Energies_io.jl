@@ -6,7 +6,6 @@ function show( io::IO, energies::Energies; use_smearing=false )
     @printf(io, "Ps_nloc    energy: %18.10f\n", energies.Ps_nloc )
     @printf(io, "Hartree    energy: %18.10f\n", energies.Hartree )
     @printf(io, "XC         energy: %18.10f\n", energies.XC )
-    @printf(io, "PspCore    energy: %18.10f\n", energies.PspCore )
 
     if ( abs(energies.mTS) > eps() ) || use_smearing
         @printf(io, "-TS              : %18.10f\n", energies.mTS)
@@ -15,7 +14,7 @@ function show( io::IO, energies::Energies; use_smearing=false )
     @printf(io, "-------------------------------------\n")
     
     E_elec = energies.Kinetic + energies.Ps_loc + energies.Ps_nloc +
-             energies.Hartree + energies.XC + energies.PspCore + energies.mTS
+             energies.Hartree + energies.XC + energies.mTS
     
     @printf(io, "Electronic energy: %18.10f\n", E_elec)
     @printf(io, "NN         energy: %18.10f\n", energies.NN )
