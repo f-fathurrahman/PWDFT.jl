@@ -249,6 +249,7 @@ function gen_kpoint_grid( LatVecs, nk1, nk2, nk3, k1, k2, k3, s, time_reversal )
     RecVecs = 2*pi*inv(LatVecs')
     
     # normalize weights to one
+    #println("wk before normalizing: ", wk)
     wk[:] = wk[:]/fact
     xk[:,:] = RecVecs*xk[:,:]
 
