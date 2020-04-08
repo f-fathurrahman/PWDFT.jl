@@ -11,10 +11,9 @@
 # 
 
 function init_Vloc_G(
-	Nmesh::Int64,
-	msh::Array{Float64,1},
+	Nr::Int64,
+    r::Array{Float64,1},
 	rab::Array{Float64,1},
-	r::Array{Float64,1},
 	Vloc_at::Array{Float64},
 	Zval::Float64,
 	Ngl::Int64, gl::Array{Float64,1},
@@ -22,35 +21,36 @@ function init_Vloc_G(
 )
  	
   	Vloc_G = zeros(Float64, Ngl)
-  	aux = zeros(Float64, Nmesh)
-  	aux1 = zeros(Float64, Nmesh)
+  	aux = zeros(Float64, Nr)
+  	aux1 = zeros(Float64, Nr)
 
   	if gl[1] < 1e-8
     	# first the G=0 term
-        for ir in 1:Nmsh
+        for ir in 1:Nr
            aux[ir] = r[ir] * ( r[ir] * Vloc_at[ir] + Zval )
         end
-    	Vloc_G[1] = integ_simpson(Nmsh, aux, rab)
+    	Vloc_G[1] = integ_simpson(Nr, aux, rab)
     	igl0 = 2
   	else
     	igl0 = 1
   	end
-  
+    
+    println("igl0 = ", igl0)
+
   	# here the G != 0 terms, we first compute the part of the integrand 
   	# function independent of |G| in real space
-  	for ir in 1:Nmsh
+  	for ir in 1:Nr
   	   aux1[ir] = r[ir] * Vloc_at[ir] + Zval * erf( r[ir] )
   	end
-  	fac = Zval/(2*pi)^2
  
   	for igl in igl0:Ngl
      	Gx = sqrt( gl[igl] )
-     	for ir = 1, msh
-     	  	aux[ir] = aux1[ir] * sin(gx*r[ir])/Gx
+     	for ir in 1:Nr
+     	  	aux[ir] = aux1[ir] * sin(Gx*r[ir])/Gx
      	end
-     	Vloc_G[igl] = integ_simpson( Nmsh, aux, rab )
+     	Vloc_G[igl] = integ_simpson( Nr, aux, rab )
 	end
 
-  	Vloc_G[:] = Vloc_G[:] * 4*pi / CellVolume
+  	Vloc_G[:] = Vloc_G[:] * 4*pi #/ CellVolume
   	return Vloc_G
 end
