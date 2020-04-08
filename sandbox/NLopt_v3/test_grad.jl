@@ -57,37 +57,27 @@ function main()
             psiks1[i][:,ist] .= 10.0 + ist
         end
         ortho_sqrt!(psiks1[i])
-        println("size(psiks1[i] = ", size(psiks1[i]))
-        @printf("%2d %18.10f\n", i, real(sum(psiks1[i])))
+        #println("size(psiks1[i] = ", size(psiks1[i]))
+        #@printf("%2d %18.10f\n", i, real(sum(psiks1[i])))
     end
 
     g1 = zeros_BlochWavefunc(Ham1)
     Kg1 = zeros_BlochWavefunc(Ham1)
     Rhoe1 = calc_rhoe(Ham1, psiks1)
+    dVol = Ham1.pw.CellVolume/prod(Ham1.pw.Ns)
+    println("integ Rhoe1 = ", sum(Rhoe1)*dVol)
     update!( Ham1, Rhoe1 )
     Etot1 = calc_energies_grad!( Ham1, psiks1, g1, Kg1 )
 
     println("Etot1 = ", Etot1)
     println("dot(g1,g1) = ", dot(g1,g1))
-    #wk_full = [1.0, 4.0, 1.0, 4.0, 2.0, 2.0, 2.0, 2.0]
-    #ss = 0.0 + im*0.0
+    println("dot(psiks1,g1) = ", 2*real(dot(psiks1,g1)))
     for i in 1:length(psiks1)
-        xx = dot(g1[i],g1[i]) #/wk_full[i]
-        #ss = ss + xx
-        println("i = ", i, " dot(g1,g1) = ", xx)
+        xx = 2.0*real(dot(g1[i],g1[i])) #/wk_full[i]
+        dd = 2.0*real(dot(psiks1[i],g1[i]))
+        @printf("i = %d dot(g1,g1) = %18.10e dot(g1,g1) = %18.10e\n",i, xx, dd)
+        println("dd = ", dd)
     end
-    #println("2*ss = ", 2*ss)
-
-
-    #i = 1
-    #println("i = ", i, " dot(g1,g1)   = ", dot(g1[i],g1[i])/1)
-    #i = 2
-    #println("i = ", i, " dot(g1,g1)/4 = ", dot(g1[i],g1[i])/4)
-    #i = 3
-    #println("i = ", i, " dot(g1,g1)/3 = ", dot(g1[i],g1[i])/3)
-    ##end
-    #println("sum dot(g1,g1)   = ", dot(g1[1],g1[1]) + dot(g1[2],g1[2])/4 + dot(g1[3],g1[3])/3)
-
 
     # Second Hamiltonian
 
@@ -107,13 +97,13 @@ function main()
 
     println("Etot2 = ", Etot2)
     println("dot(g2,g2) = ", dot(g2,g2))
-    ss = 0.0 + im*0.0
+    println("dot(psiks2,g2) = ", 2*real(dot(psiks2,g2)))
     for i in 1:length(psiks2)
-        xx = dot(g2[i],g2[i])
-        ss = ss + xx
-        println("i = ", i, " dot(g2,g2) = ", dot(g2[i],g2[i]))
+        xx = real(dot(g2[i],g2[i])) #/wk_full[i]
+        dd = real(dot(psiks2[i],g2[i]))
+        @printf("i = %d dot(g2,g2) = %18.10e dot(ψ2,g2) = %18.10e\n",i, xx, dd)
+        println("dd = ", dd)
     end
-    println("2*ss = ", 2*ss)
 
     println("dot_BlochWavefunc(g1,g1) = ", dot_BlochWavefunc(Ham1.pw.gvecw.kpoints, g1,g1))
     println("dot_BlochWavefunc(g2,g2) = ", dot_BlochWavefunc(Ham2.pw.gvecw.kpoints, g2,g2))

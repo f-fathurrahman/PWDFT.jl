@@ -197,7 +197,7 @@ function KS_solve_Emin_PCG_new!( Ham, psiks;
             Nconverges = 0
         end
 
-        #if (Nconverges >= 2) && (norm_g >= 1e-5)
+        #if (Nconverges >= 2) && (norm_g >= 1e-4) # (2*real(dot(g,g)) > 1e-10)
         #    println("Probably early convergence, continuing ...")
         #    Nconverges = 0
         #end

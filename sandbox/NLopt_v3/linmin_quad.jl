@@ -53,10 +53,10 @@ function linmin_quad!( Ham::Hamiltonian,
         # Predict step size:
         α = 0.5 * αt^2 *gdotd / (αt * gdotd + E_orig - E_trial)
 
-        @printf("E_trial     = %20.16e\n", E_trial)
-        @printf("ΔE expected = %20.16e\n", αt*gdotd)
-        @printf("E expected  = %20.16e\n", E_orig + αt*gdotd)
-        @printf("num         = %20.16e\n", 0.5 * αt^2 *gdotd)
+        #@printf("E_trial     = %20.16e\n", E_trial)
+        #@printf("ΔE expected = %20.16e\n", αt*gdotd)
+        #@printf("E expected  = %20.16e\n", E_orig + αt*gdotd)
+        #@printf("num         = %20.16e\n", 0.5 * αt^2 *gdotd)
 
         # Check reasonableness of predicted step size:
         if (α < 0) && (E_trial < E_orig)
@@ -99,7 +99,7 @@ function linmin_quad!( Ham::Hamiltonian,
         αPrev = α
         E_actual = calc_energies_only!( Ham, psiks )
 
-        @printf("linmin actual step: α = %18.10e E = %18.10f\n", α, E_actual)
+        #@printf("linmin actual step: α = %18.10e E = %18.10f\n", α, E_actual)
         
         if !isfinite(E_actual)
             α = α * αt_reduceFactor;

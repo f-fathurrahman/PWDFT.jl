@@ -38,8 +38,7 @@ function main()
     println("E0 = ", E0)
 
     println("dot_BlochWavefunc (g,g) = ", dot_BlochWavefunc(Ham.pw.gvecw.kpoints, g,g))
-
-    exit()
+    println("dot(g,psiks) = ", 2*real(dot(g,psiks)))
 
     for i in 1:length(psiks)
         @printf("i = %d dot(psiks,g) = %18.10e\n", i, 2*real(dot(psiks[i],g[i])))
@@ -70,8 +69,8 @@ function main()
     psic = zeros_BlochWavefunc( Ham )
     for α in 10.0 .^ range(1,stop=-10,step=-1)
         #
-        #dE = 2.0*real( dot(g, α*d) )
-        dE = dot_BlochWavefunc(Ham.pw.gvecw.kpoints, g, α*d) #*length(g)/prod(Ham.pw.gvecw.kpoints.mesh)
+        dE = 2.0*real( dot(g, α*d) )
+        #dE = dot_BlochWavefunc(Ham.pw.gvecw.kpoints, g, α*d) #*length(g)/prod(Ham.pw.gvecw.kpoints.mesh)
         #dE = real( dot(g, α*d) )
         @printf("α = %e, dE = %18.10e\n", α, dE)
         #

@@ -154,10 +154,10 @@ function KS_solve_Emin_PCG_dot!(
         #    Nconverges = 0
         #end
         
-        #if (Nconverges >= 2) && (norm_g > 1e-6)
-        #    println("Probably early convergence, continuing ...")
-        #    Nconverges = 0
-        #end
+        if (Nconverges >= 2) && (2*real(dot(g,g)) > 1e-10) #(norm_g > 1e-6)
+            println("Probably early convergence, continuing ...")
+            Nconverges = 0
+        end
 
         if Nconverges >= 2
             @printf("\nEmin_PCG_dot is converged in iter: %d\n", iter)

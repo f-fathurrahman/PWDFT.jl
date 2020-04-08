@@ -23,8 +23,8 @@ function calc_energies_grad!( Ham, psiks, g, Kg )
         i = ik + (ispin-1)*Nkpt
         calc_grad!( Ham, psiks[i], g[i] )
         #Kg[i] = copy(g[i])
-        Kprec!( ik, Ham.pw, g[i], Kg[i] )
-        #Kprec!( ik, Ham.pw, psiks[i], Ham.electrons.Focc[:,i], g[i], Kg[i] )
+        #Kprec!( ik, Ham.pw, g[i], Kg[i] )
+        Kprec!( ik, Ham.pw, psiks[i], Ham.electrons.Focc[:,i], g[i], Kg[i] )
     end
 
     return sum( Ham.energies )
@@ -54,8 +54,8 @@ function calc_grad!( Ham::Hamiltonian, psiks::BlochWavefunc, g::BlochWavefunc, K
         i = ik + (ispin-1)*Nkpt
         calc_grad!( Ham, psiks[i], g[i] )
         #Kg[i] = copy(g[i])
-        Kprec!( ik, Ham.pw, g[i], Kg[i] )
-        #Kprec!( ik, Ham.pw, psiks[i], Ham.electrons.Focc[:,i], g[i], Kg[i] )        
+        #Kprec!( ik, Ham.pw, g[i], Kg[i] )
+        Kprec!( ik, Ham.pw, psiks[i], Ham.electrons.Focc[:,i], g[i], Kg[i] )        
     end
     return
 end
@@ -145,7 +145,9 @@ function Kprec!( ik::Int64, pw::PWGrid, ψ::Array{ComplexF64,2}, Focc_ikspin::Ar
         end
     end
     Ekin = 0.5*wk*Ekin
-    KE_rollover = Ekin/(wk*sum(Focc_ikspin))
+    Nq = wk*sum(Focc_ikspin)
+    #println("Nq = ", Nq)
+    KE_rollover = Ekin/Nq
     for ist = 1:Nstates
         for igk = 1:Ngw_ik
             ig = idx_gw2g[igk]

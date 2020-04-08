@@ -17,7 +17,8 @@ function create_Ham_ZnO()
     pspfiles = [joinpath(DIR_PSP, "Zn-q2.gth"),
                 joinpath(DIR_PSP, "O-q6.gth")]
     ecutwfc = 15.0
-    return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=meshk )
+    #return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=meshk )
+    return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[1,1,1] )
 end
 
 function create_Ham_Si_fcc( ; xcfunc="VWN", Nspin=1 )
@@ -67,6 +68,18 @@ function create_Ham_GaAs()
     #return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3], use_symmetry=false, time_reversal=false )
     return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3] )
 end
+
+function create_Ham_GaAs_cubic()
+    DIR_PWINPUT = joinpath(DIR_STRUCTURES, "DATA_Semiconductors")
+    atoms, meshk = read_pwscf_input("GaAs.in")
+    # Initialize Hamiltonian
+    pspfiles = [joinpath(DIR_PSP, "As-q5.gth"),
+                joinpath(DIR_PSP, "Ga-q3.gth")]
+    ecutwfc = 15.0
+    return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=meshk )
+end
+
+
 
 function create_Ham_H2()
     atoms = Atoms(xyz_string=
