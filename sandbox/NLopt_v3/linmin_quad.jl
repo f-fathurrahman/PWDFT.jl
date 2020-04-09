@@ -13,7 +13,7 @@ function linmin_quad!( Ham::Hamiltonian,
     dVol = CellVolume/Npoints
     gdotd = 2.0*real(dot(g,d)) #*dVol #/Npoints # directional derivative at starting point
 
-    println("gdotd = ", gdotd)
+    #println("gdotd = ", gdotd)
 
     if gdotd >= 0.0
         @printf("Bad step direction: g.d = %f > 0.0\n", gdotd)

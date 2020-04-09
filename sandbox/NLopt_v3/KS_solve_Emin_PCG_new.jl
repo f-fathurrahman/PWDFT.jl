@@ -73,7 +73,7 @@ function KS_solve_Emin_PCG_new!( Ham, psiks;
 
     for iter in 1:NiterMax
 
-        println("\nBegin iter = ", iter)
+        #println("\nBegin iter = ", iter)
 
         gKnorm = 2.0*real(dot(g, Kg))
         
@@ -91,7 +91,7 @@ function KS_solve_Emin_PCG_new!( Ham, psiks;
             #β = (gKnorm - dotgPrevKg) / ( dotgd - dot_BlochWavefunc(d,gPrev) )
             #β = gKnorm/dot_BlochWavefunc(g .- gPrev, d_old)
             #β = 0.0
-            println("β raw = ", β)
+            #println("β raw = ", β)
             if β < 0.0
                 println("Resetting β")
                 β = 0.0
@@ -101,12 +101,12 @@ function KS_solve_Emin_PCG_new!( Ham, psiks;
             #println("gKnorm - dotgPrevKg = ", gKnorm - dotgPrevKg)
             #println("gKnormPrev = ", gKnormPrev)
 
-            denum = sqrt( dot_BlochWavefunc(g,g) * dot_BlochWavefunc(d,d) )
-            println("linmin test: ", dotgd/denum )
-            if gPrevUsed
-                cg_test  = dotgPrevKg/sqrt(gKnorm*gKnormPrev)
-                println("CG test: ", cg_test)
-            end
+            #denum = sqrt( dot_BlochWavefunc(g,g) * dot_BlochWavefunc(d,d) )
+            ##println("linmin test: ", dotgd/denum )
+            #if gPrevUsed
+            #    cg_test  = dotgPrevKg/sqrt(gKnorm*gKnormPrev)
+            #    println("CG test: ", cg_test)
+            #end
         end
 
         force_grad_dir = false
@@ -139,8 +139,8 @@ function KS_solve_Emin_PCG_new!( Ham, psiks;
 
         # Line minimization
         linmin_success, α, αt = linmin_quad!( Ham, psiks, g, d, α, αt, Etot, minim_params )
-        println("linmin_success = ", linmin_success)
-        @printf("α = %18.10e, αt = %18.10e\n", α, αt)
+        #println("linmin_success = ", linmin_success)
+        #@printf("α = %18.10e, αt = %18.10e\n", α, αt)
 
         #linmin_success, α = linmin_armijo!( Ham, psiks, g, d, Etot )
 
