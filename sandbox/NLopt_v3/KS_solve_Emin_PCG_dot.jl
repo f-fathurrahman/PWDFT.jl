@@ -36,14 +36,7 @@ function KS_solve_Emin_PCG_dot!(
 
     gPrevUsed = true
 
-    minim_params = MinimizeParams()
-
-    αt_start = minim_params.αt_start
-    αt_min = minim_params.αt_min
-    updateTestStepSize = minim_params.updateTestStepSize
-    αt = αt_start
-    α = αt
-
+    α = 0.0
     β = 0.0
     gKnorm = 0.0
     gKnormPrev = 0.0
