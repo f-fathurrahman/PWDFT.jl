@@ -1,16 +1,22 @@
+function KS_solve_Emin_PCG!( Ham::Hamiltonian; kwargs... )
+    KS_solve_Emin_PCG!( Ham, rand_BlochWavefunc(Ham); kwargs... )
+    return
+end
+
+
 """
     KS_solve_Emin_PCG!( Ham, kwargs... )
 
 Solve Kohn-Sham problem using direct energy minimization as described
 by Ismail-Beigi and Arias.
 """
-function KS_solve_Emin_PCG!( Ham::Hamiltonian;
-                             startingwfc=:random, savewfc=false,
-                             startingrhoe=:gaussian,
-                             skip_initial_diag=false,
-                             α_t=3e-5, NiterMax=200, verbose=true,
-                             print_final_ebands=false, print_final_energies=true,
-                             i_cg_beta=2, etot_conv_thr=1e-6 )
+function KS_solve_Emin_PCG!(
+    Ham::Hamiltonian, psiks::BlochWavefunc;
+    startingrhoe=:gaussian,
+    skip_initial_diag=false,
+    α_t=3e-5, NiterMax=200, verbose=true,
+    print_final_ebands=false, print_final_energies=true,
+    i_cg_beta=2, etot_conv_thr=1e-6 )
 
     pw = Ham.pw
     electrons = Ham.electrons
@@ -28,16 +34,6 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
     
     Nspin = electrons.Nspin
     Nkspin = Nkpt*Nspin
-
-    #
-    # Initial wave function
-    #
-    if startingwfc == :read
-        psiks = read_psiks( Ham )
-    else
-        # generate random BlochWavefunc
-        psiks = rand_BlochWavefunc( Ham )
-    end
 
     #
     # Calculated electron density from this wave function and
@@ -247,15 +243,6 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian;
         @printf("\n")
         println(Ham.energies)
     end
-
-    if savewfc
-        for ikspin = 1:Nkpt*Nspin
-            wfc_file = open("WFC_ikspin_"*string(ikspin)*".data","w")
-            write( wfc_file, psiks[ikspin] )
-            close( wfc_file )
-        end
-    end
-
 
     return
 
