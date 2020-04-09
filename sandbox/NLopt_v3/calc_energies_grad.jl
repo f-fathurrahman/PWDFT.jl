@@ -23,8 +23,8 @@ function calc_energies_grad!( Ham, psiks, g, Kg )
         i = ik + (ispin-1)*Nkpt
         calc_grad!( Ham, psiks[i], g[i] )
         #Kg[i] = copy(g[i])
-        #Kprec!( ik, Ham.pw, g[i], Kg[i] )
-        Kprec!( ik, Ham.pw, psiks[i], Ham.electrons.Focc[:,i], g[i], Kg[i] )
+        Kprec!( ik, Ham.pw, g[i], Kg[i] )
+        #Kprec!( ik, Ham.pw, psiks[i], Ham.electrons.Focc[:,i], g[i], Kg[i] )
     end
 
     return sum( Ham.energies )
@@ -54,8 +54,8 @@ function calc_grad!( Ham::Hamiltonian, psiks::BlochWavefunc, g::BlochWavefunc, K
         i = ik + (ispin-1)*Nkpt
         calc_grad!( Ham, psiks[i], g[i] )
         #Kg[i] = copy(g[i])
-        #Kprec!( ik, Ham.pw, g[i], Kg[i] )
-        Kprec!( ik, Ham.pw, psiks[i], Ham.electrons.Focc[:,i], g[i], Kg[i] )        
+        Kprec!( ik, Ham.pw, g[i], Kg[i] )
+        #Kprec!( ik, Ham.pw, psiks[i], Ham.electrons.Focc[:,i], g[i], Kg[i] )        
     end
     return
 end

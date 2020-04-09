@@ -66,7 +66,7 @@ function create_Ham_GaAs()
                 joinpath(DIR_PSP, "As-q5.gth")]
     ecutwfc = 15.0
     #return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3], use_symmetry=false, time_reversal=false )
-    return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,4] )
+    return Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[3,3,3] )
 end
 
 function create_Ham_GaAs_cubic()
