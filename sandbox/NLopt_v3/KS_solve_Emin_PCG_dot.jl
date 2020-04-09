@@ -1,6 +1,5 @@
 function KS_solve_Emin_PCG_dot!(
     Ham::Hamiltonian, psiks::BlochWavefunc;
-    startingwfc=:random,
     startingrhoe=:gaussian,
     skip_initial_diag=false,
     α_t=3e-5, NiterMax=200, verbose=true,
