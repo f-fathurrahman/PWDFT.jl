@@ -102,6 +102,8 @@ function KS_solve_SCF!(
         else
             Rhoe = guess_rhoe_atomic( Ham, starting_magnetization=starting_magnetization )
         end
+    elseif startingrhoe == :none
+        Rhoe = copy(Ham.rhoe)
     else
         calc_rhoe!( Ham, psiks, Rhoe )
     end
