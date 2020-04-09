@@ -1,4 +1,29 @@
-function KS_solve_Emin_PCG_dot!(
+function linmin_grad_vec!( Ham::Hamiltonian, psiks::BlochWavefunc, g, d, α_t::Float64, α )
+
+    psic = zeros_BlochWavefunc(Ham)
+    gt = zeros_BlochWavefunc(Ham)
+
+    Nkspin = length(psiks)
+    for i in 1:Nkspin
+        psic[i] = psiks[i] + α_t*d[i]
+        ortho_sqrt!( psic[i] )
+    end
+
+    calc_grad!( Ham, psic, gt )
+
+    for i in 1:Nkspin
+        denum = 2.0*real( dot(g[i] - gt[i], d[i]) )
+        if denum != 0.0
+            α[i] = abs( α_t * 2.0*real( dot(g[i], d[i]) )/denum )
+        else
+            α[i] = 0.0
+        end
+    end
+    return
+end
+
+
+function KS_solve_Emin_PCG_vec!(
     Ham::Hamiltonian, psiks::BlochWavefunc;
     startingrhoe=:gaussian,
     skip_initial_diag=false,
@@ -26,8 +51,6 @@ function KS_solve_Emin_PCG_dot!(
 
     # No need to orthonormalize
     Etot = calc_energies_grad!( Ham, psiks, g, Kg )
-    #println("Initial Etot = ", Etot)
-    #println("Initial dot_BlochWavefunc(g,g) = ", dot_BlochWavefunc(g,g))
 
     d = deepcopy(Kg)
 
@@ -36,10 +59,14 @@ function KS_solve_Emin_PCG_dot!(
 
     gPrevUsed = true
 
-    α = 0.0
-    β = 0.0
-    gKnorm = 0.0
-    gKnormPrev = 0.0
+    α_t = 3e-5
+    α = zeros(Float64,Nkspin)
+    β = zeros(Float64,Nkspin)
+    dotgd = zeros(Float64,Nkspin)
+    gKnorm = zeros(Float64,Nkspin)
+    gKnormPrev = zeros(Float64,Nkspin)
+    dotgPrevKg = zeros(Float64,Nkspin)
+
     force_grad_dir = true
 
     Etot_old = Etot
@@ -71,37 +98,37 @@ function KS_solve_Emin_PCG_dot!(
 
     for iter in 1:NiterMax
 
-        gKnorm = dot_BlochWavefunc(g, Kg)
-        #gKnorm = dot_BlochWavefunc(kpoints, g, Kg)
+        for i in 1:Nkspin
+            gKnorm[i] = 2*real(dot(g[i], Kg[i]))
+        end
         
         if !force_grad_dir
             
-            dotgd = dot_BlochWavefunc(g, d)
-            if gPrevUsed
-                dotgPrevKg = dot_BlochWavefunc(gPrev, Kg)
-                #dotgPrevKg = dot_BlochWavefunc(kpoints, gPrev, Kg)
-            else
-                dotgPrevKg = 0.0
+            for i in 1:Nkspin
+                dotgd[i] = 2*real(dot(g[i], d[i]))
             end
 
-            β = (gKnorm - dotgPrevKg)/gKnormPrev # Polak-Ribiere
-            #β = gKnorm/gKnormPrev # Fletcher-Reeves
-            #β = (gKnorm - dotgPrevKg) / ( dotgd - dot_BlochWavefunc(d,gPrev) )
-            #β = gKnorm/dot_BlochWavefunc(g .- gPrev, d_old)
-            #β = 0.0
-            #denum = sqrt( dot_BlochWavefunc(g,g) * dot_BlochWavefunc(d,d) )
-            #println("linmin test: ", dotgd/denum )
-            #if gPrevUsed
-            #    cg_test  = dotgPrevKg/sqrt(gKnorm*gKnormPrev)
-            #    println("CG test: ", cg_test)
-            #end
-        end
 
-        if β < 0.0
-            println("Resetting β")
-            β = 0.0
-        end
+            if gPrevUsed
+                for i in 1:Nkspin
+                    dotgPrevKg[i] = 2*real(dot(gPrev[i], Kg[i]))
+                end
+            else
+                dotgPrevKg .= 0.0
+            end
 
+            for i in 1:Nkspin
+                β[i] = (gKnorm[i] - dotgPrevKg[i])/gKnormPrev[i] # Polak-Ribiere
+                #β = gKnorm/gKnormPrev # Fletcher-Reeves
+                #β = (gKnorm - dotgPrevKg) / ( dotgd - dot_BlochWavefunc(d,gPrev) )
+                #β = gKnorm/dot_BlochWavefunc(g .- gPrev, d_old)
+                if β[i] < 0.0
+                    #println("Resetting β")
+                    β[i] = 0.0
+                end
+            end
+
+        end # force_grad_dir
         #println("β = ", β)
 
         force_grad_dir = false
@@ -109,17 +136,17 @@ function KS_solve_Emin_PCG_dot!(
         if gPrevUsed
             gPrev = deepcopy(g)
         end
-        gKnormPrev = gKnorm
+        gKnormPrev[:] = gKnorm[:]
 
         # Update search direction
         for i in 1:Nkspin
             d_old[i] = copy(d[i])
-            d[i] = -Kg[i] + β*d[i]
+            d[i] = -Kg[i] + β[i]*d[i]
         end
 
         constrain_search_dir!( d, psiks )
 
-        _, α = linmin_grad!( Ham, psiks, g, d, Etot )
+        linmin_grad_vec!( Ham, psiks, g, d, α_t, α )
         #println("α = ", α)
 
         Rhoe_old = copy(Ham.rhoe)
@@ -133,7 +160,7 @@ function KS_solve_Emin_PCG_dot!(
         norm_g = norm(g)/length(g)
         #norm_g = 2*real(dot(g,g))
         mae_rhoe = sum( abs.( Ham.rhoe - Rhoe_old ) )/(Npoints*Nspin)
-        @printf("Emin_PCG_dot step %8d = %18.10f  %12.7e %12.7e %12.7e\n", iter, Etot, diffE, norm_g, mae_rhoe)
+        @printf("Emin_PCG_vec step %8d = %18.10f  %12.7e %12.7e %12.7e\n", iter, Etot, diffE, norm_g, mae_rhoe)
         if diffE < 0.0
             println("*** WARNING: Etot is not decreasing")
         end
