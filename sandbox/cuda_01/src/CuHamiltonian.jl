@@ -19,7 +19,7 @@ end
 function CuHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
                         ecutwfc::Float64 ;
                         Nspin=1,
-                        meshk=[1,1,1], shiftk=[0,0,0],
+                        meshk=[1,1,1], shiftk=[0,0,0], time_reversal=true,
                         Ns_=(0,0,0),
                         kpoints=nothing,
                         kpts_str="",
@@ -46,7 +46,7 @@ function CuHamiltonian( atoms::Atoms, pspfiles::Array{String,1},
     if kpoints == nothing
         if kpts_str == ""
             # automatic generation of kpoints
-            kpoints = KPoints( atoms, meshk, shiftk )
+            kpoints = KPoints( atoms, meshk, shiftk, sym_info.s, time_reversal=time_reversal )
         else
             # use the given kpoints
             kpoints = kpoints_from_string( atoms, kpts_str )

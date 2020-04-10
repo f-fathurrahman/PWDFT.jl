@@ -1,7 +1,7 @@
 import PWDFT: KS_solve_Emin_PCG!
 
 function KS_solve_Emin_PCG!( Ham::CuHamiltonian;
-                             startingwfc=:random, savewfc=false,
+                             startingwfc=:random,
                              startingrhoe=:gaussian,
                              skip_initial_diag=false,
                              α_t=3e-5, NiterMax=200, verbose=true,
@@ -81,9 +81,6 @@ function KS_solve_Emin_PCG!( Ham::CuHamiltonian;
 
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( Ham.atoms )
-
-    # calculate PspCore energy
-    Ham.energies.PspCore = calc_PspCore_ene( Ham.atoms, Ham.pspots )
 
     # Calculate energy at this psi
     energies = calc_energies(Ham, psiks)
@@ -258,16 +255,6 @@ function KS_solve_Emin_PCG!( Ham::CuHamiltonian;
         @printf("\n")
         println(Ham.energies)
     end
-
-    if savewfc
-        error("savewfc == true is not yet implemented")
-        for ikspin = 1:Nkpt*Nspin
-            wfc_file = open("WFC_ikspin_"*string(ikspin)*".data","w")
-            write( wfc_file, psiks[ikspin] )
-            close( wfc_file )
-        end
-    end
-
 
     return
 

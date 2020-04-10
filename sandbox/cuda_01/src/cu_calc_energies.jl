@@ -198,7 +198,7 @@ end
 # `potentials` and `Rhoe` are not updated
 # Ham is assumed to be already updated at input psi
 #
-# Ham.energies.NN abd Ham.energies.PspCore should be calculated outside this function
+# Ham.energies.NN should be calculated outside this function
 function calc_energies( Ham::CuHamiltonian, psiks::CuBlochWavefunc )
     
     E_kin = calc_E_kin( Ham, psiks )
@@ -218,7 +218,6 @@ function calc_energies( Ham::CuHamiltonian, psiks::CuBlochWavefunc )
     energies.Hartree = E_Hartree
     energies.XC      = E_xc
     energies.NN      = Ham.energies.NN
-    energies.PspCore = Ham.energies.PspCore
 
     return energies
 end
