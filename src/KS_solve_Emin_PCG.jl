@@ -106,71 +106,66 @@ function KS_solve_Emin_PCG!(
 
     for iter = 1:NiterMax
 
-        for ispin = 1:Nspin
-        for ik = 1:Nkpt
+        for ispin = 1:Nspin, ik = 1:Nkpt
 
             Ham.ik = ik
             Ham.ispin = ispin
-            ikspin = ik + (ispin - 1)*Nkpt
+            i = ik + (ispin - 1)*Nkpt
 
-            g[ikspin] = calc_grad( Ham, psiks[ikspin] )
-            Kg[ikspin] = Kprec( Ham.ik, pw, g[ikspin] )
+            g[i] = calc_grad( Ham, psiks[i] )
+            Kg[i] = Kprec( Ham.ik, pw, g[i] )
 
             # XXX: define function trace for real(sum(conj(...)))
             if iter != 1
                 if i_cg_beta == 1
-                    β[ikspin] =
-                    real(sum(conj(g[ikspin]).*Kg[ikspin]))/real(sum(conj(g_old[ikspin]).*Kg_old[ikspin]))
-                    if abs(β[ikspin] - 1.0) < 0.2
-                        β[ikspin] = 0.0
+                    β[i] =
+                    real(sum(conj(g[i]).*Kg[i]))/real(sum(conj(g_old[i]).*Kg_old[i]))
+                    if abs(β[i] - 1.0) < 0.2
+                        β[i] = 0.0
                     end
                 elseif i_cg_beta == 2
-                    β[ikspin] =
-                    real(sum(conj(g[ikspin]-g_old[ikspin]).*Kg[ikspin]))/real(sum(conj(g_old[ikspin]).*Kg_old[ikspin]))
+                    β[i] = real( dot(g[i]-g_old[i], Kg[i]) )/real( dot(g_old[i],Kg_old[i]) )
                 elseif i_cg_beta == 3
-                    β[ikspin] =
-                    real(sum(conj(g[ikspin]-g_old[ikspin]).*Kg[ikspin]))/real(sum(conj(g[ikspin]-g_old[ikspin]).*d[ikspin]))
+                    β[i] =
+                    real(sum(conj(g[i]-g_old[ik]).*Kg[i]))/real(sum(conj(g[i]-g_old[i]).*d[i]))
                 else
-                    β[ikspin] =
-                    real(sum(conj(g[ikspin]).*Kg[ikspin]))/real(sum((g[ikspin]-g_old[ikspin]).*conj(d_old[ikspin])))
-                    if abs(β[ikspin] - 1.0) < 0.2
-                        β[ikspin] = 0.0
+                    β[i] =
+                    real(sum(conj(g[i]).*Kg[i]))/real(sum((g[i]-g_old[i]).*conj(d_old[i])))
+                    if abs(β[i] - 1.0) < 0.2
+                        β[i] = 0.0
                     end                    
                 end
             end
-            if β[ikspin] < 0.0
+            if β[i] < 0.0
                 #println("Resetting β")
-                β[ikspin] = 0.0
+                β[i] = 0.0
             end
 
-            d[ikspin] = -Kg[ikspin] + β[ikspin] * d_old[ikspin]
+            d[i] = -Kg[i] + β[i] * d_old[i]
 
-            psic[ikspin] = ortho_sqrt(psiks[ikspin] + α_t*d[ikspin])
-        end # ik
-        end # ispin
+            psic[i] = ortho_sqrt(psiks[i] + α_t*d[i])
+        end # ik, ispin
         
         calc_rhoe!( Ham, psic, Rhoe )
 
         update!(Ham, Rhoe)
 
-        for ispin = 1:Nspin
-        for ik = 1:Nkpt
+        for ispin = 1:Nspin, ik = 1:Nkpt
             Ham.ik = ik
             Ham.ispin = ispin
-            ikspin = ik + (ispin - 1)*Nkpt
-            gt[ikspin] = calc_grad(Ham, psic[ikspin])
+            i = ik + (ispin - 1)*Nkpt
+            gt[i] = calc_grad(Ham, psic[i])
 
-            denum = real(sum(conj(g[ikspin]-gt[ikspin]).*d[ikspin]))
+            denum = real(sum(conj(g[i]-gt[i]).*d[i]))
             if denum != 0.0
-                α[ikspin] = abs( α_t*real(sum(conj(g[ikspin]).*d[ikspin]))/denum )
+                α[i] = abs( α_t*real(sum(conj(g[i]).*d[i]))/denum )
             else
-                α[ikspin] = 0.0
+                α[i] = 0.0
             end
 
             # Update wavefunction
-            psiks[ikspin] = psiks[ikspin] + α[ikspin]*d[ikspin]
-            psiks[ikspin] = ortho_sqrt(psiks[ikspin])
-        end
+            psiks[i] = psiks[i] + α[i]*d[i]
+            psiks[i] = ortho_sqrt(psiks[i])
         end
 
         # Update Rhoe and potentials
@@ -213,17 +208,15 @@ function KS_solve_Emin_PCG!(
 
     # Calculate eigenvalues
     evecs = zeros(ComplexF64,Nstates,Nstates)
-    for ispin = 1:Nspin
-    for ik = 1:Nkpt
+    for ispin = 1:Nspin, ik = 1:Nkpt
         Ham.ik = ik
         Ham.ispin = ispin
-        ikspin = ik + (ispin - 1)*Nkpt
-        psiks[ikspin] = ortho_sqrt(psiks[ikspin])
-        Hr = Hermitian(psiks[ikspin]' * op_H(Ham, psiks[ikspin]))
+        i = ik + (ispin - 1)*Nkpt
+        psiks[i] = ortho_sqrt(psiks[i])
+        Hr = Hermitian(psiks[i]' * op_H(Ham, psiks[i]))
         evals, evecs = eigen(Hr)
-        Ham.electrons.ebands[:,ik] = evals
-        psiks[ikspin] = psiks[ikspin]*evecs
-    end
+        Ham.electrons.ebands[:,i] = evals
+        psiks[i] = psiks[i]*evecs
     end
 
     if verbose && print_final_ebands
