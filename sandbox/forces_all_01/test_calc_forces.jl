@@ -7,30 +7,38 @@ const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
 const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
 const DIR_STRUCTURES = joinpath(DIR_PWDFT, "structures")
 
+include(joinpath(DIR_PWDFT, "sandbox", "KS_solve_SCF_NLsolve.jl"))
+
 include("create_Ham.jl")
 
+include("../NLopt_v3/calc_energies_grad.jl")
+include("../NLopt_v3/linmin_grad.jl")
+include("../NLopt_v3/KS_solve_Emin_PCG_new.jl")
+include("../NLopt_v3/KS_solve_Emin_PCG_dot.jl")
+include("../NLopt_v3/KS_solve_Emin_PCG_vec.jl")
 
 function test_main()
 
     #Ham = create_Ham_H2()
-    Ham = create_Ham_Si_fcc()
+    #Ham = create_Ham_Si_fcc()
     #Ham = create_Ham_Si_fcc(xcfunc="PBE")
-    #Ham = create_Ham_GaAs_v1()
+    Ham = create_Ham_GaAs_v1()
     #Ham = create_Ham_GaAs_v2()
     #Ham = create_Ham_CO()
-    println(Ham)
+    #println(Ham)
 
     #sym_base = SymmetryBase(Ham.atoms)
     #println(Ham.sym_info)
     #irt = init_irt(Ham.atoms, Ham.sym_info)
 
     Random.seed!(1234)
-    
-    #KS_solve_Emin_PCG!(Ham, savewfc=true)
-    #psiks = read_psiks(Ham)
 
     psiks = rand_BlochWavefunc(Ham)
-    KS_solve_SCF!( Ham, psiks, mix_method="anderson", etot_conv_thr=1e-6 )
+    #KS_solve_SCF!( Ham, psiks, mix_method="anderson", etot_conv_thr=1e-6 )
+    #KS_solve_SCF!( Ham, psiks, mix_method="broyden", etot_conv_thr=1e-8 )
+    #KS_solve_Emin_PCG!( Ham, psiks, etot_conv_thr=1e-8 )
+    #KS_solve_Emin_PCG_dot!( Ham, psiks )
+    KS_solve_Emin_PCG_vec!( Ham, psiks, etot_conv_thr=1e-8 )
 
     atoms = Ham.atoms
     Natoms = atoms.Natoms
