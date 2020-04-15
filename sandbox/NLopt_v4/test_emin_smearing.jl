@@ -6,6 +6,7 @@ using Random
 const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
 const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
 
+include("smearing.jl")
 include("create_Ham.jl")
 include("ElecVars.jl")
 include("test_ElecVars.jl")

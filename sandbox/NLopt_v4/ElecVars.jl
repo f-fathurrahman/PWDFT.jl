@@ -1,6 +1,6 @@
 mutable struct ElecVars
     psiks::BlochWavefunc
-    Haux::Array{Matrix{ComplexF64},1}
+    Hsub::Array{Matrix{ComplexF64},1}
     Haux_eigs::Array{Float64,2}
 end
 
@@ -19,7 +19,7 @@ function ElecVars(Ham::Hamiltonian)
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     Nspin = Ham.electrons.Nspin
 
-    Haux = Array{Matrix{ComplexF64},1}(undef,Nkspin)
+    Hsub = Array{Matrix{ComplexF64},1}(undef,Nkspin)
     Haux_eigs = zeros(Float64,Nstates,Nkspin) # the same as electrons.ebands
     
     for ispin in 1:Nspin, ik in 1:Nkpt
@@ -27,14 +27,14 @@ function ElecVars(Ham::Hamiltonian)
         Ham.ik = ik
         Ham.ispin = ispin
         #
-        Haux[i] = zeros(ComplexF64,Nstates,Nstates)
+        Hsub[i] = zeros(ComplexF64,Nstates,Nstates)
         #
-        Haux[i][:] = psiks[i]' * op_H(Ham, psiks[i])
+        Hsub[i][:] = psiks[i]' * op_H(Ham, psiks[i])
         #
-        Haux_eigs[:,i] = eigvals(Hermitian(Haux[i]))
+        Haux_eigs[:,i] = eigvals(Hermitian(Hsub[i]))  # set Haux_eigs to eigenvalues of Hsub
     end
 
-    return ElecVars(psiks, Haux, Haux_eigs)
+    return ElecVars(psiks, Hsub, Haux_eigs)
 end
 
 import Base: show
@@ -42,9 +42,9 @@ function show( io::IO, evars::ElecVars )
     Nkspin = length(evars.psiks)
     for i in 1:Nkspin
         println("Haux i = ", i)
-        display(evars.Haux[i]); println()
+        display(evars.Hsub[i]); println()
         println("Haux_eigs i = ", i)
-        display( eigvals(Hermitian(evars.Haux[i])) ); println()
+        display( eigvals(Hermitian(evars.Hsub[i])) ); println()
     end
 end
 show( evars::ElecVars ) = show( stdout, evars )
