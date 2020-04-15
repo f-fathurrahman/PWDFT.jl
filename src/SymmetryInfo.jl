@@ -640,7 +640,10 @@ end
 function symmetrize_vector!( LatVecs_, sym_info::SymmetryInfo, v::Array{Float64,2} )
 
     Nsyms = sym_info.Nsyms
-    
+    if Nsyms == 1
+        return
+    end
+
     alat = norm(LatVecs_[:,1])
     LatVecs = LatVecs_[:,:]/alat
 
@@ -649,10 +652,6 @@ function symmetrize_vector!( LatVecs_, sym_info::SymmetryInfo, v::Array{Float64,
     s = convert(Array{Float64,3}, sym_info.s)
     
     irt = sym_info.irt
-
-    if Nsyms == 1
-        return
-    end
 
     Nvecs = size(v)[2]
 
