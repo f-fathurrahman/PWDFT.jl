@@ -236,5 +236,13 @@ export chebyfilt,
 include("read_psiks.jl")
 export read_psiks
 
+include("calc_forces_NN.jl")
+export calc_forces_NN, calc_forces_NN!
+
+include("calc_forces_Ps_loc.jl")
+export calc_forces_Ps_loc, calc_forces_Ps_loc!
+
+include("calc_forces_Ps_nloc.jl")
+export calc_forces_Ps_nloc, calc_forces_Ps_nloc!
 
 end
