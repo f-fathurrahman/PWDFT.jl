@@ -370,6 +370,8 @@ function println( energies::EnergiesPWSCF; use_smearing=false )
 end    
 
 
+# Various functions to parse PWSCF output file.
+# They are not optimized.
 
 function read_pwscf_etotal( filename::String )
     E_one_ele = 0.0
@@ -404,9 +406,54 @@ function read_pwscf_etotal( filename::String )
             mTS = parse( Float64, ll[5] )*0.5
         end
     end
+    close(f)
 
     return EnergiesPWSCF(E_one_ele, E_hartree, E_xc, E_nn, mTS)
 end
+
+function read_pwscf_out_Natoms( filename::String )
+    Natoms = 0
+    f = open(filename, "r")
+    while !eof(f)
+        l = readline(f)
+        if occursin("number of atoms", l)
+            ll = split(l, "=", keepempty=false)
+            Natoms = parse(Int64,ll[2])
+            break
+        end
+    end
+    close(f)
+    return Natoms
+end
+
+
+function read_pwscf_out_forces( filename::String )
+
+    Natoms = read_pwscf_out_Natoms(filename)
+    forces = zeros(Float64,3,Natoms)
+
+    f = open(filename, "r")
+    while !eof(f)
+        l = readline(f)
+        if occursin("Forces acting on atoms", l)
+            l = readline(f) # skip one line
+            for ia in 1:Natoms
+                l = readline(f)
+                ll = split(l, "=", keepempty=false)[2]
+                ll = split(ll, keepempty=false)
+                for i in 1:3
+                    forces[i,ia] = parse(Float64,ll[i])*0.5 # Convert to Hartree/bohr
+                end
+            end
+            break
+        end
+    end
+    close(f)
+    return forces
+end
+#
+const read_pwscf_forces = read_pwscf_out_forces
+
 
 
 """
