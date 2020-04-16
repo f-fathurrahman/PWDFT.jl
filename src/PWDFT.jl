@@ -245,4 +245,7 @@ export calc_forces_Ps_loc, calc_forces_Ps_loc!
 include("calc_forces_Ps_nloc.jl")
 export calc_forces_Ps_nloc, calc_forces_Ps_nloc!
 
+include("calc_forces.jl")
+export calc_forces
+
 end
