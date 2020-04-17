@@ -145,8 +145,47 @@ function read_abinit_etotal( filename::String )
     end
     close(f)
 
-    energies = Energies( E_kin, E_Ps_loc, E_Ps_nloc, E_hartree, E_xc, E_ewald, E_pspCore, mTS )
+    # E_pspCore is now absorebed to E_Ps_loc
+    energies = Energies( E_kin, E_Ps_loc + E_pspCore, E_Ps_nloc, E_hartree, E_xc, E_ewald, mTS )
     return energies
 end
 
+function read_abinit_out_Natoms( filename::String )
+    Natoms = 0
+    f = open(filename, "r")
+    while !eof(f)
+        l = readline(f)
+        if occursin("natom", l)
+            ll = split(l, "=", keepempty=false)[2]
+            ll = split(ll, keepempty=false)[1]
+            Natoms = parse( Int64, ll )
+            break
+        end
+    end
+    close(f)
+    return Natoms
+end
+
+
+function read_abinit_out_forces( filename::String )
+    Natoms = read_abinit_out_Natoms( filename )
+    forces = zeros(Float64,3,Natoms)
+    f = open(filename, "r")
+    while !eof(f)
+        l = readline(f)
+        if occursin("cartesian forces (hartree/bohr)", l)
+            for ia in 1:Natoms
+                l = readline(f)
+                ll = split(l, keepempty=false)
+                forces[1,ia] = parse(Float64, ll[2])
+                forces[2,ia] = parse(Float64, ll[3])
+                forces[3,ia] = parse(Float64, ll[4])                
+            end
+            break
+        end
+    end
+    close(f)
+    return forces
+end
+const read_abinit_forces = read_abinit_out_forces
 
