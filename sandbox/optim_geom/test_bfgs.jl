@@ -35,6 +35,7 @@ end
 
 function initial_hessian( Natoms )
     h = 70/(2*Ry2eV) * (ANG2BOHR^2)
+    #h = 70.0
     H = diagm( 0 => h*ones(3*Natoms) )
     return H
 end
@@ -50,7 +51,7 @@ function update_hessian( H_old, r, f, r0, f0 )
     a = dot(dr, df)
     dg = H_old*dr
     b = dot(dr, dg)
-    return H_old - (df * df')/a + (dg*dg')/b
+    return H_old - (df*df')/a - (dg*dg')/b
 end
 
 function run_pwscf( Ham )
@@ -87,11 +88,14 @@ function main()
 
     H = initial_hessian(Natoms)
 
-    NiterMax = 20
+    NiterMax = 15
     for iter = 1:NiterMax
 
-        omega, V = eigen(H)
-        dr = V * (V*f ./ abs.(omega))
+        println("Hessian = ")
+        display(H); println()
+
+        omega, V = eigen( Symmetric(H) )
+        dr = V * (V'*f ./ abs.(omega))
         steplengths = sqrt.(sum( dr.^2, dims=1 ))
         maxsteplength = maximum(steplengths)
         if maxsteplength >= MAXSTEP
