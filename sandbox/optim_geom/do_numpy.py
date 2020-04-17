@@ -3,7 +3,9 @@ from numpy.linalg import eigh
 
 Natoms = 2
 H = np.eye(Natoms*3)*70
-H[1,1] = 22;
+H[1,1] = 22.0
+H[2,3] = 11.0
+H[3,2] = 11.0
 print(H)
 
 f = np.array([ [3.0, 2.0, 3.0],
