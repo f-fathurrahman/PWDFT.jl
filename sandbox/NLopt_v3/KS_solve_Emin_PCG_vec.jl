@@ -76,7 +76,7 @@ function KS_solve_Emin_PCG_vec!(
 
     if verbose
         @printf("\n")
-        @printf("Minimizing Kohn-Sham energy using PCG dot\n")
+        @printf("Minimizing Kohn-Sham energy using PCG vec\n")
         @printf("-----------------------------------------\n")
         @printf("NiterMax  = %d\n", NiterMax)
         @printf("α_t       = %e\n", α_t)
