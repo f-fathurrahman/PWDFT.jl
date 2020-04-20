@@ -9,6 +9,13 @@ const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
 
 include(joinpath(DIR_PWDFT, "utilities", "PWSCF.jl"))
 
+include("../NLopt_v3/calc_energies_grad.jl")
+include("../NLopt_v3/KS_solve_Emin_PCG_new.jl")
+include("../NLopt_v3/KS_solve_Emin_PCG_vec.jl")
+include("update_positions.jl")
+
+Random.seed!(1234)
+
 function init_Ham_H2O()
     # Atoms
     atoms = Atoms( ext_xyz_file="H2O.xyz" )
@@ -66,14 +73,24 @@ function run_pwscf( Ham )
     return pwscf_energies, pwscf_forces
 end
 
+function run_pwdft_jl( Ham )
+    psiks = rand_BlochWavefunc(Ham)
+    #KS_solve_Emin_PCG!( Ham, psiks )
+    KS_solve_Emin_PCG_vec!( Ham, psiks )
+    forces = calc_forces( Ham, psiks )
+    return sum(Ham.energies), forces
+end
+
 function main()
     
-    Ham = init_Ham_H2O()
-    #Ham = init_Ham_H2()
+    #Ham = init_Ham_H2O()
+    Ham = init_Ham_H2()
 
     Natoms = Ham.atoms.Natoms
     
-    energies, forces = run_pwscf(Ham)
+    #energies, forces = run_pwscf(Ham)
+    energies, forces = run_pwdft_jl(Ham)
+
     println("Initial r  =")
     display(Ham.atoms.positions'); println()
     println("Initial forces = ")
@@ -82,7 +99,7 @@ function main()
     MAXSTEP = 0.04*ANG2BOHR
 
     f = vec(copy(forces))
-    r = vec( copy(Ham.atoms.positions) )
+    r = vec(copy(Ham.atoms.positions))
     r0 = zeros(size(r))
     f0 = zeros(size(f))
 
@@ -108,10 +125,12 @@ function main()
         H_old = copy(H)
 
         r[:] = r[:] + dr[:]
-        Ham.atoms.positions = copy(reshape(r,(3,Natoms)))
+        #Ham.atoms.positions = copy(reshape(r,(3,Natoms)))
+        update_positions!( Ham, reshape(r,3,Natoms) )
 
         energies_old = energies
-        energies, forces = run_pwscf(Ham)
+        #energies, forces = run_pwscf(Ham)
+        energies, forces = run_pwdft_jl(Ham)
         
         @printf("\nIter = %3d, Etot = %18.10f\n", iter, sum(energies))
         println("Forces = ")
