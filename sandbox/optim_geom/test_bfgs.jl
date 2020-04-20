@@ -83,8 +83,8 @@ end
 
 function main()
     
-    #Ham = init_Ham_H2O()
-    Ham = init_Ham_H2()
+    Ham = init_Ham_H2O()
+    #Ham = init_Ham_H2()
 
     Natoms = Ham.atoms.Natoms
     
