@@ -15,6 +15,8 @@ function calc_energies_grad!(
 
     Nspin = Ham.electrons.Nspin
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+    Nstates = Ham.electrons.Nstates
+    Nkspin = Nkpt*Nspin
 
     #
     # Gradient for psiks
@@ -30,6 +32,10 @@ function calc_energies_grad!(
     #
     # Gradient for Haux
     #
+    fprime = zeros(Float64,Nstates)
+    fprimeNum = zeros(Float64,Nstates)
+    dmuNum = zeros(Float64,Nspin)
+    dmuDen = zeros(Float64,Nspin)
 
     w = copy(Ham.pw.gvecw.kpoints.wk)
     if Nspin == 1
