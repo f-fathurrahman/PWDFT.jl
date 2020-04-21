@@ -9,6 +9,16 @@ mutable struct ElecGradient
     Haux::Array{Matrix{ComplexF64},1}
 end
 
+function ElecGradient(Ham)
+    psiks = zeros_BlochWavefunc(Ham)
+    Nkspin = length(psiks)
+    Nstates = Ham.electrons.Nstates
+    Haux = Array{Matrix{ComplexF64},1}(undef,Nkspin)
+    for i in 1:Nkspin
+        Haux[i] = zeros(ComplexF64,Nstates,Nstates)
+    end
+    return ElecGradient(psiks, Haux)
+end
 
 function ElecVars(Ham::Hamiltonian)
 
