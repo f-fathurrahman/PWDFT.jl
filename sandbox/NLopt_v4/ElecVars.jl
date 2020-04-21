@@ -20,9 +20,11 @@ function ElecGradient(Ham)
     return ElecGradient(psiks, Haux)
 end
 
-function ElecVars(Ham::Hamiltonian)
+function ElecVars( Ham::Hamiltonian )
+    return ElecVars( Ham, rand_BlochWavefunc(Ham) )
+end
 
-    psiks = rand_BlochWavefunc(Ham)
+function ElecVars( Ham::Hamiltonian, psiks::BlochWavefunc )
     
     Nkspin = length(psiks)
     Nstates = Ham.electrons.Nstates
