@@ -13,6 +13,16 @@ include("test_ElecVars.jl")
 include("calc_energies_grad.jl")
 include("emin_smearing.jl")
 
+function print_vec_mat( v::Vector{Matrix{ComplexF64}} )
+    Nkspin = length(v)
+    for i in 1:Nkspin
+        println("Real part of ikspin = ", i)
+        display(real(v[i])); println()
+        println("Imag part of ikspin = ", i)
+        display(imag(v[i])); println()    
+    end
+end
+
 function main()
 
     Random.seed!(1234)
@@ -53,7 +63,20 @@ function main()
     println(Ham.energies)
     println("Etot = ", Etot)
 
+    #println("rotPrevCinv:")
+    #print_vec_mat(rotPrevCinv)
+
+    #println("g Haux")
+    #print_vec_mat(g.Haux)
+
     d = deepcopy(Kg)
+
+    d.Haux[1][2,2] = 99
+    println("d")
+    print_vec_mat(d.Haux[1:1])
+
+    println("Kg Haux")
+    print_vec_mat(Kg.Haux[1:1])
 
     # Constrain
     constrain_search_dir!( d, evars )
