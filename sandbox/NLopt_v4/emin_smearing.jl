@@ -3,7 +3,7 @@ function dot_ElecGradient( v1::ElecGradient, v2::ElecGradient )
     ss = 0.0
     for i in 1:Nkspin
         ss = ss + 2.0*real( dot(v1.psiks[i], v2.psiks[i]) )
-        ss = ss + 2.0*real( dot(v1.Haux[i], v2.Haux[i]) )
+        ss = ss + real( dot(v1.Haux[i], v2.Haux[i]) ) # no factor of 2
     end
     return ss
 end

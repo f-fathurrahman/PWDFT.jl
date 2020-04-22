@@ -88,13 +88,17 @@ function main()
     force_grad_dir = true
 
     # Begin iter
-    NiterMax = 10
+    NiterMax = 20
+    Etot_old = Etot
     for iter in 1:NiterMax
 
         #gKnorm = dot_ElecGradient(g, Kg)
-        gKnorm = dot_ElecGradient(g, g)
-        #gKnorm = 2*real(dot(g.psiks, Kg.psiks))
+        #gKnorm = dot_ElecGradient(g, g)
         
+        gKnorm = 2*real(dot(g.Haux, g.Haux))
+        println("gKnorm = ", gKnorm)
+
+        gKnorm = 2*real(dot(g.psiks, Kg.psiks))
         println("gKnorm = ", gKnorm)
 
         #if !force_grad_dir
@@ -141,9 +145,9 @@ function main()
         #println("α = ", α)
         α = 1e-5
 
-        do_step!( α, 0.0, evars, d, rotPrev, rotPrevC, rotPrevCinv )
+        #do_step!( α, 0.0, evars, d, rotPrev, rotPrevC, rotPrevCinv )
         #do_step!( 0.0, α, evars, d, rotPrev, rotPrevC, rotPrevCinv )
-        #do_step!( α, evars, d, rotPrev, rotPrevC, rotPrevCinv )
+        do_step!( α, evars, d, rotPrev, rotPrevC, rotPrevCinv )
 
         #println("rotPrev")
         #print_vec_mat(rotPrev[1:1])
@@ -151,9 +155,17 @@ function main()
         #println("rotPrevCinv")
         #print_vec_mat(rotPrevCinv[1:1])
 
+        Etot_old = Etot
         Etot = compute!( Ham, evars, g, Kg, kT, rotPrevCinv, rotPrev )
         #println(Ham.energies)
-        @printf("Emin_PCG: %5d %18.10f\n", iter, Etot)
+        diffE = Etot - Etot_old
+        @printf("Emin_PCG: %5d %18.10f %18.10e ", iter, Etot, abs(diffE))
+        if diffE > 0
+            println("Energy is not reducing")
+        else
+            println()
+        end
+
         
         #println("\nevars.Haux_eigs")
         #println(evars.Haux_eigs)
