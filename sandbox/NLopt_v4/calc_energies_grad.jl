@@ -61,7 +61,6 @@ function calc_energies_grad!(
 
     for ispin in 1:Nspin, ik in 1:Nkpt
         i = ik + (ispin - 1)*Nkpt
-        ff = 0.0
         for ist in 1:Nstates
             fprime[ist] = smear_fermi_prime( evars.Haux_eigs[ist,i], E_fermi, kT )
             fprimeNum[ist] = fprime[ist] * ( real(evars.Hsub[i][ist,ist]) - evars.Haux_eigs[ist,i] )
@@ -71,15 +70,10 @@ function calc_energies_grad!(
     end
 
     dmuContrib = sum(dmuNum)/sum(dmuDen)
-    dBzContrib = 0.0
+    dBzContrib = 0.0 # not used
 
     gradF0 = zeros(ComplexF64,Nstates,Nstates)
     gradF = zeros(ComplexF64,Nstates,Nstates)
-
-    for i in 1:Nkspin
-        g.Haux[i][:] = evars.Hsub[i][:]
-        Kg.Haux[i][:] = evars.Hsub[i][:]
-    end
 
     g_tmp = zeros(ComplexF64,Nstates,Nstates)
     for ispin in 1:Nspin, ik in 1:Nkpt
@@ -89,7 +83,7 @@ function calc_energies_grad!(
         gradF0[:] = evars.Hsub[i] - diagm( 0 => evars.Haux_eigs[:,i] )
         gradF[:] = copy(gradF0)
         for ist in 1:Nstates
-            gradF[ist,ist] = gradF0[ist,ist] - Nstates*dmuContrib # FIXME: not tested for spinpol
+            gradF[ist,ist] = gradF0[ist,ist] - dmuContrib # FIXME: not tested for spinpol
         end
         g_tmp[:] = grad_smear( smear_fermi, smear_fermi_prime, evars.Haux_eigs[:,i], E_fermi, kT, gradF )
         g.Haux[i] = w[ik] * 0.5 * (g_tmp' + g_tmp)
