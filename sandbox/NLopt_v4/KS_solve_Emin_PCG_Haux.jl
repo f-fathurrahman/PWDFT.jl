@@ -108,7 +108,6 @@ function KS_solve_Emin_PCG_Haux!( Ham, psiks;
 
         # Update search direction
         for i in 1:Nkspin
-            d_old[i] = copy(d[i])
             d[i] = -Kg[i] + β*d[i]
         end
 

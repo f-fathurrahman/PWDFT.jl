@@ -44,6 +44,7 @@ function main()
     evars = ElecVars(Ham)
     g = ElecGradient(Ham)
     Kg = ElecGradient(Ham)
+    gPrev = ElecGradient(Ham)
 
     rotPrev = Vector{Matrix{ComplexF64}}(undef,Nkspin)
     rotPrevC = Vector{Matrix{ComplexF64}}(undef,Nkspin)
@@ -71,15 +72,43 @@ function main()
 
     d = deepcopy(Kg)
 
-    d.Haux[1][2,2] = 99
-    println("d")
-    print_vec_mat(d.Haux[1:1])
+    #d.Haux[1][2,2] = 99
+    #print_vec_mat(d.Haux[1:1])
 
-    println("Kg Haux")
-    print_vec_mat(Kg.Haux[1:1])
+    #println("Kg Haux")
+    #print_vec_mat(Kg.Haux[1:1])
 
     # Constrain
     constrain_search_dir!( d, evars )
+
+    β = 0.0
+    gPrevUsed = true
+    gKnormPrev = 0.0
+
+    # Begin iter
+
+        gKnorm = dot_ElecGradient(g, Kg)
+        println("gKnorm = ", gKnorm)
+
+        force_grad_dir = false
+
+        # Check convergence here ....
+
+        # No convergence yet, continuing ...
+        
+        if gPrevUsed
+            gPrev = deepcopy(g)
+        end
+        gKnormPrev = copy(gKnorm) # Need copy here?
+
+        # Update search direction
+        for i in 1:Nkspin
+            d.psiks[i] = -Kg.psiks[i] + β*d.psiks[i]
+            d.Haux[i] = -Kg.Haux[i] + β*d.Haux[i]
+        end
+
+        constrain_search_dir!( d, evars )
+
 
 
     println("Pass here")
