@@ -6,8 +6,8 @@ function update_occ!( Ham, evars::ElecVars, kT )
 
     Ham.electrons.ebands = copy(evars.Haux_eigs)
 
-    Focc, E_fermi = calc_Focc( Nelectrons, wk, kT, Ham.electrons.Nbands, Nspin )
-    mTS = calc_entropy( wk, kT, evals, E_fermi, Nspin )
+    Focc, E_fermi = calc_Focc( Nelectrons, wk, kT, Ham.electrons.ebands, Nspin )
+    mTS = calc_entropy( wk, kT, Ham.electrons.ebands, E_fermi, Nspin )
     
     Ham.electrons.Focc = copy(Focc)
 
