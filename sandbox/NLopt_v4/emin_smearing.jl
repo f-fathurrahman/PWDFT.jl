@@ -53,7 +53,7 @@ function do_step!(
     rotC = zeros(ComplexF64,Nstates,Nstates)
 
     for i in 1:Nkspin
-        evars.psiks[i] = evars.psiks[i] + α*d.psiks[i]
+        evars.psiks[i] = evars.psiks[i] + α*d.psiks[i]*rotPrevC[i]
 
         # Haux fillings:
         Haux = diagm( 0 => evars.Haux_eigs[:,i] )

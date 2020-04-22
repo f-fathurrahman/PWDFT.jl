@@ -30,8 +30,8 @@ function main()
 
     kT = 0.01
     #Ham = create_Ham_atom_Al_smearing()
-    #Ham = create_Ham_Al_fcc_smearing()
-    Ham = create_Ham_atom_Pt_smearing()
+    Ham = create_Ham_Al_fcc_smearing()
+    #Ham = create_Ham_atom_Pt_smearing()
     #Ham = create_Ham_Pt_fcc_smearing()
     #println(Ham)
 
@@ -71,7 +71,8 @@ function main()
     #println("g Haux")
     #print_vec_mat(g.Haux)
 
-    d = deepcopy(Kg)
+    #d = deepcopy(Kg)
+    d = deepcopy(g)
 
     #d.Haux[1][2,2] = 99
     #print_vec_mat(d.Haux[1:1])
@@ -95,7 +96,7 @@ function main()
         #gKnorm = dot_ElecGradient(g, Kg)
         #gKnorm = dot_ElecGradient(g, g)
         
-        gKnorm = 2*real(dot(g.Haux, g.Haux))
+        gKnorm = real(dot(g.Haux, g.Haux))
         println("gKnorm = ", gKnorm)
 
         gKnorm = 2*real(dot(g.psiks, Kg.psiks))
@@ -143,11 +144,11 @@ function main()
 
         #α = linmin_grad!( Ham, evars.psiks, g.psiks, d.psiks )
         #println("α = ", α)
-        α = 1e-5
+        α = 3e-5
 
-        do_step!( α, 0.0, evars, d, rotPrev, rotPrevC, rotPrevCinv )
+        #do_step!( α, 0.0, evars, d, rotPrev, rotPrevC, rotPrevCinv )
         #do_step!( 0.0, α, evars, d, rotPrev, rotPrevC, rotPrevCinv )
-        #do_step!( α, evars, d, rotPrev, rotPrevC, rotPrevCinv )
+        do_step!( α, evars, d, rotPrev, rotPrevC, rotPrevCinv )
 
         #println("rotPrev")
         #print_vec_mat(rotPrev[1:1])

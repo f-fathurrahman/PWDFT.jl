@@ -76,7 +76,7 @@ function test_ElecVars( Ham::Hamiltonian )
         gradF0[:] = evars.Hsub[i] - diagm( 0 => evars.Haux_eigs[:,i] )
         gradF[:] = copy(gradF0)
         for ist in 1:Nstates
-            gradF[ist,ist] = gradF0[ist,ist] - Nstates*dmuContrib # FIXME: not tested for spinpol
+            gradF[ist,ist] = gradF0[ist,ist] - dmuContrib # FIXME: not tested for spinpol
         end
         g_tmp[:] = grad_smear( smear_fermi, smear_fermi_prime, evars.Haux_eigs[:,i], E_fermi, kT, gradF )
         g_Haux[i] = w[ik] * 0.5 * (g_tmp' + g_tmp)
