@@ -1,3 +1,22 @@
+function update_occ!( Ham, evars::ElecVars, kT )
+    
+    Nspin = Ham.electrons.Nspin
+    Nelectrons = Ham.electrons.Nelectrons
+    wk = Ham.pw.gvecw.kpoints.wk
+
+    Ham.electrons.ebands = copy(evars.Haux_eigs)
+    evals = evars.Haux_eigs
+
+    Focc, E_fermi = calc_Focc( Nelectrons, wk, kT, evals, Nspin )
+    mTS = calc_entropy( wk, kT, evals, E_fermi, Nspin )
+    
+    Ham.electrons.Focc = copy(Focc)
+
+    return E_fermi, mTS
+
+end
+
+
 function calc_energies_grad!(
     Ham::Hamiltonian,
     evars::ElecVars,
