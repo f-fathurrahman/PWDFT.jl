@@ -12,6 +12,7 @@ include("ElecVars.jl")
 include("test_ElecVars.jl")
 include("calc_energies_grad.jl")
 include("emin_smearing.jl")
+include("linmin_grad.jl")
 
 function print_vec_mat( v::Vector{Matrix{ComplexF64}} )
     Nkspin = length(v)
@@ -61,7 +62,7 @@ function main()
     #Etot = calc_energies_grad!( Ham, evars, g, Kg, kT )
     Etot = compute!( Ham, evars, g, Kg, kT, rotPrevCinv, rotPrev )
 
-    println(Ham.energies)
+    #println(Ham.energies)
     println("Etot = ", Etot)
 
     #println("rotPrevCinv:")
@@ -84,11 +85,35 @@ function main()
     β = 0.0
     gPrevUsed = true
     gKnormPrev = 0.0
+    force_grad_dir = true
 
     # Begin iter
+    NiterMax = 10
+    for iter in 1:NiterMax
 
-        gKnorm = dot_ElecGradient(g, Kg)
+        #gKnorm = dot_ElecGradient(g, Kg)
+        gKnorm = dot_ElecGradient(g, g)
+        #gKnorm = 2*real(dot(g.psiks, Kg.psiks))
+        
         println("gKnorm = ", gKnorm)
+
+        #if !force_grad_dir
+        #    
+        #    dotgd = dot_ElecGradient(g, d)
+        #    
+        #    if gPrevUsed
+        #        dotgPrevKg = dot_ElecGradient(gPrev, Kg)
+        #        #dotgPrevKg = 2*real(dot(gPrev.psiks, Kg.psiks))
+        #    else
+        #        dotgPrevKg = 0.0
+        #    end
+        #    β = (gKnorm - dotgPrevKg)/gKnormPrev # Polak-Ribiere
+        #    println("β = ", β)
+        #    if β < 0.0
+        #        println("Resetting β")
+        #        β = 0.0
+        #    end
+        #end
 
         force_grad_dir = false
 
@@ -103,25 +128,46 @@ function main()
 
         # Update search direction
         for i in 1:Nkspin
-            d.psiks[i] = -Kg.psiks[i] + β*d.psiks[i]
-            d.Haux[i] = -Kg.Haux[i] + β*d.Haux[i]
+            d.psiks[i] = -g.psiks[i] #-Kg.psiks[i] + β*d.psiks[i]
+            d.Haux[i]  = -g.Haux[i]  #-Kg.Haux[i] + β*d.Haux[i]  
         end
 
         constrain_search_dir!( d, evars )
 
-        println("rotPrevCinv")
-        print_vec_mat(rotPrevCinv[1:1])
+        #println("rotPrevCinv")
+        #print_vec_mat(rotPrevCinv[1:1])
 
-        do_step!( 1e-5, evars, d, rotPrev, rotPrevC, rotPrevCinv )
+        #α = linmin_grad!( Ham, evars.psiks, g.psiks, d.psiks )
+        #println("α = ", α)
+        α = 1e-5
+
+        do_step!( α, 0.0, evars, d, rotPrev, rotPrevC, rotPrevCinv )
+        #do_step!( 0.0, α, evars, d, rotPrev, rotPrevC, rotPrevCinv )
+        #do_step!( α, evars, d, rotPrev, rotPrevC, rotPrevCinv )
+
+        #println("rotPrev")
+        #print_vec_mat(rotPrev[1:1])
         
-        println("rotPrev")
-        print_vec_mat(rotPrev[1:1])
-        
-        println("rotPrevCinv")
-        print_vec_mat(rotPrevCinv[1:1])
+        #println("rotPrevCinv")
+        #print_vec_mat(rotPrevCinv[1:1])
 
         Etot = compute!( Ham, evars, g, Kg, kT, rotPrevCinv, rotPrev )
-        println("Etot = ", Etot)
+        #println(Ham.energies)
+        @printf("Emin_PCG: %5d %18.10f\n", iter, Etot)
+        
+        #println("\nevars.Haux_eigs")
+        #println(evars.Haux_eigs)
+        #println(Ham.electrons.Focc)
+
+        #println("evars.Hsub")
+        #print_vec_mat(evars.Hsub)
+        
+        #println("g Haux")
+        #print_vec_mat(g.Haux)
+        
+        #println("Kg Haux")
+        #print_vec_mat(Kg.Haux)
+    end
 
     println("Pass here")
 end

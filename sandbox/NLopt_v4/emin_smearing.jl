@@ -36,6 +36,14 @@ function do_step!(
     α::Float64, evars::ElecVars, d::ElecGradient,
     rotPrev, rotPrevC, rotPrevCinv
 )
+    do_step!(α, α, evars, d, rotPrev, rotPrevC, rotPrevCinv)
+    return
+end
+
+function do_step!(
+    α::Float64, α_Haux::Float64, evars::ElecVars, d::ElecGradient,
+    rotPrev, rotPrevC, rotPrevCinv
+)
     
     Nkspin = length(evars.psiks)
     Nstates = size(evars.psiks[1],2)
@@ -51,7 +59,7 @@ function do_step!(
         Haux = diagm( 0 => evars.Haux_eigs[:,i] )
         
         #axpy(alpha, rotExists ? dagger(rotPrev[q])*dir.Haux[q]*rotPrev[q] : dir.Haux[q], Haux);
-        Haux = Haux + α*( rotPrev[i]' * d.Haux[i] * rotPrev[i] )
+        Haux = Haux + α_Haux*( rotPrev[i]' * d.Haux[i] * rotPrev[i] )
         
         #Haux.diagonalize(rot, eVars.Haux_eigs[q]); //rotation chosen to diagonalize auxiliary matrix
         #evals, evecs = eigen(Haux)

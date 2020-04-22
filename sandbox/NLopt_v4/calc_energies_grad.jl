@@ -22,14 +22,13 @@ function calc_energies_grad!(
     evars::ElecVars,
     g::ElecGradient, Kg::ElecGradient, kT::Float64
 )
-    psiks = evars.psiks
 
     E_fermi, mTS = update_occ!( Ham, evars, kT )
 
-    Rhoe = calc_rhoe( Ham, psiks )
+    Rhoe = calc_rhoe( Ham, evars.psiks )
     update!( Ham, Rhoe )
     
-    Ham.energies = calc_energies( Ham, psiks )
+    Ham.energies = calc_energies( Ham, evars.psiks )
     Ham.energies.mTS = mTS
 
     Nspin = Ham.electrons.Nspin
@@ -44,7 +43,7 @@ function calc_energies_grad!(
         Ham.ispin = ispin
         Ham.ik = ik
         i = ik + (ispin-1)*Nkpt
-        calc_grad!( Ham, psiks[i], g.psiks[i] )
+        calc_grad!( Ham, evars.psiks[i], g.psiks[i], evars.Hsub[i] )
         Kprec!( ik, Ham.pw, g.psiks[i], Kg.psiks[i] )
     end
 
@@ -95,13 +94,13 @@ function calc_energies_grad!(
         end
         g_tmp[:] = grad_smear( smear_fermi, smear_fermi_prime, evars.Haux_eigs[:,i], E_fermi, kT, gradF )
         g.Haux[i] = w[ik] * 0.5 * (g_tmp' + g_tmp)
-        Kg.Haux[i] = -copy(gradF0)
+        Kg.Haux[i] = -copy(gradF0) #-0.1*copy(gradF0)
     end
 
     return sum( Ham.energies )
 end
 
-function calc_grad!( Ham::Hamiltonian, psiks::BlochWavefunc, g::BlochWavefunc )
+function calc_grad!( Ham::Hamiltonian, psiks::BlochWavefunc, g::BlochWavefunc, Hsub )
     #
     Rhoe = calc_rhoe( Ham, psiks )
     update!( Ham, Rhoe )
@@ -113,12 +112,12 @@ function calc_grad!( Ham::Hamiltonian, psiks::BlochWavefunc, g::BlochWavefunc )
         Ham.ispin = ispin
         Ham.ik = ik
         i = ik + (ispin-1)*Nkpt
-        calc_grad!( Ham, psiks[i], g[i] )
+        calc_grad!( Ham, psiks[i], g[i], Hsub[i] )
     end
     return
 end
 
-function calc_grad!( Ham::Hamiltonian, ψ::Array{ComplexF64,2}, g::Array{ComplexF64,2} )
+function calc_grad!( Ham::Hamiltonian, ψ::Array{ComplexF64,2}, g::Array{ComplexF64,2}, Hsub::Matrix{ComplexF64} )
 
     ik = Ham.ik
     ispin = Ham.ispin
@@ -130,7 +129,7 @@ function calc_grad!( Ham::Hamiltonian, ψ::Array{ComplexF64,2}, g::Array{Complex
     wk_ik = Ham.pw.gvecw.kpoints.wk[ik]
 
     Hψ = op_H( Ham, ψ )
-    Hsub = ψ' * Hψ
+    Hsub[:] = ψ' * Hψ
     Hψ = Hψ - ψ*Hsub
 
     NkFull = prod(Ham.pw.gvecw.kpoints.mesh)
