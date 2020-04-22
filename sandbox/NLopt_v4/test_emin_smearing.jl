@@ -109,7 +109,19 @@ function main()
 
         constrain_search_dir!( d, evars )
 
+        println("rotPrevCinv")
+        print_vec_mat(rotPrevCinv[1:1])
 
+        do_step!( 1e-5, evars, d, rotPrev, rotPrevC, rotPrevCinv )
+        
+        println("rotPrev")
+        print_vec_mat(rotPrev[1:1])
+        
+        println("rotPrevCinv")
+        print_vec_mat(rotPrevCinv[1:1])
+
+        Etot = compute!( Ham, evars, g, Kg, kT, rotPrevCinv, rotPrev )
+        println("Etot = ", Etot)
 
     println("Pass here")
 end

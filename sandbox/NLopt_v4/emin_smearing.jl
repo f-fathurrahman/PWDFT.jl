@@ -37,8 +37,8 @@ function do_step!(
     rotPrev, rotPrevC, rotPrevCinv
 )
     
-    Nkspin = length(psiks)
-    Nstates = size(psiks[1],2)
+    Nkspin = length(evars.psiks)
+    Nstates = size(evars.psiks[1],2)
     
     Haux = zeros(ComplexF64,Nstates,Nstates)
     rot = zeros(ComplexF64,Nstates,Nstates)
@@ -48,14 +48,16 @@ function do_step!(
         evars.psiks[i] = evars.psiks[i] + α*d.psiks[i]
 
         # Haux fillings:
-        Haux = diagm( 0 => eVars.Haux_eigs[:,i] )
+        Haux = diagm( 0 => evars.Haux_eigs[:,i] )
         
         #axpy(alpha, rotExists ? dagger(rotPrev[q])*dir.Haux[q]*rotPrev[q] : dir.Haux[q], Haux);
         Haux = Haux + α*( rotPrev[i]' * d.Haux[i] * rotPrev[i] )
         
         #Haux.diagonalize(rot, eVars.Haux_eigs[q]); //rotation chosen to diagonalize auxiliary matrix
-        evars.Haux_eigs[:,i], rot = eigen(Haux)
-
+        #evals, evecs = eigen(Haux)
+        #println("evals = ", evals)
+        evars.Haux_eigs[:,i], rot = eigen(Hermitian(Haux)) # need to symmetrize?
+ 
         #rotC = rot
         #eVars.orthonormalize(q, &rotC);
         Udagger = inv( sqrt( evars.psiks[i]' * evars.psiks[i] ) )
@@ -64,7 +66,7 @@ function do_step!(
         
         rotPrev[i] = rotPrev[i] * rot
         rotPrevC[i] = rotPrevC[i] * rotC
-        rotPrevCinv[i] = inv(rotC) * rotPrevCinv[q]
+        rotPrevCinv[i] = inv(rotC) * rotPrevCinv[i]
 
     end
     
