@@ -30,10 +30,10 @@ function main()
 
     kT = 0.01
     #Ham = create_Ham_atom_Al_smearing()
-    Ham = create_Ham_Al_fcc_smearing()
-    #Ham = create_Ham_atom_Pt_smearing()
+    #Ham = create_Ham_Al_fcc_smearing()
+    Ham = create_Ham_atom_Pt_smearing()
     #Ham = create_Ham_Pt_fcc_smearing()
-    println(Ham)
+    #println(Ham)
 
     #test_ElecVars(Ham)
 
@@ -145,9 +145,9 @@ function main()
         #println("α = ", α)
         α = 1e-5
 
-        #do_step!( α, 0.0, evars, d, rotPrev, rotPrevC, rotPrevCinv )
+        do_step!( α, 0.0, evars, d, rotPrev, rotPrevC, rotPrevCinv )
         #do_step!( 0.0, α, evars, d, rotPrev, rotPrevC, rotPrevCinv )
-        do_step!( α, evars, d, rotPrev, rotPrevC, rotPrevCinv )
+        #do_step!( α, evars, d, rotPrev, rotPrevC, rotPrevCinv )
 
         #println("rotPrev")
         #print_vec_mat(rotPrev[1:1])
