@@ -17,7 +17,7 @@ function linmin_grad!(
 
     denum = dot_ElecGradient(g - gt, d)
     if denum != 0.0
-        α = abs( αt * 2.0*real( dot_ElecGradient(g, d) )/denum )
+        α = abs( αt * dot_ElecGradient(g, d) / denum )
     else
         α = 0.0
     end

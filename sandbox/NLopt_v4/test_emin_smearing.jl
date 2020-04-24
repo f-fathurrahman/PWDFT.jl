@@ -89,7 +89,7 @@ function main()
     force_grad_dir = true
 
     # Begin iter
-    NiterMax = 5
+    NiterMax = 20
     Etot_old = Etot
     for iter in 1:NiterMax
 
