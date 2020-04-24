@@ -89,7 +89,7 @@ function main()
     force_grad_dir = true
 
     # Begin iter
-    NiterMax = 20
+    NiterMax = 5
     Etot_old = Etot
     for iter in 1:NiterMax
 
@@ -133,8 +133,8 @@ function main()
 
         # Update search direction
         for i in 1:Nkspin
-            d.psiks[i] = -g.psiks[i] #-Kg.psiks[i] + β*d.psiks[i]
-            d.Haux[i]  = -g.Haux[i]  #-Kg.Haux[i] + β*d.Haux[i]  
+            d.psiks[i] = -Kg.psiks[i] + β*d.psiks[i] #-g.psiks[i]
+            d.Haux[i]  = -Kg.Haux[i] + β*d.Haux[i]   #-g.Haux[i] 
         end
 
         constrain_search_dir!( d, evars )
@@ -142,9 +142,10 @@ function main()
         #println("rotPrevCinv")
         #print_vec_mat(rotPrevCinv[1:1])
 
+        α = linmin_grad!( Ham, evars, g, d, kT, rotPrev, rotPrevC, rotPrevCinv )
         #α = linmin_grad!( Ham, evars.psiks, g.psiks, d.psiks )
-        #println("α = ", α)
-        α = 3e-5
+        println("α = ", α)
+        #α = 3e-5
 
         #do_step!( α, 0.0, evars, d, rotPrev, rotPrevC, rotPrevCinv )
         #do_step!( 0.0, α, evars, d, rotPrev, rotPrevC, rotPrevCinv )

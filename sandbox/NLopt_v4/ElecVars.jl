@@ -20,6 +20,16 @@ function ElecGradient(Ham)
     return ElecGradient(psiks, Haux)
 end
 
+import Base: -
+function -(e1::ElecGradient, e2::ElecGradient)
+    return ElecGradient( e1.psiks .- e2.psiks, e1.Haux .- e2.Haux )
+end
+
+import Base: length
+function length(e::ElecGradient)
+    return length(e.psiks)
+end
+
 function ElecVars( Ham::Hamiltonian )
     return ElecVars( Ham, rand_BlochWavefunc(Ham) )
 end
