@@ -99,21 +99,13 @@ function main()
 
         #gKnorm = dot_ElecGradient(g, Kg)
         gKnorm, gKnorm_aux = dot_ElecGradient_v2(g, Kg)
-        #gKnorm = dot_ElecGradient(g, g)
-        
-        #gKnorm = real(dot(g.Haux, g.Haux))
-        #println("gKnorm = ", gKnorm)
-
-        #gKnorm = 2*real(dot(g.psiks, Kg.psiks))
-        #println("gKnorm = ", gKnorm)
+        @printf("gKnorm = %18.10e, gKnorm_aux = %18.10e\n", gKnorm, gKnorm_aux)
 
         if !force_grad_dir
             
-            #dotgd = dot_ElecGradient(g, d)
             dotgd, dotgd_aux = dot_ElecGradient_v2(g, d)
             
             if gPrevUsed
-                #dotgPrevKg = dot_ElecGradient(gPrev, Kg)
                 dotgPrevKg, dotgPrevKg_aux = dot_ElecGradient_v2(gPrev, Kg)
             else
                 dotgPrevKg = 0.0
@@ -162,20 +154,14 @@ function main()
         #α = linmin_grad!( Ham, evars, g, d, kT, rotPrev, rotPrevC, rotPrevCinv )
         #α = linmin_grad!( Ham, evars.psiks, g.psiks, d.psiks )
         α, α_aux = linmin_grad!( Ham, evars, g, d, kT, rotPrev, rotPrevC, rotPrevCinv )
-        println("α     = ", α)
-        println("α_aux = ", α_aux)
+        #println("α     = ", α)
+        #println("α_aux = ", α_aux)
         #α = 3e-5
 
         #do_step!( α, 0.0, evars, d, rotPrev, rotPrevC, rotPrevCinv )
         #do_step!( 0.0, α, evars, d, rotPrev, rotPrevC, rotPrevCinv )
         #do_step!( α, evars, d, rotPrev, rotPrevC, rotPrevCinv )
         do_step!( α, α_aux, evars, d, rotPrev, rotPrevC, rotPrevCinv )
-
-        #println("rotPrev")
-        #print_vec_mat(rotPrev[1:1])
-        
-        #println("rotPrevCinv")
-        #print_vec_mat(rotPrevCinv[1:1])
 
         Etot_old = Etot
         Etot = compute!( Ham, evars, g, Kg, kT, rotPrevCinv, rotPrev )
@@ -188,20 +174,9 @@ function main()
             println()
         end
 
-        
-        #println("\nevars.Haux_eigs")
-        #println(evars.Haux_eigs)
-        #println(Ham.electrons.Focc)
-
-        #println("evars.Hsub")
-        #print_vec_mat(evars.Hsub)
-        
-        #println("g Haux")
-        #print_vec_mat(g.Haux)
-        
-        #println("Kg Haux")
-        #print_vec_mat(Kg.Haux)
     end
+
+    println(Ham.energies)
 
     println("Pass here")
 end
