@@ -14,6 +14,7 @@ include("calc_energies_grad.jl")
 include("emin_smearing.jl")
 include("linmin_grad.jl")
 include("KS_solve_Emin_PCG_Haux_v1.jl")
+include("KS_solve_Emin_PCG_Haux_v2.jl")
 
 function print_vec_mat( v::Vector{Matrix{ComplexF64}} )
     Nkspin = length(v)
@@ -39,7 +40,7 @@ function main()
     #test_ElecVars(Ham)
 
     evars = ElecVars(Ham)
-    KS_solve_Emin_PCG_Haux_v1!( Ham, evars, NiterMax=30 )
+    KS_solve_Emin_PCG_Haux_v2!( Ham, evars, NiterMax=30 )
 
     println("Pass here")
 end
