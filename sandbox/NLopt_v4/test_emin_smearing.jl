@@ -29,8 +29,8 @@ function main()
     Random.seed!(1234)
 
     kT = 0.01
-    #Ham = create_Ham_atom_Al_smearing()
-    Ham = create_Ham_Al_fcc_smearing()
+    Ham = create_Ham_atom_Al_smearing()
+    #Ham = create_Ham_Al_fcc_smearing()
     #Ham = create_Ham_atom_Pt_smearing()
     #Ham = create_Ham_Pt_fcc_smearing()
     #println(Ham)
@@ -84,41 +84,55 @@ function main()
     constrain_search_dir!( d, evars )
 
     β = 0.0
+    β_aux = 0.0
+
     gPrevUsed = true
     gKnormPrev = 0.0
+    gKnormPrev_aux = 0.0
+
     force_grad_dir = true
 
     # Begin iter
-    NiterMax = 20
+    NiterMax = 30
     Etot_old = Etot
     for iter in 1:NiterMax
 
         #gKnorm = dot_ElecGradient(g, Kg)
+        gKnorm, gKnorm_aux = dot_ElecGradient_v2(g, Kg)
         #gKnorm = dot_ElecGradient(g, g)
         
-        gKnorm = real(dot(g.Haux, g.Haux))
-        println("gKnorm = ", gKnorm)
+        #gKnorm = real(dot(g.Haux, g.Haux))
+        #println("gKnorm = ", gKnorm)
 
-        gKnorm = 2*real(dot(g.psiks, Kg.psiks))
-        println("gKnorm = ", gKnorm)
+        #gKnorm = 2*real(dot(g.psiks, Kg.psiks))
+        #println("gKnorm = ", gKnorm)
 
-        #if !force_grad_dir
-        #    
-        #    dotgd = dot_ElecGradient(g, d)
-        #    
-        #    if gPrevUsed
-        #        dotgPrevKg = dot_ElecGradient(gPrev, Kg)
-        #        #dotgPrevKg = 2*real(dot(gPrev.psiks, Kg.psiks))
-        #    else
-        #        dotgPrevKg = 0.0
-        #    end
-        #    β = (gKnorm - dotgPrevKg)/gKnormPrev # Polak-Ribiere
-        #    println("β = ", β)
-        #    if β < 0.0
-        #        println("Resetting β")
-        #        β = 0.0
-        #    end
-        #end
+        if !force_grad_dir
+            
+            #dotgd = dot_ElecGradient(g, d)
+            dotgd, dotgd_aux = dot_ElecGradient_v2(g, d)
+            
+            if gPrevUsed
+                #dotgPrevKg = dot_ElecGradient(gPrev, Kg)
+                dotgPrevKg, dotgPrevKg_aux = dot_ElecGradient_v2(gPrev, Kg)
+            else
+                dotgPrevKg = 0.0
+                dotgPrevKg_aux = 0.0
+            end
+            β = (gKnorm - dotgPrevKg)/gKnormPrev # Polak-Ribiere
+            println("β = ", β)
+            if β < 0.0
+                println("Resetting β")
+                β = 0.0
+            end
+            β_aux = (gKnorm_aux - dotgPrevKg_aux)/gKnormPrev_aux # Polak-Ribiere
+            println("β_aux = ", β_aux)
+            if β_aux < 0.0
+                println("Resetting β_aux")
+                β_aux = 0.0
+            end
+
+        end
 
         force_grad_dir = false
 
@@ -130,11 +144,14 @@ function main()
             gPrev = deepcopy(g)
         end
         gKnormPrev = copy(gKnorm) # Need copy here?
+        gKnormPrev_aux = copy(gKnorm_aux) # Need copy here?
 
         # Update search direction
         for i in 1:Nkspin
-            d.psiks[i] = -Kg.psiks[i] + β*d.psiks[i] #-g.psiks[i]
-            d.Haux[i]  = -Kg.Haux[i] + β*d.Haux[i]   #-g.Haux[i] 
+            #d.psiks[i] = -Kg.psiks[i] + β*d.psiks[i] #-g.psiks[i]
+            #d.Haux[i]  = -Kg.Haux[i] + β*d.Haux[i]   #-g.Haux[i] 
+            d.psiks[i] = -Kg.psiks[i] + β*d.psiks[i]
+            d.Haux[i]  = -Kg.Haux[i] + β_aux*d.Haux[i]
         end
 
         constrain_search_dir!( d, evars )
