@@ -15,14 +15,29 @@ function linmin_grad!(
     do_step!( αt, evars, d, rotPrev, rotPrevC, rotPrevCinv )
     Etot = compute!( Ham, evars, gt, Kgt, kT, rotPrevCinv, rotPrev )
 
-    denum = dot_ElecGradient(g - gt, d)
+    denum, denum_aux = dot_ElecGradient_v2(g - gt, d)
+    num, num_aux = dot_ElecGradient_v2(g, d)
     if denum != 0.0
-        α = abs( αt * dot_ElecGradient(g, d) / denum )
+        α = abs( αt * num/denum )
     else
         α = 0.0
     end
 
-    return α
+    if denum_aux != 0.0
+        α_aux = abs( αt * num_aux/denum_aux )
+    else
+        α_aux = 0.0
+    end
+
+    return α, α_aux
+
+    #denum = dot_ElecGradient(g - gt, d)
+    #if denum != 0.0
+    #    α = abs( αt * dot_ElecGradient(g, d) / denum )
+    #else
+    #    α = 0.0
+    #end
+    #return α
 
 end
 

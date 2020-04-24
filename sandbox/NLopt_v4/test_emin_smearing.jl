@@ -142,14 +142,17 @@ function main()
         #println("rotPrevCinv")
         #print_vec_mat(rotPrevCinv[1:1])
 
-        α = linmin_grad!( Ham, evars, g, d, kT, rotPrev, rotPrevC, rotPrevCinv )
+        #α = linmin_grad!( Ham, evars, g, d, kT, rotPrev, rotPrevC, rotPrevCinv )
         #α = linmin_grad!( Ham, evars.psiks, g.psiks, d.psiks )
-        println("α = ", α)
+        α, α_aux = linmin_grad!( Ham, evars, g, d, kT, rotPrev, rotPrevC, rotPrevCinv )
+        println("α     = ", α)
+        println("α_aux = ", α_aux)
         #α = 3e-5
 
         #do_step!( α, 0.0, evars, d, rotPrev, rotPrevC, rotPrevCinv )
         #do_step!( 0.0, α, evars, d, rotPrev, rotPrevC, rotPrevCinv )
-        do_step!( α, evars, d, rotPrev, rotPrevC, rotPrevCinv )
+        #do_step!( α, evars, d, rotPrev, rotPrevC, rotPrevCinv )
+        do_step!( α, α_aux, evars, d, rotPrev, rotPrevC, rotPrevCinv )
 
         #println("rotPrev")
         #print_vec_mat(rotPrev[1:1])
