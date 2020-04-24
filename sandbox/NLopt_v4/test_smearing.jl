@@ -14,7 +14,7 @@ function test_01()
     println( PWDFT.wgauss.(x) )
 end
 
-#test_01()
+test_01()
 
 function test_02()
     evals = [1.0, 2.0, 3.0, 4.0]
