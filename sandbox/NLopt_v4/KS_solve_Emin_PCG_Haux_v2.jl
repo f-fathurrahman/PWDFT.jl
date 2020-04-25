@@ -117,12 +117,15 @@ function KS_solve_Emin_PCG_Haux_v2!( Ham::Hamiltonian, evars::ElecVars;
         Etot = compute!( Ham, evars, g, Kg, kT, rotPrevCinv, rotPrev )
         #println(Ham.energies)
         diffE = Etot - Etot_old
+        println()
         @printf("Emin_PCG: %5d %18.10f %18.10e ", iter, Etot, abs(diffE))
         if diffE > 0
             println("Energy is not reducing")
         else
             println()
         end
+        print_ebands(Ham.electrons, Ham.pw.gvecw.kpoints)
+
 
     end
 

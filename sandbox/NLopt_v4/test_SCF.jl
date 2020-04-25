@@ -18,7 +18,7 @@ function main()
     #Ham = create_Ham_Al_fcc_smearing()
 
     KS_solve_SCF!( Ham, mix_method="anderson", use_smearing=true, kT=kT)
-
+    print_ebands(Ham.electrons, Ham.pw.gvecw.kpoints)
 end
 
 main()

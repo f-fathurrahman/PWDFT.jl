@@ -41,6 +41,8 @@ function main()
 
     evars = ElecVars(Ham)
     KS_solve_Emin_PCG_Haux_v2!( Ham, evars, NiterMax=30 )
+    print_ebands(Ham.electrons, Ham.pw.gvecw.kpoints)
+    #mTS = calc_entropy( wk, kT, Ham.electrons.ebands, E_fermi, Nspin )
 
     println("Pass here")
 end
