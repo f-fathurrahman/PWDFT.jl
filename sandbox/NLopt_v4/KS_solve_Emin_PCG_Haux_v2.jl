@@ -22,15 +22,12 @@ function KS_solve_Emin_PCG_Haux_v2!( Ham::Hamiltonian, evars::ElecVars;
 
     Ham.energies.NN = calc_E_NN(Ham.atoms)
     
-    #Etot = calc_energies_grad!( Ham, evars, g, Kg, kT )
     Etot = compute!( Ham, evars, g, Kg, kT, rotPrevCinv, rotPrev )
     Etot_old = Etot
 
-    #println(Ham.energies)
     @printf("Initial energies = %18.10f\n", Etot)
 
-    #d = deepcopy(Kg)
-    d = deepcopy(g)
+    d = deepcopy(Kg)
 
     # Constrain
     constrain_search_dir!( d, evars )
@@ -118,7 +115,7 @@ function KS_solve_Emin_PCG_Haux_v2!( Ham::Hamiltonian, evars::ElecVars;
         #println(Ham.energies)
         diffE = Etot - Etot_old
         println()
-        @printf("Emin_PCG: %5d %18.10f %18.10e ", iter, Etot, abs(diffE))
+        @printf("Emin_PCG_Haux_v2: %5d %18.10f %18.10e ", iter, Etot, abs(diffE))
         if diffE > 0
             println("Energy is not reducing")
         else

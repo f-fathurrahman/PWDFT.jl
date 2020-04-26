@@ -11,10 +11,6 @@ function update_occ!( Ham, evars::ElecVars, kT )
     
     Ham.electrons.Focc = copy(Focc)
 
-    println("\nIn update_occ!")
-    print_ebands(Ham.electrons, Ham.pw.gvecw.kpoints)
-
-
     return E_fermi, mTS
 
 end
