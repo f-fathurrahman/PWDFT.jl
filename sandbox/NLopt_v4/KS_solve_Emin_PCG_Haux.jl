@@ -1,25 +1,3 @@
-function setup_guess_wavefunc!( Ham, psiks, startingrhoe, skip_initial_diag )
-    
-    Npoints = prod(Ham.pw.Ns)
-    Nspin = Ham.electrons.Nspin
-    Rhoe = zeros(Float64,Npoints,Nspin)
-    
-    if startingrhoe == :gaussian
-        @assert Nspin == 1
-        Rhoe[:,1] = guess_rhoe( Ham )
-    else
-        calc_rhoe!( Ham, psiks, Rhoe )
-    end
-    #
-    update!(Ham, Rhoe)
-    #
-    if !skip_initial_diag
-        _ =
-        diag_LOBPCG!( Ham, psiks, verbose=false, verbose_last=false, NiterMax=10 )
-    end
-    return
-end
-
 function KS_solve_Emin_PCG_Haux!( Ham, psiks;
     etot_conv_thr=1e-6, skip_initial_diag=false, startingrhoe=:gaussian, NiterMax=5, kT=0.01
 )
