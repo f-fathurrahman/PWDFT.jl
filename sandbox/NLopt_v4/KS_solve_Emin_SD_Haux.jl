@@ -52,10 +52,9 @@ function KS_solve_Emin_SD_Haux!( Ham::Hamiltonian, evars::ElecVars;
 
         constrain_search_dir!( d, evars )
 
-        α = linmin_grad_v1!( Ham, evars, g, d, kT, rotPrev, rotPrevC, rotPrevCinv )
+        α, α_Haux = linmin_grad_v2!( Ham, evars, g, d, kT, rotPrev, rotPrevC, rotPrevCinv )
         println("α     = ", α)
-
-        do_step!( α, evars, d, rotPrev, rotPrevC, rotPrevCinv )
+        do_step!( α, α_Haux, evars, d, rotPrev, rotPrevC, rotPrevCinv )
 
         Etot_old = Etot
         Etot = compute!( Ham, evars, g, Kg, kT, rotPrevCinv, rotPrev )
