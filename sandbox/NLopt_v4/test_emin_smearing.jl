@@ -39,7 +39,10 @@ function main()
 
     #test_ElecVars(Ham)
 
-    evars = ElecVars(Ham)
+    psiks = rand_BlochWavefunc(Ham)
+    setup_guess_wavefunc!( Ham, psiks, startingrhoe=:gaussian, skip_initial_diag=false )
+    evars = ElecVars(Ham, psiks)
+    
     KS_solve_Emin_PCG_Haux_v2!( Ham, evars, NiterMax=30 )
     print_ebands(Ham.electrons, Ham.pw.gvecw.kpoints)
     #mTS = calc_entropy( wk, kT, Ham.electrons.ebands, E_fermi, Nspin )

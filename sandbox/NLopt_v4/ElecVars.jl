@@ -1,9 +1,3 @@
-mutable struct ElecVars
-    psiks::BlochWavefunc
-    Hsub::Array{Matrix{ComplexF64},1}
-    Haux_eigs::Array{Float64,2}
-end
-
 mutable struct ElecGradient
     psiks::BlochWavefunc
     Haux::Array{Matrix{ComplexF64},1}
@@ -28,6 +22,12 @@ end
 import Base: length
 function length(e::ElecGradient)
     return length(e.psiks)
+end
+
+mutable struct ElecVars
+    psiks::BlochWavefunc
+    Hsub::Array{Matrix{ComplexF64},1}
+    Haux_eigs::Array{Float64,2}
 end
 
 function ElecVars( Ham::Hamiltonian )

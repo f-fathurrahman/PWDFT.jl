@@ -1,4 +1,4 @@
-function setup_guess_wavefunc!( Ham, psiks, startingrhoe, skip_initial_diag )
+function setup_guess_wavefunc!( Ham, psiks; startingrhoe=:gaussian, skip_initial_diag=false )
     
     Npoints = prod(Ham.pw.Ns)
     Nspin = Ham.electrons.Nspin
