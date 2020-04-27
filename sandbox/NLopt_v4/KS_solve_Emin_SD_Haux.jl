@@ -11,18 +11,11 @@ function KS_solve_Emin_SD_Haux!( Ham::Hamiltonian, evars::ElecVars;
     Kg = ElecGradient(Ham)
     gPrev = ElecGradient(Ham)
 
-    rotPrev = Vector{Matrix{ComplexF64}}(undef,Nkspin)
-    rotPrevC = Vector{Matrix{ComplexF64}}(undef,Nkspin)
-    rotPrevCinv = Vector{Matrix{ComplexF64}}(undef,Nkspin)
-    for i in 1:Nkspin
-        rotPrev[i] = diagm( 0 => ones(ComplexF64,Nstates) )
-        rotPrevC[i] = diagm( 0 => ones(ComplexF64,Nstates) )
-        rotPrevCinv[i] = diagm( 0 => ones(ComplexF64,Nstates) )
-    end
+    subrot = SubspaceRotations(Nkspin, Nstates)
 
     Ham.energies.NN = calc_E_NN(Ham.atoms)
     
-    Etot = compute!( Ham, evars, g, Kg, kT, rotPrevCinv, rotPrev )
+    Etot = compute!( Ham, evars, g, Kg, kT, subrot )
     Etot_old = Etot
 
     @printf("Initial energies = %18.10f\n", Etot)
@@ -52,12 +45,13 @@ function KS_solve_Emin_SD_Haux!( Ham::Hamiltonian, evars::ElecVars;
 
         constrain_search_dir!( d, evars )
 
-        α, α_Haux = linmin_grad_v2!( Ham, evars, g, d, kT, rotPrev, rotPrevC, rotPrevCinv )
-        println("α     = ", α)
-        do_step!( α, α_Haux, evars, d, rotPrev, rotPrevC, rotPrevCinv )
+        α, α_Haux = linmin_grad_v2!( Ham, evars, g, d, kT, subrot )
+        println("α      = ", α)
+        println("α_Haux = ", α_Haux)
+        do_step!( α, α_Haux, evars, d, subrot )
 
         Etot_old = Etot
-        Etot = compute!( Ham, evars, g, Kg, kT, rotPrevCinv, rotPrev )
+        Etot = compute!( Ham, evars, g, Kg, kT, subrot )
         #println(Ham.energies)
         diffE = Etot - Etot_old
         @printf("Emin_SD_Haux: %5d %18.10f %18.10e ", iter, Etot, abs(diffE))
@@ -66,6 +60,7 @@ function KS_solve_Emin_SD_Haux!( Ham::Hamiltonian, evars::ElecVars;
         else
             println()
         end
+        print_ebands(Ham.electrons, Ham.pw.gvecw.kpoints)
 
     end
 

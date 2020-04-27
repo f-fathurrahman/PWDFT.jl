@@ -27,6 +27,8 @@ function calc_energies_grad!(
     Rhoe = calc_rhoe( Ham, evars.psiks )
     update!( Ham, Rhoe )
     
+    #ortho_check(evars.psiks[1])
+
     Ham.energies = calc_energies( Ham, evars.psiks )
     Ham.energies.mTS = mTS
 
@@ -231,17 +233,21 @@ function do_step!(
 
         #Haux.diagonalize(rot, eVars.Haux_eigs[q]); //rotation chosen to diagonalize auxiliary matrix
         evars.Haux_eigs[:,i], rot = eigen(Hermitian(Haux)) # need to symmetrize?
-
  
         #rotC = rot
         #eVars.orthonormalize(q, &rotC);
         Udagger = inv( sqrt( evars.psiks[i]' * evars.psiks[i] ) )
         rotC = Udagger*rot
         evars.psiks[i] = evars.psiks[i]*rotC
+
+        #evars.psiks[i] = evars.psiks[i]*Udagger*rot
         
         rotPrev[i] = rotPrev[i] * rot
-        rotPrevC[i] = rotPrevC[i] * rotC
+        rotPrevC[i] = rotPrevC[i] * rotC               # original
         rotPrevCinv[i] = inv(rotC) * rotPrevCinv[i]
+        
+        #rotPrevC[i] = rotPrevC[i] * rot
+        #rotPrevCinv[i] = inv(rot) * rotPrevCinv[i]
 
     end
     

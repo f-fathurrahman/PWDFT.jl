@@ -11,26 +11,16 @@ function KS_solve_Emin_PCG_Haux_v1!( Ham::Hamiltonian, evars::ElecVars;
     Kg = ElecGradient(Ham)
     gPrev = ElecGradient(Ham)
 
-    rotPrev = Vector{Matrix{ComplexF64}}(undef,Nkspin)
-    rotPrevC = Vector{Matrix{ComplexF64}}(undef,Nkspin)
-    rotPrevCinv = Vector{Matrix{ComplexF64}}(undef,Nkspin)
-    for i in 1:Nkspin
-        rotPrev[i] = diagm( 0 => ones(ComplexF64,Nstates) )
-        rotPrevC[i] = diagm( 0 => ones(ComplexF64,Nstates) )
-        rotPrevCinv[i] = diagm( 0 => ones(ComplexF64,Nstates) )
-    end
+    subrot = SubspaceRotations(Nkspin, Nstates)
 
     Ham.energies.NN = calc_E_NN(Ham.atoms)
     
-    #Etot = calc_energies_grad!( Ham, evars, g, Kg, kT )
-    Etot = compute!( Ham, evars, g, Kg, kT, rotPrevCinv, rotPrev )
+    Etot = compute!( Ham, evars, g, Kg, kT, subrot )
     Etot_old = Etot
 
-    #println(Ham.energies)
     @printf("Initial energies = %18.10f\n", Etot)
 
-    #d = deepcopy(Kg)
-    d = deepcopy(g)
+    d = deepcopy(Kg)
 
     # Constrain
     constrain_search_dir!( d, evars )
