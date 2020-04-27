@@ -27,7 +27,7 @@ function KS_solve_Emin_SD_Haux!( Ham::Hamiltonian, evars::ElecVars;
 
     @printf("Initial energies = %18.10f\n", Etot)
 
-    d = deepcopy(g)
+    d = deepcopy(g) # XXX should only allocate memory
 
     # Constrain
     constrain_search_dir!( d, evars )

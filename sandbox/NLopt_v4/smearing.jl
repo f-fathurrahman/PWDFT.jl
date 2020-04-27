@@ -63,7 +63,7 @@ function grad_smear(
     #
     Nrows = size(∇ϵ,1)
     Ncols = size(∇ϵ,2)
-    for i in 1:Nrows, j in 1:Ncols
+    for j in 1:Ncols, i in 1:Nrows
         dϵ = evals[i] - evals[j]
         if abs(dϵ) < 1e-6
             ∇ϵ[i,j] = ∇ϵ[i,j] * smear_prime( evals[i], E_f, kT )

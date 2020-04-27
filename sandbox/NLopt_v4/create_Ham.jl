@@ -64,3 +64,15 @@ function create_Ham_Al_fcc_smearing(; meshk=[3,3,3], Nspin=1, ecutwfc=15.0)
     end
 
 end
+
+function create_Ham_atom_Si_smearing()
+    atoms = Atoms(xyz_string_frac=
+        """
+        1
+
+        Si  0.0  0.0  0.0
+        """, LatVecs=gen_lattice_sc(16.0))
+    pspfiles = [joinpath(DIR_PSP, "Si-q4.gth")]
+    ecutwfc = 15.0
+    return Hamiltonian( atoms, pspfiles, ecutwfc, extra_states=4 )
+end

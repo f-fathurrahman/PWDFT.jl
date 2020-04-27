@@ -23,7 +23,6 @@ function calc_energies_grad!(
 )
 
     E_fermi, mTS = update_occ!( Ham, evars, kT )
-    println("E_fermi = ", E_fermi)
 
     Rhoe = calc_rhoe( Ham, evars.psiks )
     update!( Ham, Rhoe )
@@ -88,7 +87,7 @@ function calc_energies_grad!(
         end
         g_tmp[:] = grad_smear( smear_fermi, smear_fermi_prime, evars.Haux_eigs[:,i], E_fermi, kT, gradF )
         g.Haux[i] = w[ik] * 0.5 * (g_tmp' + g_tmp)
-        Kg.Haux[i] = -copy(gradF0) #-0.1*copy(gradF0)
+        Kg.Haux[i] = -0.1*copy(gradF0) #-0.1*copy(gradF0)
     end
 
     return sum( Ham.energies )
@@ -224,11 +223,21 @@ function do_step!(
         
         #axpy(alpha, rotExists ? dagger(rotPrev[q])*dir.Haux[q]*rotPrev[q] : dir.Haux[q], Haux);
         Haux = Haux + α_Haux*( rotPrev[i]' * d.Haux[i] * rotPrev[i] )
-        
+        println("d.Haux i")
+        display(d.Haux[i])
+        #println("rotPrev = ")
+        #display(rotPrev); println()        
+
         #Haux.diagonalize(rot, eVars.Haux_eigs[q]); //rotation chosen to diagonalize auxiliary matrix
         #evals, evecs = eigen(Haux)
         #println("evals = ", evals)
+        #println("Pass here 230")
+        #println("Result of eigen Hermitian(Haux)")
+        #println(eigen(Hermitian(Haux)))
+        #println("Haux = ")
+        #display(Haux); println()
         evars.Haux_eigs[:,i], rot = eigen(Hermitian(Haux)) # need to symmetrize?
+        println("Pass here 231")
  
         #rotC = rot
         #eVars.orthonormalize(q, &rotC);
