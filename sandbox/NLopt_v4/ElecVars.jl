@@ -62,6 +62,9 @@ function ElecVars( Ham::Hamiltonian, psiks::BlochWavefunc )
     Hsub = Array{Matrix{ComplexF64},1}(undef,Nkspin)
     Haux_eigs = zeros(Float64,Nstates,Nkspin) # the same as electrons.ebands
     
+    Rhoe = calc_rhoe( Ham, psiks )
+    update!(Ham, Rhoe)
+
     for ispin in 1:Nspin, ik in 1:Nkpt
         i = ik + (ispin - 1)*Nkpt
         Ham.ik = ik
