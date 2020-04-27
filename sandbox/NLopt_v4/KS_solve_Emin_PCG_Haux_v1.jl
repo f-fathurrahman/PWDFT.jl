@@ -85,13 +85,13 @@ function KS_solve_Emin_PCG_Haux_v1!( Ham::Hamiltonian, evars::ElecVars;
 
         constrain_search_dir!( d, evars )
 
-        α = linmin_grad_v1!( Ham, evars, g, d, kT, rotPrev, rotPrevC, rotPrevCinv )
+        α = linmin_grad_v1!( Ham, evars, g, d, kT, subrot )
         println("α     = ", α)
 
-        do_step!( α, evars, d, rotPrev, rotPrevC, rotPrevCinv )
+        do_step!( α, evars, d, subrot )
 
         Etot_old = Etot
-        Etot = compute!( Ham, evars, g, Kg, kT, rotPrevCinv, rotPrev )
+        Etot = compute!( Ham, evars, g, Kg, kT, subrot )
         #println(Ham.energies)
         diffE = Etot - Etot_old
         @printf("Emin_PCG: %5d %18.10f %18.10e ", iter, Etot, abs(diffE))

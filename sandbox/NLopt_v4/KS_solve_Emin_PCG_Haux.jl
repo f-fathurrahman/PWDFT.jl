@@ -1,8 +1,7 @@
-function KS_solve_Emin_PCG_Haux!( Ham, psiks;
+function KS_solve_Emin_PCG_Haux!(
+     Ham::Hamiltonian, evars::ElecVars;
     etot_conv_thr=1e-6, skip_initial_diag=false, startingrhoe=:gaussian, NiterMax=5, kT=0.01
 )
-
-    Nkspin = length(psiks)
 
     g = ElecGradient(Ham)
     Kg = ElecGradient(Ham)
@@ -10,32 +9,28 @@ function KS_solve_Emin_PCG_Haux!( Ham, psiks;
 
     Npoints = prod(Ham.pw.Ns)
     Nspin = Ham.electrons.Nspin
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     Nstates = Ham.electrons.Nstates
+    Nkspin = Nkpt*Nspin
 
-    setup_guess_wavefunc!( Ham, psiks, startingrhoe, skip_initial_diag )
-
-    evars = ElecVars( Ham, psiks )
+    subrot = SubspaceRotations(Nkspin, Nstates)
 
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( Ham.atoms )
 
-    # No need to orthonormalize
-    Etot = calc_energies_grad!( Ham, psiks, g, Kg )
+    Etot = compute!( Ham, evars, g, Kg, kT, subrot )
 
     d = deepcopy(Kg)
 
     # Constrain
     constrain_search_dir!( d, evars )
 
-    println("Pass here 52")
-    exit()
-
     gPrevUsed = true
 
-    #minim_params = MinimizeParams()
+    minim_params = MinimizeParams()
 
-    #αt_start = minim_params.αt_start
-    #αt_min = minim_params.αt_min
+    αt_start = minim_params.αt_start
+    αt_min = minim_params.αt_min
     updateTestStepSize = minim_params.updateTestStepSize
     αt = αt_start
     α = αt
@@ -55,23 +50,21 @@ function KS_solve_Emin_PCG_Haux!( Ham, psiks;
 
         #println("\nBegin iter = ", iter)
 
-        gKnorm = 2.0*real(dot(g, Kg))
+        gKnorm = dot_ElecGradient(g,Kg)
         
-        if !force_grad_dir
-            #dotgd = dot_BlochWavefunc(g, d)
-            dotgd = 2.0*real( dot(g,d) )
-            if gPrevUsed
-                #dotgPrevKg = dot_BlochWavefunc(gPrev, Kg)
-                dotgPrevKg = 2.0*real(dot(gPrev, Kg))
-            else
-                dotgPrevKg = 0.0
-            end
-            β = (gKnorm - dotgPrevKg)/gKnormPrev # Polak-Ribiere
-            if β < 0.0
-                println("Resetting β")
-                β = 0.0
-            end
-        end
+        #if !force_grad_dir
+        #    dotgd = dot_ElecGradient(g, d)
+        #    if gPrevUsed
+        #        dotgPrevKg = dot_ElecGradient(gPrev, Kg)
+        #    else
+        #        dotgPrevKg = 0.0
+        #    end
+        #    β = (gKnorm - dotgPrevKg)/gKnormPrev # Polak-Ribiere
+        #    if β < 0.0
+        #        println("Resetting β")
+        #        β = 0.0
+        #    end
+        #end
 
         force_grad_dir = false
 
@@ -86,15 +79,17 @@ function KS_solve_Emin_PCG_Haux!( Ham, psiks;
 
         # Update search direction
         for i in 1:Nkspin
-            d[i] = -Kg[i] + β*d[i]
+            d.psiks[i] = -Kg.psiks[i] + β*d.psiks[i]
+            d.Haux[i]  = -Kg.Haux[i] + β*d.Haux[i]
         end
 
-        constrain_search_dir!( d, psiks )
+        constrain_search_dir!( d, evars )
 
         # Line minimization
-        linmin_success, α, αt = linmin_quad!( Ham, psiks, g, d, α, αt, Etot, minim_params )
-        #println("linmin_success = ", linmin_success)
-        #@printf("α = %18.10e, αt = %18.10e\n", α, αt)
+        linmin_success, α, αt = linmin_quad!( Ham, evars, g, d, kT, subrot, α, αt, Etot, minim_params)
+        
+        println("linmin_success = ", linmin_success)
+        @printf("α = %18.10e, αt = %18.10e\n", α, αt)
 
         #linmin_success, α = linmin_armijo!( Ham, psiks, g, d, Etot )
 
@@ -103,8 +98,8 @@ function KS_solve_Emin_PCG_Haux!( Ham, psiks;
 
         if linmin_success
             #
-            do_step!( psiks, α, d )
-            Etot = calc_energies_grad!( Ham, psiks, g, Kg )
+            do_step!( α, evars, d, subrot )
+            Etot = compute!( Ham, evars, g, Kg, kT, subrot )
             #
             if updateTestStepSize
                 αt = α
@@ -115,8 +110,8 @@ function KS_solve_Emin_PCG_Haux!( Ham, psiks;
             end
         else
             # linmin failed:
-            do_step!( psiks, -α, d )  # CHECK THIS ...
-            Etot = calc_energies_grad!( Ham, psiks, g, Kg )            
+            do_step!( -α, evars, d, subrot )
+            Etot = compute!( Ham, evars, g, Kg, kT, subrot )
             
             @printf("linmin is failed: Update psiks by αt_min = %e, Etot = %18.10f\n", αt_min, Etot)
 
@@ -132,10 +127,10 @@ function KS_solve_Emin_PCG_Haux!( Ham, psiks;
             end
         end
         
-        norm_g = norm(g) #/(Nkspin*Nstates)
+        #norm_g = norm(g) #/(Nkspin*Nstates)
         #norm_g = 2*real(dot(g,g))
         diffE = Etot_old - Etot
-        @printf("Emin_PCG_new step %8d = %18.10f  %10.7e  %10.7e\n", iter, Etot, diffE, norm_g)
+        @printf("Emin_PCG_new step %8d = %18.10f  %10.7e\n", iter, Etot, diffE)
         if diffE < 0.0
             println("*** WARNING: Etot is not decreasing")
         end
