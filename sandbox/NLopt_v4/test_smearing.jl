@@ -1,3 +1,4 @@
+using Printf
 using LinearAlgebra
 using PWDFT
 
@@ -14,7 +15,7 @@ function test_01()
     println( PWDFT.wgauss.(x) )
 end
 
-test_01()
+#test_01()
 
 function test_02()
     evals = [1.0, 2.0, 3.0, 4.0]
@@ -30,4 +31,22 @@ function test_02()
     display(∇ϵ); println()
 end
 
-test_02()
+#test_02()
+
+function test_03()
+    evals = [1.0, 2.0, 3.0, 4.0]
+    E_f = 2.1
+    kT = 0.1
+
+    Nstates = length(evals)
+    fprime = zeros(Nstates)
+    Focc = zeros(Nstates)
+    for ist in 1:Nstates
+        Focc[ist] = smear_fermi( evals[ist], E_f, kT )
+        fprime[ist] = smear_fermi_prime( evals[ist], E_f, kT )
+        df = Focc[ist]*(1.0 - Focc[ist])/kT
+        @printf("%3d %18.10f %18.10f %18.10f\n", ist, Focc[ist], fprime[ist], df)
+    end
+end
+
+test_03()
