@@ -11,18 +11,11 @@ function KS_solve_Emin_PCG_Haux_v2!( Ham::Hamiltonian, evars::ElecVars;
     Kg = ElecGradient(Ham)
     gPrev = ElecGradient(Ham)
 
-    rotPrev = Vector{Matrix{ComplexF64}}(undef,Nkspin)
-    rotPrevC = Vector{Matrix{ComplexF64}}(undef,Nkspin)
-    rotPrevCinv = Vector{Matrix{ComplexF64}}(undef,Nkspin)
-    for i in 1:Nkspin
-        rotPrev[i] = diagm( 0 => ones(ComplexF64,Nstates) )
-        rotPrevC[i] = diagm( 0 => ones(ComplexF64,Nstates) )
-        rotPrevCinv[i] = diagm( 0 => ones(ComplexF64,Nstates) )
-    end
+    subrot = SubspaceRotations(Nkspin, Nstates)
 
     Ham.energies.NN = calc_E_NN(Ham.atoms)
     
-    Etot = compute!( Ham, evars, g, Kg, kT, rotPrevCinv, rotPrev )
+    Etot = compute!( Ham, evars, g, Kg, kT, subrot )
     Etot_old = Etot
 
     @printf("Initial energies = %18.10f\n", Etot)
@@ -87,31 +80,18 @@ function KS_solve_Emin_PCG_Haux_v2!( Ham::Hamiltonian, evars::ElecVars;
 
         # Update search direction
         for i in 1:Nkspin
-            #d.psiks[i] = -Kg.psiks[i] + β*d.psiks[i] #-g.psiks[i]
-            #d.Haux[i]  = -Kg.Haux[i] + β*d.Haux[i]   #-g.Haux[i] 
             d.psiks[i] = -Kg.psiks[i] + β*d.psiks[i]
             d.Haux[i]  = -Kg.Haux[i] + β_aux*d.Haux[i]
         end
 
         constrain_search_dir!( d, evars )
 
-        #println("rotPrevCinv")
-        #print_vec_mat(rotPrevCinv[1:1])
+        α, α_aux = linmin_grad_v2!( Ham, evars, g, d, kT, subrot )
 
-        #α = linmin_grad!( Ham, evars, g, d, kT, rotPrev, rotPrevC, rotPrevCinv )
-        #α = linmin_grad!( Ham, evars.psiks, g.psiks, d.psiks )
-        α, α_aux = linmin_grad_v2!( Ham, evars, g, d, kT, rotPrev, rotPrevC, rotPrevCinv )
-        #println("α     = ", α)
-        #println("α_aux = ", α_aux)
-        #α = 3e-5
-
-        #do_step!( α, 0.0, evars, d, rotPrev, rotPrevC, rotPrevCinv )
-        #do_step!( 0.0, α, evars, d, rotPrev, rotPrevC, rotPrevCinv )
-        #do_step!( α, evars, d, rotPrev, rotPrevC, rotPrevCinv )
-        do_step!( α, α_aux, evars, d, rotPrev, rotPrevC, rotPrevCinv )
+        do_step!( α, α_aux, evars, d, subrot )
 
         Etot_old = Etot
-        Etot = compute!( Ham, evars, g, Kg, kT, rotPrevCinv, rotPrev )
+        Etot = compute!( Ham, evars, g, Kg, kT, subrot )
         #println(Ham.energies)
         diffE = Etot - Etot_old
         println()

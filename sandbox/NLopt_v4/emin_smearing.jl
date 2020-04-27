@@ -87,7 +87,7 @@ function calc_energies_grad!(
         end
         g_tmp[:] = grad_smear( smear_fermi, smear_fermi_prime, evars.Haux_eigs[:,i], E_fermi, kT, gradF )
         g.Haux[i] = w[ik] * 0.5 * (g_tmp' + g_tmp)
-        Kg.Haux[i] = -0.1*copy(gradF0) #-0.1*copy(gradF0)
+        Kg.Haux[i] = -copy(gradF0) #-0.1*copy(gradF0)
     end
 
     return sum( Ham.energies )
@@ -175,13 +175,14 @@ function compute!(
     Ham::Hamiltonian,
     evars::ElecVars,
     g::ElecGradient, Kg::ElecGradient, kT::Float64,
-    rotPrevCinv, rotPrev
+    subrot::SubspaceRotations
 )
 
     Etot = calc_energies_grad!( Ham, evars, g, Kg, kT )
 
     Nkspin = length(evars.psiks)
-
+    rotPrevCinv = subrot.prevCinv
+    rotPrev = subrot.prev
     for i in 1:Nkspin
         g.psiks[i] = g.psiks[i] * rotPrevCinv[i]
         Kg.psiks[i] = Kg.psiks[i] * rotPrevCinv[i]
@@ -197,20 +198,24 @@ end
 
 function do_step!(
     α::Float64, evars::ElecVars, d::ElecGradient,
-    rotPrev, rotPrevC, rotPrevCinv
+    subrot::SubspaceRotations
 )
-    do_step!(α, α, evars, d, rotPrev, rotPrevC, rotPrevCinv)
+    do_step!(α, α, evars, d, subrot)
     return
 end
 
+
 function do_step!(
     α::Float64, α_Haux::Float64, evars::ElecVars, d::ElecGradient,
-    rotPrev, rotPrevC, rotPrevCinv
+    subrot::SubspaceRotations
 )
-    
     Nkspin = length(evars.psiks)
     Nstates = size(evars.psiks[1],2)
-    
+
+    rotPrev = subrot.prev
+    rotPrevC = subrot.prevC
+    rotPrevCinv = subrot.prevCinv
+
     Haux = zeros(ComplexF64,Nstates,Nstates)
     rot = zeros(ComplexF64,Nstates,Nstates)
     rotC = zeros(ComplexF64,Nstates,Nstates)
@@ -223,21 +228,10 @@ function do_step!(
         
         #axpy(alpha, rotExists ? dagger(rotPrev[q])*dir.Haux[q]*rotPrev[q] : dir.Haux[q], Haux);
         Haux = Haux + α_Haux*( rotPrev[i]' * d.Haux[i] * rotPrev[i] )
-        println("d.Haux i")
-        display(d.Haux[i])
-        #println("rotPrev = ")
-        #display(rotPrev); println()        
 
         #Haux.diagonalize(rot, eVars.Haux_eigs[q]); //rotation chosen to diagonalize auxiliary matrix
-        #evals, evecs = eigen(Haux)
-        #println("evals = ", evals)
-        #println("Pass here 230")
-        #println("Result of eigen Hermitian(Haux)")
-        #println(eigen(Hermitian(Haux)))
-        #println("Haux = ")
-        #display(Haux); println()
         evars.Haux_eigs[:,i], rot = eigen(Hermitian(Haux)) # need to symmetrize?
-        println("Pass here 231")
+
  
         #rotC = rot
         #eVars.orthonormalize(q, &rotC);
