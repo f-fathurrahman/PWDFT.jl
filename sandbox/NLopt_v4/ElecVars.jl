@@ -1,3 +1,13 @@
+function print_vec_mat( v::Vector{Matrix{ComplexF64}} )
+    Nkspin = length(v)
+    for i in 1:Nkspin
+        println("Real part of ikspin = ", i)
+        display(real(v[i])); println()
+        println("Imag part of ikspin = ", i)
+        display(imag(v[i])); println()    
+    end
+end
+
 mutable struct SubspaceRotations
     prev::Vector{Matrix{ComplexF64}}
     prevC::Vector{Matrix{ComplexF64}}

@@ -20,16 +20,6 @@ include("KS_solve_Emin_PCG_Haux.jl")
 include("KS_solve_Emin_PCG_Haux_v1.jl")
 include("KS_solve_Emin_PCG_Haux_v2.jl")
 
-function print_vec_mat( v::Vector{Matrix{ComplexF64}} )
-    Nkspin = length(v)
-    for i in 1:Nkspin
-        println("Real part of ikspin = ", i)
-        display(real(v[i])); println()
-        println("Imag part of ikspin = ", i)
-        display(imag(v[i])); println()    
-    end
-end
-
 function main()
 
     Random.seed!(1234)
