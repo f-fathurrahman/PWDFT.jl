@@ -6,7 +6,7 @@ function create_Ham_Pt_fcc_smearing(; meshk=[3,3,3])
         Pt  0.0  0.0  0.0
         """, LatVecs=gen_lattice_fcc(3.9231*ANG2BOHR))
     pspfiles = [joinpath(DIR_PSP, "Pt-q10.gth")]
-    ecutwfc = 30.0
+    ecutwfc = 15.0
     return Hamiltonian( atoms, pspfiles, ecutwfc,
                        meshk=meshk, extra_states=4 )
 end
@@ -19,7 +19,7 @@ function create_Ham_atom_Pt_smearing(; a=16.0)
         Pt  0.0  0.0  0.0
         """, LatVecs=gen_lattice_sc(a))
     pspfiles = [joinpath(DIR_PSP, "Pt-q10.gth")]
-    ecutwfc = 30.0
+    ecutwfc = 15.0
     return Hamiltonian( atoms, pspfiles, ecutwfc, extra_states=4 )
 end
 
@@ -32,7 +32,7 @@ function create_Ham_atom_Pt()
         Pt  0.0  0.0  0.0
         """, LatVecs=gen_lattice_sc(16.0))
     pspfiles = [joinpath(DIR_PSP, "Pt-q10.gth")]
-    ecutwfc = 30.0
+    ecutwfc = 15.0
     return Hamiltonian( atoms, pspfiles, ecutwfc )
 end
 

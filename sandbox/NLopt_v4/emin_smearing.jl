@@ -83,6 +83,7 @@ function calc_energies_grad!(
         i = ik + (ispin - 1)*Nkpt
         #
         gradF0[:] = evars.Hsub[i] - diagm( 0 => evars.Haux_eigs[:,i] )
+        #gradF0[:] = diagm( 0 => ( diag(evars.Hsub[i]) - evars.Haux_eigs[:,i] ) )
         gradF[:] = copy(gradF0)
         for ist in 1:Nstates
             gradF[ist,ist] = gradF0[ist,ist] - dmuContrib # FIXME: not tested for spinpol

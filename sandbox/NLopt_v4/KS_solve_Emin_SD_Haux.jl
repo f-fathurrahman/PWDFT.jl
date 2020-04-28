@@ -39,8 +39,8 @@ function KS_solve_Emin_SD_Haux!( Ham::Hamiltonian, evars::ElecVars;
 
         # Update search direction
         for i in 1:Nkspin
-            d.psiks[i] = -g.psiks[i]
-            d.Haux[i]  = -g.Haux[i] 
+            d.psiks[i] = -Kg.psiks[i]
+            d.Haux[i]  = -Kg.Haux[i] 
         end
 
         constrain_search_dir!( d, evars )
