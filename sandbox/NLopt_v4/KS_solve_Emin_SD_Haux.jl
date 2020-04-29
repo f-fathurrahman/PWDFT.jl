@@ -61,7 +61,8 @@ function KS_solve_Emin_SD_Haux!( Ham::Hamiltonian, evars::ElecVars;
             println()
         end
         print_ebands(Ham.electrons, Ham.pw.gvecw.kpoints)
-
+        calc_Hsub_eigs!(evars)
+        println(evars)
     end
 
     println(Ham.energies)

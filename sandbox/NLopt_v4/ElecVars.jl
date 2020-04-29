@@ -97,14 +97,22 @@ function ElecVars( Ham::Hamiltonian, psiks::BlochWavefunc )
     return ElecVars(psiks, Hsub, Hsub_eigs)
 end
 
+function calc_Hsub_eigs!( evars::ElecVars )
+    Nkspin = length(evars.Hsub)
+    for i in 1:Nkspin
+        evars.Hsub_eigs[:,i] = eigvals(Hermitian(evars.Hsub[i]))
+    end
+end
+
 import Base: show
 function show( io::IO, evars::ElecVars )
-    Nkspin = length(evars.psiks)
+    Nkspin = length(evars.Hsub)
+    Nstates = size(evars.Hsub[1],1)
     for i in 1:Nkspin
-        println("Hsub i = ", i)
-        display(evars.Hsub[i]); println()
         println("Hsub_eigs i = ", i)
-        display( eigvals(Hermitian(evars.Hsub[i])) ); println()
+        for ist in 1:Nstates
+            @printf("%3d %18.10f\n", ist, evars.Hsub_eigs[ist,i])
+        end
     end
 end
 show( evars::ElecVars ) = show( stdout, evars )
