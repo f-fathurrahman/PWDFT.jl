@@ -115,10 +115,10 @@ function KS_solve_Emin_PCG_Haux!(
 
         # Update search direction
         for i in 1:Nkspin
-            #d.psiks[i] = -Kg.psiks[i] + β*d.psiks[i]
-            #d.Haux[i]  = -Kg.Haux[i] + β*d.Haux[i]
             d.psiks[i] = -Kg.psiks[i] + β*d.psiks[i]
-            d.Haux[i]  = -Kg.Haux[i] + β_aux*d.Haux[i]            
+            d.Haux[i]  = -Kg.Haux[i] + β*d.Haux[i]
+            #d.psiks[i] = -Kg.psiks[i] + β*d.psiks[i]
+            #d.Haux[i]  = -Kg.Haux[i] + β_aux*d.Haux[i]            
         end
 
         constrain_search_dir!( d, evars )
@@ -172,18 +172,19 @@ function KS_solve_Emin_PCG_Haux!(
         if diffE < 0.0
             println("*** WARNING: Etot is not decreasing")
         end
-        print_ebands(Ham.electrons, Ham.pw.gvecw.kpoints)
+        calc_Hsub_eigs!( evars )
+        print_ebands_Hsub_eigs(Ham, evars)
 
-        if abs(diffE) < etot_conv_thr
-            Nconverges = Nconverges + 1
-        else
-            Nconverges = 0
-        end
-        
-        if Nconverges >= 2
-            @printf("\nEmin_PCG is converged in iter: %d\n", iter)
-            break
-        end
+        #if abs(diffE) < etot_conv_thr
+        #    Nconverges = Nconverges + 1
+        #else
+        #    Nconverges = 0
+        #end
+        #
+        #if Nconverges >= 2
+        #    @printf("\nEmin_PCG is converged in iter: %d\n", iter)
+        #    break
+        #end
 
         Etot_old = Etot
 

@@ -117,6 +117,18 @@ function show( io::IO, evars::ElecVars )
 end
 show( evars::ElecVars ) = show( stdout, evars )
 
-
-
+# Not yet adapted for Nspin=2
+function print_ebands_Hsub_eigs( Ham, evars )
+    ebands = Ham.electrons.ebands
+    Hsub_eigs = evars.Hsub_eigs
+    Nstates, Nkspin = size(ebands)
+    println("\nebands and Hsub eigenvalues:")
+    for i in 1:Nkspin
+        println("ikspin = ", i)
+        for ist in 1:Nstates
+            @printf("%4d %18.10f %18.10f %18.10e\n", ist,
+                ebands[ist,i], Hsub_eigs[ist,i], abs(ebands[ist,i]-Hsub_eigs[ist,i]))
+        end
+    end
+end
 
