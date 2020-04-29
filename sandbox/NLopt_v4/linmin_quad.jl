@@ -1,13 +1,15 @@
 function linmin_quad!( Ham::Hamiltonian,
-    evars_::ElecVars, g::ElecGradient, d::ElecGradient, kT::Float64, subrot::SubspaceRotations,
+    evars_::ElecVars, g::ElecGradient, d::ElecGradient, kT::Float64, subrot_::SubspaceRotations,
     α::Float64, αt::Float64, E_orig::Float64, minim_params::MinimizeParams
 )
 
     evars = deepcopy(evars_)
+    subrot = deepcopy(subrot_)
     αPrev = 0.0
     Kg = deepcopy(g) #FIXME: not needed
     gdotd = dot_ElecGradient(g,d)
 
+    println("\nEntering linmin_quad:")
     println("gdotd = ", gdotd)
 
     if gdotd >= 0.0
@@ -81,14 +83,16 @@ function linmin_quad!( Ham::Hamiltonian,
         return false, α, αt
     end
 
-
+    println("αPrev = ", αPrev)
+    αRet = 0.0
     # Actual step:
     for s in 1:N_α_adjust_max
-        do_step!( α - αPrev, evars, d, subrot)
+        do_step!( α - αPrev, evars, d, subrot )
+        αRet = α - αPrev
         αPrev = α
         E_actual = compute!( Ham, evars, g, Kg, kT, subrot )
 
-        #@printf("linmin actual step: α = %18.10e E = %18.10f\n", α, E_actual)
+        @printf("linmin actual step: αRet = %18.10e E = %18.10f\n", αRet, E_actual)
         
         if !isfinite(E_actual)
             α = α * αt_reduceFactor;
