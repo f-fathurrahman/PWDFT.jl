@@ -4,8 +4,6 @@ function update_occ!( Ham, evars::ElecVars, kT )
     Nelectrons = Ham.electrons.Nelectrons
     wk = Ham.pw.gvecw.kpoints.wk
 
-    Ham.electrons.ebands = copy(evars.Haux_eigs)
-
     Focc, E_fermi = calc_Focc( Nelectrons, wk, kT, Ham.electrons.ebands, Nspin )
     mTS = calc_entropy( wk, kT, Ham.electrons.ebands, E_fermi, Nspin )
     
@@ -64,8 +62,8 @@ function calc_energies_grad!(
     for ispin in 1:Nspin, ik in 1:Nkpt
         i = ik + (ispin - 1)*Nkpt
         for ist in 1:Nstates
-            fprime[ist] = smear_fermi_prime( evars.Haux_eigs[ist,i], E_fermi, kT )
-            fprimeNum[ist] = fprime[ist] * ( real(evars.Hsub[i][ist,ist]) - evars.Haux_eigs[ist,i] )
+            fprime[ist] = smear_fermi_prime( Ham.electrons.ebands[ist,i], E_fermi, kT )
+            fprimeNum[ist] = fprime[ist] * ( real(evars.Hsub[i][ist,ist]) - Ham.electrons.ebands[ist,i] )
         end
         dmuNum[ispin] = dmuNum[ispin] + w[ik] * sum(fprimeNum)
         dmuDen[ispin] = dmuDen[ispin] + w[ik] * sum(fprime)
@@ -82,13 +80,13 @@ function calc_energies_grad!(
         #
         i = ik + (ispin - 1)*Nkpt
         #
-        gradF0[:] = evars.Hsub[i] - diagm( 0 => evars.Haux_eigs[:,i] )
+        gradF0[:] = evars.Hsub[i] - diagm( 0 => Ham.electrons.ebands[:,i] )
         #gradF0[:] = diagm( 0 => ( diag(evars.Hsub[i]) - evars.Haux_eigs[:,i] ) )
         gradF[:] = copy(gradF0)
         for ist in 1:Nstates
             gradF[ist,ist] = gradF0[ist,ist] - dmuContrib # FIXME: not tested for spinpol
         end
-        g_tmp[:] = grad_smear( smear_fermi, smear_fermi_prime, evars.Haux_eigs[:,i], E_fermi, kT, gradF )
+        g_tmp[:] = grad_smear( smear_fermi, smear_fermi_prime, Ham.electrons.ebands[:,i], E_fermi, kT, gradF )
         g.Haux[i] = w[ik] * 0.5 * (g_tmp' + g_tmp)
         Kg.Haux[i] = -copy(gradF0) #-0.1*copy(gradF0)
     end
@@ -200,15 +198,17 @@ function compute!(
 end
 
 function do_step!(
+    Ham::Hamiltonian,
     α::Float64, evars::ElecVars, d::ElecGradient,
     subrot::SubspaceRotations
 )
-    do_step!(α, α, evars, d, subrot)
+    do_step!(Ham, α, α, evars, d, subrot)
     return
 end
 
 
 function do_step!(
+    Ham::Hamiltonian,
     α::Float64, α_Haux::Float64, evars::ElecVars, d::ElecGradient,
     subrot::SubspaceRotations
 )
@@ -227,13 +227,13 @@ function do_step!(
         evars.psiks[i] = evars.psiks[i] + α*d.psiks[i]*rotPrevC[i]
 
         # Haux fillings:
-        Haux = diagm( 0 => evars.Haux_eigs[:,i] )
+        Haux = diagm( 0 => Ham.electrons.ebands[:,i] )
         
         #axpy(alpha, rotExists ? dagger(rotPrev[q])*dir.Haux[q]*rotPrev[q] : dir.Haux[q], Haux);
         Haux = Haux + α_Haux*( rotPrev[i]' * d.Haux[i] * rotPrev[i] )
 
         #Haux.diagonalize(rot, eVars.Haux_eigs[q]); //rotation chosen to diagonalize auxiliary matrix
-        evars.Haux_eigs[:,i], rot = eigen(Hermitian(Haux)) # need to symmetrize?
+        Ham.electrons.ebands[:,i], rot = eigen(Hermitian(Haux)) # need to symmetrize?
  
         #rotC = rot
         #eVars.orthonormalize(q, &rotC);

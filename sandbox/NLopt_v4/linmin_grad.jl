@@ -10,7 +10,7 @@ function linmin_grad_v1!(
     gt = deepcopy(g)
     Kgt = deepcopy(g)
 
-    do_step!( αt, evars, d, subrot )
+    do_step!( Ham, Ham, αt, evars, d, subrot )
     Etot = compute!( Ham, evars, gt, Kgt, kT, subrot )
 
     denum = dot_ElecGradient(g - gt, d)
@@ -35,7 +35,7 @@ function linmin_grad_v2!(
     gt = deepcopy(g)
     Kgt = deepcopy(g)
 
-    do_step!( αt, evars, d, subrot )
+    do_step!( Ham, αt, evars, d, subrot )
     Etot = compute!( Ham, evars, gt, Kgt, kT, subrot )
 
     denum, denum_aux = dot_ElecGradient_v2(g - gt, d)

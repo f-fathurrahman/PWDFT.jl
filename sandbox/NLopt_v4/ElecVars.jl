@@ -26,6 +26,9 @@ function SubspaceRotations(Nkspin::Int64, Nstates::Int64)
     return SubspaceRotations(prev, prevC, prevCinv)
 end
 
+# 
+# Electronic gradient: w.r.t psiks and Haux
+#
 mutable struct ElecGradient
     psiks::BlochWavefunc
     Haux::Vector{Matrix{ComplexF64}}
@@ -52,10 +55,14 @@ function length(e::ElecGradient)
     return length(e.psiks)
 end
 
+
+# 
+# Store psiks and Hsub
+#
 mutable struct ElecVars
     psiks::BlochWavefunc
     Hsub::Array{Matrix{ComplexF64},1}
-    Haux_eigs::Array{Float64,2}
+    Hsub_eigs::Array{Float64,2}
 end
 
 function ElecVars( Ham::Hamiltonian )
@@ -70,7 +77,7 @@ function ElecVars( Ham::Hamiltonian, psiks::BlochWavefunc )
     Nspin = Ham.electrons.Nspin
 
     Hsub = Array{Matrix{ComplexF64},1}(undef,Nkspin)
-    Haux_eigs = zeros(Float64,Nstates,Nkspin) # the same as electrons.ebands
+    Hsub_eigs = zeros(Float64,Nstates,Nkspin) # the same as electrons.ebands
     
     Rhoe = calc_rhoe( Ham, psiks )
     update!(Ham, Rhoe)
@@ -84,19 +91,19 @@ function ElecVars( Ham::Hamiltonian, psiks::BlochWavefunc )
         #
         Hsub[i][:] = psiks[i]' * op_H(Ham, psiks[i])
         #
-        Haux_eigs[:,i] = eigvals(Hermitian(Hsub[i]))  # set Haux_eigs to eigenvalues of Hsub
+        Hsub_eigs[:,i] = eigvals(Hermitian(Hsub[i]))  # set Haux_eigs to eigenvalues of Hsub
     end
 
-    return ElecVars(psiks, Hsub, Haux_eigs)
+    return ElecVars(psiks, Hsub, Hsub_eigs)
 end
 
 import Base: show
 function show( io::IO, evars::ElecVars )
     Nkspin = length(evars.psiks)
     for i in 1:Nkspin
-        println("Haux i = ", i)
+        println("Hsub i = ", i)
         display(evars.Hsub[i]); println()
-        println("Haux_eigs i = ", i)
+        println("Hsub_eigs i = ", i)
         display( eigvals(Hermitian(evars.Hsub[i])) ); println()
     end
 end

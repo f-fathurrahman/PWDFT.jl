@@ -48,7 +48,7 @@ function KS_solve_Emin_SD_Haux!( Ham::Hamiltonian, evars::ElecVars;
         α, α_Haux = linmin_grad_v2!( Ham, evars, g, d, kT, subrot )
         println("α      = ", α)
         println("α_Haux = ", α_Haux)
-        do_step!( α, α_Haux, evars, d, subrot )
+        do_step!( Ham, α, α_Haux, evars, d, subrot )
 
         Etot_old = Etot
         Etot = compute!( Ham, evars, g, Kg, kT, subrot )

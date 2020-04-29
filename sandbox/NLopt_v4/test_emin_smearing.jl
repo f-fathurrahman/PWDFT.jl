@@ -26,24 +26,26 @@ function main()
 
     kT = 0.01
     #Ham = create_Ham_atom_Si_smearing()
-    #Ham = create_Ham_atom_Al_smearing()
+    Ham = create_Ham_atom_Al_smearing()
     #Ham = create_Ham_Al_fcc_smearing()
     #Ham = create_Ham_atom_Pt_smearing()
-    Ham = create_Ham_Pt_fcc_smearing()
+    #Ham = create_Ham_Pt_fcc_smearing()
     #println(Ham)
 
     #test_ElecVars(Ham)
 
-    #psiks = rand_BlochWavefunc(Ham)
-    #setup_guess_wavefunc!( Ham, psiks, startingrhoe=:gaussian, skip_initial_diag=false )
-    #evars = ElecVars(Ham, psiks)
+    psiks = rand_BlochWavefunc(Ham)
+    setup_guess_wavefunc!( Ham, psiks, startingrhoe=:gaussian, skip_initial_diag=false )
+    evars = ElecVars(Ham, psiks)
     
-    evars = ElecVars(Ham)
+    #evars = ElecVars(Ham)
     
-    #KS_solve_Emin_SD_Haux!( Ham, evars, NiterMax=200 )
+    Ham.electrons.ebands[:] = evars.Hsub_eigs[:] # Initialize Haux to eigvals of Hsub
+    
+    KS_solve_Emin_SD_Haux!( Ham, evars, NiterMax=50 )
     #KS_solve_Emin_PCG_Haux!( Ham, evars, NiterMax=100 )
     #KS_solve_Emin_PCG_Haux_v1!( Ham, evars, NiterMax=30 )
-    KS_solve_Emin_PCG_Haux_v2!( Ham, evars, NiterMax=50 )
+    #KS_solve_Emin_PCG_Haux_v2!( Ham, evars, NiterMax=50 )
     print_ebands(Ham.electrons, Ham.pw.gvecw.kpoints)
     #mTS = calc_entropy( wk, kT, Ham.electrons.ebands, E_fermi, Nspin )
 

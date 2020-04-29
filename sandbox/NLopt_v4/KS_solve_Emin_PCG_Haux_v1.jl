@@ -78,7 +78,7 @@ function KS_solve_Emin_PCG_Haux_v1!( Ham::Hamiltonian, evars::ElecVars;
         α = linmin_grad_v1!( Ham, evars, g, d, kT, subrot )
         println("α     = ", α)
 
-        do_step!( α, evars, d, subrot )
+        do_step!( Ham, α, evars, d, subrot )
 
         Etot_old = Etot
         Etot = compute!( Ham, evars, g, Kg, kT, subrot )

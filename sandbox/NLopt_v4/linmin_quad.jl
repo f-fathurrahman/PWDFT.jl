@@ -36,7 +36,7 @@ function linmin_quad!( Ham::Hamiltonian,
         end
 
         # Try the test step
-        do_step!( αt - αPrev, evars, d, subrot)
+        do_step!( Ham, αt - αPrev, evars, d, subrot)
         αPrev = αt
         E_trial = compute!( Ham, evars, g, Kg, kT, subrot )
 
@@ -87,7 +87,7 @@ function linmin_quad!( Ham::Hamiltonian,
     αRet = 0.0
     # Actual step:
     for s in 1:N_α_adjust_max
-        do_step!( α - αPrev, evars, d, subrot )
+        do_step!( Ham, α - αPrev, evars, d, subrot )
         αRet = α - αPrev
         αPrev = α
         E_actual = compute!( Ham, evars, g, Kg, kT, subrot )

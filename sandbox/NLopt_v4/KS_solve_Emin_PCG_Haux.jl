@@ -136,7 +136,7 @@ function KS_solve_Emin_PCG_Haux!(
 
         if linmin_success
             #
-            do_step!( α, evars, d, subrot )
+            do_step!( Ham, α, evars, d, subrot )
             Etot = compute!( Ham, evars, g, Kg, kT, subrot )
             #
             if updateTestStepSize
@@ -148,7 +148,7 @@ function KS_solve_Emin_PCG_Haux!(
             end
         else
             # linmin failed:
-            do_step!( -α, evars, d, subrot )
+            do_step!( Ham, -α, evars, d, subrot )
             Etot = compute!( Ham, evars, g, Kg, kT, subrot )
             
             @printf("linmin is failed: Update psiks by αt_min = %e, Etot = %18.10f\n", αt_min, Etot)
