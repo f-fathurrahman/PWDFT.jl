@@ -36,8 +36,14 @@ function KS_solve_Emin_PCG_Haux!(
     α = αt
 
     β = 0.0
+    β_aux = 0.0
+    
     gKnorm = 0.0
+    gKnorm_aux = 0.0
+    
     gKnormPrev = 0.0
+    gKnormPrev_aux = 0.0
+
     force_grad_dir = true
 
     Etot_old = Etot
@@ -48,10 +54,9 @@ function KS_solve_Emin_PCG_Haux!(
 
     for iter in 1:NiterMax
 
-        #println("\nBegin iter = ", iter)
+        println("\nBegin iter = ", iter)
 
-        gKnorm = dot_ElecGradient(g,Kg)
-        
+        #gKnorm = dot_ElecGradient(g,Kg)
         #if !force_grad_dir
         #    dotgd = dot_ElecGradient(g, d)
         #    if gPrevUsed
@@ -66,6 +71,36 @@ function KS_solve_Emin_PCG_Haux!(
         #    end
         #end
 
+        #gKnorm = dot_ElecGradient(g, Kg)
+        
+        #gKnorm, gKnorm_aux = dot_ElecGradient_v2(g, Kg)
+        #@printf("gKnorm = %18.10e, gKnorm_aux = %18.10e\n", gKnorm, gKnorm_aux)
+
+        #if !force_grad_dir
+        #    
+        #    dotgd, dotgd_aux = dot_ElecGradient_v2(g, d)
+        #    
+        #    if gPrevUsed
+        #        dotgPrevKg, dotgPrevKg_aux = dot_ElecGradient_v2(gPrev, Kg)
+        #    else
+        #        dotgPrevKg = 0.0
+        #        dotgPrevKg_aux = 0.0
+        #    end
+        #    β = (gKnorm - dotgPrevKg)/gKnormPrev # Polak-Ribiere
+        #    println("β = ", β)
+        #    if β < 0.0
+        #        println("Resetting β")
+        #        β = 0.0
+        #    end
+        #    β_aux = (gKnorm_aux - dotgPrevKg_aux)/gKnormPrev_aux # Polak-Ribiere
+        #    println("β_aux = ", β_aux)
+        #    if β_aux < 0.0
+        #        println("Resetting β_aux")
+        #        β_aux = 0.0
+        #    end
+        #end
+
+
         force_grad_dir = false
 
         # Check convergence here ....
@@ -76,18 +111,21 @@ function KS_solve_Emin_PCG_Haux!(
             gPrev = deepcopy(g)
         end
         gKnormPrev = copy(gKnorm)
+        gKnormPrev_aux = copy(gKnorm_aux)
 
         # Update search direction
         for i in 1:Nkspin
+            #d.psiks[i] = -Kg.psiks[i] + β*d.psiks[i]
+            #d.Haux[i]  = -Kg.Haux[i] + β*d.Haux[i]
             d.psiks[i] = -Kg.psiks[i] + β*d.psiks[i]
-            d.Haux[i]  = -Kg.Haux[i] + β*d.Haux[i]
+            d.Haux[i]  = -Kg.Haux[i] + β_aux*d.Haux[i]            
         end
 
         constrain_search_dir!( d, evars )
 
         # Line minimization
-        linmin_success, α, αt = linmin_quad!( Ham, evars, g, d, kT, subrot, α, αt, Etot, minim_params)
-        
+        linmin_success, α, αt = linmin_quad!( Ham, evars, g, d, kT, subrot, α, αt, Etot, minim_params )
+
         println("linmin_success = ", linmin_success)
         @printf("α = %18.10e, αt = %18.10e\n", α, αt)
 
@@ -130,10 +168,11 @@ function KS_solve_Emin_PCG_Haux!(
         #norm_g = norm(g) #/(Nkspin*Nstates)
         #norm_g = 2*real(dot(g,g))
         diffE = Etot_old - Etot
-        @printf("Emin_PCG_new step %8d = %18.10f  %10.7e\n", iter, Etot, diffE)
+        @printf("Emin_PCG_Haux step %8d = %18.10f  %10.7e\n", iter, Etot, diffE)
         if diffE < 0.0
             println("*** WARNING: Etot is not decreasing")
         end
+        print_ebands(Ham.electrons, Ham.pw.gvecw.kpoints)
 
         if abs(diffE) < etot_conv_thr
             Nconverges = Nconverges + 1
@@ -150,7 +189,9 @@ function KS_solve_Emin_PCG_Haux!(
 
     end
 
-    println("Leaving KS_solve_Emin_PCG_new")
+    println(Ham.energies)
+
+    println("Leaving KS_solve_Emin_PCG_Haux")
 
 end
 
