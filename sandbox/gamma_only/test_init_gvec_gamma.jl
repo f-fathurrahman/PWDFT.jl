@@ -7,7 +7,7 @@ include("init_gvec_gamma.jl")
 
 function main()
     
-    LatVecs = gen_lattice_sc(16.0)
+    LatVecs = gen_lattice_sc(5.0)
 
     pw = PWGrid(5.0, LatVecs)
     Ns = pw.Ns

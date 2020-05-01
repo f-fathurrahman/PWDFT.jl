@@ -1,99 +1,132 @@
+function inv_mm_to_nn(nn::Int64, S::Int64)
+    if nn < 0
+        return nn + S
+    else
+        return nn
+    end
+    #if mm > S/2
+    #    return mm - S
+    #else
+    #    return mm
+    #end
+end
+
+
 #
 # Based on ggen of QE-6.5
 #
 
 function init_gvec_gamma( Ns, RecVecs, ecutrho )
-    
+
     ni = floor( Int64, (Ns[1]-1)/2 )
     nj = floor( Int64, (Ns[2]-1)/2 )
     nk = floor( Int64, (Ns[3]-1)/2 )
-    #
+    
     # gamma-only: exclude space with x < 0
-    #
     istart = 0
 
-    tx = zeros(3)
-    ty = zeros(3)
-    t = zeros(3)
-    tt = zeros(Ns[3])
+    G_tmp = zeros(Float64,3)
+    tt = zeros(Float64,Ns[3])
 
-    ngm = 0
+    ig = 0
     ip = 0
+    ipm = 0
+
+    SMALL = eps()
+
+    Ng = PWDFT.calc_Ng( Ns, RecVecs, ecutrho )
+    Ng = round(Int64, (Ng + 1)/2)
+
+    G  = zeros(Float64,3,Ng)
+    G2 = zeros(Float64,Ng)
+    idx_g2r = zeros(Int64,Ng) # G=0 is included here
+    idx_g2rm = zeros(Int64,Ng) # for negative of G, NOTE: ig=1 should not be accessed
 
     for i in istart:ni
-       #
-       # gamma-only: exclude plane with x = 0, y < 0
-       #
-       if i == 0
-          jstart = 0
-       else
-          jstart = -nj
-       end
+
+        if i == 0
+           jstart = 0
+        else
+           jstart = -nj
+        end
        
-       tx[1:3] = i * RecVecs[1:3,1] # FIXME: Check this
-       
-       for j in jstart:nj
-          
-          #IF ( .NOT. global_sort ) THEN
-          #   IF ( fft_stick_index( dfftp, i, j ) == 0 ) CYCLE jloop
-          #   is_local = .TRUE.
-          #ELSE
-          #   IF ( dfftp%lpara .AND. fft_stick_index( dfftp, i, j ) == 0) THEN
-          #      is_local = .FALSE.
-          #   ELSE
-          #      is_local = .TRUE.
-          #   END IF
-          #END IF
-          #
-          # gamma-only: exclude line with x = 0, y = 0, z < 0
-          #
-          if ( (i == 0) && (j == 0) )
-             kstart = 0
-          else
-             kstart = -nk
-          end
-          
-          ty[1:3] = tx[1:3] + j * RecVecs[1:3,2]
-          #
-          #  compute all the norm square
-          #
-          for k in kstart:nk
-             #
-             ip = ip + 1
-             t[1] = ty[1] + k * RecVecs[1,3]
-             t[2] = ty[2] + k * RecVecs[2,3]
-             t[3] = ty[3] + k * RecVecs[3,3]
-             tt[k-kstart+1] = t[1]^2 + t[2]^2 + t[3]^2
-          end
-          #
-          #  save all the norm square within cutoff
-          #
-          for k in kstart:nk
-            if 0.5*tt[k-kstart+1] <= ecutrho
-                ngm = ngm + 1
+        for j in jstart:nj
+
+            if ( (i == 0) && (j == 0) )
+                kstart = 0
+            else
+                kstart = -nk
+            end
+            
+            for k in kstart:nk
                 
-                #IF (ngm > ngm_max) CALL errore ('ggen 1', 'too many g-vectors', ngm)
-                #IF ( tt(k-kstart+1) > eps8 ) THEN
-                #   g2sort_g(ngm) = tt(k-kstart+1)
-                #ELSE
-                #   g2sort_g(ngm) = 0.d0
-                #ENDIF
-                #IF (is_local) THEN
-                #  ngm_local = ngm_local + 1
-                #  mill_unsorted( :, ngm_local ) = (/ i,j,k /)
-                #  g2l(ngm) = ngm_local
-                #ELSE
-                #  g2l(ngm) = 0
-                #ENDIF
-            end # if
-          end # kstart:nk
+                G_tmp[1] = RecVecs[1,1]*i + RecVecs[1,2]*j + RecVecs[1,3]*k
+                G_tmp[2] = RecVecs[2,1]*i + RecVecs[2,2]*j + RecVecs[2,3]*k
+                G_tmp[3] = RecVecs[3,1]*i + RecVecs[3,2]*j + RecVecs[3,3]*k
+                G2_tmp = G_tmp[1]^2 + G_tmp[2]^2 + G_tmp[3]^2
+                
+                if 0.5*G2_tmp <= ecutrho
+                    #
+                    ig = ig + 1
+                    #
+                    G[1,ig] = G_tmp[1]
+                    G[2,ig] = G_tmp[2]
+                    G[3,ig] = G_tmp[3]
+                    #@printf("%d %d %d\n", i, j, k)
+                    #println(G_tmp)
+                    #println(G[:,ig])
+                    #
+                    G2[ig] = G2_tmp
+                    #
+                    ip1 = inv_mm_to_nn(i, Ns[1])
+                    ip2 = inv_mm_to_nn(j, Ns[2])
+                    ip3 = inv_mm_to_nn(k, Ns[3])
+                    #
+                    ip  = ip1 + 1 + ip2*Ns[2] + ip3*Ns[2]*Ns[3]
+                    #
+                    idx_g2r[ig] = ip # index of +G
+                    #
+                    # Index of -G
+                    if G2_tmp > SMALL
+                        ip1m = inv_mm_to_nn(-i, Ns[1])
+                        ip2m = inv_mm_to_nn(-j, Ns[2])
+                        ip3m = inv_mm_to_nn(-k, Ns[3])
+                        ipm = ip1m + 1 + ip2m*Ns[2] + ip3m*Ns[2]*Ns[3]
+                        idx_g2rm[ig] = ipm
+                    end
+                end # if
+            end # kstart:nk
+
        end
     end
 
-    println("ni = ", ni)
-    println("nj = ", nj)
-    println("nk = ", nk)
-    println("ip = ", ip)
-    println("ngm = ", ngm)
+    println("Last ig = ", ig)
+    println("Ng = ", Ng)
 
+    println("Before sort")
+    for ig in 2:6
+        @printf("ig = %4d G = [%10.5f,%10.5f,%10.5f] G2 = %10.5f\n", ig, G[1,ig], G[2,ig], G[3,ig], G2[ig])
+    end
+    for ig in Ng-5:Ng
+        @printf("ig = %4d G = [%10.5f,%10.5f,%10.5f] G2 = %10.5f\n", ig, G[1,ig], G[2,ig], G[3,ig], G2[ig])
+    end
+
+    idx_sorted = sortperm(G2)
+    G = G[:,idx_sorted]
+    G2 = G2[idx_sorted]
+    idx_g2r = idx_g2r[idx_sorted]
+    idx_g2rm = idx_g2rm[idx_sorted]
+
+    println("After sort")
+    for ig in 2:6
+        @printf("ig = %4d G = [%10.5f,%10.5f,%10.5f] G2 = %10.5f\n", ig, G[1,ig], G[2,ig], G[3,ig], G2[ig])
+    end
+    for ig in Ng-5:Ng
+        @printf("ig = %4d G = [%10.5f,%10.5f,%10.5f] G2 = %10.5f\n", ig, G[1,ig], G[2,ig], G[3,ig], G2[ig])
+    end
+
+    display(RecVecs); println()
+    println("Pass here in init_gvec_gamma")
+
+    return
 end
