@@ -7,17 +7,6 @@ function inv_mm_to_nn(nn::Int64, S::Int64)
 end
 
 
-struct GVectorsGammaOnly
-    Ng::Int64
-    G::Array{Float64,2}
-    G2::Array{Float64,1}
-    idx_g2r::Array{Int64,1}
-    idx_g2rm::Array{Int64,1}
-    G2_shells::Array{Float64,1}
-    idx_g2shells::Array{Int64,1}
-end
-
-
 #
 # Based on ggen of QE-6.5
 #
@@ -78,6 +67,9 @@ function init_gvec_gamma( Ns, RecVecs, ecutrho )
                     G[1,ig] = G_tmp[1]
                     G[2,ig] = G_tmp[2]
                     G[3,ig] = G_tmp[3]
+                    #@printf("%d %d %d\n", i, j, k)
+                    #println(G_tmp)
+                    #println(G[:,ig])
                     #
                     G2[ig] = G2_tmp
                     #
@@ -103,55 +95,33 @@ function init_gvec_gamma( Ns, RecVecs, ecutrho )
        end
     end
 
+    println("Last ig = ", ig)
+    println("Ng = ", Ng)
+
+    println("Before sort")
+    for ig in 2:6
+        @printf("ig = %4d G = [%10.5f,%10.5f,%10.5f] G2 = %10.5f\n", ig, G[1,ig], G[2,ig], G[3,ig], G2[ig])
+    end
+    for ig in Ng-5:Ng
+        @printf("ig = %4d G = [%10.5f,%10.5f,%10.5f] G2 = %10.5f\n", ig, G[1,ig], G[2,ig], G[3,ig], G2[ig])
+    end
+
     idx_sorted = sortperm(G2)
     G = G[:,idx_sorted]
     G2 = G2[idx_sorted]
     idx_g2r = idx_g2r[idx_sorted]
     idx_g2rm = idx_g2rm[idx_sorted]
 
-    G2_shells, idx_g2shells = PWDFT.init_Gshells( G2 )
-
-    return GVectorsGammaOnly( Ng, G, G2, idx_g2r, idx_g2rm, G2_shells, idx_g2shells )
-end
-
-function calc_Ngw_gamma( ecutwfc::Float64, gvec::GVectorsGammaOnly )
-    G = gvec.G
-    Ng = gvec.Ng
-    # k = [0,0,0]
-    Ngw = 0
-    for ig = 1:Ng
-        Gk2 = G[1,ig]^2 + G[2,ig]^2 + G[3,ig]^2
-        if Gk2 <= ecutwfc
-            Ngw = Ngw + 1
-        end
+    println("After sort")
+    for ig in 2:6
+        @printf("ig = %4d G = [%10.5f,%10.5f,%10.5f] G2 = %10.5f\n", ig, G[1,ig], G[2,ig], G[3,ig], G2[ig])
     end
-    return Ngw
-end
-
-struct GVectorsWGammaOnly
-    Ngw::Int64,
-    idx_gw2g::Array{Int64,1}
-    idx_gw2r::Array{Int64,1}
-    idx_gw2rm::Array{Int64,1}
-    kpoints::KPoints
-end
-
-function init_gvecw_gamma( ecutwfc::Float64, gvec::GVectorsGammaOnly )
-    G = gvec.G
-    Ngw = calc_Ngw_gamma(ecutwfc, gvec)
-    idx_gw2g = zeros(Int64,Ngw)
-    idx_gw2r = zeros(Int64,Ngw)
-    idx_gw2rm = zeros(Int64,Ngw)
-    #
-    igw = 0
-    for ig = 1:Ng
-        Gk2 = G[1,ig]^2 + G[2,ig]^2 + G[3,ig]^2
-        if 0.5*Gk2 <= ecutwfc
-            igw = igw + 1
-            idx_gw2g[igw] = ig
-            idx_gw2r[igw] = gvec.idx_g2r[ig]
-            idx_gw2rm[igw] = gvec.idx_g2rm[ig]
-        end
+    for ig in Ng-5:Ng
+        @printf("ig = %4d G = [%10.5f,%10.5f,%10.5f] G2 = %10.5f\n", ig, G[1,ig], G[2,ig], G[3,ig], G2[ig])
     end
-    return GVectorsWGammaOnly( Ngw, idx_gw2g, idx_gw2r, idx_gw2rm )
+
+    display(RecVecs); println()
+    println("Pass here in init_gvec_gamma")
+
+    return
 end
