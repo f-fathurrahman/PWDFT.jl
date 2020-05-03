@@ -129,7 +129,7 @@ function calc_Ngw_gamma( ecutwfc::Float64, gvec::GVectorsGammaOnly )
 end
 
 struct GVectorsWGammaOnly
-    Ngw::Int64,
+    Ngw::Int64
     idx_gw2g::Array{Int64,1}
     idx_gw2r::Array{Int64,1}
     idx_gw2rm::Array{Int64,1}
