@@ -133,7 +133,6 @@ struct GVectorsWGammaOnly
     idx_gw2g::Array{Int64,1}
     idx_gw2r::Array{Int64,1}
     idx_gw2rm::Array{Int64,1}
-    kpoints::KPoints
 end
 
 function GVectorsWGammaOnly( ecutwfc::Float64, gvec::GVectorsGammaOnly )
@@ -144,7 +143,7 @@ function GVectorsWGammaOnly( ecutwfc::Float64, gvec::GVectorsGammaOnly )
     idx_gw2rm = zeros(Int64,Ngw)
     #
     igw = 0
-    for ig = 1:Ng
+    for ig = 1:Ngw
         Gk2 = G[1,ig]^2 + G[2,ig]^2 + G[3,ig]^2
         if 0.5*Gk2 <= ecutwfc
             igw = igw + 1
@@ -200,11 +199,13 @@ function PWGridGammaOnly( ecutwfc::Float64, LatVecs::Array{Float64,2}; Ns_=(0,0,
     
     gvec = GVectorsGammaOnly( Ns, RecVecs, ecutrho )
 
-    gvecw = GVectorsWGammaOnly( ecutwfc, gvec, kpoints )
+    gvecw = GVectorsWGammaOnly( ecutwfc, gvec )
 
     planfw = plan_fft( zeros(ComplexF64,Ns) )
     planbw = plan_ifft( zeros(ComplexF64,Ns) )
 
-    return PWGrid( ecutwfc, ecutrho, Ns, LatVecs, RecVecs, CellVolume, gvec, gvecw,
-                   planfw, planbw )
+    return PWGridGammaOnly(
+        ecutwfc, ecutrho, Ns, LatVecs, RecVecs, CellVolume, gvec, gvecw,
+        planfw, planbw
+    )
 end
