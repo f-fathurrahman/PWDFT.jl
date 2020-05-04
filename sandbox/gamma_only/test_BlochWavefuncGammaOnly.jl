@@ -66,42 +66,110 @@ function test_01()
     Δ = 2*dot(psiG_gamma,psiG_gamma) - dot(psiG,psiG)
     println("Δ = ", Δ)
     println("psiG_gamma[1]^2 = ", psiG_gamma[1]^2) # should be the same as Δ
-
+    println("diff = ", Δ - psiG_gamma[1]^2) # should be the same as Δ
 end
 
 #test_01()
 
-function gen_two_wavefunc( pw::PWGrid, pw_gamma::PWGridGammaOnly )
+# Generate normalize psi
+# No orthogonalization is imposed between psi
+function gen_two_wavefunc( pw::PWGrid, pw_gamma::PWGridGammaOnly; Nstates=1 )
     
     Npoints = prod(pw.Ns)
     dVol = pw.CellVolume/Npoints
 
-    psiR = randn(Float64,Npoints)
+    psiR = randn(Float64,Npoints,Nstates)
     integPsiR = dot(psiR, psiR)*dVol
-    psiR = psiR/sqrt(integPsi)
+    psiR = psiR/sqrt(integPsiR)
     
-    integPsi = sum( psiR .* psiR )*dVol
-    println("integPsi = ", integPsi)
+    integPsiR = sum( psiR .* psiR )*dVol
     
-    ctmp = R_to_G(pw, psiR)
+    ctmp = zeros(ComplexF64,Npoints)
+    psi1 = zeros(ComplexF64, pw.gvec.Ng, Nstates)
+    psi2 = zeros(ComplexF64, pw_gamma.gvec.Ng, Nstates)
 
-    # psi for pw
-    psi1 = zeros(ComplexF64, pw.gvec.Ng)
-    for ig = 1:pw.gvec.Ng
-        ip = pw.gvec.idx_g2r[ig]
-        psi1[ig] = ctmp[ip]
+    for ist in 1:Nstates
+        
+        ctmp = R_to_G(pw, psiR[:,ist])
+        
+        # psi for pw
+        for ig = 1:pw.gvec.Ng
+            ip = pw.gvec.idx_g2r[ig]
+            psi1[ig,ist] = ctmp[ip]
+        end
+        integPsi = dot( psi1[:,ist], psi1[:,ist] )
+        psi1[:,ist] = psi1[:,ist]/sqrt(integPsi)
+
+        # psi for pw_gamma
+        for ig = 1:pw_gamma.gvec.Ng
+            ip = pw_gamma.gvec.idx_g2r[ig]
+            psi2[ig,ist] = ctmp[ip]
+        end
+        integPsi = 2*dot(psi2[:,ist], psi2[:,ist]) - psi2[1,ist]*psi2[1,ist]
+        psi2[:,ist] = psi2[:,ist]/sqrt(integPsi)
+
     end
 
-    psi2 = zeros(ComplexF64, pw_gamma.gvec.Ng)
-    for ig = 1:pw_gamma.gvec.Ng
-        ip = pw_gamma.gvec.idx_g2r[ig]
-        psi2[ig] = ctmp[ip]
-    end
-
-    return psi1, psi2
+    return psi1, BlochWavefuncGammaOnly(psi2)
 
 end
 
 function test_02()
+    Random.seed!(1234)
+
+    ecutwfc = 5.0
+    LatVecs = gen_lattice_sc(6.0)
+    
+    pw = PWGrid(ecutwfc, LatVecs)
+    pw_gamma = PWGridGammaOnly(ecutwfc, LatVecs)
+
+    psi1, psi2 = gen_two_wavefunc(pw, pw_gamma)
+
+    println()
+
+    println("size psi1 = ", Base.summarysize(psi1))
+    println("size psi2 = ", Base.summarysize(psi2))
+
+    res1 = dot(psi1,psi1)
+    res2 = dot(psi2,psi2)
+    println("dot(psi1,psi1) = ", res1)
+    println("dot(psi2,psi2) = ", res2)
+    println("diff = ", res1 - res2)
+end
+
+#test_02()
+
+function test_03()
+    Random.seed!(1234)
+
+    ecutwfc = 5.0
+    LatVecs = gen_lattice_sc(6.0)
+    
+    pw = PWGrid(ecutwfc, LatVecs)
+    pw_gamma = PWGridGammaOnly(ecutwfc, LatVecs)
+
+    psi1, psi2 = gen_two_wavefunc(pw, pw_gamma, Nstates=4)
+
+    println()
+
+    println("size psi1 = ", Base.summarysize(psi1))
+    println("size psi2 = ", Base.summarysize(psi2))
+
+    res1 = dot(psi1,psi1)
+    res2 = dot(psi2,psi2)
+    println("dot(psi1,psi1) = ", res1)
+    println("dot(psi2,psi2) = ", res2)
+    println("diff = ", res1 - res2)
+    
+    ss = 0.0
+    for ist in 1:4
+        integPsi = 2*dot(psi2.data[:,ist], psi2.data[:,ist]) - psi2.data[1,ist]*psi2.data[1,ist]
+        #println("psi2.data[1] = ", psi2.data[1,ist])
+        ss = ss + integPsi
+        println("integPsi = ", integPsi)
+    end
+    println("ss = ", ss)
 
 end
+
+test_03()
