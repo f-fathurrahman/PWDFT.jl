@@ -22,7 +22,7 @@ end
 # Based on ggen of QE-6.5
 #
 
-function init_gvec_gamma( Ns, RecVecs, ecutrho )
+function GVectorsGammaOnly( Ns, RecVecs, ecutrho )
 
     ni = floor( Int64, (Ns[1]-1)/2 )
     nj = floor( Int64, (Ns[2]-1)/2 )
@@ -136,7 +136,7 @@ struct GVectorsWGammaOnly
     kpoints::KPoints
 end
 
-function init_gvecw_gamma( ecutwfc::Float64, gvec::GVectorsGammaOnly )
+function GVectorsWGammaOnly( ecutwfc::Float64, gvec::GVectorsGammaOnly )
     G = gvec.G
     Ngw = calc_Ngw_gamma(ecutwfc, gvec)
     idx_gw2g = zeros(Int64,Ngw)
@@ -154,4 +154,57 @@ function init_gvecw_gamma( ecutwfc::Float64, gvec::GVectorsGammaOnly )
         end
     end
     return GVectorsWGammaOnly( Ngw, idx_gw2g, idx_gw2r, idx_gw2rm )
+end
+
+struct PWGridGammaOnly
+    ecutwfc::Float64
+    ecutrho::Float64
+    Ns::Tuple{Int64,Int64,Int64}
+    LatVecs::Array{Float64,2}
+    RecVecs::Array{Float64,2}
+    CellVolume::Float64
+    gvec::GVectorsGammaOnly
+    gvecw::GVectorsWGammaOnly
+    planfw::FFTW.cFFTWPlan{Complex{Float64},-1,false,3}
+    planbw::AbstractFFTs.ScaledPlan{Complex{Float64},FFTW.cFFTWPlan{Complex{Float64},1,false,3},Float64}
+end
+
+
+function PWGridGammaOnly( ecutwfc::Float64, LatVecs::Array{Float64,2}; Ns_=(0,0,0) )
+
+    ecutrho = 4.0*ecutwfc
+    #
+    RecVecs = 2*pi*inv(Matrix(LatVecs'))
+
+    CellVolume = abs(det(LatVecs))
+    #
+    LatVecsLen = Array{Float64}(undef,3)
+    LatVecsLen[1] = norm(LatVecs[:,1])
+    LatVecsLen[2] = norm(LatVecs[:,2])
+    LatVecsLen[3] = norm(LatVecs[:,3])
+
+    Ns1 = 2*round( Int64, sqrt(ecutrho/2)*LatVecsLen[1]/pi ) + 1
+    Ns2 = 2*round( Int64, sqrt(ecutrho/2)*LatVecsLen[2]/pi ) + 1
+    Ns3 = 2*round( Int64, sqrt(ecutrho/2)*LatVecsLen[3]/pi ) + 1
+
+    if any(Ns_ .== 0)
+        Ns1 = good_fft_order(Ns1)
+        Ns2 = good_fft_order(Ns2)
+        Ns3 = good_fft_order(Ns3)
+        Ns = (Ns1,Ns2,Ns3)
+    else
+        Ns = Ns_[:]
+    end
+
+    Npoints = prod(Ns)
+    
+    gvec = GVectorsGammaOnly( Ns, RecVecs, ecutrho )
+
+    gvecw = GVectorsWGammaOnly( ecutwfc, gvec, kpoints )
+
+    planfw = plan_fft( zeros(ComplexF64,Ns) )
+    planbw = plan_ifft( zeros(ComplexF64,Ns) )
+
+    return PWGrid( ecutwfc, ecutrho, Ns, LatVecs, RecVecs, CellVolume, gvec, gvecw,
+                   planfw, planbw )
 end

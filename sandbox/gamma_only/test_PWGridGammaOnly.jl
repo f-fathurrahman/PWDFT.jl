@@ -1,10 +1,11 @@
 using Printf
 using LinearAlgebra
 using Random
+using FFTW
 
 using PWDFT
 
-include("init_gvec_gamma.jl")
+include("PWGridGammaOnly.jl")
 
 function main()
     
@@ -17,7 +18,7 @@ function main()
     RecVecs = pw.RecVecs
     ecutrho = pw.ecutrho
 
-    gvec_gamma = init_gvec_gamma(Ns, RecVecs, ecutrho)
+    gvec_gamma = GVectorsGammaOnly(Ns, RecVecs, ecutrho)
 
     G = gvec_gamma.G
     G2 = gvec_gamma.G2
