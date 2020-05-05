@@ -17,7 +17,7 @@ function test_vector()
 end
 #test_vector()
 
-function test_matrix()
+function test_ortho_GS_gamma()
 
     Nstates = 4
 
@@ -52,29 +52,59 @@ function test_matrix()
 
     display(psi1g); println()
 
-    #p = psi1 #psi1[2:end,:]
-    #G = p' * p
-    #display(G); println()
+end
+#test_ortho_GS_gamma()
 
-    #p = psi1g #psi1g[2:end,:]
-    #Gg = 2 * p' * p
-    #display(Gg); println()
+function test_ortho_sqrt()
 
-    Udagger = inv( sqrt( psi1' * psi1 ) )
+    Nstates = 4
+
+    psi1 = zeros(ComplexF64,5,Nstates)
+    psi1[:,1] = [0.0, 3.0 + im*2, 4.1 + im*3, 3.0 - im*2, 4.1 - im*3]
+    psi1[:,2] = [0.0, 4.1 + im*3, 5.2 + im*7, 4.1 - im*3, 5.2 - im*7]
+    psi1[:,3] = [0.0, 9.0 + im*2, 8.1 + im*3, 9.0 - im*2, 8.1 - im*3]
+    psi1[:,4] = [0.0, 1.1 + im*3, 1.2 + im*7, 1.1 - im*3, 1.2 - im*7]
+
+    psi1g = zeros(ComplexF64,3,Nstates)
+    psi1g[:,1] = [0.0, 3.0 + im*2, 4.1 + im*3]
+    psi1g[:,2] = [0.0, 4.1 + im*3, 5.2 + im*7]
+    psi1g[:,3] = [0.0, 9.0 + im*2, 8.1 + im*3]
+    psi1g[:,4] = [0.0, 1.1 + im*3, 1.2 + im*7]
+
+    println("dot psi1  = ", dot(psi1,psi1))
+    println("dot psi1g = ", dot(psi1g,psi1g))
+    ss = 0.0 + 0.0*im
+    for ist in 1:Nstates
+        ss = ss + 2*dot(psi1g[:,ist],psi1g[:,ist]) - psi1g[1,ist]*psi1g[1,ist]
+    end
+    println("gamma only dot = ", ss)
+
+    G = psi1' * psi1
+    println("G  = ")
+    display(G); println()
+    Udagger = inv(sqrt(G))
     psi1 = psi1*Udagger
 
+    G = psi1g' * psi1g
+    println("G  = ")
+    display(G); println()
+    println("conj(G) = ")
+    display(conj.(G)); println()
+    #display(G + G'); println()
+    Udagger = inv(sqrt(G + conj(G)))
+    psi1g = psi1g*Udagger
+
+    println("\nAfter orthonormalize")
+
     display(psi1); println()
+    display(psi1g); println()
 
-    #Udagger = inv( sqrt( psi1g' * psi1g ) )
-    #psi1g = psi1g*Udagger
-
-    #println("\nAfter orthonormalize")
-    #println("dot v1  = ", dot(psi1,psi1))
-    #ss = 0.0 + 0.0*im
-    #for ist in 1:Nstates
-    #    ss = ss + 2*dot(psi1g[:,ist],psi1g[:,ist]) - psi1g[1,ist]*psi1g[1,ist]
-    #end
-    #println("gamma only dot = ", ss)
+    println("dot psi1  = ", dot(psi1,psi1))
+    println("dot psi2g = ", 2*dot(psi1g,psi1g))
+    ss = 0.0 + 0.0*im
+    for ist in 1:Nstates
+        ss = ss + 2*dot(psi1g[:,ist],psi1g[:,ist]) #- conj(psi1g[1,ist])*psi1g[1,ist]
+    end
+    println("gamma only dot = ", ss)
 end
-
-test_matrix()
+test_ortho_sqrt()
