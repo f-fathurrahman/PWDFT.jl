@@ -177,9 +177,19 @@ end
 function test_04()
     psi = randn_BlochWavefuncGamma(6,5)
     ortho_check(psi)
-    #println(psi); println()
-    println("dot 1 2:", 2*dot(psi.data[:,1],psi.data[:,2]) )
-    ortho_GS_gamma!(psi.data)
-    println("dot 1 2:", 2*dot(psi.data[:,1],psi.data[:,2]) )
 end
-test_04()
+#test_04()
+
+function test_05()
+    psi1 = randn_BlochWavefuncGamma(6,5)
+    psi2 = randn_BlochWavefuncGamma(6,5)
+    #ortho_check(psi1)
+    #ortho_check(psi2)
+
+    psi3 = psi1 + psi2
+    ortho_gram_schmidt!(psi3)
+    ortho_check(psi3)
+
+    #ortho_check(psi1 - psi2)
+end
+test_05()

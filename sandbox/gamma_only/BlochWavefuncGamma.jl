@@ -5,7 +5,25 @@ end
 import LinearAlgebra: dot
 function dot( v1::BlochWavefuncGamma, v2::BlochWavefuncGamma )
     return 2*dot(v1.data, v2.data)
+    # alternative: 2*real(dot(v1.data, v2.data)), should work for ortho_sqrt and ortho_GS_gamma
 end
+
+#
+# Operators
+#
+
+import Base: +
+function +( v1::BlochWavefuncGamma, v2::BlochWavefuncGamma )
+    return BlochWavefuncGamma(v1.data + v2.data)
+end
+
+import Base: -
+function -( v1::BlochWavefuncGamma, v2::BlochWavefuncGamma )
+    return BlochWavefuncGamma(v1.data - v2.data)
+end
+
+
+
 
 function randn_BlochWavefuncGamma( Ham::Hamiltonian )
     return randn_BlochWavefuncGamma(Ham.pw.gvec.Ng, Ham.electrons.Nstates)
@@ -21,6 +39,11 @@ function randn_BlochWavefuncGamma( Nbasis::Int64, Nstates::Int64 )
     #data = data*Udagger
     ortho_GS_gamma!(data)
     return BlochWavefuncGamma(data)
+end
+
+function ortho_gram_schmidt!( psi::BlochWavefuncGamma )
+    ortho_GS_gamma!( psi.data )
+    return
 end
 
 function ortho_check( psi::BlochWavefuncGamma )
@@ -43,13 +66,6 @@ function ortho_check_gamma( psi::Array{ComplexF64,2} )
     @printf("\nOrtho check w.r.t state #1:\n")
     for ist = 2:Nstates
         c = 2*dot( psi[:,ist], psi[:,1] )
-        @printf("State: #%5d: (%18.10f,%18.10f)\n", ist, c.re, c.im)
-    end
-    @printf("\n")
-    
-    @printf("\nOrtho check w.r.t state #3:\n")
-    for ist = 1:Nstates
-        c = 2*dot( psi[:,ist], psi[:,3] )
         @printf("State: #%5d: (%18.10f,%18.10f)\n", ist, c.re, c.im)
     end
     @printf("\n")
