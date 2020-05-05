@@ -99,15 +99,21 @@ function test_ortho_sqrt()
     display(psi1); println()
     display(psi1g); println()
 
-    println("dot psi1  = ", dot(psi1,psi1))
-    println("dot psi2g = ", 2*dot(psi1g,psi1g))
+    println("dot psi1       = ", dot(psi1,psi1))
+    println("dot psi2g      = ", 2*dot(psi1g,psi1g))
     ss = 0.0 + 0.0*im
     for ist in 1:Nstates
         ss = ss + 2*dot(psi1g[:,ist],psi1g[:,ist]) #- conj(psi1g[1,ist])*psi1g[1,ist]
     end
     println("gamma only dot = ", ss)
-    println("dot 1, 2:", 2*dot( psi1[:,1],psi1[:,2] ) )
-    println("dot 1, 3:", 2*dot( psi1[:,1],psi1[:,3] ) )
+    println("dot 1, 2:", 2*dot( psi1g[:,1],psi1g[:,2] ) - conj(psi1g[1,1])*psi1g[1,2] )
+    println("dot 1, 3:", 2*dot( psi1g[:,1],psi1g[:,3] ) - conj(psi1g[1,1])*psi1g[1,3] )
+
+    println( dot(psi1[2:3,1],psi1[2:3,1]) )
+    println( dot(psi1[2:3,1],psi1[2:3,2]) )
+
+    println( dot(psi1[4:5,1],psi1[4:5,1]) )
+    println( dot(psi1[4:5,1],psi1[4:5,2]) )
 end
 #test_ortho_sqrt()
 
@@ -143,35 +149,68 @@ function test_ortho_sqrt2()
     display(psi1g); println()
 
     println("dot psi1  = ", dot(psi1,psi1))
-    println("dot psi1g = ", dot(psi1g,psi1g))
-    ss = 0.0 + 0.0*im
-    for ist in 1:Nstates
-        ss = ss + 2*dot(psi1g[:,ist],psi1g[:,ist]) - psi1g[1,ist]*psi1g[1,ist]
-    end
-    println("gamma only dot = ", ss)
+    println("dot psi1g = ", 2*dot(psi1g,psi1g))
 
     G = psi1' * psi1
     Udagger = inv(sqrt(G))
-    psi1 = psi1*Udagger
+    psi1o = psi1*Udagger
 
     G = psi1g' * psi1g
     Udagger = inv(sqrt(G + conj(G)))
-    psi1g = psi1g*Udagger
+    psi1go = psi1g*Udagger
 
-    println("\nAfter orthonormalize")
+    println("\nAfter orthonormalize ortho_sqrt")
+
+    display(psi1o); println()
+    display(psi1go); println()
+
+    println("dot psi1       = ", dot(psi1o,psi1o))
+    println("dot psi2g      = ", 2*dot(psi1go,psi1go))
+    for ist in 1:Nstates
+        println("dot ist:", 2*dot( psi1go[:,2],psi1go[:,ist] ) )
+    end
+
+    ortho_GS_gamma!(psi1g)
+    println("\nAfter orthonormalize ortho_GS_gamma")
+
+    display(psi1g); println()
+    display(psi1go); println()
+
+    for ist in 1:Nstates
+        println("dot ist:", 2*dot( psi1g[:,1],psi1g[:,ist] ) )
+    end
+
+end
+#test_ortho_sqrt2()
+
+function test_ortho_GS_gamma2()
+    
+    Nstates = 4
+    Nbasis = 6 # for the gamma only
+
+    psi1, psi1g = gen_two_psi(Nbasis,Nstates)
+    
+    println("\nBefore orthonormalize")
 
     display(psi1); println()
     display(psi1g); println()
 
-    println("dot psi1       = ", dot(psi1,psi1))
+    println("dot psi1  = ", dot(psi1,psi1))
+    println("dot psi1g = ", 2*dot(psi1g,psi1g))
+
+    #psi1go = ortho_GS_gamma(psi1g)
+    ortho_GS_gamma!(psi1g)
+
+    println("\nAfter orthonormalize ortho_GS_gamma")
+
+    #display(psi1o); println()
+    display(psi1g); println()
+
+    #println("dot psi1       = ", dot(psi1o,psi1o))
     println("dot psi2g      = ", 2*dot(psi1g,psi1g))
-    ss = 0.0 + 0.0*im
     for ist in 1:Nstates
-        ss = ss + 2*dot(psi1g[:,ist],psi1g[:,ist]) #- conj(psi1g[1,ist])*psi1g[1,ist]
+        println("dot ist:", 2*dot( psi1g[:,ist],psi1g[:,4] ) )
     end
-    println("gamma only dot = ", ss)
-    println("dot 1, 2:", 2*dot( psi1g[:,1],psi1g[:,2] ) )
-    println("dot 1, 3:", 2*dot( psi1g[:,1],psi1g[:,3] ) )
 
 end
-test_ortho_sqrt2()
+test_ortho_GS_gamma2()

@@ -5,7 +5,7 @@ function ortho_GS_gamma( vin::Array{ComplexF64,2} )
         zz = 2*dot( v[:,ii], v[:,ii] ) #- v[1,ii]*v[1,ii]
         v[:,ii] = v[:,ii]/sqrt(zz)
         for jj = ii+1 : Ncol
-            puv = prj_gamma_only( v[:,ii], v[:,jj] )
+            puv = prj_gamma( v[:,ii], v[:,jj] )
             v[:,jj] = v[:,jj] - puv*v[:,ii]
         end
     end
@@ -15,7 +15,7 @@ end
 function ortho_GS_gamma!( v::Array{ComplexF64,2} )
     Ncol = size(v)[2]
     for ii = 1:Ncol
-        zz = 2*dot( v[:,ii], v[:,ii] ) - conj(v[1,ii])*v[1,ii]
+        zz = 2*dot( v[:,ii], v[:,ii] ) #- conj(v[1,ii])*v[1,ii]
         v[:,ii] = v[:,ii]/sqrt(zz)
         for jj = ii+1 : Ncol
             puv = prj_gamma( v[:,ii], v[:,jj] )
