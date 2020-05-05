@@ -4,8 +4,16 @@ end
 
 import LinearAlgebra: dot
 function dot( v1::BlochWavefuncGamma, v2::BlochWavefuncGamma )
-    return 2*dot(v1.data, v2.data)
-    # alternative: 2*real(dot(v1.data, v2.data)), should work for ortho_sqrt and ortho_GS_gamma
+    
+    #return 2*dot(v1.data, v2.data)
+    
+    c = dot(v1.data, v2.data)
+    return c + conj(c)
+
+    # alternative:
+    # c = dot(v1.data, v2.data)
+    # res = c + conj(c)
+    # should work for ortho_sqrt and ortho_GS_gamma
 end
 
 #
@@ -34,10 +42,13 @@ function randn_BlochWavefuncGamma( Nbasis::Int64, Nstates::Int64 )
     for ist in 1:Nstates
         data[1,ist] = 0.0 + im*0.0 # Don't forget to set the DC component to zero
     end
-    #G = data' * data
-    #Udagger = inv( sqrt(G + conj.(G)) )
-    #data = data*Udagger
-    ortho_GS_gamma!(data)
+    
+    G = data' * data
+    Udagger = inv( sqrt(G + conj.(G)) )
+    data = data*Udagger
+    
+    #ortho_GS_gamma!(data)
+
     return BlochWavefuncGamma(data)
 end
 
