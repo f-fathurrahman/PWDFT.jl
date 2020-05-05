@@ -5,7 +5,7 @@ using FFTW
 
 using PWDFT
 
-include("PWGridGammaOnly.jl")
+include("PWGridGamma.jl")
 
 function main()
     
@@ -15,7 +15,7 @@ function main()
 
     pw = PWGrid(5.0, LatVecs)
 
-    pw_gamma = PWGridGammaOnly(5.0, LatVecs)
+    pw_gamma = PWGridGamma(5.0, LatVecs)
 
     Ns = pw.Ns
     RecVecs = pw.RecVecs

@@ -5,8 +5,8 @@ using FFTW
 
 using PWDFT
 
-include("PWGridGammaOnly.jl")
-include("BlochWavefuncGammaOnly.jl")
+include("PWGridGamma.jl")
+include("BlochWavefuncGamma.jl")
 
 function test_01()
 
@@ -16,7 +16,7 @@ function test_01()
 
     pw = PWGrid(5.0, LatVecs)
 
-    pw_gamma = PWGridGammaOnly(5.0, LatVecs)
+    pw_gamma = PWGridGamma(5.0, LatVecs)
 
     Npoints = prod(pw.Ns)
     dVol = pw.CellVolume/Npoints
@@ -73,7 +73,7 @@ end
 
 # Generate normalize psi
 # No orthogonalization is imposed between psi
-function gen_two_wavefunc( pw::PWGrid, pw_gamma::PWGridGammaOnly; Nstates=1 )
+function gen_two_wavefunc( pw::PWGrid, pw_gamma::PWGridGamma; Nstates=1 )
     
     Npoints = prod(pw.Ns)
     dVol = pw.CellVolume/Npoints
@@ -110,7 +110,7 @@ function gen_two_wavefunc( pw::PWGrid, pw_gamma::PWGridGammaOnly; Nstates=1 )
 
     end
 
-    return psi1, BlochWavefuncGammaOnly(psi2)
+    return psi1, BlochWavefuncGamma(psi2)
 
 end
 
@@ -121,7 +121,7 @@ function test_02()
     LatVecs = gen_lattice_sc(6.0)
     
     pw = PWGrid(ecutwfc, LatVecs)
-    pw_gamma = PWGridGammaOnly(ecutwfc, LatVecs)
+    pw_gamma = PWGridGamma(ecutwfc, LatVecs)
 
     psi1, psi2 = gen_two_wavefunc(pw, pw_gamma)
 
@@ -146,7 +146,7 @@ function test_03()
     LatVecs = gen_lattice_sc(6.0)
     
     pw = PWGrid(ecutwfc, LatVecs)
-    pw_gamma = PWGridGammaOnly(ecutwfc, LatVecs)
+    pw_gamma = PWGridGamma(ecutwfc, LatVecs)
 
     psi1, psi2 = gen_two_wavefunc(pw, pw_gamma, Nstates=4)
 

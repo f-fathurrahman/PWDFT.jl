@@ -7,7 +7,7 @@ function inv_mm_to_nn(nn::Int64, S::Int64)
 end
 
 
-struct GVectorsGammaOnly
+struct GVectorsGamma
     Ng::Int64
     G::Array{Float64,2}
     G2::Array{Float64,1}
@@ -22,7 +22,7 @@ end
 # Based on ggen of QE-6.5
 #
 
-function GVectorsGammaOnly( Ns, RecVecs, ecutrho )
+function GVectorsGamma( Ns, RecVecs, ecutrho )
 
     ni = floor( Int64, (Ns[1]-1)/2 )
     nj = floor( Int64, (Ns[2]-1)/2 )
@@ -111,10 +111,10 @@ function GVectorsGammaOnly( Ns, RecVecs, ecutrho )
 
     G2_shells, idx_g2shells = PWDFT.init_Gshells( G2 )
 
-    return GVectorsGammaOnly( Ng, G, G2, idx_g2r, idx_g2rm, G2_shells, idx_g2shells )
+    return GVectorsGamma( Ng, G, G2, idx_g2r, idx_g2rm, G2_shells, idx_g2shells )
 end
 
-function calc_Ngw_gamma( ecutwfc::Float64, gvec::GVectorsGammaOnly )
+function calc_Ngw_gamma( ecutwfc::Float64, gvec::GVectorsGamma )
     G = gvec.G
     Ng = gvec.Ng
     # k = [0,0,0]
@@ -128,14 +128,14 @@ function calc_Ngw_gamma( ecutwfc::Float64, gvec::GVectorsGammaOnly )
     return Ngw
 end
 
-struct GVectorsWGammaOnly
+struct GVectorsWGamma
     Ngw::Int64
     idx_gw2g::Array{Int64,1}
     idx_gw2r::Array{Int64,1}
     idx_gw2rm::Array{Int64,1}
 end
 
-function GVectorsWGammaOnly( ecutwfc::Float64, gvec::GVectorsGammaOnly )
+function GVectorsWGamma( ecutwfc::Float64, gvec::GVectorsGamma )
     G = gvec.G
     Ngw = calc_Ngw_gamma(ecutwfc, gvec)
     idx_gw2g = zeros(Int64,Ngw)
@@ -152,24 +152,24 @@ function GVectorsWGammaOnly( ecutwfc::Float64, gvec::GVectorsGammaOnly )
             idx_gw2rm[igw] = gvec.idx_g2rm[ig]
         end
     end
-    return GVectorsWGammaOnly( Ngw, idx_gw2g, idx_gw2r, idx_gw2rm )
+    return GVectorsWGamma( Ngw, idx_gw2g, idx_gw2r, idx_gw2rm )
 end
 
-struct PWGridGammaOnly
+struct PWGridGamma
     ecutwfc::Float64
     ecutrho::Float64
     Ns::Tuple{Int64,Int64,Int64}
     LatVecs::Array{Float64,2}
     RecVecs::Array{Float64,2}
     CellVolume::Float64
-    gvec::GVectorsGammaOnly
-    gvecw::GVectorsWGammaOnly
+    gvec::GVectorsGamma
+    gvecw::GVectorsWGamma
     planfw::FFTW.cFFTWPlan{Complex{Float64},-1,false,3}
     planbw::AbstractFFTs.ScaledPlan{Complex{Float64},FFTW.cFFTWPlan{Complex{Float64},1,false,3},Float64}
 end
 
 
-function PWGridGammaOnly( ecutwfc::Float64, LatVecs::Array{Float64,2}; Ns_=(0,0,0) )
+function PWGridGamma( ecutwfc::Float64, LatVecs::Array{Float64,2}; Ns_=(0,0,0) )
 
     ecutrho = 4.0*ecutwfc
     #
@@ -197,14 +197,14 @@ function PWGridGammaOnly( ecutwfc::Float64, LatVecs::Array{Float64,2}; Ns_=(0,0,
 
     Npoints = prod(Ns)
     
-    gvec = GVectorsGammaOnly( Ns, RecVecs, ecutrho )
+    gvec = GVectorsGamma( Ns, RecVecs, ecutrho )
 
-    gvecw = GVectorsWGammaOnly( ecutwfc, gvec )
+    gvecw = GVectorsWGamma( ecutwfc, gvec )
 
     planfw = plan_fft( zeros(ComplexF64,Ns) )
     planbw = plan_ifft( zeros(ComplexF64,Ns) )
 
-    return PWGridGammaOnly(
+    return PWGridGamma(
         ecutwfc, ecutrho, Ns, LatVecs, RecVecs, CellVolume, gvec, gvecw,
         planfw, planbw
     )
