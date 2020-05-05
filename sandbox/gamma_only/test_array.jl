@@ -139,7 +139,7 @@ end
 function test_ortho_sqrt2()
     
     Nstates = 4
-    Nbasis = 3 # for the gamma only
+    Nbasis = 5 # for the gamma only
 
     psi1, psi1g = gen_two_psi(Nbasis,Nstates)
     
@@ -181,7 +181,7 @@ function test_ortho_sqrt2()
     end
 
 end
-#test_ortho_sqrt2()
+test_ortho_sqrt2()
 
 function test_ortho_GS_gamma2()
     
@@ -213,4 +213,4 @@ function test_ortho_GS_gamma2()
     end
 
 end
-test_ortho_GS_gamma2()
+#test_ortho_GS_gamma2()

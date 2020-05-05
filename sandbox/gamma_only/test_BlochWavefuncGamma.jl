@@ -175,7 +175,7 @@ end
 #test_03()
 
 function test_04()
-    psi = randn_BlochWavefuncGamma(6,4)
+    psi = randn_BlochWavefuncGamma(6,5)
     ortho_check(psi)
     #println(psi); println()
     println("dot 1 2:", 2*dot(psi.data[:,1],psi.data[:,2]) )
