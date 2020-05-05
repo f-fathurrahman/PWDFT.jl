@@ -166,18 +166,12 @@ function test_ortho_sqrt2()
 
     println("dot psi1       = ", dot(psi1o,psi1o))
     println("dot psi2g      = ", 2*dot(psi1go,psi1go))
+    # dot product between different states are defined quite differently to have
+    # result of zeros.
     for ist in 1:Nstates
-        println("dot ist:", 2*dot( psi1go[:,2],psi1go[:,ist] ) )
-    end
-
-    ortho_GS_gamma!(psi1g)
-    println("\nAfter orthonormalize ortho_GS_gamma")
-
-    display(psi1g); println()
-    display(psi1go); println()
-
-    for ist in 1:Nstates
-        println("dot ist:", 2*dot( psi1g[:,1],psi1g[:,ist] ) )
+        c1 = dot( psi1go[:,2], psi1go[:,ist] )
+        c2 = dot( psi1go[:,ist], psi1go[:,2] )
+        println("dot ist:", c1 + c2 )
     end
 
 end
