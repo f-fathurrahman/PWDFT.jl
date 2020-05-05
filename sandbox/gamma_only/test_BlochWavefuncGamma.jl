@@ -6,6 +6,7 @@ using FFTW
 using PWDFT
 
 include("PWGridGamma.jl")
+include("ortho_GS_gamma.jl")
 include("BlochWavefuncGamma.jl")
 
 function test_01()
@@ -171,5 +172,14 @@ function test_03()
     println("ss = ", ss)
 
 end
+#test_03()
 
-test_03()
+function test_04()
+    psi = randn_BlochWavefuncGamma(5,4)
+    ortho_check(psi)
+    #println(psi); println()
+    println("dot 1 2:", 2*dot(psi.data[:,1],psi.data[:,2]) )
+    ortho_GS_gamma!(psi.data)
+    println("dot 1 2:", 2*dot(psi.data[:,1],psi.data[:,2]) )
+end
+test_04()
