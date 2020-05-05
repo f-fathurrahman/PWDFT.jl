@@ -1,7 +1,7 @@
 using Printf
 using LinearAlgebra
 
-include("ortho_GS_gamma_only.jl")
+include("ortho_GS_gamma.jl")
 
 function test_vector()
     
@@ -41,7 +41,7 @@ function test_ortho_GS_gamma()
     end
     println("gamma only dot = ", ss)
 
-    ortho_GS_gamma_only!(psi1g)
+    ortho_GS_gamma!(psi1g)
 
     println("dot psi1g = ", dot(psi1g,psi1g))
     ss = 0.0 + 0.0*im
@@ -53,7 +53,7 @@ function test_ortho_GS_gamma()
     display(psi1g); println()
 
 end
-#test_ortho_GS_gamma()
+test_ortho_GS_gamma()
 
 function test_ortho_sqrt()
 
@@ -107,4 +107,4 @@ function test_ortho_sqrt()
     end
     println("gamma only dot = ", ss)
 end
-test_ortho_sqrt()
+#test_ortho_sqrt()
