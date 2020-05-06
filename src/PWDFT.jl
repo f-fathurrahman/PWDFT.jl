@@ -136,7 +136,7 @@ include("Energies.jl")
 export Energies
 
 include("Potentials.jl")
-export Energies
+export Potentials
 
 include("PsPotNL.jl")
 export PsPotNL, calc_betaNL_psi
