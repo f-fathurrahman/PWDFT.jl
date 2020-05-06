@@ -44,7 +44,7 @@ function HamiltonianGamma(
     #
     # Initialize pseudopotentials and local potentials
     #
-    Pspots = Array{PsPot_GTH}(undef,Nspecies)
+    pspots = Array{PsPot_GTH}(undef,Nspecies)
     G2_shells = pw.gvec.G2_shells
     Ngl = length(G2_shells)
     Vgl = zeros(Float64, Ngl)
@@ -53,8 +53,8 @@ function HamiltonianGamma(
     Vg = zeros(ComplexF64, Npoints)
 
     for isp = 1:Nspecies
-        Pspots[isp] = PsPot_GTH( pspfiles[isp] )
-        psp = Pspots[isp]
+        pspots[isp] = PsPot_GTH( pspfiles[isp] )
+        psp = pspots[isp]
         #
         for igl = 1:Ngl
             Vgl[igl] = eval_Vloc_G( psp, G2_shells[igl] )
@@ -82,14 +82,14 @@ function HamiltonianGamma(
     #
     rhoe = zeros( Float64, Npoints, Nspin )
 
-    electrons = Electrons( atoms, Pspots, Nspin=Nspin, Nkpt=1,
+    electrons = Electrons( atoms, pspots, Nspin=Nspin, Nkpt=1,
                            Nstates_empty=extra_states )
 
     # NL pseudopotentials
     #pspotNL = PsPotNL( atoms, pw, Pspots, check_norm=false )
     pspotNL = PsPotNLGamma() # Dummy
 
-    atoms.Zvals = get_Zvals( Pspots )
+    atoms.Zvals = get_Zvals( pspots )
 
     ispin = 1
 
@@ -103,5 +103,5 @@ function HamiltonianGamma(
     return HamiltonianGamma(
         pw, potentials, energies, rhoe,
         electrons, atoms,
-        Pspots, pspotNL, xcfunc, xc_calc, ispin )
+        pspots, pspotNL, xcfunc, xc_calc, ispin )
 end
