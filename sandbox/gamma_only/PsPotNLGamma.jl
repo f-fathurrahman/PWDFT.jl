@@ -56,9 +56,12 @@ function PsPotNLGamma( atoms::Atoms, pw::PWGridGamma, pspots::Array{PsPot_GTH,1}
 
     G = pw.gvec.G
     G2 = pw.gvec.G2
+    g = zeros(Float64,3)
 
     idx_gw2g = pw.gvecw.idx_gw2g
     ibeta = 0
+
+    #betaNL_full = zeros(ComplexF64,2*Ngw-1,NbetaNL)
 
     for ia = 1:Natoms
         isp = atm2species[ia]
@@ -70,10 +73,26 @@ function PsPotNLGamma( atoms::Atoms, pw::PWGridGamma, pspots::Array{PsPot_GTH,1}
             for igk = 1:Ngw
                 ig = idx_gw2g[igk]
                 Gm = sqrt(G2[ig])
-                GX = atpos[1,ia]*G[1,ig] + atpos[2,ia]*G[2,ig] + atpos[3,ia]*G[3,ig]
+                # to avoid making slices
+                g[1] = G[1,ig]
+                g[2] = G[2,ig]
+                g[3] = G[3,ig]
+                GX = atpos[1,ia]*g[1] + atpos[2,ia]*g[2] + atpos[3,ia]*g[3]
                 Sf = cos(GX) - im*sin(GX)
                 betaNL[igk,ibeta] =
                 (-1.0*im)^l * Ylm_real(l,m,g)*eval_proj_G(psp,l,iprj,Gm,pw.CellVolume)*Sf
+
+                #betaNL_full[igk,ibeta] =
+                #(-1.0*im)^l * Ylm_real(l,m,g)*eval_proj_G(psp,l,iprj,Gm,pw.CellVolume)*Sf
+                #if igk != 1
+                #    g[1] = -G[1,ig]
+                #    g[2] = -G[2,ig]
+                #    g[3] = -G[3,ig]
+                #    GX = atpos[1,ia]*g[1] + atpos[2,ia]*g[2] + atpos[3,ia]*g[3]
+                #    Sf = cos(GX) - im*sin(GX)
+                #    betaNL_full[Ngw+igk-1,ibeta] =
+                #    (-1.0*im)^l * Ylm_real(l,m,g)*eval_proj_G(psp,l,iprj,Gm,pw.CellVolume)*Sf
+                #end
             end
         end
         end
@@ -83,6 +102,9 @@ function PsPotNLGamma( atoms::Atoms, pw::PWGridGamma, pspots::Array{PsPot_GTH,1}
     #if check_norm
     #    check_betaNL_norm( pw, betaNL, kpoints )
     #end
+
+    #println("sum betaNL      = ", sum(betaNL))
+    #println("sum betaNL_full = ", sum(betaNL_full))
 
     return PsPotNLGamma( NbetaNL, prj2beta, betaNL )
 

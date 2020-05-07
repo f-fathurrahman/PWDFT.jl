@@ -86,8 +86,8 @@ function HamiltonianGamma(
                            Nstates_empty=extra_states )
 
     # NL pseudopotentials
-    #pspotNL = PsPotNL( atoms, pw, Pspots, check_norm=false )
-    pspotNL = PsPotNLGamma() # Dummy
+    pspotNL = PsPotNLGamma( atoms, pw, pspots, check_norm=false )
+    #pspotNL = PsPotNLGamma() # Dummy
 
     atoms.Zvals = get_Zvals( pspots )
 
