@@ -121,7 +121,7 @@ function calc_Ngw_gamma( ecutwfc::Float64, gvec::GVectorsGamma )
     Ngw = 0
     for ig = 1:Ng
         Gk2 = G[1,ig]^2 + G[2,ig]^2 + G[3,ig]^2
-        if Gk2 <= ecutwfc
+        if 0.5*Gk2 <= ecutwfc
             Ngw = Ngw + 1
         end
     end

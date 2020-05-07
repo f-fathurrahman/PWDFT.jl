@@ -11,11 +11,11 @@ function main()
     
     Random.seed!(1234)
 
-    LatVecs = gen_lattice_sc(6.0)
+    LatVecs = gen_lattice_sc(16.0)
 
-    pw = PWGrid(5.0, LatVecs)
+    pw = PWGrid(15.0, LatVecs)
 
-    pw_gamma = PWGridGamma(5.0, LatVecs)
+    pw_gamma = PWGridGamma(15.0, LatVecs)
 
     Ns = pw.Ns
     RecVecs = pw.RecVecs
@@ -33,6 +33,12 @@ function main()
         @printf("%4d [%10.5f,%10.5f,%10.5f] %10.5f\n", ig,
             pw.gvec.G[1,ig], pw.gvec.G[2,ig], pw.gvec.G[3,ig], pw.gvec.G2[ig])
     end
+
+    println("Ng  = ", pw.gvec.Ng)
+    println("Ng  = ", pw_gamma.gvec.Ng)
+
+    println("Ngw = ", pw.gvecw.Ngw)
+    println("Ngw = ", pw_gamma.gvecw.Ngw)
 
 end
 
