@@ -44,11 +44,17 @@ function test_01()
         psiG[ig] = ctmp[ip]
     end
     println()
-    integPsi = dot(psiG,psiG)
-    psiG = psiG/sqrt(integPsi)
+
+    println("Before normalization:")
     println("psiG[1] = ", psiG[1])
     println("dot psiG = ", dot(psiG,psiG))
-    println("dot psiG = ", dot(psiG[2:end],psiG[2:end]))
+
+    integPsi = dot(psiG,psiG)
+    psiG = psiG/sqrt(integPsi)
+
+    println("After normalization:")
+    println("psiG[1] = ", psiG[1])
+    println("dot psiG = ", dot(psiG,psiG), " (should be close to one)")
 
     psiG_gamma = zeros(ComplexF64, pw_gamma.gvec.Ng)
     psiG_gamma[1] = ctmp[1]
@@ -57,22 +63,30 @@ function test_01()
         psiG_gamma[ig] = ctmp[ip]
     end
     println()
-    # This is how the normalization is done for Gamma-only trick
-    integPsi = 2*dot(psiG_gamma,psiG_gamma) - psiG_gamma[1]*psiG_gamma[1]
-    psiG_gamma = psiG_gamma/sqrt(integPsi)
+
+
+    integPsi = 2*dot(psiG_gamma,psiG_gamma) - conj(psiG_gamma[1])*psiG_gamma[1]
+
+    println("Before normalization:")
     println("psiG_gamma[1] = ", psiG_gamma[1])
-    println("dot psiG_gamma = ", dot(psiG_gamma,psiG_gamma))
-    println("dot psiG_gamma*2 = ", 2*dot(psiG_gamma[2:end],psiG_gamma[2:end]))
+    println("dot psiG_gamma = ", integPsi)
+    
+    # This is how the normalization is done for Gamma-only trick
+    psiG_gamma = psiG_gamma/sqrt(integPsi)
 
-    Δ = 2*dot(psiG_gamma,psiG_gamma) - dot(psiG,psiG)
-    println("Δ = ", Δ)
-    println("psiG_gamma[1]^2 = ", psiG_gamma[1]^2) # should be the same as Δ
-    println("diff = ", Δ - psiG_gamma[1]^2) # should be the same as Δ
+    integPsi = 2*dot(psiG_gamma,psiG_gamma) - conj(psiG_gamma[1])*psiG_gamma[1]
+
+    println("After normalization:")
+    println("psiG_gamma[1] = ", psiG_gamma[1])
+    println("dot psiG_gamma = ", integPsi, " (should be close to one)")
+
+    Δ = integPsi - dot(psiG,psiG)
+    println()
+    println("Δ = ", Δ, " (should be very small)")
 end
-
 #test_01()
 
-# Generate normalize psi
+# Generate normalized psi
 # No orthogonalization is imposed between psi
 function gen_two_wavefunc( pw::PWGrid, pw_gamma::PWGridGamma; Nstates=1 )
     
@@ -89,9 +103,13 @@ function gen_two_wavefunc( pw::PWGrid, pw_gamma::PWGridGamma; Nstates=1 )
     psi1 = zeros(ComplexF64, pw.gvec.Ng, Nstates)
     psi2 = zeros(ComplexF64, pw_gamma.gvec.Ng, Nstates)
 
+    # Should set DC component of psi1 and psi2 to zero
+
     for ist in 1:Nstates
         
         ctmp = R_to_G(pw, psiR[:,ist])
+
+        ctmp[1] = 0.0 + im*0.0
         
         # psi for pw
         for ig = 1:pw.gvec.Ng
@@ -106,7 +124,7 @@ function gen_two_wavefunc( pw::PWGrid, pw_gamma::PWGridGamma; Nstates=1 )
             ip = pw_gamma.gvec.idx_g2r[ig]
             psi2[ig,ist] = ctmp[ip]
         end
-        integPsi = 2*dot(psi2[:,ist], psi2[:,ist]) - psi2[1,ist]*psi2[1,ist]
+        integPsi = 2*dot(psi2[:,ist], psi2[:,ist]) - conj(psi2[1,ist])*psi2[1,ist]
         psi2[:,ist] = psi2[:,ist]/sqrt(integPsi)
 
     end
@@ -133,12 +151,13 @@ function test_02()
 
     res1 = dot(psi1,psi1)
     res2 = dot(psi2,psi2)
-    println("dot(psi1,psi1) = ", res1)
-    println("dot(psi2,psi2) = ", res2)
+    println("dot(psi1,psi1) = ", res1, " (should be close to one)")
+    println("dot(psi2,psi2) = ", res2, " (should be close to one)")
     println("diff = ", res1 - res2)
 end
-
 #test_02()
+
+
 
 function test_03()
     Random.seed!(1234)
@@ -164,7 +183,7 @@ function test_03()
     
     ss = 0.0
     for ist in 1:4
-        integPsi = 2*dot(psi2.data[:,ist], psi2.data[:,ist]) - psi2.data[1,ist]*psi2.data[1,ist]
+        integPsi = 2*dot(psi2.data[1][:,ist], psi2.data[1][:,ist]) - psi2.data[1][1,ist]*psi2.data[1][1,ist]
         #println("psi2.data[1] = ", psi2.data[1,ist])
         ss = ss + integPsi
         println("integPsi = ", integPsi)
@@ -174,15 +193,32 @@ function test_03()
 end
 #test_03()
 
+
+
 function test_04()
-    psi = randn_BlochWavefuncGamma(6,5)
-    ortho_check(psi)
+    psis = randn_BlochWavefuncGamma(10,4)
+
+    println()
+    println("dot(psis,psis) = ", dot(psis,psis), " (should be close to Nstates)")
+
+    psi1 = psis.data[1]
+
+    println()
+    println(2*dot(psi1[:,1],psi1[:,1]), " (should be close to 1)")
+    c = dot(psi1[:,1],psi1[:,2])
+    println(2*c)
+    println(c + conj(c), " (should be close to 0)")
+
+    ortho_check(psis)
 end
 #test_04()
+
+
 
 function test_05()
     psi1 = randn_BlochWavefuncGamma(6,5)
     psi2 = randn_BlochWavefuncGamma(6,5)
+    
     #ortho_check(psi1)
     #ortho_check(psi2)
 
@@ -190,6 +226,13 @@ function test_05()
     ortho_gram_schmidt!(psi3)
     ortho_check(psi3)
 
-    #ortho_check(psi1 - psi2)
+    ortho_check(psi1 - psi2)
+
+    println()
+    println(dot(psi1,psi1), " (should be close to Nstates)")
+    println(dot(psi2,psi2), " (should be close to Nstates)")
+    println(dot(psi1,psi2))
+    println(dot(psi1,psi3))
+
 end
 test_05()
