@@ -43,8 +43,8 @@ end
 
 
 
-function randn_BlochWavefuncGamma( Ham::Hamiltonian )
-    return randn_BlochWavefuncGamma(Ham.pw.gvec.Ng, Ham.electrons.Nstates)
+function randn_BlochWavefuncGamma( Ham::HamiltonianGamma )
+    return randn_BlochWavefuncGamma(Ham.pw.gvecw.Ngw, Ham.electrons.Nstates)
 end
 
 function randn_BlochWavefuncGamma( Nbasis::Int64, Nstates::Int64; Nspin=1 )
