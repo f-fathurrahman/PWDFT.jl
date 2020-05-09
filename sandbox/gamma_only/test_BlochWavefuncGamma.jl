@@ -6,7 +6,10 @@ using FFTW
 using PWDFT
 
 include("PWGridGamma.jl")
+include("wrappers_fft_gamma.jl")
 include("ortho_GS_gamma.jl")
+include("PsPotNLGamma.jl")
+include("HamiltonianGamma.jl")
 include("BlochWavefuncGamma.jl")
 
 function test_01()
