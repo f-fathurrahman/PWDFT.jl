@@ -42,9 +42,26 @@ end
 
 
 
+function zeros_BlochWavefuncGamma( Ham::HamiltonianGamma )
+    return zeros_BlochWavefuncGamma(Ham.pw.gvecw.Ngw, Ham.electrons.Nstates, Nspin=Ham.electrons.Nspin)
+end
+
+
+function zeros_BlochWavefuncGamma( Nbasis::Int64, Nstates::Int64; Nspin=1 )
+    data = Vector{Array{ComplexF64,2}}(undef,Nspin)
+    for ispin in 1:Nspin
+        data[ispin] = zeros(ComplexF64,Nbasis,Nstates)
+    end
+    return BlochWavefuncGamma(data)
+end
+
+
+
+
+# random BlochWavefuncGamma from randn
 
 function randn_BlochWavefuncGamma( Ham::HamiltonianGamma )
-    return randn_BlochWavefuncGamma(Ham.pw.gvecw.Ngw, Ham.electrons.Nstates)
+    return randn_BlochWavefuncGamma(Ham.pw.gvecw.Ngw, Ham.electrons.Nstates, Nspin=Ham.electrons.Nspin)
 end
 
 function randn_BlochWavefuncGamma( Nbasis::Int64, Nstates::Int64; Nspin=1 )
@@ -55,7 +72,7 @@ function randn_BlochWavefuncGamma( Nbasis::Int64, Nstates::Int64; Nspin=1 )
     Udagger = zeros(ComplexF64,Nstates,Nstates)
 
     for ispin in 1:Nspin
-        data[1] = randn(ComplexF64,Nbasis,Nstates)
+        data[ispin] = randn(ComplexF64,Nbasis,Nstates)
         for ist in 1:Nstates
             data[ispin][1,ist] = 0.0 + im*0.0 # Don't forget to set the DC component to zero
         end
