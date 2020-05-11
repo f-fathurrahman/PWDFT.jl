@@ -40,13 +40,13 @@ function test_main( ecutwfc_Ry::Float64 )
     #
     Npoints = prod(pw.Ns)
     CellVolume = pw.CellVolume
-    r = pw.r
+    r = PWDFT.init_grid_R( pw.Ns, LatVecs )
     Ns = pw.Ns
     #
     # Generate array of distances
     #
     center = sum(LatVecs,dims=2)/2
-    dr = gen_dr( pw.r, center )
+    dr = gen_dr( r, center )
     #
     # Generate charge density
     #
