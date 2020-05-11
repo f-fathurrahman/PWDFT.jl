@@ -107,8 +107,7 @@ function HamiltonianGamma(
 end
 
 
-from PWDFT: import update!
-
+import PWDFT: update!
 function update!( Ham::HamiltonianGamma, Rhoe::Array{Float64,2} )
     
     Nspin = size(rhoe)[2]

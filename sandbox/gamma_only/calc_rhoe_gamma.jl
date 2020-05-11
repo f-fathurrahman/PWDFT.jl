@@ -15,8 +15,6 @@ function calc_rhoe!(
     Npoints = prod(Ns)
     Nstates = size(psis.data[1],2)
 
-    println("Nstates = ", Nstates)
-
     psiR = zeros(ComplexF64, Npoints, Nstates)
 
     # dont forget to zero out the Rhoe first
@@ -30,16 +28,11 @@ function calc_rhoe!(
         psiR .= 0.0 + im*0.0
         
         # Transform to real space
-
-        #psiR[idx,:] = psi[:,:]
-        for ist in 1:Nstates
-            #psiR[1,ist] = psis.data[ispin][1,ist]
-            for igw in 2:Ngw
-                ip = idx_gw2r[igw]
-                ipm = idx_gw2rm[igw]
-                psiR[ip,ist] = psis.data[ispin][igw,ist]
-                psiR[ipm,ist] = conj(psis.data[ispin][igw,ist])
-            end
+        for ist in 1:Nstates, igw in 2:Ngw
+            ip = idx_gw2r[igw]
+            ipm = idx_gw2rm[igw]
+            psiR[ip,ist] = psis.data[ispin][igw,ist]
+            psiR[ipm,ist] = conj(psis.data[ispin][igw,ist])
         end
         
         G_to_R!(pw, psiR)
@@ -67,7 +60,6 @@ function calc_rhoe!(
     # renormalize
     if renormalize
         integ_rho = sum(Rhoe)*CellVolume/Npoints
-        println("integ_rho = ", integ_rho)
         for ip in eachindex(Rhoe)
             Rhoe[ip] = Nelectrons_true/integ_rho * Rhoe[ip]
         end

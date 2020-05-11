@@ -36,11 +36,14 @@ function test_01()
 
     dVol = Ham.pw.CellVolume/prod(Ham.pw.Ns)
 
+    Rhoe = calc_rhoe(Ham, psis, renormalize=false)
+    integRhoe = sum(Rhoe)*dVol
+    println("integRhoe (with renormalize=false) = ", integRhoe)
+
     Rhoe = calc_rhoe(Ham, psis, renormalize=true)
     integRhoe = sum(Rhoe)*dVol
-    println("integRhoe = ", integRhoe)
+    println("integRhoe (with renormalize=true) = ", integRhoe)
 
-    println("Pass here")
 end
 
 test_01()
