@@ -105,3 +105,30 @@ function HamiltonianGamma(
         electrons, atoms,
         pspots, pspotNL, xcfunc, xc_calc, ispin )
 end
+
+
+from PWDFT: import update!
+
+function update!( Ham::HamiltonianGamma, Rhoe::Array{Float64,2} )
+    
+    Nspin = size(rhoe)[2]
+    
+    # Copy Rhoe
+    Ham.rhoe[:] = Rhoe[:]
+
+    Ham.potentials.Hartree = real( G_to_R( Ham.pw, Poisson_solve(Ham.pw, Rhoe) ) )
+    
+    if Ham.xcfunc == "PBE"
+        Ham.potentials.XC = calc_Vxc_PBE( Ham.xc_calc, Ham.pw, rhoe )
+    else  # VWN is the default
+        Ham.potentials.XC = calc_Vxc_VWN( Ham.xc_calc, rhoe )
+    end
+    
+    Npoints = prod(Ham.pw.Ns)
+    for ispin in 1:Nspin, ip in 1:Npoints
+        Ham.potentials.Total[ip,ispin] = Ham.potentials.Ps_loc[ip] + Ham.potentials.Hartree[ip] +
+                                         Ham.potentials.XC[ip,ispin]  
+    end
+    
+    return
+end

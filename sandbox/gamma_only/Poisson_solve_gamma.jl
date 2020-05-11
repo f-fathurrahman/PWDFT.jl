@@ -4,14 +4,22 @@ import PWDFT: Poisson_solve
 # Given electron density in real space, return Hartree potential in reciprocal
 # space
 #
-function Poisson_solve( pw::PWGridGamma, rhoR::Array{Float64,1} )
+function Poisson_solve( pw::PWGridGamma, Rhoe::Array{Float64,2} )
     gvec = pw.gvec
     G2 = gvec.G2
     Ng = gvec.Ng
     idx_g2r = gvec.idx_g2r
     idx_g2rm = gvec.idx_g2rm
 
-    ctmp = R_to_G( pw, rhoR )
+    Nspin = size(Rhoe,2)
+    Npoints = size(Rhoe,1)
+    ctmp = zeros(ComplexF64,Npoints)
+    # Calculate total Rhoe (sum up and down component)
+    for ispin in 1:Nspin, ip in 1:Npoints
+        ctmp[ip] = ctmp[ip] + Rhoe[ip,ispin]
+    end
+        
+    R_to_G!( pw, ctmp )
     
     ctmp[1] = 0.0 + im*0.0  # the first GVectors is zero vector
 
