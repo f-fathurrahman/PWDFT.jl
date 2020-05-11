@@ -110,7 +110,7 @@ end
 import PWDFT: update!
 function update!( Ham::HamiltonianGamma, Rhoe::Array{Float64,2} )
     
-    Nspin = size(rhoe)[2]
+    Nspin = size(Rhoe,2)
     
     # Copy Rhoe
     Ham.rhoe[:] = Rhoe[:]
@@ -118,9 +118,9 @@ function update!( Ham::HamiltonianGamma, Rhoe::Array{Float64,2} )
     Ham.potentials.Hartree = real( G_to_R( Ham.pw, Poisson_solve(Ham.pw, Rhoe) ) )
     
     if Ham.xcfunc == "PBE"
-        Ham.potentials.XC = calc_Vxc_PBE( Ham.xc_calc, Ham.pw, rhoe )
+        Ham.potentials.XC[:] = calc_Vxc_PBE( Ham.xc_calc, Ham.pw, Rhoe )
     else  # VWN is the default
-        Ham.potentials.XC = calc_Vxc_VWN( Ham.xc_calc, rhoe )
+        Ham.potentials.XC[:] = calc_Vxc_VWN( Ham.xc_calc, Rhoe )
     end
     
     Npoints = prod(Ham.pw.Ns)

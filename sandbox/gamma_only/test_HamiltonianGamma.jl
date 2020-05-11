@@ -15,6 +15,8 @@ include("ortho_GS_gamma.jl")
 include("PsPotNLGamma.jl")
 include("HamiltonianGamma.jl")
 include("BlochWavefuncGamma.jl")
+include("calc_rhoe_gamma.jl")
+include("Poisson_solve_gamma.jl")
 
 function test_01()
     #atoms = Atoms( xyz_file=joinpath(DIR_STRUCTURES, "H2.xyz"),
@@ -51,6 +53,11 @@ function test_01()
 
     betaNL1 = Ham_.pspotNL.betaNL[1]
     println(dot(betaNL1,betaNL1))
+
+    psis = randn_BlochWavefuncGamma(Ham)
+    Rhoe = calc_rhoe(Ham, psis)
+
+    update!(Ham, Rhoe)
 
 end
 
