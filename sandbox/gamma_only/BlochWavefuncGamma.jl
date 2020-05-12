@@ -51,6 +51,20 @@ function dot_BlochWavefuncGamma( v1::BlochWavefuncGamma, v2::BlochWavefuncGamma 
 
 end
 
+function dot_BlochWavefuncGamma( v1::Array{ComplexF64,2}, v2::Array{ComplexF64,2} )
+    
+    c = dot(v1, v2)
+    s = c + conj(c)
+    
+    Nstates = size(v1,2)
+    ds = 0.0 + im*0.0
+    for ist in 1:Nstates
+        ds = ds + conj(v1[1,ist]) * v2[1,ist]
+    end
+    return s - ds
+
+end
+
 
 import Base: length
 function length(v::BlochWavefuncGamma)
