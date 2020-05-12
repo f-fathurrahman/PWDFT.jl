@@ -22,6 +22,8 @@ include("op_V_loc_gamma.jl")
 include("op_V_Ps_nloc_gamma.jl")
 include("op_H_gamma.jl")
 
+include("unfold_BlochWavefuncGamma.jl")
+
 function test_01()
 
     Random.seed!(1234)
@@ -38,12 +40,40 @@ function test_01()
     ecutwfc = 15.0
     Ham = HamiltonianGamma( atoms, pspfiles, ecutwfc )
 
+    Ham_ = Hamiltonian( atoms, pspfiles, ecutwfc )
+
     psis = randn_BlochWavefuncGamma(Ham)
-    ortho_check(psis)
+
+    psiks = unfold_BlochWavefuncGamma( Ham.pw, Ham_.pw, psis )
 
     Rhoe = calc_rhoe(Ham, psis)
 
+    Rhoe_ = calc_rhoe(Ham_, psiks)
+
     update!(Ham, Rhoe)
+    update!(Ham_, Rhoe_)
+
+    println("V Ps loc comparison")
+    for ip in 1:5
+        @printf("%3d %18.10f %18.10f\n", ip, Ham.potentials.Ps_loc[ip], Ham_.potentials.Ps_loc[ip])
+    end
+
+    println("V Hartree comparison")
+    for ip in 1:5
+        @printf("%3d %18.10f %18.10f\n", ip, Ham.potentials.Hartree[ip], Ham_.potentials.Hartree[ip])
+    end
+
+    println("V XC comparison")
+    for ip in 1:5
+        @printf("%3d %18.10f %18.10f\n", ip, Ham.potentials.XC[ip,1], Ham_.potentials.XC[ip,1])
+    end
+
+    println("V Total comparison")
+    for ip in 1:5
+        @printf("%3d %18.10f %18.10f\n", ip, Ham.potentials.Total[ip,1], Ham_.potentials.Total[ip,1])
+    end
+
+    exit()
 
     Kpsis = op_K(Ham, psis)
     println("sum Kpsis = ", sum(Kpsis.data[1]))

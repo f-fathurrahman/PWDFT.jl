@@ -24,12 +24,10 @@ function Poisson_solve( pw::PWGridGamma, Rhoe::Array{Float64,2} )
     ctmp[1] = 0.0 + im*0.0  # the first GVectors is zero vector
 
     for ig = 2:Ng
-        #
         ip = idx_g2r[ig]
         ctmp[ip] = ctmp[ip]/G2[ig]
-        #
         ipm = idx_g2rm[ig]
-        ctmp[ipm] = conj(ctmp[ipm])/G2[ig]
+        ctmp[ipm] = ctmp[ipm]/G2[ig]
     end
     return 4.0*pi*ctmp
 end
