@@ -110,14 +110,27 @@ function test_01()
     println(dot(psis,psis))
     println(dot(psiks,psiks))
 
+    println("dot V_loc_psis")
     println(dot(V_loc_psis,V_loc_psis))
     println(dot(V_loc_psis_,V_loc_psis_))
     println(dot_BlochWavefuncGamma(V_loc_psis,V_loc_psis))
 
-    exit()
-
     V_Ps_nloc_psis = op_V_Ps_nloc(Ham, psis)
-    println("sum V_Ps_nloc_psis = ", sum(V_Ps_nloc_psis.data[1]))
+    V_Ps_nloc_psiks = op_V_Ps_nloc(Ham_, psiks)
+
+    println("dot V_Ps_nloc_psis")
+    println( dot(V_Ps_nloc_psis,V_Ps_nloc_psis) )
+    println( dot(V_Ps_nloc_psiks,V_Ps_nloc_psiks) )
+    println( dot_BlochWavefuncGamma(V_Ps_nloc_psis,V_Ps_nloc_psis) )
+
+    ist = 1
+    for igw in 1:5
+        c1 = V_Ps_nloc_psis.data[1][igw,ist]
+        c2 = V_Ps_nloc_psiks[1][igw,ist]
+        @printf("%3d [%18.10f,%18.10f] [%18.10f,%18.10f]\n", igw, c1.re, c1.im, c2.re, c2.im)
+    end
+
+    exit()
 
     Hpsis = op_H(Ham, psis)
     println("sum Hpsis = ", sum(Hpsis.data[1]))

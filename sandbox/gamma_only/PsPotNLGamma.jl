@@ -112,6 +112,7 @@ end
 
 
 function calc_betaNL_psi( pspotNL::PsPotNLGamma, psi::Array{ComplexF64,2} )
-    return conj( psi' * pspotNL.betaNL )
+    c = psi' * pspotNL.betaNL
+    return conj( c + conj(c) )
 end
 
