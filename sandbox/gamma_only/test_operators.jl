@@ -73,13 +73,41 @@ function test_01()
         @printf("%3d %18.10f %18.10f\n", ip, Ham.potentials.Total[ip,1], Ham_.potentials.Total[ip,1])
     end
 
-    exit()
-
+    println()
     Kpsis = op_K(Ham, psis)
-    println("sum Kpsis = ", sum(Kpsis.data[1]))
+    s1 = sum(Kpsis.data[1])
+    println("sum Kpsis  = ", s1 + conj(s1))
+
+    Kpsis_ = op_K(Ham_, psiks)
+    s2 = sum(Kpsis_[1])
+    println("sum Kpsis_ = ", s2)
+
+    println()
 
     V_loc_psis = op_V_loc(Ham, psis)
-    println("sum V_loc_psis = ", sum(V_loc_psis.data[1]))
+    s1 = sum(V_loc_psis.data[1])
+    s1 = s1 + conj(s1)
+    println("sum V_loc_psis  = ", s1)
+
+    V_loc_psis_ = op_V_loc(Ham_, psiks)
+    s2 = sum(V_loc_psis_[1])
+    println("sum V_loc_psis_ = ", s2)
+
+    println("s1 - s2    = ", s1 - s2)
+    ss = 0.0 + 0.0*im
+    for ist in 1:size(psis.data[1],2)
+        ss = ss + V_loc_psis.data[1][1,ist]
+    end
+    println("V_loc_psis = ", ss)
+
+    ist = 1
+    for igw in 1:5
+        c1 = V_loc_psis.data[1][igw,ist]
+        c2 = V_loc_psis_[1][igw,ist]
+        @printf("%3d [%18.10f,%18.10f] [%18.10f,%18.10f]\n", igw, c1.re, c1.im, c2.re, c2.im)
+    end
+
+    exit()
 
     V_Ps_nloc_psis = op_V_Ps_nloc(Ham, psis)
     println("sum V_Ps_nloc_psis = ", sum(V_Ps_nloc_psis.data[1]))

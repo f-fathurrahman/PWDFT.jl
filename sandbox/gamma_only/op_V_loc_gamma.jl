@@ -52,7 +52,7 @@ function op_V_loc( pw::PWGridGamma, V_loc, psi::Array{ComplexF64,2} )
     Ns = pw.Ns
     CellVolume  = pw.CellVolume
     Npoints = prod(Ns)
-    Nstates = size(psi)[2]
+    Nstates = size(psi,2)
 
     # FIXME: Do this state by state to reduce memory requirement
     ctmp = zeros(ComplexF64, Npoints, Nstates)
