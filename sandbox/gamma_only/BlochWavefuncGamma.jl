@@ -9,7 +9,20 @@ end
 # This assumes that the DC components are set to zeros
 import LinearAlgebra: dot
 function dot( v1::BlochWavefuncGamma, v2::BlochWavefuncGamma )
-    
+    Nspin = length(v1)
+    Nstates = size(v1.data[1],2)
+    s = 0.0 + im*0.0
+    C = zeros(ComplexF64,Nstates,Nstates)
+    for ispin in 1:Nspin
+        C[:] = v1.data[ispin]' * v2.data[ispin]
+        C[:] = C + conj(C)
+        s = s + tr(C)
+    end
+    return s
+end
+
+function dot_orig( v1::BlochWavefuncGamma, v2::BlochWavefuncGamma )
+
     #return 2*dot(v1.data, v2.data)
     
     c = dot(v1.data, v2.data)
@@ -19,6 +32,7 @@ function dot( v1::BlochWavefuncGamma, v2::BlochWavefuncGamma )
     # c = dot(v1.data, v2.data)
     # res = c + conj(c)
     # should work for ortho_sqrt and ortho_GS_gamma
+
 end
 
 # Does not assume DC components of zeros
@@ -93,10 +107,10 @@ function randn_BlochWavefuncGamma( Nbasis::Int64, Nstates::Int64; Nspin=1 )
         for ist in 1:Nstates
             data[ispin][1,ist] = 0.0 + im*0.0 # Don't forget to set the DC component to zero
         end
-        G[:] = data[ispin]' * data[ispin]
-        Udagger[:] = inv( sqrt(G + conj(G)) )
-        data[ispin] = data[ispin]*Udagger
-        #ortho_GS_gamma!(data[ispin])
+        #G[:] = data[ispin]' * data[ispin]
+        #Udagger[:] = inv( sqrt(G + conj(G)) )
+        #data[ispin] = data[ispin]*Udagger
+        ortho_GS_gamma!(data[ispin])
     end
 
     return BlochWavefuncGamma(data)

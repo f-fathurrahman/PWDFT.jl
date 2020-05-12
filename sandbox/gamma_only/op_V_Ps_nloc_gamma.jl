@@ -53,6 +53,12 @@ function op_V_Ps_nloc( Ham::HamiltonianGamma, psi::Array{ComplexF64,2} )
             end # l
         end
     end
+
+    println("betaNL_psi = ", )
+    display(betaNL_psi); println()
+
+    #println(Vpsi[1,1:Nstates])
+    
     return Vpsi
 end
 

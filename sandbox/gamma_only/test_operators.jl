@@ -43,6 +43,17 @@ function test_01()
     Ham_ = Hamiltonian( atoms, pspfiles, ecutwfc )
 
     psis = randn_BlochWavefuncGamma(Ham)
+    ortho_check(psis)
+
+    Nstates = size(psis.data[1],2)
+    ispin = 1
+    for ist in 1:Nstates
+        println()
+        for igw in 1:3
+            c = psis.data[ispin][igw,ist]
+            @printf("%3d %3d [%18.10f,%18.10f]\n", igw, ist, c.re, c.im)
+        end
+    end
 
     psiks = unfold_BlochWavefuncGamma( Ham.pw, Ham_.pw, psis )
 
@@ -130,12 +141,17 @@ function test_01()
         @printf("%3d [%18.10f,%18.10f] [%18.10f,%18.10f]\n", igw, c1.re, c1.im, c2.re, c2.im)
     end
 
-    exit()
-
     Hpsis = op_H(Ham, psis)
-    println("sum Hpsis = ", sum(Hpsis.data[1]))
+    Hpsiks = op_H(Ham_, psiks)
 
-    println("Pass here")
+    println("dot Hpsis")
+    println( "dot      = ", dot(Hpsis, Hpsis) )
+    println( "dot_orig = ", dot_orig(Hpsis, Hpsis) )
+    println( dot(Hpsiks,Hpsiks) )
+    println( dot_BlochWavefuncGamma(Hpsis, Hpsis) )
+
+
+
 
 end
 
