@@ -16,7 +16,7 @@ include("PsPotNLGamma.jl")
 include("HamiltonianGamma.jl")
 include("BlochWavefuncGamma.jl")
 include("calc_rhoe_gamma.jl")
-
+include("unfold_BlochWavefuncGamma.jl")
 
 function test_01()
     #atoms = Atoms( xyz_file=joinpath(DIR_STRUCTURES, "H2.xyz"),
@@ -31,6 +31,8 @@ function test_01()
     ecutwfc = 15.0
     Ham = HamiltonianGamma( atoms, pspfiles, ecutwfc )
 
+    Ham_ = Hamiltonian( atoms, pspfiles, ecutwfc )
+
     psis = randn_BlochWavefuncGamma(Ham)
     ortho_check(psis)
 
@@ -43,6 +45,15 @@ function test_01()
     Rhoe = calc_rhoe(Ham, psis, renormalize=true)
     integRhoe = sum(Rhoe)*dVol
     println("integRhoe (with renormalize=true) = ", integRhoe)
+
+    psiks = unfold_BlochWavefuncGamma( Ham.pw, Ham_.pw, psis )
+    PWDFT.ortho_check(psiks[1])
+
+    Rhoe_ = calc_rhoe(Ham_, psiks)
+
+    for ip in 1:5
+        @printf("%3d %18.10f %18.10f\n", ip, Rhoe[ip], Rhoe_[ip])
+    end
 
 end
 
