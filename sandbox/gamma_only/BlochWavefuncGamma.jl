@@ -21,6 +21,23 @@ function dot( v1::BlochWavefuncGamma, v2::BlochWavefuncGamma )
     # should work for ortho_sqrt and ortho_GS_gamma
 end
 
+# Does not assume DC components of zeros
+function dot_BlochWavefuncGamma( v1::BlochWavefuncGamma, v2::BlochWavefuncGamma )
+    
+    c = dot(v1.data, v2.data)
+    s = c + conj(c)
+    
+    Nspin = length(v1)
+    Nstates = size(v1.data[1],2)
+    ds = 0.0 + im*0.0
+    for ispin in 1:Nspin, ist in 1:Nstates
+        ds = ds + conj(v1.data[ispin][1,ist]) * v2.data[ispin][1,ist]
+    end
+    return s - ds
+
+end
+
+
 import Base: length
 function length(v::BlochWavefuncGamma)
     return length(v.data)

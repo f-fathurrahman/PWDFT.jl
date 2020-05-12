@@ -107,6 +107,13 @@ function test_01()
         @printf("%3d [%18.10f,%18.10f] [%18.10f,%18.10f]\n", igw, c1.re, c1.im, c2.re, c2.im)
     end
 
+    println(dot(psis,psis))
+    println(dot(psiks,psiks))
+
+    println(dot(V_loc_psis,V_loc_psis))
+    println(dot(V_loc_psis_,V_loc_psis_))
+    println(dot_BlochWavefuncGamma(V_loc_psis,V_loc_psis))
+
     exit()
 
     V_Ps_nloc_psis = op_V_Ps_nloc(Ham, psis)
