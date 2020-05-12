@@ -150,6 +150,17 @@ function test_01()
     println( dot(Hpsiks,Hpsiks) )
     println( dot_BlochWavefuncGamma(Hpsis, Hpsis) )
 
+    Hsub = psis.data[1]' * Hpsis.data[1]
+    Hsub = Hsub + conj(Hsub)
+
+    Hsub_ = psiks[1]' * Hpsiks[1]
+
+    println()
+    println("Hsub real part  = "); display(real(Hsub)); println()
+    println("Hsub_ real part = "); display(real(Hsub_)); println()
+    
+    println("Hsub imag part  = "); display(imag(Hsub)); println()
+    println("Hsub_ imag part = "); display(imag(Hsub_)); println()
 
 
 
