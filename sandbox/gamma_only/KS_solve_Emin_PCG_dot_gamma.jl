@@ -29,14 +29,26 @@ function KS_solve_Emin_PCG_dot!(
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( Ham.atoms )
 
+    println()
+    println("Initial dot(psis,psis) = ", 2*real(dot_BlochWavefuncGamma(psis,psis)))
+
     # No need to orthonormalize
     Etot = calc_energies_grad!( Ham, psis, g, Kg, Hsub )
+
+    println("Initial dot(psis,psis) = ", 2*real(dot_BlochWavefuncGamma(psis,psis)))
+    
     println("Initial Etot = ", Etot)
+    println("Initial dot(g,g) = ", 2*real(dot_BlochWavefuncGamma(g,g)))
+    println("Initial dot(Kg,Kg) = ", 2*real(dot_BlochWavefuncGamma(Kg,Kg)))
 
     d = deepcopy(Kg)
 
     # Constrain
     constrain_search_dir!( d, psis )
+
+    println("After constrain_search_dir dot(psis,psis) = ", 2*real(dot_BlochWavefuncGamma(psis,psis)))
+
+    println()
 
     gPrevUsed = true
 
@@ -122,7 +134,7 @@ function KS_solve_Emin_PCG_dot!(
         norm_g = norm(g.data)/length(g.data)
         #norm_g = 2*real(dot(g,g))
         mae_rhoe = sum( abs.( Ham.rhoe - Rhoe_old ) )/(Npoints*Nspin)
-        @printf("Emin_PCG_dot step %8d = %18.10f  %12.7e %12.7e %12.7e\n", iter, Etot, diffE, norm_g, mae_rhoe)
+        @printf("Emin_PCG_dot gamma step %8d = %18.10f  %12.7e %12.7e %12.7e\n", iter, Etot, diffE, norm_g, mae_rhoe)
         if diffE < 0.0
             println("*** WARNING: Etot is not decreasing")
         end

@@ -130,6 +130,7 @@ function randn_BlochWavefuncGamma( Nbasis::Int64, Nstates::Int64; Nspin=1 )
     return BlochWavefuncGamma(data)
 end
 
+import PWDFT: ortho_gram_schmidt!
 function ortho_gram_schmidt!( psis::BlochWavefuncGamma )
     Nspin = length(psis)
     for ispin in 1:Nspin

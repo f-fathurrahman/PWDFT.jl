@@ -9,7 +9,11 @@ function calc_energies_grad!(
     Rhoe = calc_rhoe( Ham, psis )
     update!( Ham, Rhoe )
     
+    #println("Rhoe = ", Rhoe[1,1])
+    #println("Rhoe = ", Rhoe[2,1])
+
     Ham.energies = calc_energies( Ham, psis )
+    #println(Ham.energies)
 
     Nspin = Ham.electrons.Nspin
     for ispin in 1:Nspin

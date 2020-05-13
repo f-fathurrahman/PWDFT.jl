@@ -1,6 +1,6 @@
 function ortho_BlochWavefunc!( psiks )
     for i in 1:length(psiks)
-        ortho_sqrt!(psiks[i])
+        ortho_gram_schmidt!(psiks[i])
     end
 end
 
@@ -12,7 +12,13 @@ function calc_energies_grad!( Ham, psiks, g, Kg )
     Rhoe = calc_rhoe( Ham, psiks )
     update!( Ham, Rhoe )
     
+    #println("Nsyms = ", Ham.sym_info.Nsyms)
+
+    #println("Rhoe = ", Rhoe[1,1])
+    #println("Rhoe = ", Rhoe[2,1])
+
     Ham.energies = calc_energies( Ham, psiks )
+    #println(Ham.energies)
 
     Nspin = Ham.electrons.Nspin
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
@@ -167,7 +173,7 @@ end
 function do_step!( psiks::BlochWavefunc, α::Float64, d::BlochWavefunc )
     for i in 1:length(psiks)
         psiks[i] = psiks[i] + α*d[i]
-        ortho_sqrt!( psiks[i] )
+        ortho_gram_schmidt!( psiks[i] )
     end
     return
 end
@@ -175,7 +181,7 @@ end
 # Per kpt component
 function do_step!( psiks::Array{ComplexF64,2}, α::Float64, d::Array{ComplexF64,2} )
     psiks[:] = psiks + α*d
-    ortho_sqrt!( psiks )
+    ortho_gram_schmidt!( psiks )
     return
 end
 
@@ -183,7 +189,7 @@ end
 function do_step!( psiks::BlochWavefunc, α::Vector{Float64}, d::BlochWavefunc )
     for i in 1:length(psiks)
         psiks[i] = psiks[i] + α[i]*d[i]
-        ortho_sqrt!( psiks[i] )
+        ortho_gram_schmidt!( psiks[i] )
     end
     return
 end

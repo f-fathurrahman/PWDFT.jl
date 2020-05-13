@@ -13,7 +13,6 @@ function KS_solve_Emin_PCG_dot!(
     g = zeros_BlochWavefunc(Ham)
     Kg = zeros_BlochWavefunc(Ham)
     gPrev = zeros_BlochWavefunc(Ham)
-    d_old = zeros_BlochWavefunc(Ham) # needed for β Dai-Yuan
 
     Npoints = prod(Ham.pw.Ns)
     Nspin = Ham.electrons.Nspin
@@ -24,15 +23,22 @@ function KS_solve_Emin_PCG_dot!(
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( Ham.atoms )
 
+    println()
+    println("Initial dot(psiks,psiks) = ", dot_BlochWavefunc(psiks,psiks))
+
     # No need to orthonormalize
     Etot = calc_energies_grad!( Ham, psiks, g, Kg )
-    #println("Initial Etot = ", Etot)
-    #println("Initial dot_BlochWavefunc(g,g) = ", dot_BlochWavefunc(g,g))
+
+    println("Initial dot(psiks,psiks) = ", dot_BlochWavefunc(psiks,psiks))    
+    println("Initial Etot = ", Etot)
+    println("Initial dot(g,g) = ", dot_BlochWavefunc(g,g))
+    println("Initial dot(Kg,Kg) = ", dot_BlochWavefunc(Kg,Kg))
 
     d = deepcopy(Kg)
 
     # Constrain
     constrain_search_dir!( d, psiks )
+    println("After constrain_search_dir dot(psiks,psiks) = ", dot_BlochWavefunc(psiks,psiks))
 
     gPrevUsed = true
 
@@ -72,37 +78,23 @@ function KS_solve_Emin_PCG_dot!(
     for iter in 1:NiterMax
 
         gKnorm = dot_BlochWavefunc(g, Kg)
-        #gKnorm = dot_BlochWavefunc(kpoints, g, Kg)
         
         if !force_grad_dir
             
             dotgd = dot_BlochWavefunc(g, d)
             if gPrevUsed
                 dotgPrevKg = dot_BlochWavefunc(gPrev, Kg)
-                #dotgPrevKg = dot_BlochWavefunc(kpoints, gPrev, Kg)
             else
                 dotgPrevKg = 0.0
             end
 
             β = (gKnorm - dotgPrevKg)/gKnormPrev # Polak-Ribiere
-            #β = gKnorm/gKnormPrev # Fletcher-Reeves
-            #β = (gKnorm - dotgPrevKg) / ( dotgd - dot_BlochWavefunc(d,gPrev) )
-            #β = gKnorm/dot_BlochWavefunc(g .- gPrev, d_old)
-            #β = 0.0
-            #denum = sqrt( dot_BlochWavefunc(g,g) * dot_BlochWavefunc(d,d) )
-            #println("linmin test: ", dotgd/denum )
-            #if gPrevUsed
-            #    cg_test  = dotgPrevKg/sqrt(gKnorm*gKnormPrev)
-            #    println("CG test: ", cg_test)
-            #end
         end
 
         if β < 0.0
             println("Resetting β")
             β = 0.0
         end
-
-        #println("β = ", β)
 
         force_grad_dir = false
         
@@ -113,14 +105,13 @@ function KS_solve_Emin_PCG_dot!(
 
         # Update search direction
         for i in 1:Nkspin
-            d_old[i] = copy(d[i])
             d[i] = -Kg[i] + β*d[i]
         end
 
         constrain_search_dir!( d, psiks )
 
         _, α = linmin_grad!( Ham, psiks, g, d, Etot )
-        #println("α = ", α)
+        println("α = ", α)
 
         Rhoe_old = copy(Ham.rhoe)
         # Update psiks
@@ -170,7 +161,7 @@ function KS_solve_Emin_PCG_dot!(
         Ham.ik = ik
         Ham.ispin = ispin
         ikspin = ik + (ispin - 1)*Nkpt
-        psiks[ikspin] = ortho_sqrt(psiks[ikspin])
+        psiks[ikspin] = ortho_gram_schmidt(psiks[ikspin])
         Hr = Hermitian(psiks[ikspin]' * op_H(Ham, psiks[ikspin]))
         evals, evecs = eigen(Hr)
         Ham.electrons.ebands[:,ik] = evals
