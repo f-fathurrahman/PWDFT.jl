@@ -8,6 +8,27 @@ function calc_grad( Ham::HamiltonianGamma, ψ::Array{ComplexF64,2} )
     return g
 end
 
+# No Hsub
+function calc_grad!( Ham::HamiltonianGamma, ψ::Array{ComplexF64,2}, g::Array{ComplexF64,2} )
+
+    ispin = Ham.ispin
+
+    Nstates = size(ψ,2)
+    Focc = Ham.electrons.Focc
+
+    Hψ = op_H( Ham, ψ )
+    Hsub = ψ' * Hψ
+    Hsub = Hsub + conj(Hsub)
+    Hψ = Hψ - ψ*Hsub
+
+    for ist in 1:Nstates
+        g[:,ist] = Focc[ist,ispin] * Hψ[:,ist]
+    end
+
+    return
+
+end
+
 
 function calc_grad!(
     Ham::HamiltonianGamma,
