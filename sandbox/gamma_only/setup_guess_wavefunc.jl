@@ -1,10 +1,11 @@
 function setup_guess_wavefunc!(
-    Ham::HamiltonianGamma,
-    psis::BlochWavefuncGamma,
+    Ham::Union{Hamiltonian,HamiltonianGamma},
+    psis::Union{BlochWavefunc,BlochWavefuncGamma},
     startingrhoe,
     skip_initial_diag
 )
-    
+    @assert length(psis) <= 2
+
     Npoints = prod(Ham.pw.Ns)
     Nspin = Ham.electrons.Nspin
     Rhoe = zeros(Float64,Npoints,Nspin)
