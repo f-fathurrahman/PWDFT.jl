@@ -10,13 +10,19 @@ function linmin_grad!( Ham::HamiltonianGamma,
 
     Nspin = length(psis)
     for i in 1:Nspin
-        Ham.ispin = i
         psic.data[i] = psis.data[i] + αt*d.data[i]
         ortho_GS_gamma!(psic.data[i])
+    end
+
+    Rhoe = calc_rhoe(Ham, psic)
+    update!(Ham, Rhoe)
+
+    for i in 1:Nspin
+        Ham.ispin = i
         calc_grad!( Ham, psic.data[i], gt.data[i] )
     end
 
-    ortho_check( psic )
+    #ortho_check( psic )
 
     #println("psic[1,1] = ", psic.data[1][1,1])
     #println("psic[2,1] = ", psic.data[1][2,1])
@@ -29,7 +35,6 @@ function linmin_grad!( Ham::HamiltonianGamma,
     #println("dot(g,g) = ", 2*real(dot_BlochWavefuncGamma(g,g)))
     #println("dot(gt,gt) = ", 2*real(dot_BlochWavefuncGamma(gt,gt)))
 
-    #denum = dot_BlochWavefunc( g .- gt, d )
     denum = 2.0*real( dot_BlochWavefuncGamma(g - gt, d) )
     #println("denum = ", denum)
     if denum != 0.0

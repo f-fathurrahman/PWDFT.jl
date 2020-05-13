@@ -36,9 +36,10 @@ function KS_solve_Emin_PCG_dot!(
 
     d = deepcopy(Kg)
 
+    println("Before constrain_search_dir dot(d,d) = ", dot_BlochWavefunc(d,d))
     # Constrain
     constrain_search_dir!( d, psiks )
-    println("After constrain_search_dir dot(psiks,psiks) = ", dot_BlochWavefunc(psiks,psiks))
+    println("After constrain_search_dir dot(d,d) = ", dot_BlochWavefunc(d,d))
 
     gPrevUsed = true
 
@@ -108,7 +109,11 @@ function KS_solve_Emin_PCG_dot!(
             d[i] = -Kg[i] + β*d[i]
         end
 
+        println("Before constrain_search_dir dot(d,d) = ", dot_BlochWavefunc(d,d))
+
         constrain_search_dir!( d, psiks )
+
+        println("After constrain_search_dir dot(d,d) = ", dot_BlochWavefunc(d,d))
 
         _, α = linmin_grad!( Ham, psiks, g, d, Etot )
         println("α = ", α)

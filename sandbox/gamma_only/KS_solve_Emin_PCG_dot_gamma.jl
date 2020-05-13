@@ -42,11 +42,13 @@ function KS_solve_Emin_PCG_dot!(
     println("Initial dot(Kg,Kg) = ", 2*real(dot_BlochWavefuncGamma(Kg,Kg)))
 
     d = deepcopy(Kg)
+    
+    println("Before constrain_search_dir dot(d,d) = ", 2*real(dot_BlochWavefuncGamma(d,d)))
 
     # Constrain
     constrain_search_dir!( d, psis )
 
-    println("After constrain_search_dir dot(psis,psis) = ", 2*real(dot_BlochWavefuncGamma(psis,psis)))
+    println("After constrain_search_dir dot(d,d) = ", 2*real(dot_BlochWavefuncGamma(d,d)))
 
     println()
 
@@ -86,17 +88,15 @@ function KS_solve_Emin_PCG_dot!(
 
         gKnorm = 2*real(dot_BlochWavefuncGamma(g, Kg))
         
-        if !force_grad_dir
-            
-            dotgd = 2*real(dot_BlochWavefuncGamma(g, d))
-            if gPrevUsed
-                dotgPrevKg = 2*real(dot_BlochWavefuncGamma(gPrev, Kg))
-            else
-                dotgPrevKg = 0.0
-            end
-
-            β = (gKnorm - dotgPrevKg)/gKnormPrev # Polak-Ribiere
-        end
+        #if !force_grad_dir    
+        #    dotgd = 2*real(dot_BlochWavefuncGamma(g, d))
+        #    if gPrevUsed
+        #        dotgPrevKg = 2*real(dot_BlochWavefuncGamma(gPrev, Kg))
+        #    else
+        #        dotgPrevKg = 0.0
+        #    end
+        #    β = (gKnorm - dotgPrevKg)/gKnormPrev # Polak-Ribiere
+        #end
 
         if β < 0.0
             println("Resetting β")
@@ -118,7 +118,7 @@ function KS_solve_Emin_PCG_dot!(
         constrain_search_dir!( d, psis )
 
         α = linmin_grad!( Ham, psis, g, d )
-        println("α = ", α)
+        #println("α = ", α)
 
         Rhoe_old = copy(Ham.rhoe)
         
@@ -127,23 +127,24 @@ function KS_solve_Emin_PCG_dot!(
             psis.data[i] = psis.data[i] + α*d.data[i]
             ortho_GS_gamma!( psis.data[i] )
         end
+        #ortho_check(psis)
         Etot = calc_energies_grad!( Ham, psis, g, Kg, Hsub )
         
         diffE = Etot_old - Etot
         #norm_g = sqrt(2.0*real(dot(g,Kg))/length(g))
-        norm_g = norm(g.data)/length(g.data)
-        #norm_g = 2*real(dot(g,g))
+        #norm_g = norm(g.data)/length(g.data)
+        norm_g = 2*real(dot_BlochWavefuncGamma(g,g))
         mae_rhoe = sum( abs.( Ham.rhoe - Rhoe_old ) )/(Npoints*Nspin)
         @printf("Emin_PCG_dot gamma step %8d = %18.10f  %12.7e %12.7e %12.7e\n", iter, Etot, diffE, norm_g, mae_rhoe)
         if diffE < 0.0
             println("*** WARNING: Etot is not decreasing")
         end
 
-        if abs(diffE) < etot_conv_thr
-            Nconverges = Nconverges + 1
-        else
-            Nconverges = 0
-        end
+        #if abs(diffE) < etot_conv_thr
+        #    Nconverges = Nconverges + 1
+        #else
+        #    Nconverges = 0
+        #end
 
         if Nconverges >= 2
             @printf("\nEmin_PCG_dot is converged in iter: %d\n", iter)
