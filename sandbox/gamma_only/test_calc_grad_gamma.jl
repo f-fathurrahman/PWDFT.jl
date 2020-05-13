@@ -26,6 +26,25 @@ include("calc_grad_gamma.jl")
 
 include("unfold_BlochWavefuncGamma.jl")
 
+function constrain_search_dir!( d::Vector{Array{ComplexF64,2}}, psiks::Vector{Array{ComplexF64,2}} )
+    Nkspin = length(psiks)
+    for i in 1:Nkspin
+        d[i] = d[i] - psiks[i] * ( psiks[i]' * d[i] )
+    end
+    return
+end
+
+function constrain_search_dir!( d::Array{ComplexF64,2}, psi::Array{ComplexF64,2} )
+    d[:] = d - psi * ( psi' * d )
+    return
+end
+
+function constrain_search_dir_gamma!( d::Array{ComplexF64,2}, psi::Array{ComplexF64,2} )
+    C = psi' * d
+    d[:] = d - psi * ( C + conj(C) )
+    return
+end
+
 function test_01()
 
     Random.seed!(1234)
@@ -62,15 +81,29 @@ function test_01()
 
     g_ = calc_grad(Ham_, psiks[1])
 
-    println(g[1,1])
-    println(g_[1,1])
+    println("\nFirst component:")
+    println("g[1,1]  = ", g[1,1])
+    println("g_[1,1] = ", g_[1,1])
 
-    println(dot_BlochWavefuncGamma(g,g))
+    println("\nTest dot")
+    println("Using dot_BlochWavefuncGamma = ", dot_BlochWavefuncGamma(g,g))
+    println("Using 2*dot(g,g)             = ", 2*dot(g,g))
+    println("Using dot(g_,g_)             = ", dot(g_,g_))
 
-    println(2*dot(g,g))
+    d  = -0.5*deepcopy(g)
+    d_ = -0.5*deepcopy(g_)
 
-    println(dot(g_,g_))
+    println("\nUsing constrain_search_dir:")
+    constrain_search_dir_gamma!(d, psis.data[1])
+    constrain_search_dir!(d_, psiks[1])
 
+    println("\nFirst component:")
+    println("g[1,1]  = ", d[1,1])
+    println("g_[1,1] = ", d_[1,1])
+
+    println("Using dot_BlochWavefuncGamma = ", dot_BlochWavefuncGamma(d,d))
+    println("Using 2*dot(g,g)             = ", 2*dot(d,d))
+    println("Using dot(g_,g_)             = ", dot(d_,d_))
 
 end
 
