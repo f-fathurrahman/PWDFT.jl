@@ -1,6 +1,8 @@
 using Printf
 using LinearAlgebra
+using Random
 
+include("ortho_gram_schmidt.jl")
 include("ortho_GS_gamma.jl")
 
 function test_vector()
@@ -117,11 +119,30 @@ function test_ortho_sqrt()
 end
 #test_ortho_sqrt()
 
+function ortho_check_gamma( psi::Array{ComplexF64,2} )
+    Nstates = size(psi)[2]
+    @printf("\nNorm check:\n")
+    for ist = 1:Nstates
+        c = 2*dot( psi[:,ist], psi[:,ist] ) - conj(psi[1,ist])*psi[1,ist]
+        @printf("State: #%5d: (%18.10f,%18.10f)\n", ist, c.re, c.im)
+    end
+    @printf("\nOrtho check w.r.t state #1:\n")
+    for ist = 2:Nstates
+        c = 2*dot( psi[:,ist], psi[:,1] ) #- conj(psi[1,ist])*psi[1,1]
+        println(conj(psi[1,ist])*psi[1,1])
+        println(psi[1,ist]*conj(psi[1,1]))
+        @printf("State: #%5d: (%18.10f,%18.10f)\n", ist, c.re, c.im)
+    end
+    @printf("\n")
+    return
+end
+
 function gen_two_psi(Nbasis, Nstates)
 
     psig = randn(ComplexF64,Nbasis,Nstates)
     for ist in 1:Nstates
-        psig[1,ist] = 0.0 + im*0.0
+        #psig[1,ist] = 0.0 + im*0.0
+        psig[1,ist] = psig[1,ist] + conj(psig[1,ist])
     end
     Nbasis2 = 2*Nbasis - 1
     psi = zeros(ComplexF64,Nbasis2,Nstates)
@@ -175,7 +196,7 @@ function test_ortho_sqrt2()
     end
 
 end
-test_ortho_sqrt2()
+#test_ortho_sqrt2()
 
 function test_ortho_GS_gamma2()
     
@@ -208,3 +229,158 @@ function test_ortho_GS_gamma2()
 
 end
 #test_ortho_GS_gamma2()
+
+function dot_BlochWavefuncGamma( v1::Array{ComplexF64,2}, v2::Array{ComplexF64,2} )
+    
+    c = dot(v1, v2)
+    s = c + conj(c)
+    
+    Nstates = size(v1,2)
+    ds = 0.0 + im*0.0
+    for ist in 1:Nstates
+        ds = ds + conj(v1[1,ist]) * v2[1,ist]
+    end
+    return s - ds
+
+end
+
+function test_matrix2()
+    
+    Random.seed!(1234)
+
+    Nstates = 3
+    Nbasis = 4 # for the gamma only
+
+    psi1, psi1g = gen_two_psi(Nbasis,Nstates)
+    psi2, psi2g = gen_two_psi(Nbasis,Nstates)
+
+    println("\nBefore orthonormalize")
+
+    display(psi1); println()
+    display(psi1g); println()
+
+    println("dot psi1  = ", dot(psi1,psi1))
+    println("dot psi1g = ", dot_BlochWavefuncGamma(psi1g,psi1g))
+
+    #println("dot psi2  = ", dot(psi2,psi2))
+    #println("dot psi2g = ", dot_BlochWavefuncGamma(psi2g,psi2g))
+
+    ortho_gram_schmidt!(psi1)
+    ortho_GS_gamma!(psi1g)
+
+    #ortho_gram_schmidt!(psi2)
+    #ortho_GS_gamma!(psi2g)
+
+    println("\nAfter orthonormalize ortho_GS_gamma")
+
+    println("dot psi1  = ", dot(psi1,psi1))
+    println("dot psi1g = ", dot_BlochWavefuncGamma(psi1g,psi1g))
+
+    println("\npsi1")
+    display(psi1); println()
+
+    println("\npsi1g")
+    display(psi1g); println()
+
+
+    U1 = psi1' * psi1
+
+    C = psi1g' * psi1g
+    U1g = C + conj(C)
+
+    v1g = zeros(Float64,Nstates)
+    for ist in 1:Nstates
+        v1g[ist] = real(psi1g[1,ist])
+    end
+
+    println()
+    println("v1g = ")
+    println(v1g)
+
+    println()
+    println("U1 and U1g")
+    display(U1); println()
+    display(U1g); println()
+
+    uu = v1g*v1g'
+    display(uu); println()
+
+    display(U1g - uu); println()
+
+end
+#test_matrix2()
+
+
+function test_matrix3()
+    
+    Random.seed!(1234)
+
+    Nstates = 3
+    Nbasis = 4 # for the gamma only
+
+    psi1, psi1g = gen_two_psi(Nbasis,Nstates)
+    psi2, psi2g = gen_two_psi(Nbasis,Nstates)
+
+    println("\nBefore orthonormalize")
+
+    display(psi1); println()
+    display(psi1g); println()
+
+    println("dot psi1  = ", dot(psi1,psi1))
+    println("dot psi1g = ", dot_BlochWavefuncGamma(psi1g,psi1g))
+
+    println("dot psi2  = ", dot(psi2,psi2))
+    println("dot psi2g = ", dot_BlochWavefuncGamma(psi2g,psi2g))
+
+    ortho_gram_schmidt!(psi1)
+    ortho_GS_gamma!(psi1g)
+
+    ortho_gram_schmidt!(psi2)
+    ortho_GS_gamma!(psi2g)
+
+    println("\nAfter orthonormalize ortho_GS_gamma")
+
+    println("dot psi1  = ", dot(psi1,psi1))
+    println("dot psi1g = ", dot_BlochWavefuncGamma(psi1g,psi1g))
+
+    ortho_check_gamma(psi1g)
+
+    println("dot psi1, psi2   = ", dot(psi1,psi2))
+    println("dot psi1g, psi2g = ", dot_BlochWavefuncGamma(psi1g,psi2g))
+
+    println("\npsi1")
+    display(psi1); println()
+
+    println("\npsi1g")
+    display(psi1g); println()
+
+    println("\npsi2")
+    display(psi2); println()
+
+    println("\npsi2g")
+    display(psi2g); println()
+
+    U12 = psi1' * psi2
+
+    C = psi1g' * psi2g
+    U12g = C + conj(C)
+
+    v1g = zeros(Float64,Nstates)
+    v2g = zeros(Float64,Nstates)
+    for ist in 1:Nstates
+        v1g[ist] = real(psi1g[1,ist])
+        v2g[ist] = real(psi2g[1,ist])
+    end
+
+    println()
+    println("U12 and U12")
+    display(U12); println()
+    display(U12g); println()
+
+    uu = v1g*v2g'
+    display(uu); println()
+
+    display(U12g - uu); println()
+
+end
+test_matrix3()

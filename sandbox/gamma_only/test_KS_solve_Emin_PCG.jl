@@ -40,13 +40,13 @@ function test_01()
 
     Random.seed!(1234)
 
-    atoms = Atoms( xyz_file=joinpath(DIR_STRUCTURES, "H2.xyz"),
-                   LatVecs = gen_lattice_sc(16.0) )
-    pspfiles = [joinpath(DIR_PSP, "H-q1.gth")]
+    #atoms = Atoms( xyz_file=joinpath(DIR_STRUCTURES, "H2.xyz"),
+    #               LatVecs = gen_lattice_sc(16.0) )
+    #pspfiles = [joinpath(DIR_PSP, "H-q1.gth")]
     
-    #atoms = Atoms( ext_xyz_file=joinpath(DIR_STRUCTURES, "NH3.xyz") )
-    #pspfiles = [joinpath(DIR_PSP, "N-q5.gth"),
-    #            joinpath(DIR_PSP, "H-q1.gth")]
+    atoms = Atoms( ext_xyz_file=joinpath(DIR_STRUCTURES, "NH3.xyz") )
+    pspfiles = [joinpath(DIR_PSP, "N-q5.gth"),
+                joinpath(DIR_PSP, "H-q1.gth")]
 
     # Initialize Hamiltonian
     ecutwfc = 15.0
@@ -57,11 +57,24 @@ function test_01()
     psis = randn_BlochWavefuncGamma(Ham)
     psiks = unfold_BlochWavefuncGamma( Ham.pw, Ham_.pw, psis )
 
-    KS_solve_Emin_PCG_dot!( Ham, psis, NiterMax=2 )
+    #KS_solve_Emin_PCG_dot!( Ham, psis, NiterMax=50 )
 
-    KS_solve_Emin_PCG_dot!( Ham_, psiks, startingrhoe=:random, skip_initial_diag=true, NiterMax=2 )
+    KS_solve_Emin_PCG_dot!( Ham_, psiks, startingrhoe=:random, skip_initial_diag=true, NiterMax=50 )
     #KS_solve_Emin_PCG!( Ham_, psiks, startingrhoe=:random, skip_initial_diag=true )
 
 end
+
+#=
+Kinetic    energy:       8.0785591277
+Ps_loc     energy:     -31.8301682150
+Ps_nloc    energy:       0.9804183905
+Hartree    energy:      11.8324308638
+XC         energy:      -3.4421445627
+-------------------------------------
+Electronic energy:     -14.3809043957
+NN         energy:       3.1331525188
+-------------------------------------
+Total      energy:     -11.2477518770
+=#
 
 test_01()

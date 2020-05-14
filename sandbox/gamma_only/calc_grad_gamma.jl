@@ -18,7 +18,15 @@ function calc_grad!( Ham::HamiltonianGamma, ψ::Array{ComplexF64,2}, g::Array{Co
 
     Hψ = op_H( Ham, ψ )
     Hsub = ψ' * Hψ
-    Hsub = Hsub + conj(Hsub)
+
+    v1 = zeros(Float64,Nstates)
+    v2 = zeros(Float64,Nstates)
+    for ist in 1:Nstates
+        v1[ist] = real(ψ[1,ist])
+        v2[ist] = real(Hψ[1,ist])
+    end
+
+    Hsub = Hsub + conj(Hsub) - v1*v2'
     Hψ = Hψ - ψ*Hsub
 
     for ist in 1:Nstates
@@ -44,7 +52,15 @@ function calc_grad!(
 
     Hψ = op_H( Ham, ψ )
     Hsub[:] = ψ' * Hψ
-    Hsub = Hsub + conj(Hsub)
+    
+    v1 = zeros(Float64,Nstates)
+    v2 = zeros(Float64,Nstates)
+    for ist in 1:Nstates
+        v1[ist] = real(ψ[1,ist])
+        v2[ist] = real(Hψ[1,ist])
+    end
+
+    Hsub = Hsub + conj(Hsub) - v1*v2'
     Hψ = Hψ - ψ*Hsub
 
     for ist in 1:Nstates

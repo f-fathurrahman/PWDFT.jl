@@ -118,8 +118,11 @@ function randn_BlochWavefuncGamma( Nbasis::Int64, Nstates::Int64; Nspin=1 )
 
     for ispin in 1:Nspin
         data[ispin] = randn(ComplexF64,Nbasis,Nstates)
+        #for ist in 1:Nstates
+        #    data[ispin][1,ist] = 0.0 + im*0.0 # Don't forget to set the DC component to zero
+        #end
         for ist in 1:Nstates
-            data[ispin][1,ist] = 0.0 + im*0.0 # Don't forget to set the DC component to zero
+            data[ispin][1,ist] = data[ispin][1,ist] + conj(data[ispin][1,ist])
         end
         #G[:] = data[ispin]' * data[ispin]
         #Udagger[:] = inv( sqrt(G + conj(G)) )

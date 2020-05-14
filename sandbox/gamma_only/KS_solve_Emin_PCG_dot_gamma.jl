@@ -7,7 +7,6 @@ function KS_solve_Emin_PCG_dot!(
     i_cg_beta=2, etot_conv_thr=1e-6
 )
 
-    Nspin = length(psis)
     Npoints = prod(Ham.pw.Ns)
     Nspin = Ham.electrons.Nspin
     Nstates = Ham.electrons.Nstates

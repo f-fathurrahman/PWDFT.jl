@@ -23,11 +23,11 @@ function ortho_GS_gamma!( v::Array{ComplexF64,2} )
         zz = 2*dot( v[:,ii], v[:,ii] ) - conj(v[1,ii])*v[1,ii]        
         v[:,ii] = v[:,ii]/sqrt(zz)
         
-        println("ii = ", ii, " zz = ", zz)
+        #println("ii = ", ii, " zz = ", zz)
         
         for jj = ii+1 : Ncol
             puv = prj_gamma( v[:,ii], v[:,jj] )
-            println("puv = ", puv)
+            #println("puv = ", puv)
             v[:,jj] = v[:,jj] - puv*v[:,ii]
         end
     end
