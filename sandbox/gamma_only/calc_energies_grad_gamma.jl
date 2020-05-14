@@ -6,9 +6,15 @@ function calc_energies_grad!(
     Hsub::Vector{Matrix{ComplexF64}}
 )
 
+    ortho_check(psis)
+
+    println("dot(psis,psis) = ", dot_BlochWavefuncGamma(psis,psis))
+
     Rhoe = calc_rhoe( Ham, psis )
     update!( Ham, Rhoe )
     
+    println("integ Rhoe = ", sum(Rhoe)*Ham.pw.CellVolume/prod(Ham.pw.Ns))
+
     #println("Rhoe = ", Rhoe[1,1])
     #println("Rhoe = ", Rhoe[2,1])
 

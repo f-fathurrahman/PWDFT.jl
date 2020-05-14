@@ -159,14 +159,12 @@ function ortho_check_gamma( psi::Array{ComplexF64,2} )
     Nstates = size(psi)[2]
     @printf("\nNorm check:\n")
     for ist = 1:Nstates
-        c = dot( psi[:,ist], psi[:,ist] )
-        c = c + conj(c)
+        c = 2*dot( psi[:,ist], psi[:,ist] ) - conj(psi[1,ist])*psi[1,ist]
         @printf("State: #%5d: (%18.10f,%18.10f)\n", ist, c.re, c.im)
     end
     @printf("\nOrtho check w.r.t state #1:\n")
     for ist = 2:Nstates
-        c = dot( psi[:,ist], psi[:,1] )
-        c = c + conj(c)
+        c = 2*dot( psi[:,ist], psi[:,1] ) - conj(psi[1,ist])*psi[1,1]
         @printf("State: #%5d: (%18.10f,%18.10f)\n", ist, c.re, c.im)
     end
     @printf("\n")

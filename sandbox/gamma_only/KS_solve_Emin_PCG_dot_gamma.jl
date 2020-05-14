@@ -118,7 +118,7 @@ function KS_solve_Emin_PCG_dot!(
         constrain_search_dir!( d, psis )
 
         α = linmin_grad!( Ham, psis, g, d )
-        #println("α = ", α)
+        println("α = ", α)
 
         Rhoe_old = copy(Ham.rhoe)
         
@@ -127,7 +127,7 @@ function KS_solve_Emin_PCG_dot!(
             psis.data[i] = psis.data[i] + α*d.data[i]
             ortho_GS_gamma!( psis.data[i] )
         end
-        #ortho_check(psis)
+
         Etot = calc_energies_grad!( Ham, psis, g, Kg, Hsub )
         
         diffE = Etot_old - Etot
@@ -140,11 +140,11 @@ function KS_solve_Emin_PCG_dot!(
             println("*** WARNING: Etot is not decreasing")
         end
 
-        #if abs(diffE) < etot_conv_thr
-        #    Nconverges = Nconverges + 1
-        #else
-        #    Nconverges = 0
-        #end
+        if abs(diffE) < etot_conv_thr
+            Nconverges = Nconverges + 1
+        else
+            Nconverges = 0
+        end
 
         if Nconverges >= 2
             @printf("\nEmin_PCG_dot is converged in iter: %d\n", iter)

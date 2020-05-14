@@ -1,7 +1,7 @@
 import PWDFT: calc_rhoe!, calc_rhoe
 
 function calc_rhoe!(
-    Ham::HamiltonianGamma, psis::BlochWavefuncGamma, Rhoe::Array{Float64,2}; renormalize=true
+    Ham::HamiltonianGamma, psis::BlochWavefuncGamma, Rhoe::Array{Float64,2}; renormalize=false
 )
 
     pw = Ham.pw
@@ -28,11 +28,14 @@ function calc_rhoe!(
         psiR .= 0.0 + im*0.0
         
         # Transform to real space
-        for ist in 1:Nstates, igw in 2:Ngw
-            ip = idx_gw2r[igw]
-            ipm = idx_gw2rm[igw]
-            psiR[ip,ist] = psis.data[ispin][igw,ist]
-            psiR[ipm,ist] = conj(psis.data[ispin][igw,ist])
+        for ist in 1:Nstates
+            psiR[1,ist] = psis.data[ispin][1,ist]
+            for igw in 2:Ngw
+                ip = idx_gw2r[igw]
+                ipm = idx_gw2rm[igw]
+                psiR[ip,ist] = psis.data[ispin][igw,ist]
+                psiR[ipm,ist] = conj(psis.data[ispin][igw,ist])
+            end
         end
         
         G_to_R!(pw, psiR)
@@ -69,7 +72,7 @@ function calc_rhoe!(
 end
 
 # TODO: Remove type annotation
-function calc_rhoe( Ham::HamiltonianGamma, psis::BlochWavefuncGamma; renormalize=true )
+function calc_rhoe( Ham::HamiltonianGamma, psis::BlochWavefuncGamma; renormalize=false )
     Npoints = prod(Ham.pw.Ns)
     Nspin = Ham.electrons.Nspin
     Rhoe = zeros(Float64, Npoints, Nspin)
