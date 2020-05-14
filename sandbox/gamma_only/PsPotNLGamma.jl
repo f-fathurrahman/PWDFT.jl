@@ -113,7 +113,20 @@ end
 
 function calc_betaNL_psi( pspotNL::PsPotNLGamma, psi::Array{ComplexF64,2} )
     c = psi' * pspotNL.betaNL
-    return conj( c + conj(c) )
+    
+    Nstates = size(psi,2)
+    v1 = zeros(ComplexF64,Nstates)
+    for ist in 1:Nstates
+        v1[ist] = psi[1,ist]
+    end
+    
+    NbetaNL = size(pspotNL.betaNL,2)
+    v2 = zeros(ComplexF64,NbetaNL)
+    for i in 1:NbetaNL
+        v2[i] = pspotNL.betaNL[1,i]
+    end
+    
+    return conj( c + conj(c) - v1*v2' )
     #return 2*c
 end
 
