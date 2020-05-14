@@ -60,7 +60,7 @@ function calc_grad!(
         v2[ist] = real(Hψ[1,ist])
     end
 
-    Hsub = Hsub + conj(Hsub) - v1*v2'
+    Hsub[:] = Hsub + conj(Hsub) - v1*v2'
     Hψ = Hψ - ψ*Hsub
 
     for ist in 1:Nstates

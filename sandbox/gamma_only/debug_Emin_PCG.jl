@@ -40,13 +40,13 @@ function test_01()
 
     Random.seed!(1234)
 
-    atoms = Atoms( xyz_file=joinpath(DIR_STRUCTURES, "H2.xyz"),
-                   LatVecs = gen_lattice_sc(16.0) )
-    pspfiles = [joinpath(DIR_PSP, "H-q1.gth")]
+    #atoms = Atoms( xyz_file=joinpath(DIR_STRUCTURES, "H2.xyz"),
+    #               LatVecs = gen_lattice_sc(16.0) )
+    #pspfiles = [joinpath(DIR_PSP, "H-q1.gth")]
     
-    #atoms = Atoms( ext_xyz_file=joinpath(DIR_STRUCTURES, "NH3.xyz") )
-    #pspfiles = [joinpath(DIR_PSP, "N-q5.gth"),
-    #            joinpath(DIR_PSP, "H-q1.gth")]
+    atoms = Atoms( ext_xyz_file=joinpath(DIR_STRUCTURES, "NH3.xyz") )
+    pspfiles = [joinpath(DIR_PSP, "N-q5.gth"),
+                joinpath(DIR_PSP, "H-q1.gth")]
 
     #
     # Initialize Hamiltonian
@@ -153,7 +153,7 @@ function test_01()
     Etot_old = Etot
     Etot_old_ = Etot_
 
-    for iter in 1:10
+    for iter in 1:2
 
         println()
         @printf("================\n")
