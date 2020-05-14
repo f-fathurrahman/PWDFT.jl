@@ -57,9 +57,9 @@ function test_01()
     psis = randn_BlochWavefuncGamma(Ham)
     psiks = unfold_BlochWavefuncGamma( Ham.pw, Ham_.pw, psis )
 
-    #KS_solve_Emin_PCG_dot!( Ham, psis, NiterMax=50 )
+    KS_solve_Emin_PCG_dot!( Ham, psis, NiterMax=50 )
 
-    KS_solve_Emin_PCG_dot!( Ham_, psiks, startingrhoe=:random, skip_initial_diag=true, NiterMax=50 )
+    #KS_solve_Emin_PCG_dot!( Ham_, psiks, startingrhoe=:random, skip_initial_diag=true, NiterMax=50 )
     #KS_solve_Emin_PCG!( Ham_, psiks, startingrhoe=:random, skip_initial_diag=true )
 
 end
