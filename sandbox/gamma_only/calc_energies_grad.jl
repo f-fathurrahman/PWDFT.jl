@@ -98,18 +98,37 @@ function calc_grad!( Ham::Hamiltonian, ψ::Array{ComplexF64,2}, g::Array{Complex
     Hψ = op_H( Ham, ψ )
     Hsub = ψ' * Hψ
     Hψ = Hψ - ψ*Hsub
-
-    NkFull = prod(Ham.pw.gvecw.kpoints.mesh)
     for ist in 1:Nstates
-        g[:,ist] = wk_ik * Focc[ist,ikspin] * Hψ[:,ist] #/ sqrt(wk_ik*NkFull)
-        #g[:,ist] = wk_ik * Hψ[:,ist]
-        #g[:,ist] = Hψ[:,ist]/wk_ik
-        #g[:,ist] = Focc[ist,ikspin] * Hψ[:,ist]
+        g[:,ist] = wk_ik * Focc[ist,ikspin] * Hψ[:,ist]
+    end
+    return
+end
+
+function calc_grad!( Ham::Hamiltonian, ψ::Array{ComplexF64,2}, g::Array{ComplexF64,2}, Hsub::Array{ComplexF64,2} )
+
+    ik = Ham.ik
+    ispin = Ham.ispin
+
+    Nstates = size(ψ,2)
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+    ikspin = ik + (ispin - 1)*Nkpt
+    Focc = Ham.electrons.Focc
+    wk_ik = Ham.pw.gvecw.kpoints.wk[ik]
+
+    Hψ = op_H( Ham, ψ )
+
+    #println("Hψ[1,1] = ", Hψ[1,1])
+
+    Hsub[:] = ψ' * Hψ
+    Hψ = Hψ - ψ*Hsub
+    for ist in 1:Nstates
+        g[:,ist] = wk_ik * Focc[ist,ikspin] * Hψ[:,ist]
     end
 
     return
 
 end
+
 
 function Kprec!( ik::Int64, pw::PWGrid, psi::Array{ComplexF64,2}, Kpsi::Array{ComplexF64,2} )
 

@@ -57,24 +57,28 @@ function test_01()
     psis = randn_BlochWavefuncGamma(Ham)
     psiks = unfold_BlochWavefuncGamma( Ham.pw, Ham_.pw, psis )
 
-    KS_solve_Emin_PCG_dot!( Ham, psis, NiterMax=50 )
+    #KS_solve_Emin_PCG_dot!( Ham, psis, NiterMax=50 )
 
-    #KS_solve_Emin_PCG_dot!( Ham_, psiks, startingrhoe=:random, skip_initial_diag=true, NiterMax=50 )
+    KS_solve_Emin_PCG_dot!( Ham_, psiks, startingrhoe=:random, skip_initial_diag=true, NiterMax=50 )
     #KS_solve_Emin_PCG!( Ham_, psiks, startingrhoe=:random, skip_initial_diag=true )
 
 end
 
 #=
-Kinetic    energy:       8.0785591277
-Ps_loc     energy:     -31.8301682150
-Ps_nloc    energy:       0.9804183905
-Hartree    energy:      11.8324308638
-XC         energy:      -3.4421445627
+-------------------------
+Final Kohn-Sham energies:
+-------------------------
+
+Kinetic    energy:       8.0684717780
+Ps_loc     energy:     -31.8615867485
+Ps_nloc    energy:       0.9939824683
+Hartree    energy:      11.8381690079
+XC         energy:      -3.4429618488
 -------------------------------------
-Electronic energy:     -14.3809043957
+Electronic energy:     -14.4039253430
 NN         energy:       3.1331525188
 -------------------------------------
-Total      energy:     -11.2477518770
+Total      energy:     -11.2707728243
 =#
 
 test_01()

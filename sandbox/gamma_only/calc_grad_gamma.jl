@@ -19,11 +19,11 @@ function calc_grad!( Ham::HamiltonianGamma, ψ::Array{ComplexF64,2}, g::Array{Co
     Hψ = op_H( Ham, ψ )
     Hsub = ψ' * Hψ
 
-    v1 = zeros(Float64,Nstates)
-    v2 = zeros(Float64,Nstates)
+    v1 = zeros(ComplexF64,Nstates)
+    v2 = zeros(ComplexF64,Nstates)
     for ist in 1:Nstates
-        v1[ist] = real(ψ[1,ist])
-        v2[ist] = real(Hψ[1,ist])
+        v1[ist] = ψ[1,ist]
+        v2[ist] = Hψ[1,ist]
     end
 
     Hsub = Hsub + conj(Hsub) - v1*v2'
@@ -51,16 +51,23 @@ function calc_grad!(
     Focc = Ham.electrons.Focc
 
     Hψ = op_H( Ham, ψ )
+
+    #println("Hψ[1,1] = ", Hψ[1,1])
+
     Hsub[:] = ψ' * Hψ
     
-    v1 = zeros(Float64,Nstates)
-    v2 = zeros(Float64,Nstates)
+    v1 = zeros(ComplexF64,Nstates)
+    v2 = zeros(ComplexF64,Nstates)
     for ist in 1:Nstates
-        v1[ist] = real(ψ[1,ist])
-        v2[ist] = real(Hψ[1,ist])
+        v1[ist] = ψ[1,ist]
+        v2[ist] = Hψ[1,ist]
     end
 
     Hsub[:] = Hsub + conj(Hsub) - v1*v2'
+
+    #println("Cross term v1*v2'")
+    #display(v1*v2'); println()
+
     Hψ = Hψ - ψ*Hsub
 
     for ist in 1:Nstates

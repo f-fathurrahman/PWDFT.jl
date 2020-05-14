@@ -24,6 +24,8 @@ include("op_H_gamma.jl")
 include("calc_energies_gamma.jl")
 include("calc_grad_gamma.jl")
 
+include("calc_energies_grad.jl")
+
 include("unfold_BlochWavefuncGamma.jl")
 
 function constrain_search_dir!( d::Vector{Array{ComplexF64,2}}, psiks::Vector{Array{ComplexF64,2}} )
@@ -77,9 +79,19 @@ function test_01()
 
     ispin = 1
 
-    g = calc_grad(Ham, psis.data[1])
+    Nstates = Ham.electrons.Nstates
+    g = zeros(ComplexF64, Ham.pw.gvecw.Ngw, Nstates)
+    g_ = zeros(ComplexF64, Ham_.pw.gvecw.Ngw[1], Nstates)
 
-    g_ = calc_grad(Ham_, psiks[1])
+    Hsub = zeros(ComplexF64, Nstates, Nstates)
+    Hsub_ = zeros(ComplexF64, Nstates, Nstates)
+    
+    calc_grad!(Ham, psis.data[1], g, Hsub)
+
+    calc_grad!(Ham_, psiks[1], g_, Hsub_)
+
+    display(Hsub); println()
+    display(Hsub_); println()
 
     println("\nFirst component:")
     println("g[1,1]  = ", g[1,1])
@@ -93,9 +105,9 @@ function test_01()
     d  = -0.5*deepcopy(g)
     d_ = -0.5*deepcopy(g_)
 
-    println("\nUsing constrain_search_dir:")
-    constrain_search_dir_gamma!(d, psis.data[1])
-    constrain_search_dir!(d_, psiks[1])
+    #println("\nUsing constrain_search_dir:")
+    #constrain_search_dir_gamma!(d, psis.data[1])
+    #constrain_search_dir!(d_, psiks[1])
 
     println("\nFirst component:")
     println("g[1,1]  = ", d[1,1])

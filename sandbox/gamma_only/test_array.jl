@@ -369,22 +369,32 @@ function test_matrix3()
     C = psi1g' * psi2g
     U12g = C + conj(C)
 
-    v1g = zeros(Float64,Nstates)
-    v2g = zeros(Float64,Nstates)
+    v1g = zeros(ComplexF64,Nstates)
+    v2g = zeros(ComplexF64,Nstates)
     for ist in 1:Nstates
-        v1g[ist] = real(psi1g[1,ist])
-        v2g[ist] = real(psi2g[1,ist])
+        v1g[ist] = psi1g[1,ist]
+        v2g[ist] = psi2g[1,ist]
     end
 
     println()
     println("U12 and U12")
     display(U12); println()
-    display(U12g); println()
+    #display(U12g); println()
 
     uu = v1g*v2g'
-    display(uu); println()
+    #display(uu); println()
 
-    display(U12g - uu); println()
+    U12g = U12g - uu
+    display(U12g); println()
+
+    println()
+    println("Test multiply with U")
+
+    println("\npsi1*U12")
+    display(psi1*U12); println()
+
+    println("\npsi1g")
+    display(psi1g*U12g); println()
 
 end
 test_matrix3()
