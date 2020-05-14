@@ -13,14 +13,17 @@ function ortho_GS_gamma( vin::Array{ComplexF64,2} )
 end
 
 function ortho_GS_gamma!( v::Array{ComplexF64,2} )
-    println()
-    println("Entering ortho_GS_gamma:")
+    #println()
+    #println("Entering ortho_GS_gamma:")
     
     Ncol = size(v)[2]
     
     for ii = 1:Ncol
         
-        zz = 2*dot( v[:,ii], v[:,ii] ) - conj(v[1,ii])*v[1,ii]        
+        #zz = 2*dot( v[:,ii], v[:,ii] ) - conj(v[1,ii])*v[1,ii]
+        c = dot(v[:,ii], v[:,ii])
+        zz = c + conj(c) - conj(v[1,ii])*v[1,ii]
+
         v[:,ii] = v[:,ii]/sqrt(zz)
         
         #println("ii = ", ii, " zz = ", zz)
@@ -35,7 +38,15 @@ function ortho_GS_gamma!( v::Array{ComplexF64,2} )
 end
 
 function prj_gamma( u, v )
-    num = 2*dot( u, v ) - conj(u[1])*v[1]
-    denum = 2*dot( u, u ) - conj(u[1])*u[1]
-    return real(num/denum)
+    c = dot(u,v)
+    num = c + conj(c) - conj(u[1])*v[1]
+    
+    c = dot(u,u)
+    denum = c + conj(c) - conj(u[1])*u[1]
+    
+    return num/denum
+
+    #num = 2*dot( u, v ) - conj(u[1])*v[1]
+    #denum = 2*dot( u, u ) - conj(u[1])*u[1]
+    #return real(num/denum)
 end
