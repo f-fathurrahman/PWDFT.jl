@@ -164,8 +164,8 @@ struct PWGridGamma
     CellVolume::Float64
     gvec::GVectorsGamma
     gvecw::GVectorsWGamma
-    planfw::FFTW.cFFTWPlan{Complex{Float64},-1,false,3}
-    planbw::AbstractFFTs.ScaledPlan{Complex{Float64},FFTW.cFFTWPlan{Complex{Float64},1,false,3},Float64}
+    planfw
+    planbw
 end
 
 
