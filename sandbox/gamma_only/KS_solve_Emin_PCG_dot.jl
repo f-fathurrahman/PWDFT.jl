@@ -80,15 +80,15 @@ function KS_solve_Emin_PCG_dot!(
 
         gKnorm = dot_BlochWavefunc(g, Kg)
         
-        #if !force_grad_dir    
-        #    dotgd = dot_BlochWavefunc(g, d)
-        #    if gPrevUsed
-        #        dotgPrevKg = dot_BlochWavefunc(gPrev, Kg)
-        #    else
-        #        dotgPrevKg = 0.0
-        #    end
-        #    β = (gKnorm - dotgPrevKg)/gKnormPrev # Polak-Ribiere
-        #end
+        if !force_grad_dir    
+            dotgd = dot_BlochWavefunc(g, d)
+            if gPrevUsed
+                dotgPrevKg = dot_BlochWavefunc(gPrev, Kg)
+            else
+                dotgPrevKg = 0.0
+            end
+            β = (gKnorm - dotgPrevKg)/gKnormPrev # Polak-Ribiere
+        end
 
         if β < 0.0
             println("Resetting β")
@@ -109,12 +109,16 @@ function KS_solve_Emin_PCG_dot!(
 
         constrain_search_dir!( d, psiks )
 
-        _, α = linmin_grad!( Ham, psiks, g, d, Etot )
+        α = linmin_grad!( Ham, psiks, g, d, Etot )
 
         Rhoe_old = copy(Ham.rhoe)
 
         # Update psiks
-        do_step!( psiks, α, d )
+        #do_step!( psiks, α, d )
+        for i in 1:Nspin
+            psiks[i] = psiks[i] + α*d[i]
+            ortho_sqrt!( psiks[i] )
+        end
         #println("α = ", α)
         
         # Calculate rhoe, update rhoe, calc energies and grad
