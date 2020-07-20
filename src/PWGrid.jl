@@ -21,6 +21,9 @@ struct GVectorsW
     kpoints::KPoints
 end
 
+const PLANFW_TYPE = typeof(plan_fft(zeros(ComplexF64,(1,1,1))))
+const PLANBW_TYPE = typeof(plan_ifft(zeros(ComplexF64,(1,1,1))))
+
 """
 The type for describing plane wave basis set for a given periodic unit cell.
 """
@@ -33,9 +36,11 @@ struct PWGrid
     CellVolume::Float64
     gvec::GVectors
     gvecw::GVectorsW
-    planfw
-    planbw
+    planfw::PLANFW_TYPE
+    planbw::PLANBW_TYPE
 end
+
+# Adding type annotation to planfw and planbw can reduce number of allocations
 
 """
     pw = PWGrid( ecutwfc, LatVecs [, kpoints] )
