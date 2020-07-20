@@ -122,6 +122,8 @@ export calc_E_NN
 include("XCCalculator.jl")
 export AbstractXCCalculator, XCCalculator, LibxcXCCalculator
 
+include("Libxc_old.jl")
+
 include("LDA_VWN.jl")
 export calc_epsxc_VWN, calc_Vxc_VWN
 

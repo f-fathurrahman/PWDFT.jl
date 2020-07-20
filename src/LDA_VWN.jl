@@ -1,5 +1,3 @@
-using Libxc
-
 function calc_epsxc_VWN( xc_calc::LibxcXCCalculator, Rhoe::Array{Float64,1} )
 
     Npoints = size(Rhoe)[1]
@@ -7,20 +5,20 @@ function calc_epsxc_VWN( xc_calc::LibxcXCCalculator, Rhoe::Array{Float64,1} )
     eps_x = zeros(Float64,Npoints)
     eps_c = zeros(Float64,Npoints)
 
-    ptr = Libxc.xc_func_alloc()
+    ptr = Libxc_xc_func_alloc()
     # exchange part
-    Libxc.xc_func_init(ptr, Libxc.LDA_X, Nspin)
-    Libxc.xc_lda_exc!(ptr, Npoints, Rhoe, eps_x)
-    Libxc.xc_func_end(ptr)
+    Libxc_xc_func_init(ptr, 1, Nspin)  # LDA_X
+    Libxc_xc_lda_exc!(ptr, Npoints, Rhoe, eps_x)
+    Libxc_xc_func_end(ptr)
 
     #
     # correlation part
-    Libxc.xc_func_init(ptr, Libxc.LDA_C_VWN, Nspin)
-    Libxc.xc_lda_exc!(ptr, Npoints, Rhoe, eps_c)
-    Libxc.xc_func_end(ptr)
+    Libxc_xc_func_init(ptr, 7, Nspin) # LDA_C_VWN
+    Libxc_xc_lda_exc!(ptr, Npoints, Rhoe, eps_c)
+    Libxc_xc_func_end(ptr)
 
     #
-    Libxc.xc_func_free(ptr)
+    Libxc_xc_func_free(ptr)
 
     return eps_x + eps_c
 
@@ -52,20 +50,20 @@ function calc_epsxc_VWN( xc_calc::LibxcXCCalculator, Rhoe::Array{Float64,2} )
     eps_x = zeros(Float64,Npoints)
     eps_c = zeros(Float64,Npoints)
 
-    ptr = Libxc.xc_func_alloc()
+    ptr = Libxc_xc_func_alloc()
     # exchange part
-    Libxc.xc_func_init(ptr, Libxc.LDA_X, Nspin)
-    Libxc.xc_lda_exc!(ptr, Npoints, Rhoe_tmp, eps_x)
-    Libxc.xc_func_end(ptr)
+    Libxc_xc_func_init(ptr, 1, Nspin)
+    Libxc_xc_lda_exc!(ptr, Npoints, Rhoe_tmp, eps_x)
+    Libxc_xc_func_end(ptr)
 
     #
     # correlation part
-    Libxc.xc_func_init(ptr, Libxc.LDA_C_VWN, Nspin)
-    Libxc.xc_lda_exc!(ptr, Npoints, Rhoe_tmp, eps_c)
-    Libxc.xc_func_end(ptr)
+    Libxc_xc_func_init(ptr, 7, Nspin)
+    Libxc_xc_lda_exc!(ptr, Npoints, Rhoe_tmp, eps_c)
+    Libxx_xc_func_end(ptr)
 
     #
-    Libxc.xc_func_free(ptr)
+    Libxc_xc_func_free(ptr)
 
     return eps_x + eps_c
 end
@@ -78,20 +76,20 @@ function calc_Vxc_VWN( xc_calc::LibxcXCCalculator, Rhoe::Array{Float64,1} )
     v_x = zeros(Float64,Npoints)
     v_c = zeros(Float64,Npoints)
 
-    ptr = Libxc.xc_func_alloc()
+    ptr = Libxc_xc_func_alloc()
     # exchange part
-    Libxc.xc_func_init(ptr, Libxc.LDA_X, Nspin)
-    Libxc.xc_lda_vxc!(ptr, Npoints, Rhoe, v_x)
-    Libxc.xc_func_end(ptr)
+    Libxc_xc_func_init(ptr, 1, Nspin)
+    Libxc_xc_lda_vxc!(ptr, Npoints, Rhoe, v_x)
+    Libxc_xc_func_end(ptr)
 
     #
     # correlation part
-    Libxc.xc_func_init(ptr, Libxc.LDA_C_VWN, Nspin)
-    Libxc.xc_lda_vxc!(ptr, Npoints, Rhoe, v_c)
-    Libxc.xc_func_end(ptr)
+    Libxc_xc_func_init(ptr, 7, Nspin)
+    Libxc_xc_lda_vxc!(ptr, Npoints, Rhoe, v_c)
+    Libxc_xc_func_end(ptr)
 
     #
-    Libxc.xc_func_free(ptr)
+    Libxc_xc_func_free(ptr)
 
     return v_x + v_c
 
@@ -123,20 +121,20 @@ function calc_Vxc_VWN( xc_calc::LibxcXCCalculator, Rhoe::Array{Float64,2} )
         Rhoe_tmp[ip+1] = Rhoe[ipp,2]
     end
 
-    ptr = Libxc.xc_func_alloc()
+    ptr = Libxc_xc_func_alloc()
     # exchange part
-    Libxc.xc_func_init(ptr, Libxc.LDA_X, Nspin)
-    Libxc.xc_lda_vxc!(ptr, Npoints, Rhoe_tmp, V_x)
-    Libxc.xc_func_end(ptr)
+    Libxc_xc_func_init(ptr, 1, Nspin)
+    Libxc_xc_lda_vxc!(ptr, Npoints, Rhoe_tmp, V_x)
+    Libxc_xc_func_end(ptr)
 
     #
     # correlation part
-    Libxc.xc_func_init(ptr, Libxc.LDA_C_VWN, Nspin)
-    Libxc.xc_lda_vxc!(ptr, Npoints, Rhoe_tmp, V_c)
-    Libxc.xc_func_end(ptr)
+    Libxc_xc_func_init(ptr, 7, Nspin)
+    Libxc_xc_lda_vxc!(ptr, Npoints, Rhoe_tmp, V_c)
+    Libxc_xc_func_end(ptr)
 
     #
-    Libxc.xc_func_free(ptr)
+    Libxc_xc_func_free(ptr)
 
     ipp = 0
     for ip = 1:2:2*Npoints
