@@ -81,6 +81,12 @@ function run_pwdft_jl( Ham )
     return sum(Ham.energies), forces
 end
 
+function run_pwdft_jl!( Ham, psiks )
+    KS_solve_Emin_PCG_vec!( Ham, psiks, skip_initial_diag=true )
+    forces = calc_forces( Ham, psiks )
+    return sum(Ham.energies), forces
+end
+
 function main()
     
     Ham = init_Ham_H2O()
@@ -89,7 +95,10 @@ function main()
     Natoms = Ham.atoms.Natoms
     
     #energies, forces = run_pwscf(Ham)
-    energies, forces = run_pwdft_jl(Ham)
+    #energies, forces = run_pwdft_jl(Ham)
+
+    psiks = rand_BlochWavefunc(Ham)
+    energies, forces = run_pwdft_jl!(Ham, psiks)
 
     println("Initial r  =")
     display(Ham.atoms.positions'); println()
@@ -130,7 +139,8 @@ function main()
 
         energies_old = energies
         #energies, forces = run_pwscf(Ham)
-        energies, forces = run_pwdft_jl(Ham)
+        #energies, forces = run_pwdft_jl(Ham)
+        energies, forces = run_pwdft_jl!(Ham, psiks)
         
         @printf("\nIter = %3d, Etot = %18.10f\n", iter, sum(energies))
         println("Forces = ")
