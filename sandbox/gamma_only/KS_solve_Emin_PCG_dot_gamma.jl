@@ -117,7 +117,7 @@ function KS_solve_Emin_PCG_dot!(
         constrain_search_dir!( d, psis )
 
         α = linmin_grad!( Ham, psis, g, d )
-        println("α = ", α)
+        #println("α = ", α)
 
         Rhoe_old = copy(Ham.rhoe)
         

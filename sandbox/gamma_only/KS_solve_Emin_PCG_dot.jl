@@ -115,7 +115,7 @@ function KS_solve_Emin_PCG_dot!(
 
         # Update psiks
         do_step!( psiks, α, d )
-        println("α = ", α)
+        #println("α = ", α)
         
         # Calculate rhoe, update rhoe, calc energies and grad
         Etot = calc_energies_grad!( Ham, psiks, g, Kg )
