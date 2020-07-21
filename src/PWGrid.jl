@@ -273,6 +273,9 @@ end
 """
 Creates uniform real-space grid points for a given sampling points `Ns`
 and `LatVecs`
+
+NOTE: This is no longer used in the PWGrid constructor. It is kept here for
+in case we need an explicit real space grid.
 """
 function init_grid_R( Ns, LatVecs )
     #
