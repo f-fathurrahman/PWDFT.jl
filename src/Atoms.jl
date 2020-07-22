@@ -11,6 +11,7 @@ mutable struct Atoms
     SpeciesSymbols::Array{String,1}  # unique symbols
     LatVecs::Array{Float64,2}
     Zvals::Array{Float64,1}   # unique
+    masses::Array{Float64,1}
 end
 
 
@@ -69,7 +70,9 @@ function Atoms( ;xyz_file="", xyz_string="", xyz_string_frac="", ext_xyz_file=""
         atsymbs = ["X"]
         SpeciesSymbols = ["X"]  # unique symbols
         Zvals = zeros(Nspecies)
-        return Atoms( Natoms, Nspecies, positions, atm2species, atsymbs, SpeciesSymbols, LatVecs, Zvals )
+        masses = zeros(Nspecies)
+        return Atoms( Natoms, Nspecies, positions, atm2species, atsymbs,
+                      SpeciesSymbols, LatVecs, Zvals, masses )
     end
 
 end
@@ -127,7 +130,9 @@ function init_atoms_xyz_ext( xyz_file; in_bohr=false, verbose=false )
     atm2species = get_atm2species( atsymbs, SpeciesSymbols )
 
     Zvals = zeros(Nspecies)
-    return Atoms(Natoms, Nspecies, positions, atm2species, atsymbs, SpeciesSymbols, LatVecs, Zvals )
+    masses = zeros(Nspecies)
+    return Atoms( Natoms, Nspecies, positions, atm2species, atsymbs,
+                  SpeciesSymbols, LatVecs, Zvals, masses )
 
 end
 
@@ -174,7 +179,9 @@ function init_atoms_xyz(xyz_file; in_bohr=false, verbose=false)
 
     LatVecs = 10.0*[1.0 0.0 0.0; 0.0 1.0 0.0; 0.0 0.0 1.0]
     Zvals = zeros(Nspecies)
-    return Atoms(Natoms, Nspecies, positions, atm2species, atsymbs, SpeciesSymbols, LatVecs, Zvals )
+    masses = zeros(Nspecies)
+    return Atoms( Natoms, Nspecies, positions, atm2species, atsymbs,
+                  SpeciesSymbols, LatVecs, Zvals, masses )
 
 end
 
@@ -220,7 +227,9 @@ function init_atoms_xyz_string(str::String; in_bohr=false, verbose=false)
 
     LatVecs = zeros(3,3)
     Zvals = zeros(Nspecies)
-    return Atoms(Natoms, Nspecies, positions, atm2species, atsymbs, SpeciesSymbols, LatVecs, Zvals )
+    masses = zeros(Nspecies)
+    return Atoms( Natoms, Nspecies, positions, atm2species, atsymbs,
+                  SpeciesSymbols, LatVecs, Zvals, masses )
     
 end
 
