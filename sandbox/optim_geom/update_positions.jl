@@ -1,3 +1,4 @@
+# Update the Ham.atoms.positions, local and nonlocal pseudopotentials
 function update_positions!( Ham::Hamiltonian, new_pos::Array{Float64,2} )
     Ham.atoms.positions[:] = new_pos[:]
 
@@ -43,8 +44,6 @@ function update_positions!( Ham::Hamiltonian, new_pos::Array{Float64,2} )
     Ham.potentials.Ps_loc[:] = V_Ps_loc[:]
 
     Ham.pspotNL = PsPotNL( Ham.atoms, Ham.pw, pspots, check_norm=false )
-
-    println("Pass here in update_positions.")
 
     return
 end
