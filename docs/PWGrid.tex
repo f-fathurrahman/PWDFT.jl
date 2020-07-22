@@ -126,10 +126,25 @@ There are two mandatory arguments: \jlinline{ecutwfc} and \jlinline{LatVecs}.
 \jlinline{LatVecs} is usually correspond to the one used in an
 instance of \jlinline{Atoms}.
 
-Structure factor
+Structure factor for atomic species $I_{s}$ is calculated as
+\begin{equation}
+S_{f}(\mathbf{G},I_{s}) = \sum_{I} \exp\left[\mathbf{G} \cdot \mathbf{R}_{I_s}\right]
+\end{equation}
+where the summation is done over all atoms of species $I_s$.
 
-FFT
+Fast Fourier transforms are used to change the representation of a quantity from
+real space to reciprocal space and \textit{vice versa}. They are:
+\begin{itemize}
+\item \jlinline{R_to_G}
+\item \jlinline{G_to_R}
+\end{itemize}
+and also their inplace counterparts (\jlinline{R_to_G!} and \jlinline{G_to_R!}).
 
 operators op nabla op nabla 2
 
+
+The \jlinline{KPoints} struct stores variables related to $\mathbf{k}$-points
+list.
 \input{images/KPoints_struct}
+For a total energy calculation, the list of $\mathbf{k}$-points is
+generated using Monkhorst-Pack scheme.

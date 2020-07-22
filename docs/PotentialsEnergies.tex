@@ -1,6 +1,6 @@
 \section{Potentials and energies}
 
-In KSDFT approach \cite{Hohenberg1964,Kohn1965}, total energy per unit cell system
+Total energy per unit cell system
 $E^{\mathrm{KS}}_{\mathrm{total}}$ can be written as
 \begin{equation}
 E^{\mathrm{KS}}_{\mathrm{total}} =
@@ -32,14 +32,75 @@ Function: \jlinline{calc_rhoe!} and \jlinline{calc_rhoe}.
 \subsection{Kinetic energy}
 
 Kinetic energy:
+\begin{equation}
+E_{\mathrm{kin}} = -\frac{1}{2} \sum_{\mathbf{k}} \sum_{i}
+w_{\mathbf{k}} f_{i\mathbf{k}}
+\int_{\Omega}
+\psi^{*}_{i\mathbf{k}}(\mathbf{r})
+\nabla^2
+\psi_{i\mathbf{k}}(\mathbf{r})
+\,
+\mathrm{d}\mathbf{r}
+\label{eq:Kin_energy}
+\end{equation}
 
+In reciprocal space:
+\begin{equation}
+E_{\mathrm{kin}} =
+\frac{1}{2} \sum_{\mathbf{k}} \sum_{i=1}^{N_{\mathrm{occ}}}
+w_{\mathbf{k}} f_{i\mathbf{k}}
+\sum_{\mathbf{G}} \left| \mathbf{G} + \mathbf{k} \right|^2
+\left|c_{i,\mathbf{G}+\mathbf{k}}\right|^2
+\end{equation}
 
 
 \subsection{Local and nonlocal pseudopotential energy}
 
+The local pseudopotential contribution is
+\begin{equation}
+E^{\mathrm{PS}}_{\mathrm{loc}} =
+\int_{\Omega} \rho(\mathbf{r})\,V^{\mathrm{PS}}_{\mathrm{loc}}(\mathbf{r})\,
+\mathrm{d}\mathbf{r}
+\end{equation}
+%
+and the non-local contribution is
+\begin{equation}
+E^{\mathrm{PS}}_{\mathrm{nloc}} = 
+\sum_{\mathbf{k}}
+\sum_{i}
+w_{\mathbf{k}}
+f_{i\mathbf{k}}
+\int_{\Omega}\,
+\psi^{*}_{i\mathbf{k}}(\mathbf{r})
+\left[
+\sum_{I}\sum_{l=0}^{l_{\mathrm{max}}}
+V^{\mathrm{PS}}_{l}(\mathbf{r}-\mathbf{R}_{I},\mathbf{r}'-\mathbf{R}_{I})
+\right]
+\psi_{i\mathbf{k}}(\mathbf{r})
+\,\mathrm{d}\mathbf{r}.
+\end{equation}
 
 \subsection{Hartree energy}
 
+\begin{equation}
+E_{\mathrm{Ha}} = \frac{1}{2}
+\int_{\Omega}
+V_{\mathrm{Ha}}(\mathbf{r})\rho(\mathbf{r})\,
+\mathrm{d}\mathbf{r}
+\end{equation}
+where the Hartree potential $V_{\mathrm{Ha}}$ is defined as
+\begin{equation}
+V_{\mathrm{Ha}}(\mathbf{r}) =
+\int_{\Omega}
+\frac{\rho(\mathbf{r}')}{\mathbf{r} - \mathbf{r}'}
+\,\mathrm{d}\mathbf{r}'
+\end{equation}
+Alternatively, $V_{\mathrm{Ha}}$ can be calculated as the solution of Poisson
+equation
+\begin{equation}
+\nabla^2 V_{\mathrm{Ha}}(\mathbf{r}) =
+-4\pi\rho(\mathbf{r})
+\end{equation}
 
 \subsection{XC energy and potential}
 
@@ -51,7 +112,7 @@ For LDA we have:
 \begin{align}
 E_{\mathrm{xc}}\left[\rho_{\sigma}\right] & = \int \epsilon^{\mathrm{HEG}}_{\mathrm{xc}}
 \left[ \rho_{\sigma}(\mathbf{r}) \right]
-\rho_{\mathrm{tot}}(\mathbf{r})\, \mathrm{d}\mathbf{r} \\
+\rho_{\text{tot}}(\mathbf{r})\, \mathrm{d}\mathbf{r} \\
 & = \int \left\{
 \epsilon^{\mathrm{HEG}}_{\mathrm{x}} \left[ \rho_{\sigma}(\mathbf{r}) \right] +
 \epsilon^{\mathrm{HEG}}_{\mathrm{c}} \left[ \rho_{\sigma}(\mathbf{r}) \right]

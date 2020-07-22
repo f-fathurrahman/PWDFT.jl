@@ -101,9 +101,9 @@ calc_rhoe!( Ham, psiks, Rhoe )
 Write to binary files:
 \begin{juliacode}
 for ikspin = 1:Nkpt*Nspin
-    wfc_file = open("WFC_ikspin_"*string(ikspin)*".data","w")
-    write( wfc_file, psiks[ikspin] )
-    close( wfc_file )
+  wfc_file = open("WFC_ikspin_"*string(ikspin)*".data","w")
+  write( wfc_file, psiks[ikspin] )
+  close( wfc_file )
 end
 \end{juliacode}
 
@@ -111,12 +111,12 @@ Read from binary files:
 \begin{juliacode}
 psiks = BlochWavefunc(undef,Nkpt)
 for ispin = 1:Nspin, ik = 1:Nkpt
-    ikspin = ik + (ispin-1)*Nkpt
-    # Don't forget to use read mode
-    wfc_file = open("WFC_ikspin_"*string(ikspin)*".data","r")
-    psiks[ikspin] = Array{ComplexF64}(undef,Ngw[ik],Nstates)
-    psiks[ikspin] = read!( wfc_file, psiks[ikspin] )
-    close( wfc_file )
+  ikspin = ik + (ispin-1)*Nkpt
+  # Don't forget to use read mode
+  wfc_file = open("WFC_ikspin_"*string(ikspin)*".data","r")
+  psiks[ikspin] = Array{ComplexF64}(undef,Ngw[ik],Nstates)
+  psiks[ikspin] = read!( wfc_file, psiks[ikspin] )
+  close( wfc_file )
 end
 \end{juliacode}
 
