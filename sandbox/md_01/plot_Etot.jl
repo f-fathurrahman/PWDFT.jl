@@ -17,4 +17,6 @@ end
 #main("LOG_ETOT1")
 #main("LOG_ETOT2")
 #main("LOG_ETOT3", dt=0.5)
-main("LOG_ETOT4")
+#main("LOG_ETOT4")
+#main("LOG_ETOT5")
+main("LOG_ETOT6")

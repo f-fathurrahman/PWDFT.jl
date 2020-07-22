@@ -100,6 +100,8 @@ function main()
     Etot_conserved = Etot + Ekin_ions
 
     dr = zeros(Float64,3,Natoms)
+    v = zeros(Float64,3,Natoms)
+    vtilde = zeros(Float64,3,Natoms)
     m = Ham.atoms.masses
     atm2species = Ham.atoms.atm2species
 
@@ -108,7 +110,7 @@ function main()
 
     filetraj = open("TRAJ.xyz", "w")
 
-    NiterMax = 10
+    NiterMax = 100
     for iter = 1:NiterMax
 
         @printf(filetraj, "%d  Etot_conserved = %18.10f\n\n", Natoms, Etot_conserved)
@@ -122,16 +124,16 @@ function main()
         end
         flush(filetraj)
 
-        p[:] = p[:] + 0.5*dt*forces[:]
         Ekin_ions = 0.0
         for ia in 1:Natoms
             isp = atm2species[ia]
             ptot2 = 0.0
             for i in 1:3
-                dr[i,ia] = dt*p[i,ia]/m[isp]
-                ptot2 = ptot2 + p[i,ia]*p[i,ia]
+                vtilde[i,ia] = v[i,ia] + 0.5*dt*forces[i,ia]/m[isp]
+                dr[i,ia] = dt*vtilde[i,ia]
+                ptot2 = ptot2 + v[i,ia]^2
             end
-            Ekin_ions = Ekin_ions + 0.5*ptot2/m[isp]
+            Ekin_ions = Ekin_ions + 0.5*m[isp]*ptot2
         end
         Etot_conserved = Etot + Ekin_ions
         update_positions!( Ham, dr )
@@ -139,6 +141,13 @@ function main()
         energies_old = energies
         energies, forces[:] = run_pwdft_jl!(Ham, psiks)
         Etot = sum(energies)
+
+        for ia in 1:Natoms
+            isp = atm2species[ia]
+            for i in 1:3
+                v[i,ia] = vtilde[i,ia] + 0.5*dt*forces[i,ia]/m[isp]
+            end
+        end
         
         @printf("\nIter = %3d, Etot = %18.10f\n", iter, sum(energies))
         println("Forces = ")
