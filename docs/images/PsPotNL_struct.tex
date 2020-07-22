@@ -3,11 +3,11 @@
 \begin{tikzpicture}
 \node[mybox] (box) {%
 \begin{minipage}{0.6\textwidth}%
-\begin{minted}{julia}
+\begin{minted}[fontsize=\footnotesize]{julia}
 struct PsPotNL
-    NbetaNL::Int64
-    prj2beta::Array{Int64,4}
-    betaNL::Array{ComplexF64,3}
+  NbetaNL::Int64
+  prj2beta::Array{Int64,4}
+  betaNL::Array{ComplexF64,3}
 end
 \end{minted}
 \end{minipage}

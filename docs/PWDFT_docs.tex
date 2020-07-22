@@ -6,28 +6,29 @@
 \setlength{\parskip}{\smallskipamount}
 \setlength{\parindent}{0pt}
 
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{braket}
+
 \usepackage{fontspec}
-\setmonofont{FreeMono}
+\setmonofont{DejaVu Sans Mono}
 %\setmonofont{Source Code Pro}
 
 \usepackage{hyperref}
 \usepackage{url}
 \usepackage{xcolor}
 
-\usepackage{amsmath}
-\usepackage{amssymb}
-\usepackage{braket}
-
 \usepackage[normalem]{ulem}
 
 \usepackage{mhchem}
 
 \usepackage{minted}
-\newminted{julia}{breaklines}
-\newminted{text}{breaklines}
+\newminted{julia}{breaklines,fontsize=\footnotesize}
+\newminted{text}{breaklines,fontsize=\footnotesize}
 
-\newcommand{\jlinline}[1]{\mintinline{julia}{#1}}
-\newcommand{\txtinline}[1]{\mintinline{text}{#1}}
+
+\newcommand{\txtinline}[1]{\mintinline[fontsize=\footnotesize]{text}{#1}}
+\newcommand{\jlinline}[1]{\mintinline[fontsize=\footnotesize]{julia}{#1}}
 
 \definecolor{mintedbg}{rgb}{0.90,0.90,0.90}
 \usepackage{mdframed}

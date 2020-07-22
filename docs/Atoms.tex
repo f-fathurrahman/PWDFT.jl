@@ -12,39 +12,16 @@ The type \jlinline{Atoms} contains the following information:
 \jlinline{Atoms} also contains several other fields such as \jlinline{Zvals}
 which will be set according to the pseudopotentials assigned to
 the instance of \jlinline{Atoms}.
-\footnote{Maybe we should include pseudopotential information under the
-\jlinline{Atoms} type. However this would make \jlinline{Atoms} "heavier".}
+\footnote{Not all fields of \jlinline{Atoms} (or any custom types defined in \textsf{PWDFT.jl})
+are listed. The most up to date definition can be consulted in the corresping source code.}
 
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}
-\node[mybox] (box) {%
-\begin{minipage}{0.6\textwidth}%
-\begin{minted}{julia}
-mutable struct Atoms
-    Natoms::Int64
-    Nspecies::Int64
-    positions::Array{Float64,2}
-    atm2species::Array{Int64,1}
-    atsymbs::Array{String,1}
-    SpeciesSymbols::Array{String,1}
-    LatVecs::Array{Float64,2}
-    Zvals::Array{Float64,1}
-end
-\end{minted}
-\end{minipage}
-};
-\node[fancytitle, right=10pt] at (box.north west) {\jlinline{Atoms} struct definition};
-\end{tikzpicture}
-\caption{Definition of \jlinline{Atoms}.}
-\end{figure}
-
+\input{images/Atoms_struct}
 
 \jlinline{LatVecs} is a $3\times3$ matrix. The vectors are stored column-wise which is
 opposite to the PWSCF input convention.
-Convenience functions to calculate lattice vectors for several types of Bravais lattice
-are provided in \textsf{PWDFT.jl}. These functions adopt PWSCF definition. Several
-of these functions are listed below:
+Several convenience functions to generate lattice vectors for Bravais lattices
+are provided in \textsf{PWDFT.jl}. These functions adopt PWSCF definition. Some examples
+are listed below.
 \begin{itemize}
 \item \jlinline{gen_lattice_sc} or \jlinline{gen_lattice_cubic} for generating
 simple cubic lattice vectors.

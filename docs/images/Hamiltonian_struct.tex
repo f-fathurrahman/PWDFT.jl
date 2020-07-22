@@ -3,21 +3,21 @@
 \begin{tikzpicture}
 \node[mybox] (box) {%
 \begin{minipage}{0.6\textwidth}%
-\begin{minted}{julia}
+\begin{minted}[fontsize=\footnotesize]{julia}
 mutable struct Hamiltonian
-    pw::PWGrid
-    potentials::Potentials
-    energies::Energies
-    rhoe::Array{Float64,2}
-    electrons::Electrons
-    atoms::Atoms
-    sym_info::SymmetryInfo
-    rhoe_symmetrizer::RhoeSymmetrizer
-    pspots::Array{PsPot_GTH,1}
-    pspotNL::PsPotNL
-    xcfunc::String
-    ik::Int64
-    ispin::Int64
+  pw::PWGrid
+  potentials::Potentials
+  energies::Energies
+  rhoe::Array{Float64,2}
+  electrons::Electrons
+  atoms::Atoms
+  sym_info::SymmetryInfo
+  rhoe_symmetrizer::RhoeSymmetrizer
+  pspots::Array{PsPot_GTH,1}
+  pspotNL::PsPotNL
+  xcfunc::String
+  ik::Int64
+  ispin::Int64
 end
 \end{minted}
 \end{minipage}

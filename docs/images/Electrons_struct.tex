@@ -3,14 +3,14 @@
 \begin{tikzpicture}
 \node[mybox] (box) {%
 \begin{minipage}{0.6\textwidth}%
-\begin{minted}{julia}
+\begin{minted}[fontsize=\footnotesize]{julia}
 mutable struct Electrons
-    Nelectrons::Float64
-    Nstates::Int64
-    Nstates_occ::Int64
-    Focc::Array{Float64,2}
-    ebands::Array{Float64,2}
-    Nspin::Int64
+  Nelectrons::Float64
+  Nstates::Int64
+  Nstates_occ::Int64
+  Focc::Array{Float64,2}
+  ebands::Array{Float64,2}
+  Nspin::Int64
 end
 \end{minted}
 \end{minipage}

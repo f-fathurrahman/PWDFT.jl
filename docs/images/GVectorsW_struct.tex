@@ -3,13 +3,13 @@
 \begin{tikzpicture}
 \node[mybox] (box) {%
 \begin{minipage}{0.6\textwidth}%
-\begin{minted}{julia}
+\begin{minted}[fontsize=\footnotesize]{julia}
 struct GVectorsW
-    Ngwx::Int64
-    Ngw::Array{Int64,1}
-    idx_gw2g::Array{Array{Int64,1},1}
-    idx_gw2r::Array{Array{Int64,1},1}
-    kpoints::KPoints
+  Ngwx::Int64
+  Ngw::Array{Int64,1}
+  idx_gw2g::Array{Array{Int64,1},1}
+  idx_gw2r::Array{Array{Int64,1},1}
+  kpoints::KPoints
 end
 \end{minted}
 \end{minipage}

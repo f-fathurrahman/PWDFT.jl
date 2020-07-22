@@ -3,19 +3,18 @@
 \begin{tikzpicture}
 \node[mybox] (box) {%
 \begin{minipage}{0.6\textwidth}%
-\begin{minted}{julia}
+\begin{minted}[fontsize=\footnotesize]{julia}
 struct PWGrid
-    ecutwfc::Float64
-    ecutrho::Float64
-    Ns::Tuple{Int64,Int64,Int64}
-    LatVecs::Array{Float64,2}
-    RecVecs::Array{Float64,2}
-    CellVolume::Float64
-    r::Array{Float64,2}
-    gvec::GVectors
-    gvecw::GVectorsW
-    planfw
-    planbw
+  ecutwfc::Float64
+  ecutrho::Float64
+  Ns::Tuple{Int64,Int64,Int64}
+  LatVecs::Array{Float64,2}
+  RecVecs::Array{Float64,2}
+  CellVolume::Float64
+  gvec::GVectors
+  gvecw::GVectorsW
+  planfw
+  planbw
 end
 \end{minted}
 \end{minipage}
