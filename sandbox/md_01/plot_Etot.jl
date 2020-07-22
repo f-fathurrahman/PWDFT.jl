@@ -14,6 +14,7 @@ function main(prefix::String; dt=1.0)
     plt.savefig("IMG_"*prefix*".pdf")
 end
 
-main("LOG_ETOT1")
-main("LOG_ETOT2")
-main("LOG_ETOT3", dt=0.5)
+#main("LOG_ETOT1")
+#main("LOG_ETOT2")
+#main("LOG_ETOT3", dt=0.5)
+main("LOG_ETOT4")

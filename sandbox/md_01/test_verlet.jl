@@ -31,6 +31,22 @@ function init_Ham_H2O()
     return Ham
 end
 
+
+function init_Ham_CO2()
+    # Atoms
+    atoms = Atoms( ext_xyz_file="CO2.xyz" )
+
+    # Initialize Hamiltonian
+    ecutwfc = 15.0
+    pspfiles = [joinpath(DIR_PSP, "C-q4.gth"),
+                joinpath(DIR_PSP, "O-q6.gth")]
+    Ham = Hamiltonian( atoms, pspfiles, ecutwfc, use_symmetry=false )
+    # Set masses
+    Ham.atoms.masses[:] = [14.0, 16.0]
+
+    return Ham
+end
+
 function run_pwscf( Ham )
     run(`rm -rfv TEMP_pwscf/\*`)
     write_pwscf( Ham, prefix_dir="TEMP_pwscf" )
@@ -59,7 +75,8 @@ end
 
 function main()
     
-    Ham = init_Ham_H2O()
+    #Ham = init_Ham_H2O()
+    Ham = init_Ham_CO2()
 
     println(Ham.atoms.masses)
 
@@ -87,7 +104,7 @@ function main()
     atm2species = Ham.atoms.atm2species
 
     # Time step
-    dt = 0.5
+    dt = 1.0
 
     filetraj = open("TRAJ.xyz", "w")
 

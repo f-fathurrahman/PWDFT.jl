@@ -2,6 +2,7 @@
 function update_positions!( Ham::Hamiltonian, dr::Array{Float64,2} )
     Ham.atoms.positions[:] = Ham.atoms.positions[:] + dr[:]
 
+    println("Nsyms = ", Ham.sym_info.Nsyms)
     if Ham.sym_info.Nsyms > 1
         println("Nsyms = ", Ham.sym_info.Nsyms)
         new_sym_info = SymmetryInfo(Ham.atoms)
