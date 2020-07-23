@@ -171,4 +171,4 @@ function main( init_func; fnametrj="TRAJ.xyz", fnameetot="ETOT.dat" )
 
 end
 
-main(init_Ham_H2O, fnametrj="TRAJ_H2O_v2.xyz", fnameetot="ETOT_H2O_v2.dat")
+main(init_Ham_H2O, fnametrj="TRAJ_H2O_v3.xyz", fnameetot="ETOT_H2O_v3.dat")
