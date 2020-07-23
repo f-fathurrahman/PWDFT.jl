@@ -107,6 +107,8 @@ function main( init_func; fnametrj="TRAJ.xyz", fnameetot="ETOT.dat" )
     filetraj = open(fnametrj, "w")
     fileetot = open(fnameetot, "w")
 
+    # Nonzero velocity for first atom, x component
+    v[1,1] = 0.1
     NiterMax = 100
     for iter = 1:NiterMax
 
