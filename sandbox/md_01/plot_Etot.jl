@@ -4,19 +4,17 @@ import PyPlot
 const plt = PyPlot
 
 function main(prefix::String; dt=1.0)
-    Etot = readdlm(prefix)
+    data = readdlm(prefix)
+    Ndata = size(data,1)
+    @views Etot = data[:,2]
     Etot0 = Etot[1]
-
-    Ndata = length(Etot)
     plt.clf()
-    plt.plot(range(0,stop=Ndata-1)*dt, Etot .- Etot0, marker="o")
+    plt.plot(data[:,1], Etot .- Etot0, marker="o")
     plt.grid()
+    plt.title(prefix)
     plt.savefig("IMG_"*prefix*".pdf")
 end
 
-#main("LOG_ETOT1")
-#main("LOG_ETOT2")
-#main("LOG_ETOT3", dt=0.5)
-#main("LOG_ETOT4")
-#main("LOG_ETOT5")
-main("LOG_ETOT6")
+#main("ETOT_H2O.dat")
+#main("ETOT_CO2.dat")
+main("ETOT_H2O_v2.dat")

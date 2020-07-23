@@ -26,7 +26,7 @@ function init_Ham_H2O()
                 joinpath(DIR_PSP, "H-q1.gth")]
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc )
     # Set masses
-    Ham.atoms.masses[:] = [16.0, 1.0]
+    Ham.atoms.masses[:] = [16.0, 2.0]
 
     return Ham
 end
@@ -73,17 +73,13 @@ function run_pwdft_jl!( Ham, psiks )
     return sum(Ham.energies), forces
 end
 
-function main()
+function main( init_func; fnametrj="TRAJ.xyz", fnameetot="ETOT.dat" )
     
-    #Ham = init_Ham_H2O()
-    Ham = init_Ham_CO2()
+    Ham = init_func()
 
     println(Ham.atoms.masses)
 
     Natoms = Ham.atoms.Natoms
-    
-    #energies, forces = run_pwscf(Ham)
-    #energies, forces = run_pwdft_jl(Ham)
 
     psiks = rand_BlochWavefunc(Ham)
     energies, forces = run_pwdft_jl!(Ham, psiks)
@@ -108,12 +104,14 @@ function main()
     # Time step
     dt = 1.0
 
-    filetraj = open("TRAJ.xyz", "w")
+    filetraj = open(fnametrj, "w")
+    fileetot = open(fnameetot, "w")
 
     NiterMax = 100
     for iter = 1:NiterMax
 
         @printf(filetraj, "%d  Etot_conserved = %18.10f\n\n", Natoms, Etot_conserved)
+        @printf(fileetot, "%18.10f %18.10f %18.10f %18.10f\n", (iter-1)*dt, Etot_conserved, Etot, Ekin_ions)
         for ia in 1:Natoms
             isp = atm2species[ia]
             r = Ham.atoms.positions
@@ -123,6 +121,7 @@ function main()
                     forces[1,ia]*ANG2BOHR, forces[2,ia]*ANG2BOHR, forces[3,ia]*ANG2BOHR)
         end
         flush(filetraj)
+        flush(fileetot)
 
         Ekin_ions = 0.0
         for ia in 1:Natoms
@@ -157,6 +156,7 @@ function main()
     end
 
     @printf(filetraj, "%d  Etot_conserved = %18.10f\n\n", Natoms, Etot_conserved)
+    @printf(fileetot, "%18.10f %18.10f %18.10f %18.10f\n", NiterMax*dt, Etot_conserved, Etot, Ekin_ions)
     for ia in 1:Natoms
         isp = atm2species[ia]
         r = Ham.atoms.positions
@@ -167,7 +167,8 @@ function main()
     end
 
     close(filetraj)
+    close(fileetot)
 
 end
 
-main()
+main(init_Ham_H2O, fnametrj="TRAJ_H2O_v2.xyz", fnameetot="ETOT_H2O_v2.dat")
