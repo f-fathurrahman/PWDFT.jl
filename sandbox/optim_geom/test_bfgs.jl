@@ -149,6 +149,8 @@ function main()
         display(reshape(dr,(3,Natoms))'); println()
         println("r  =")
         display(Ham.atoms.positions'); println()
+        println("r (in Angstrom) =")
+        display(Ham.atoms.positions' / ANG2BOHR); println()
 
         f = vec(copy(forces))
         H = update_hessian( H_old, r, f, r0, f0 )
