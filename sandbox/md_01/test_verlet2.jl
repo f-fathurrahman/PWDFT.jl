@@ -16,6 +16,11 @@ include("update_positions.jl")
 
 Random.seed!(1234)
 
+# From QE
+const AMU_SI = 1.660538782e-27
+const ELECTRONMASS_SI = 9.10938215e-31
+const AMU_AU = AMU_SI / ELECTRONMASS_SI
+
 function init_Ham_H2O()
     # Atoms
     atoms = Atoms( ext_xyz_file="H2O.xyz" )
@@ -26,7 +31,7 @@ function init_Ham_H2O()
                 joinpath(DIR_PSP, "H-q1.gth")]
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc )
     # Set masses
-    Ham.atoms.masses[:] = [16.0, 2.0]
+    Ham.atoms.masses[:] = [16.0, 2.0]*AMU_AU
 
     return Ham
 end
@@ -42,7 +47,7 @@ function init_Ham_CO2()
                 joinpath(DIR_PSP, "O-q6.gth")]
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc, use_symmetry=false )
     # Set masses
-    Ham.atoms.masses[:] = [14.0, 16.0]
+    Ham.atoms.masses[:] = [14.0, 16.0]*AMU_AU
 
     return Ham
 end
@@ -102,13 +107,12 @@ function main( init_func; fnametrj="TRAJ.xyz", fnameetot="ETOT.dat" )
     atm2species = Ham.atoms.atm2species
 
     # Time step
-    dt = 1.0
+    dt = 10.0
 
     filetraj = open(fnametrj, "w")
     fileetot = open(fnameetot, "w")
 
     # Nonzero velocity for first atom, x component
-    v[1,1] = 0.1
     NiterMax = 100
     for iter = 1:NiterMax
 
@@ -173,4 +177,4 @@ function main( init_func; fnametrj="TRAJ.xyz", fnameetot="ETOT.dat" )
 
 end
 
-main(init_Ham_H2O, fnametrj="TRAJ_H2O_v3.xyz", fnameetot="ETOT_H2O_v3.dat")
+main(init_Ham_H2O, fnametrj="TRAJ_H2O_v4.xyz", fnameetot="ETOT_H2O_v4.dat")
