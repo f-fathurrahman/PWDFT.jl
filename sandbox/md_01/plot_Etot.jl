@@ -16,5 +16,5 @@ function main(prefix::String; dt=1.0)
 end
 
 #main("ETOT_H2O.dat")
-#main("ETOT_CO2.dat")
-main("ETOT_H2O_v4.dat")
+main("ETOT_CO2_v3.dat")
+#main("ETOT_H2O_v4.dat")

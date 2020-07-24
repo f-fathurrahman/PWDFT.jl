@@ -112,8 +112,7 @@ function main( init_func; fnametrj="TRAJ.xyz", fnameetot="ETOT.dat" )
     filetraj = open(fnametrj, "w")
     fileetot = open(fnameetot, "w")
 
-    # Nonzero velocity for first atom, x component
-    NiterMax = 100
+    NiterMax = 1000
     for iter = 1:NiterMax
 
         @printf(filetraj, "%d  Etot_conserved = %18.10f\n\n", Natoms, Etot_conserved)
@@ -177,4 +176,5 @@ function main( init_func; fnametrj="TRAJ.xyz", fnameetot="ETOT.dat" )
 
 end
 
-main(init_Ham_H2O, fnametrj="TRAJ_H2O_v4.xyz", fnameetot="ETOT_H2O_v4.dat")
+#main(init_Ham_H2O, fnametrj="TRAJ_H2O_v4.xyz", fnameetot="ETOT_H2O_v4.dat")
+main(init_Ham_CO2, fnametrj="TRAJ_CO2_v3.xyz", fnameetot="ETOT_CO2_v3.dat")
