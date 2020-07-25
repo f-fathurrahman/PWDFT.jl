@@ -132,9 +132,10 @@ function KS_solve_Emin_PCG_dot!(
         diffE = Etot_old - Etot
         #norm_g = sqrt(2.0*real(dot(g,Kg))/length(g))
         #norm_g = norm(g.data)/length(g.data)
-        norm_g = 2*real(dot_BlochWavefuncGamma(g,g))
-        mae_rhoe = sum( abs.( Ham.rhoe - Rhoe_old ) )/(Npoints*Nspin)
-        @printf("Emin_PCG_dot gamma step %8d = %18.10f  %12.7e %12.7e %12.7e\n", iter, Etot, diffE, norm_g, mae_rhoe)
+        #norm_g = 2*real(dot_BlochWavefuncGamma(g,g))
+        #mae_rhoe = sum( abs.( Ham.rhoe - Rhoe_old ) )/(Npoints*Nspin)
+        #@printf("Emin_PCG_dot gamma step %8d = %18.10f  %12.7e %12.7e %12.7e\n", iter, Etot, diffE, norm_g, mae_rhoe)
+        @printf("Emin_PCG_dot gamma step %8d = %18.10f  %12.7e\n", iter, Etot, diffE)
         if diffE < 0.0
             println("*** WARNING: Etot is not decreasing")
         end
