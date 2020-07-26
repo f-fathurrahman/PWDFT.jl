@@ -45,44 +45,89 @@ function test_01()
     psis = randn_BlochWavefuncGamma(Ham)
     ortho_check(psis)
 
+    psis2 = randn_BlochWavefuncGamma(Ham)
+    ortho_check(psis2)
+
     Nstates = size(psis.data[1],2)
     ispin = 1
+    println("Some psis.data")
     for ist in 1:Nstates
-        println()
-        for igw in 1:3
+        @printf("State #%d\n", ist)
+        for igw in 1:4
             c = psis.data[ispin][igw,ist]
             @printf("%3d %3d [%18.10f,%18.10f]\n", igw, ist, c.re, c.im)
         end
     end
 
     psiks = unfold_BlochWavefuncGamma( Ham.pw, Ham_.pw, psis )
+    psiks2 = unfold_BlochWavefuncGamma( Ham.pw, Ham_.pw, psis2 )
+
+    println("\nSome psiks[1]")
+    for ist in 1:Nstates
+        @printf("State #%d\n", ist)
+        for igw in 1:4
+            c = psiks[ispin][igw,ist]
+            @printf("%3d %3d [%18.10f,%18.10f]\n", igw, ist, c.re, c.im)
+        end
+    end
+
+    println("\ndot the same wavefunc")
+    #
+    @time s1 = dot(psiks,psiks)
+    @time s1 = dot(psiks,psiks)
+    println("Using dot (usual)           : ", s1)
+    #
+    @time s2 = dot_BlochWavefuncGamma(psis,psis)
+    @time s2 = dot_BlochWavefuncGamma(psis,psis)
+    println("Using dot_BlochWavefuncGamma: ", s2)
+    println("diff: ", s1-s2, " (should be small)")
+
+
+
+    println("\ndot the different wavefunc")
+    #
+    @time s1 = dot(psiks,psiks2)
+    @time s1 = dot(psiks,psiks2)
+    println("Using dot (usual)           : ", s1)
+    #
+    @time s2 = dot_BlochWavefuncGamma(psis,psis2)
+    @time s2 = dot_BlochWavefuncGamma(psis,psis2)
+    println("Using dot_BlochWavefuncGamma: ", s2)
+    println("diff: ", s1-s2, " (should be small)")
+
+    exit()
 
     Rhoe = calc_rhoe(Ham, psis)
-
     Rhoe_ = calc_rhoe(Ham_, psiks)
 
     update!(Ham, Rhoe)
     update!(Ham_, Rhoe_)
 
-    println("V Ps loc comparison")
+    #
+    # Begin comparison of potentials
+    #
+
+    println("\nV Ps loc comparison")
     for ip in 1:5
         @printf("%3d %18.10f %18.10f\n", ip, Ham.potentials.Ps_loc[ip], Ham_.potentials.Ps_loc[ip])
     end
 
-    println("V Hartree comparison")
+    println("\nV Hartree comparison")
     for ip in 1:5
         @printf("%3d %18.10f %18.10f\n", ip, Ham.potentials.Hartree[ip], Ham_.potentials.Hartree[ip])
     end
 
-    println("V XC comparison")
+    println("\nV XC comparison")
     for ip in 1:5
         @printf("%3d %18.10f %18.10f\n", ip, Ham.potentials.XC[ip,1], Ham_.potentials.XC[ip,1])
     end
 
-    println("V Total comparison")
+    println("\nV Total comparison")
     for ip in 1:5
         @printf("%3d %18.10f %18.10f\n", ip, Ham.potentials.Total[ip,1], Ham_.potentials.Total[ip,1])
     end
+
+    # Compare the result of applying operators
 
     println()
     Kpsis = op_K(Ham, psis)
@@ -118,21 +163,18 @@ function test_01()
         @printf("%3d [%18.10f,%18.10f] [%18.10f,%18.10f]\n", igw, c1.re, c1.im, c2.re, c2.im)
     end
 
-    println(dot(psis,psis))
-    println(dot(psiks,psiks))
-
     println("dot V_loc_psis")
-    println(dot(V_loc_psis,V_loc_psis))
-    println(dot(V_loc_psis_,V_loc_psis_))
-    println(dot_BlochWavefuncGamma(V_loc_psis,V_loc_psis))
+    println("Using dot (gamma)           : ", dot(V_loc_psis,V_loc_psis))
+    println("Using dot (usual)           : ", dot(V_loc_psis_,V_loc_psis_))
+    println("Using dot_BlochWavefuncGamma: ", dot_BlochWavefuncGamma(V_loc_psis,V_loc_psis))
 
     V_Ps_nloc_psis = op_V_Ps_nloc(Ham, psis)
     V_Ps_nloc_psiks = op_V_Ps_nloc(Ham_, psiks)
 
     println("dot V_Ps_nloc_psis")
-    println( dot(V_Ps_nloc_psis,V_Ps_nloc_psis) )
-    println( dot(V_Ps_nloc_psiks,V_Ps_nloc_psiks) )
-    println( dot_BlochWavefuncGamma(V_Ps_nloc_psis,V_Ps_nloc_psis) )
+    println("Using dot (gamma)           : ", dot(V_Ps_nloc_psis,V_Ps_nloc_psis) )
+    println("Using dot (usual)           : ", dot(V_Ps_nloc_psiks,V_Ps_nloc_psiks) )
+    println("Using dot_BlochWavefuncGamma: ", dot_BlochWavefuncGamma(V_Ps_nloc_psis,V_Ps_nloc_psis) )
 
     ist = 1
     for igw in 1:5
