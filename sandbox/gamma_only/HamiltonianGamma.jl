@@ -8,7 +8,7 @@ mutable struct HamiltonianGamma
     pspots::Array{PsPot_GTH,1}
     pspotNL::PsPotNLGamma
     xcfunc::String
-    xc_calc
+    xc_calc::AbstractXCCalculator
     ispin::Int64 # No spin index is implemented yet
 end
 
