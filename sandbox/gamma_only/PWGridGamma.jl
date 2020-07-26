@@ -164,8 +164,8 @@ struct PWGridGamma
     CellVolume::Float64
     gvec::GVectorsGamma
     gvecw::GVectorsWGamma
-    planfw
-    planbw
+    planfw::PWDFT.PLANFW_TYPE
+    planbw::PWDFT.PLANBW_TYPE
 end
 
 
