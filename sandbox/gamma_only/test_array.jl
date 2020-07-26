@@ -366,9 +366,6 @@ function test_matrix3()
 
     U12 = psi1' * psi2
 
-    C = psi1g' * psi2g
-    U12g = C + conj(C)
-
     v1g = zeros(ComplexF64,Nstates)
     v2g = zeros(ComplexF64,Nstates)
     for ist in 1:Nstates
@@ -398,3 +395,31 @@ function test_matrix3()
 
 end
 test_matrix3()
+
+function constrain_search_dir( d::Array{ComplexF64,2}, psi::Array{ComplexF64,2} )
+    dnew = d - psi * ( psi' * d )
+    return dnew
+end
+
+function constrain_search_dir!( d::Array{ComplexF64,2}, psi::Array{ComplexF64,2} )
+    d = d - psi * ( psi' * d )
+    return
+end
+
+function constrain_search_dir_gamma( d::Array{ComplexF64,2}, psi::Array{ComplexF64,2} )
+    C = psi' * d
+    Nstates = size(d,2)
+    v1g = zeros(ComplexF64,Nstates)
+    v2g = zeros(ComplexF64,Nstates)
+    for ist in 1:Nstates
+        v1g[ist] = psi[1,ist] # psi is the array that is conj transposed in the orig expression
+        v2g[ist] = d[1,ist]  # v2g is the array that will be conj transposed
+    end
+    return d - psi * ( C + conj(C) - v1g*v2g' )
+end
+
+function constrain_search_dir_gamma!( d::Array{ComplexF64,2}, psi::Array{ComplexF64,2} )
+    C = psi' * d
+    d[:] = d - psi * ( C + conj(C) )
+    return
+end
