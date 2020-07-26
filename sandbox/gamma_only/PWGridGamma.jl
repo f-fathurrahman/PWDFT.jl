@@ -45,7 +45,7 @@ function GVectorsGamma( Ns, RecVecs, ecutrho )
 
     G  = zeros(Float64,3,Ng)
     G2 = zeros(Float64,Ng)
-    idx_g2r = zeros(Int64,Ng) # G=0 is included here
+    idx_g2r = zeros(Int64,Ng)  # G=0 is included here
     idx_g2rm = zeros(Int64,Ng) # for negative of G, NOTE: ig=1 should not be accessed
 
     for i in istart:ni
@@ -131,8 +131,8 @@ end
 struct GVectorsWGamma
     Ngw::Int64
     idx_gw2g::Array{Int64,1}
-    idx_gw2r::Array{Int64,1}
-    idx_gw2rm::Array{Int64,1}
+    idx_gw2r::Array{Int64,1}  # for half G vectors set
+    idx_gw2rm::Array{Int64,1} # for other half (minus) G vectors set
 end
 
 function GVectorsWGamma( ecutwfc::Float64, gvec::GVectorsGamma )
