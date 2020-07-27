@@ -94,8 +94,8 @@ function KS_solve_Emin_PCG_dot!(
         constrain_search_dir!( d, psis )
 
         α = linmin_grad!( Ham, psis, g, d )
-        # Limit α, needed for the case of NH3
-        # The value of α is too big.
+        # Limite the value of α if it is too big.
+        # At least found in the case of NH3
         if α > 2.0
             α = 2.0
         end
