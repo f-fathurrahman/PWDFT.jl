@@ -1,12 +1,15 @@
+# A wrapper struct for Nspin wavefunction with Gamma-point trick
 mutable struct BlochWavefuncGamma
     data::Vector{Array{ComplexF64,2}}
 end
 
+# Constructor, from an array to BlochWavefuncGamma (Nspin=1)
 function BlochWavefuncGamma(psi::Array{ComplexF64,2})
     return BlochWavefuncGamma([psi])
 end
 
-# This assumes that the DC components are set to zeros
+#=
+# WRONG !!!
 import LinearAlgebra: dot
 function dot( v1::BlochWavefuncGamma, v2::BlochWavefuncGamma )
     Nspin = length(v1)
@@ -20,7 +23,10 @@ function dot( v1::BlochWavefuncGamma, v2::BlochWavefuncGamma )
     end
     return s
 end
+=#
 
+# This assumes that the DC components are set to zeros
+# FIXME: Not needed?
 function dot_orig( v1::BlochWavefuncGamma, v2::BlochWavefuncGamma )
 
     #return 2*dot(v1.data, v2.data)

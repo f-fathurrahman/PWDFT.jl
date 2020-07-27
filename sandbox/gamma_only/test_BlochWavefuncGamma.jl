@@ -19,7 +19,6 @@ function test_01()
     LatVecs = gen_lattice_sc(6.0)
 
     pw = PWGrid(5.0, LatVecs)
-
     pw_gamma = PWGridGamma(5.0, LatVecs)
 
     Npoints = prod(pw.Ns)
@@ -88,6 +87,8 @@ function test_01()
     println("Δ = ", Δ, " (should be very small)")
 end
 #test_01()
+
+
 
 # Generate normalized psi
 # No orthogonalization is imposed between psi
@@ -238,4 +239,4 @@ function test_05()
     println(dot(psi1,psi3))
 
 end
-test_05()
+#test_05()
