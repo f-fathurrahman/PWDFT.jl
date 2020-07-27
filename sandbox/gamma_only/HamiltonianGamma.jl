@@ -62,9 +62,12 @@ function HamiltonianGamma(
         #
         Vg[1] = strf[1,isp]*Vgl[1] # G=(0,0,0)
         for ig = 2:Ng
-            ip = idx_g2r[ig]
+            #
             igl = idx_g2shells[ig]
+            #
+            ip = idx_g2r[ig]
             Vg[ip] = strf[ig,isp] * Vgl[igl]
+            #
             ipm = idx_g2rm[ig]
             Vg[ipm] = conj(strf[ig,isp]) * Vgl[igl]
         end
