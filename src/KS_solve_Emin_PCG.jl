@@ -3,6 +3,20 @@ function KS_solve_Emin_PCG!( Ham::Hamiltonian; kwargs... )
     return
 end
 
+# Not yet used
+function constrain_search_dir!( d::BlochWavefunc, psiks::BlochWavefunc )
+    Nkspin = length(psiks)
+    for i in 1:Nkspin
+        d[i] = d[i] - psiks[i] * ( psiks[i]' * d[i] )
+    end
+    return
+end
+
+function constrain_search_dir!( d::Array{ComplexF64,2}, psi::Array{ComplexF64,2} )
+    d[:] = d - psi * ( psi' * d )
+    return
+end
+
 
 """
     KS_solve_Emin_PCG!( Ham, kwargs... )
@@ -17,7 +31,7 @@ function KS_solve_Emin_PCG!(
     α_t=3e-5, NiterMax=200, verbose=true,
     print_final_ebands=false, print_final_energies=true,
     i_cg_beta=2, etot_conv_thr=1e-6,
-    α_max=2.0
+    α_max=2.1, restrict_linmin=false
 )
 
     pw = Ham.pw
@@ -165,9 +179,11 @@ function KS_solve_Emin_PCG!(
                 α[i] = 0.0
             end
 
-            if α[i] > α_max
-                @printf("α for ikspin #%d is too large: %f, restrict it to %f\n", i, α[i], α_max)
-                α[i] = α_max
+            if restrict_linmin
+                if α[i] > α_max
+                    @printf("α for ikspin #%d is too large: %f, restrict it to %f\n", i, α[i], α_max)
+                    α[i] = α_max
+                end
             end
 
             # Update wavefunction
