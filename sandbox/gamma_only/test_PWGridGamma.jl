@@ -1,17 +1,12 @@
 using Printf
 using LinearAlgebra
-using Random
 using FFTW
 
 using PWDFT
 
 include("PWGridGamma.jl")
 
-function main()
-    
-    Random.seed!(1234)
-
-    LatVecs = gen_lattice_sc(16.0)
+function main(LatVecs)
 
     # The usual PWGrid
     pw = PWGrid(15.0, LatVecs)
@@ -37,7 +32,7 @@ function main()
     # Ordinary G
     println()
     println("G-vectors of pw (usual)")
-    for ig in 1:4
+    for ig in 1:10
         @printf("%4d [%10.5f,%10.5f,%10.5f] %10.5f\n", ig,
             pw.gvec.G[1,ig], pw.gvec.G[2,ig], pw.gvec.G[3,ig], pw.gvec.G2[ig])
     end
@@ -49,5 +44,6 @@ function main()
     println("Ngw (usual) = ", pw.gvecw.Ngw)
 
 end
-
-main()
+#main(gen_lattice_sc(16.0))
+#main(gen_lattice_fcc(16.0))
+main(diagm([10.0, 11.0, 12.0]))
