@@ -52,8 +52,7 @@ function test_01()
     #pspfiles = [joinpath(DIR_PSP, "C-q4.gth"),
     #            joinpath(DIR_PSP, "O-q6.gth")]
 
-    #atoms = Atoms( xyz_file=joinpath(DIR_STRUCTURES, "H2O.xyz"), LatVecs=gen_lattice_sc(16.0) )
-    atoms = Atoms( ext_xyz_file=joinpath(DIR_STRUCTURES, "H2O.xyz") ) # error in HamiltonianGamma
+    atoms = Atoms( ext_xyz_file=joinpath(DIR_STRUCTURES, "H2O.xyz") )
     pspfiles = [joinpath(DIR_PSP, "O-q6.gth"),
                 joinpath(DIR_PSP, "H-q1.gth")]
 

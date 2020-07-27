@@ -85,7 +85,7 @@ function GVectorsGamma( Ns, RecVecs, ecutrho )
                     ip2 = inv_mm_to_nn(j, Ns[2])
                     ip3 = inv_mm_to_nn(k, Ns[3])
                     #
-                    ip  = ip1 + 1 + ip2*Ns[2] + ip3*Ns[2]*Ns[3]
+                    ip = ip1 + 1 + Ns[1]*( ip2 + Ns[2]*ip3 )
                     #
                     idx_g2r[ig] = ip # index of +G
                     #
@@ -94,7 +94,7 @@ function GVectorsGamma( Ns, RecVecs, ecutrho )
                         ip1m = inv_mm_to_nn(-i, Ns[1])
                         ip2m = inv_mm_to_nn(-j, Ns[2])
                         ip3m = inv_mm_to_nn(-k, Ns[3])
-                        ipm = ip1m + 1 + ip2m*Ns[2] + ip3m*Ns[2]*Ns[3]
+                        ipm = ip1m + 1 + Ns[1]*( ip2m + Ns[2]*ip3m )
                         idx_g2rm[ig] = ipm
                     end
                 end # if
