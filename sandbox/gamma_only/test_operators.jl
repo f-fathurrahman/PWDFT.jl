@@ -181,32 +181,21 @@ function test_01()
     println("dot V_Ps_nloc_psiks = ", s2)
     println("diff = ", s1 - s1, " (should be small)")
 
+    println("\nCompare op_H")
+    #
+    println("Using Gamma-point trick")
+    Hpsis = op_H(Ham, psis); print("time op_H: ")
+    @time Hpsis = op_H(Ham, psis)
+    s1 = dot_BlochWavefuncGamma(psis, Hpsis)
 
-    exit()
-
-
-    Hpsis = op_H(Ham, psis)
-    Hpsiks = op_H(Ham_, psiks)
-
-    println("dot Hpsis")
-    println( "dot      = ", dot(Hpsis, Hpsis) )
-    println( "dot_orig = ", dot_orig(Hpsis, Hpsis) )
-    println( dot(Hpsiks,Hpsiks) )
-    println( dot_BlochWavefuncGamma(Hpsis, Hpsis) )
-
-    Hsub = psis.data[1]' * Hpsis.data[1]
-    Hsub = Hsub + conj(Hsub)
-
-    Hsub_ = psiks[1]' * Hpsiks[1]
-
-    println()
-    println("Hsub real part  = "); display(real(Hsub)); println()
-    println("Hsub_ real part = "); display(real(Hsub_)); println()
+    println("Using usual kpt")
+    Hpsiks = op_H(Ham_, psiks); print("time op_H: ")
+    @time Hpsiks = op_H(Ham_, psiks)
+    s2 = dot(psiks, Hpsiks)
     
-    println("Hsub imag part  = "); display(imag(Hsub)); println()
-    println("Hsub_ imag part = "); display(imag(Hsub_)); println()
-
-
+    println("dot Hpsis  = ", s1)
+    println("dot Hpsiks = ", s2)
+    println("diff = ", s1 - s1, " (should be small)")
 
 end
 
