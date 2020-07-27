@@ -101,6 +101,11 @@ function KS_solve_Emin_PCG_dot!(
         constrain_search_dir!( d, psiks )
 
         α = linmin_grad!( Ham, psiks, g, d, Etot )
+        # Limite the value of α if it is too big.
+        # At least found in the case of NH3
+        if α > 2.0
+            α = 2.0
+        end
 
         Rhoe_old = copy(Ham.rhoe)
 
