@@ -87,15 +87,15 @@ function KS_solve_Emin_PCG_dot!(
 
         gKnorm = 2*real(dot_BlochWavefuncGamma(g, Kg))
         
-        if !force_grad_dir    
-            dotgd = 2*real(dot_BlochWavefuncGamma(g, d))
-            if gPrevUsed
-                dotgPrevKg = 2*real(dot_BlochWavefuncGamma(gPrev, Kg))
-            else
-                dotgPrevKg = 0.0
-            end
-            β = (gKnorm - dotgPrevKg)/gKnormPrev # Polak-Ribiere
-        end
+        #if !force_grad_dir    
+        #    dotgd = 2*real(dot_BlochWavefuncGamma(g, d))
+        #    if gPrevUsed
+        #        dotgPrevKg = 2*real(dot_BlochWavefuncGamma(gPrev, Kg))
+        #    else
+        #        dotgPrevKg = 0.0
+        #    end
+        #    β = (gKnorm - dotgPrevKg)/gKnormPrev # Polak-Ribiere
+        #end
 
         if β < 0.0
             println("Resetting β")

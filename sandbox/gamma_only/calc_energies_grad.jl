@@ -213,7 +213,7 @@ function do_step!( psiks::BlochWavefunc, α::Vector{Float64}, d::BlochWavefunc )
     return
 end
 
-function constrain_search_dir!( d, psiks )
+function constrain_search_dir!( d::BlochWavefunc, psiks::BlochWavefunc )
     Nkspin = length(psiks)
     for i in 1:Nkspin
         d[i] = d[i] - psiks[i] * ( psiks[i]' * d[i] )

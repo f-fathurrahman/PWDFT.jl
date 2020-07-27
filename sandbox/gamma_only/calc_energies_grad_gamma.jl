@@ -55,18 +55,22 @@ end
 
 function constrain_search_dir!( d::BlochWavefuncGamma, psis::BlochWavefuncGamma )
     Nspin = length(psis)
-    Nstates = size(psis.data[1],2)
-    C = zeros(ComplexF64,Nstates,Nstates)
     for i in 1:Nspin
-        C[:] = psis.data[i]' * d.data[i]
-        d.data[i] = d.data[i] - psis.data[i] * ( C + conj(C) )
+        constrain_search_dir_gamma!( d.data[i], psis.data[i] )
     end
     return
 end
 
 function constrain_search_dir_gamma!( d::Array{ComplexF64,2}, psi::Array{ComplexF64,2} )
     C = psi' * d
-    d[:] = d - psi * ( C + conj(C) )
+    Nstates = size(d,2)
+    v1g = zeros(ComplexF64,Nstates)
+    v2g = zeros(ComplexF64,Nstates)
+    for ist in 1:Nstates
+        v1g[ist] = psi[1,ist] # psi is the array that is conj transposed in the orig expression
+        v2g[ist] = d[1,ist]  # v2g is the array that will be conj transposed
+    end
+    d[:] = d - psi * ( C + conj(C) - v1g*v2g' )
     return
 end
 
