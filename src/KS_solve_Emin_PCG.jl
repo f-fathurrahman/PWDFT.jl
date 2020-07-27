@@ -16,7 +16,9 @@ function KS_solve_Emin_PCG!(
     skip_initial_diag=false,
     α_t=3e-5, NiterMax=200, verbose=true,
     print_final_ebands=false, print_final_energies=true,
-    i_cg_beta=2, etot_conv_thr=1e-6 )
+    i_cg_beta=2, etot_conv_thr=1e-6,
+    α_max=2.0
+)
 
     pw = Ham.pw
     electrons = Ham.electrons
@@ -161,6 +163,11 @@ function KS_solve_Emin_PCG!(
                 α[i] = abs( α_t*real(sum(conj(g[i]).*d[i]))/denum )
             else
                 α[i] = 0.0
+            end
+
+            if α[i] > α_max
+                @printf("α for ikspin #%d is too large: %f, restrict it to %f\n", i, α[i], α_max)
+                α[i] = α_max
             end
 
             # Update wavefunction
