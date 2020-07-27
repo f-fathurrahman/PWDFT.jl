@@ -113,19 +113,6 @@ function init_gvec_gamma( Ns, RecVecs, ecutrho )
                     @printf("Negative   : [%4d %4d %4d]\n", ip1m, ip2m, ip3m)
                     ipmc = ipmc + 1
                 end
-                #IF (ngm > ngm_max) CALL errore ('ggen 1', 'too many g-vectors', ngm)
-                #IF ( tt(k-kstart+1) > eps8 ) THEN
-                #   g2sort_g(ngm) = tt(k-kstart+1)
-                #ELSE
-                #   g2sort_g(ngm) = 0.d0
-                #ENDIF
-                #IF (is_local) THEN
-                #  ngm_local = ngm_local + 1
-                #  mill_unsorted( :, ngm_local ) = (/ i,j,k /)
-                #  g2l(ngm) = ngm_local
-                #ELSE
-                #  g2l(ngm) = 0
-                #ENDIF
             end # if
           end # kstart:nk
        end

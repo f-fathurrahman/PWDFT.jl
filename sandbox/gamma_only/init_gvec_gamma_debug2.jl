@@ -63,31 +63,35 @@ function init_gvec_gamma( Ns, RecVecs, ecutrho )
                 if 0.5*G2_tmp <= ecutrho
                     #
                     ig = ig + 1
+                    @printf("idx_miller = [%4d %4d %4d] ", i, j, k)
                     #
                     G[1,ig] = G_tmp[1]
                     G[2,ig] = G_tmp[2]
                     G[3,ig] = G_tmp[3]
-                    #@printf("%d %d %d\n", i, j, k)
-                    #println(G_tmp)
-                    #println(G[:,ig])
                     #
                     G2[ig] = G2_tmp
                     #
                     ip1 = inv_mm_to_nn(i, Ns[1])
                     ip2 = inv_mm_to_nn(j, Ns[2])
                     ip3 = inv_mm_to_nn(k, Ns[3])
+                    @printf(" idx grid = [%4d %4d %4d] ", ip1, ip2, ip3)
                     #
-                    ip  = ip1 + 1 + ip2*Ns[2] + ip3*Ns[2]*Ns[3]
+                    ip = ip1 + 1 + Ns[1]*( ip2 + Ns[2]*ip3 )
                     #
                     idx_g2r[ig] = ip # index of +G
                     #
                     # Index of -G
+                    if G2_tmp < SMALL # printing stuffs
+                        println()
+                    end
+                    #
                     if G2_tmp > SMALL
                         ip1m = inv_mm_to_nn(-i, Ns[1])
                         ip2m = inv_mm_to_nn(-j, Ns[2])
                         ip3m = inv_mm_to_nn(-k, Ns[3])
-                        ipm = ip1m + 1 + ip2m*Ns[2] + ip3m*Ns[2]*Ns[3]
+                        ipm = ip1m + 1 + Ns[1]*( ip2m + Ns[2]*ip3m )
                         idx_g2rm[ig] = ipm
+                        @printf("idx negative = [%4d %4d %4d] ipm = %4d\n", ip1m, ip2m, ip3m, ipm)
                     end
                 end # if
             end # kstart:nk
@@ -111,6 +115,10 @@ function init_gvec_gamma( Ns, RecVecs, ecutrho )
     G2 = G2[idx_sorted]
     idx_g2r = idx_g2r[idx_sorted]
     idx_g2rm = idx_g2rm[idx_sorted]
+
+    println("max idx_g2r : ", maximum(idx_g2r))
+    println("max idx_g2rm: ", maximum(idx_g2rm))
+    println("Npoints = ", prod(Ns))
 
     println("After sort")
     for ig in 2:6
