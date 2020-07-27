@@ -4,7 +4,7 @@ function KS_solve_Emin_PCG_dot!(
     skip_initial_diag=false,
     α_t=3e-5, NiterMax=200, verbose=true,
     print_final_ebands=false, print_final_energies=true,
-    i_cg_beta=2, etot_conv_thr=1e-6
+    etot_conv_thr=1e-6
 )
 
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
@@ -61,15 +61,6 @@ function KS_solve_Emin_PCG_dot!(
         @printf("NiterMax  = %d\n", NiterMax)
         @printf("α_t       = %e\n", α_t)
         @printf("conv_thr  = %e\n", etot_conv_thr)
-        if i_cg_beta == 1
-            @printf("Using Fletcher-Reeves formula for CG_BETA\n")
-        elseif i_cg_beta == 2
-            @printf("Using Polak-Ribiere formula for CG_BETA\n")
-        elseif i_cg_beta == 3
-            @printf("Using Hestenes-Stiefeld formula for CG_BETA\n")
-        else
-            @printf("Using Dai-Yuan formula for CG_BETA\n")
-        end
         @printf("\n")
     end
 

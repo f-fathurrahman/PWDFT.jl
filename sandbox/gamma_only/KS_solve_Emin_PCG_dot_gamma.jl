@@ -4,8 +4,10 @@ function KS_solve_Emin_PCG_dot!(
     skip_initial_diag=true,
     α_t=3e-5, NiterMax=200, verbose=true,
     print_final_ebands=false, print_final_energies=true,
-    i_cg_beta=2, etot_conv_thr=1e-6
+    etot_conv_thr=1e-6
 )
+    # Only Polak-Ribiere form is implemented
+
 
     Npoints = prod(Ham.pw.Ns)
     Nspin = Ham.electrons.Nspin
@@ -28,28 +30,12 @@ function KS_solve_Emin_PCG_dot!(
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( Ham.atoms )
 
-    println()
-    println("Initial dot(psis,psis) = ", 2*real(dot_BlochWavefuncGamma(psis,psis)))
-
     # No need to orthonormalize
     Etot = calc_energies_grad!( Ham, psis, g, Kg, Hsub )
 
-    println("Initial dot(psis,psis) = ", 2*real(dot_BlochWavefuncGamma(psis,psis)))
-    
-    println("Initial Etot = ", Etot)
-    println("Initial dot(g,g) = ", 2*real(dot_BlochWavefuncGamma(g,g)))
-    println("Initial dot(Kg,Kg) = ", 2*real(dot_BlochWavefuncGamma(Kg,Kg)))
-
     d = deepcopy(Kg)
-    
-    println("Before constrain_search_dir dot(d,d) = ", 2*real(dot_BlochWavefuncGamma(d,d)))
-
     # Constrain
     constrain_search_dir!( d, psis )
-
-    println("After constrain_search_dir dot(d,d) = ", 2*real(dot_BlochWavefuncGamma(d,d)))
-
-    println()
 
     gPrevUsed = true
 
@@ -71,15 +57,6 @@ function KS_solve_Emin_PCG_dot!(
         @printf("NiterMax  = %d\n", NiterMax)
         @printf("α_t       = %e\n", α_t)
         @printf("conv_thr  = %e\n", etot_conv_thr)
-        if i_cg_beta == 1
-            @printf("Using Fletcher-Reeves formula for CG_BETA\n")
-        elseif i_cg_beta == 2
-            @printf("Using Polak-Ribiere formula for CG_BETA\n")
-        elseif i_cg_beta == 3
-            @printf("Using Hestenes-Stiefeld formula for CG_BETA\n")
-        else
-            @printf("Using Dai-Yuan formula for CG_BETA\n")
-        end
         @printf("\n")
     end
 
@@ -87,15 +64,15 @@ function KS_solve_Emin_PCG_dot!(
 
         gKnorm = 2*real(dot_BlochWavefuncGamma(g, Kg))
         
-        #if !force_grad_dir    
-        #    dotgd = 2*real(dot_BlochWavefuncGamma(g, d))
-        #    if gPrevUsed
-        #        dotgPrevKg = 2*real(dot_BlochWavefuncGamma(gPrev, Kg))
-        #    else
-        #        dotgPrevKg = 0.0
-        #    end
-        #    β = (gKnorm - dotgPrevKg)/gKnormPrev # Polak-Ribiere
-        #end
+        if !force_grad_dir    
+            dotgd = 2*real(dot_BlochWavefuncGamma(g, d))
+            if gPrevUsed
+                dotgPrevKg = 2*real(dot_BlochWavefuncGamma(gPrev, Kg))
+            else
+                dotgPrevKg = 0.0
+            end
+            β = (gKnorm - dotgPrevKg)/gKnormPrev # Polak-Ribiere
+        end
 
         if β < 0.0
             println("Resetting β")
@@ -117,6 +94,13 @@ function KS_solve_Emin_PCG_dot!(
         constrain_search_dir!( d, psis )
 
         α = linmin_grad!( Ham, psis, g, d )
+        # Limit α, needed for the case of NH3
+        # The value of α is too big.
+        if α > 2.0
+            α = 2.0
+        end
+        #println()
+        #println("dot(g,d) = ", dot_BlochWavefuncGamma(g,d))
         #println("α = ", α)
 
         Rhoe_old = copy(Ham.rhoe)
