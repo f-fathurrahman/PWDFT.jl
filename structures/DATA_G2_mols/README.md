@@ -1,0 +1,1 @@
+G2 set of molecules. Generated using ASE.
