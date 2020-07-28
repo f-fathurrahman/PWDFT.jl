@@ -23,23 +23,12 @@ function KS_solve_Emin_PCG_dot!(
     # calculate E_NN
     Ham.energies.NN = calc_E_NN( Ham.atoms )
 
-    println()
-    println("Initial dot(psiks,psiks) = ", dot_BlochWavefunc(psiks,psiks))
-
     # No need to orthonormalize
     Etot = calc_energies_grad!( Ham, psiks, g, Kg )
 
-    println("Initial dot(psiks,psiks) = ", dot_BlochWavefunc(psiks,psiks))    
-    println("Initial Etot = ", Etot)
-    println("Initial dot(g,g) = ", dot_BlochWavefunc(g,g))
-    println("Initial dot(Kg,Kg) = ", dot_BlochWavefunc(Kg,Kg))
-
     d = deepcopy(Kg)
-
-    println("Before constrain_search_dir dot(d,d) = ", dot_BlochWavefunc(d,d))
     # Constrain
     constrain_search_dir!( d, psiks )
-    println("After constrain_search_dir dot(d,d) = ", dot_BlochWavefunc(d,d))
 
     gPrevUsed = true
 
@@ -121,11 +110,9 @@ function KS_solve_Emin_PCG_dot!(
         Etot = calc_energies_grad!( Ham, psiks, g, Kg )
         
         diffE = Etot_old - Etot
-        #norm_g = sqrt(2.0*real(dot(g,Kg))/length(g))
-        norm_g = norm(g)/length(g)
         #norm_g = 2*real(dot(g,g))
-        mae_rhoe = sum( abs.( Ham.rhoe - Rhoe_old ) )/(Npoints*Nspin)
-        @printf("Emin_PCG_dot step %8d = %18.10f  %12.7e %12.7e %12.7e\n", iter, Etot, diffE, norm_g, mae_rhoe)
+        #mae_rhoe = sum( abs.( Ham.rhoe - Rhoe_old ) )/(Npoints*Nspin)
+        @printf("Emin_PCG_dot step %8d = %18.10f  %12.7e\n", iter, Etot, diffE)
         if diffE < 0.0
             println("*** WARNING: Etot is not decreasing")
         end
@@ -135,16 +122,6 @@ function KS_solve_Emin_PCG_dot!(
         else
             Nconverges = 0
         end
-
-        #if (Nconverges >= 2) && (norm_g > etot_conv_thr*5) # (mae_rhoe >= etot_conv_thr) #(norm_g >= etot_conv_thr/10)
-        #    println("Probably early convergence, continuing ...")
-        #    Nconverges = 0
-        #end
-        
-        #if (Nconverges >= 2) && (2*real(dot(g,g)) > 1e-10) #(norm_g > 1e-6)
-        #    println("Probably early convergence, continuing ...")
-        #    Nconverges = 0
-        #end
 
         if Nconverges >= 2
             @printf("\nEmin_PCG_dot is converged in iter: %d\n", iter)
