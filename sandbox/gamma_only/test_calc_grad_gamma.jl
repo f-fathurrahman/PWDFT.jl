@@ -85,10 +85,14 @@ function test_01()
 
     Hsub = zeros(ComplexF64, Nstates, Nstates)
     Hsub_ = zeros(ComplexF64, Nstates, Nstates)
-    
-    calc_grad!(Ham, psis.data[1], g, Hsub)
+
+    calc_grad!(Ham, psis.data[1], g, Hsub)    
+    print("Gamma-trick: ")
+    @time calc_grad!(Ham, psis.data[1], g, Hsub)
 
     calc_grad!(Ham_, psiks[1], g_, Hsub_)
+    print("Usual: ")    
+    @time calc_grad!(Ham_, psiks[1], g_, Hsub_)
 
     display(Hsub); println()
     display(Hsub_); println()
