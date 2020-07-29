@@ -57,21 +57,34 @@ function test_ortho_GS_gamma()
 end
 #test_ortho_GS_gamma()
 
+
+function overlap_gamma( psi1::Array{ComplexF64,2}, psi2::Array{ComplexF64,2} )
+    C = psi2' * psi1
+    Nstates = size(psi1,2)
+    v1g = zeros(ComplexF64,Nstates)
+    v2g = zeros(ComplexF64,Nstates)
+    for ist in 1:Nstates
+        v1g[ist] = psi2[1,ist] # psi is the array that is conj transposed in the orig expression
+        v2g[ist] = psi1[1,ist]  # v2g is the array that will be conj transposed
+    end
+    return C + conj(C) - v1g*v2g'
+end
+
 function test_ortho_sqrt()
 
     Nstates = 4
 
     psi1 = zeros(ComplexF64,5,Nstates)
-    psi1[:,1] = [0.0, 3.0 + im*2, 4.1 + im*3, 3.0 - im*2, 4.1 - im*3]
-    psi1[:,2] = [0.0, 4.1 + im*3, 5.2 + im*7, 4.1 - im*3, 5.2 - im*7]
-    psi1[:,3] = [0.0, 9.0 + im*2, 8.1 + im*3, 9.0 - im*2, 8.1 - im*3]
-    psi1[:,4] = [0.0, 1.1 + im*3, 1.2 + im*7, 1.1 - im*3, 1.2 - im*7]
+    psi1[:,1] = [1.0, 3.0 + im*2, 4.1 + im*3, 3.0 - im*2, 4.1 - im*3]
+    psi1[:,2] = [2.0, 4.1 + im*3, 5.2 + im*7, 4.1 - im*3, 5.2 - im*7]
+    psi1[:,3] = [3.0, 9.0 + im*2, 8.1 + im*3, 9.0 - im*2, 8.1 - im*3]
+    psi1[:,4] = [4.0, 1.1 + im*3, 1.2 + im*7, 1.1 - im*3, 1.2 - im*7]
 
     psi1g = zeros(ComplexF64,3,Nstates)
-    psi1g[:,1] = [0.0, 3.0 + im*2, 4.1 + im*3]
-    psi1g[:,2] = [0.0, 4.1 + im*3, 5.2 + im*7]
-    psi1g[:,3] = [0.0, 9.0 + im*2, 8.1 + im*3]
-    psi1g[:,4] = [0.0, 1.1 + im*3, 1.2 + im*7]
+    psi1g[:,1] = [1.0, 3.0 + im*2, 4.1 + im*3]
+    psi1g[:,2] = [2.0, 4.1 + im*3, 5.2 + im*7]
+    psi1g[:,3] = [3.0, 9.0 + im*2, 8.1 + im*3]
+    psi1g[:,4] = [4.0, 1.1 + im*3, 1.2 + im*7]
 
     println("dot psi1  = ", dot(psi1,psi1))
     println("dot psi1g = ", dot(psi1g,psi1g))

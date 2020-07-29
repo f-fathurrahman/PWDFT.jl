@@ -8,38 +8,6 @@ function BlochWavefuncGamma(psi::Array{ComplexF64,2})
     return BlochWavefuncGamma([psi])
 end
 
-#=
-# WRONG !!!
-import LinearAlgebra: dot
-function dot( v1::BlochWavefuncGamma, v2::BlochWavefuncGamma )
-    Nspin = length(v1)
-    Nstates = size(v1.data[1],2)
-    s = 0.0 + im*0.0
-    C = zeros(ComplexF64,Nstates,Nstates)
-    for ispin in 1:Nspin
-        C[:] = v1.data[ispin]' * v2.data[ispin]
-        C[:] = C + conj(C)
-        s = s + tr(C)
-    end
-    return s
-end
-=#
-
-# This assumes that the DC components are set to zeros
-# FIXME: Not needed?
-function dot_orig( v1::BlochWavefuncGamma, v2::BlochWavefuncGamma )
-
-    #return 2*dot(v1.data, v2.data)
-    
-    c = dot(v1.data, v2.data)
-    return c + conj(c)
-
-    # alternative:
-    # c = dot(v1.data, v2.data)
-    # res = c + conj(c)
-    # should work for ortho_sqrt and ortho_GS_gamma
-
-end
 
 # Does not assume DC components of zeros
 function dot_BlochWavefuncGamma( v1::BlochWavefuncGamma, v2::BlochWavefuncGamma )
@@ -116,23 +84,14 @@ function randn_BlochWavefuncGamma( Ham::HamiltonianGamma )
 end
 
 function randn_BlochWavefuncGamma( Nbasis::Int64, Nstates::Int64; Nspin=1 )
-
+    #
     data = Vector{Array{ComplexF64,2}}(undef,Nspin)
-    
-    G = zeros(ComplexF64,Nstates,Nstates)
-    Udagger = zeros(ComplexF64,Nstates,Nstates)
-
     for ispin in 1:Nspin
         data[ispin] = randn(ComplexF64,Nbasis,Nstates)
-        #for ist in 1:Nstates
-        #    data[ispin][1,ist] = 0.0 + im*0.0 # Don't forget to set the DC component to zero
-        #end
+        # Set DC component (ig=1) to real number
         for ist in 1:Nstates
             data[ispin][1,ist] = data[ispin][1,ist] + conj(data[ispin][1,ist])
         end
-        #G[:] = data[ispin]' * data[ispin]
-        #Udagger[:] = inv( sqrt(G + conj(G)) )
-        #data[ispin] = data[ispin]*Udagger
         ortho_GS_gamma!(data[ispin])
     end
 
@@ -182,13 +141,25 @@ function ortho_check_gamma( psi::Array{ComplexF64,2} )
     return
 end
 
-#
-# Old definition, the DC component is not zero.
-#
-#function dot(v1::BlochWavefuncGamma, v2::BlochWavefuncGamma)
-#    res = 2*dot(v1.data, v2.data)
-#    for ist in 1:size(v1.data,2)
-#        res = res - conj(v1.data[1,ist]) * v2.data[1,ist]
-#    end
-#    return res
-#end
+function overlap_gamma( psi1::Array{ComplexF64,2}, psi2::Array{ComplexF64,2} )
+    C = psi2' * psi1
+    Nstates = size(psi1,2)
+    v1g = zeros(ComplexF64,Nstates)
+    v2g = zeros(ComplexF64,Nstates)
+    for ist in 1:Nstates
+        v1g[ist] = psi2[1,ist] # psi is the array that is conj transposed in the orig expression
+        v2g[ist] = psi1[1,ist]  # v2g is the array that will be conj transposed
+    end
+    return C + conj(C) - v1g*v2g'
+end
+
+function ortho_sqrt_gamma!( psis::BlochWavefuncGamma )
+    Nspin = size(psis,1)
+    Nstates = size(psis.data,2)
+    C = zeros(ComplexF64,Nstates,Nstates)
+    for i in 1:Nspin
+        C = overlap_gamma(psis.data[i], psis.data[i])
+        psis.data *= inv(sqrt(C))
+    end
+    return
+end
