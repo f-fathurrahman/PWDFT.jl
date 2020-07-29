@@ -62,4 +62,5 @@ end
 #main(joinpath(DIR_STRUCTURES, "DATA_G2_mols", "H2O.xyz"))
 #main(joinpath(DIR_STRUCTURES, "DATA_G2_mols", "NH3.xyz"))
 #main(joinpath(DIR_STRUCTURES, "DATA_G2_mols", "SiH4.xyz"))
-main(joinpath(DIR_STRUCTURES, "DATA_G2_mols", "N2H4.xyz"))
+#main(joinpath(DIR_STRUCTURES, "DATA_G2_mols", "N2H4.xyz"))
+main(joinpath(DIR_STRUCTURES, "DATA_G2_mols", "CO2.xyz"))

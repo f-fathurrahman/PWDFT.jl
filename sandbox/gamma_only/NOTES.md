@@ -26,10 +26,11 @@ dot product
 
 overlap matrix
 
-Wavefunction orthonormalization
+Wavefunction orthonormalization: ortho_GS_gamma and ortho_sqrt_gamma.
 
 
-FIXME: Only `ortho_GS_gamma` is tested and used. This made KS_solve_Emin_PCG_dot less efficient than the usual method
+FIXME: Need to compare gradient calculation: calc_grad using Gamma-trick vs usual.
+
 
 ## Calculating electron density
 

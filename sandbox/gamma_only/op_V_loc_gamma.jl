@@ -53,36 +53,43 @@ function op_V_loc( pw::PWGridGamma, V_loc, psi::Array{ComplexF64,2} )
     CellVolume  = pw.CellVolume
     Npoints = prod(Ns)
     Nstates = size(psi,2)
-
-    # FIXME: Do this state by state to reduce memory requirement
-    ctmp = zeros(ComplexF64, Npoints, Nstates)
     
     idx_gw2r = pw.gvecw.idx_gw2r
     idx_gw2rm = pw.gvecw.idx_gw2rm
     Ngw = pw.gvecw.Ngw
 
+    ctmp = zeros(ComplexF64, Npoints) # reduce memory requirement
+    Vpsi = zeros(ComplexF64, Ngw, Nstates)
+
     for ist in 1:Nstates
-        ctmp[1,ist] = psi[1,ist]
+        ctmp .= 0.0 + im*0.0
+        ctmp[1] = psi[1,ist]
         for igw in 2:Ngw
             idx = idx_gw2r[igw]
-            ctmp[idx,ist] = psi[igw,ist]
+            ctmp[idx] = psi[igw,ist]
             idxm = idx_gw2rm[igw]
-            ctmp[idxm,ist] = conj(psi[igw,ist])
+            ctmp[idxm] = conj(psi[igw,ist])
         end
-    end
 
-    # get values of psi in real space grid
-    G_to_R!(pw, ctmp)
+        # get values of psi in real space grid
+        G_to_R!(pw, ctmp)
 
-    for ist = 1:Nstates
         for ip = 1:Npoints
-            ctmp[ip,ist] = V_loc[ip]*ctmp[ip,ist]
+            ctmp[ip] = V_loc[ip]*ctmp[ip]
+        end
+
+        # Transform back to G-space
+        R_to_G!(pw, ctmp)
+
+        #Vpsi[:,ist] .= ctmp[idx_gw2r] # FIXME: use loops?
+        Vpsi[1,ist] = ctmp[1]
+        for igw in 2:Ngw
+            idx = idx_gw2r[igw]
+            Vpsi[igw,ist] = ctmp[idx]
         end
     end
 
-    R_to_G!(pw, ctmp)
-
-    return ctmp[idx_gw2r,:]
+    return Vpsi
 end
 
 #
