@@ -35,8 +35,8 @@ function PsPotNLGamma( atoms::Atoms, pw::PWGridGamma, pspots::Array{PsPot_GTH,1}
         isp = atm2species[ia]
         psp = pspots[isp]
         for l = 0:psp.lmax
-            for iprj = 1:psp.Nproj_l[l+1]
-                for m = -l:l
+            for m = -l:l
+                for iprj = 1:psp.Nproj_l[l+1]
                     NbetaNL = NbetaNL + 1
                     prj2beta[iprj,ia,l+1,m+psp.lmax+1] = NbetaNL
                 end
@@ -61,14 +61,12 @@ function PsPotNLGamma( atoms::Atoms, pw::PWGridGamma, pspots::Array{PsPot_GTH,1}
     idx_gw2g = pw.gvecw.idx_gw2g
     ibeta = 0
 
-    #betaNL_full = zeros(ComplexF64,2*Ngw-1,NbetaNL)
-
     for ia = 1:Natoms
         isp = atm2species[ia]
         psp = pspots[isp]
         for l = 0:psp.lmax
-        for iprj = 1:psp.Nproj_l[l+1]
         for m = -l:l
+        for iprj = 1:psp.Nproj_l[l+1]
             ibeta = ibeta + 1
             for igk = 1:Ngw
                 ig = idx_gw2g[igk]
@@ -81,30 +79,11 @@ function PsPotNLGamma( atoms::Atoms, pw::PWGridGamma, pspots::Array{PsPot_GTH,1}
                 Sf = cos(GX) - im*sin(GX)
                 betaNL[igk,ibeta] =
                 (-1.0*im)^l * Ylm_real(l,m,g)*eval_proj_G(psp,l,iprj,Gm,pw.CellVolume)*Sf
-
-                #betaNL_full[igk,ibeta] =
-                #(-1.0*im)^l * Ylm_real(l,m,g)*eval_proj_G(psp,l,iprj,Gm,pw.CellVolume)*Sf
-                #if igk != 1
-                #    g[1] = -G[1,ig]
-                #    g[2] = -G[2,ig]
-                #    g[3] = -G[3,ig]
-                #    GX = atpos[1,ia]*g[1] + atpos[2,ia]*g[2] + atpos[3,ia]*g[3]
-                #    Sf = cos(GX) - im*sin(GX)
-                #    betaNL_full[Ngw+igk-1,ibeta] =
-                #    (-1.0*im)^l * Ylm_real(l,m,g)*eval_proj_G(psp,l,iprj,Gm,pw.CellVolume)*Sf
-                #end
             end
         end
         end
         end
     end
-
-    #if check_norm
-    #    check_betaNL_norm( pw, betaNL, kpoints )
-    #end
-
-    #println("sum betaNL      = ", sum(betaNL))
-    #println("sum betaNL_full = ", sum(betaNL_full))
 
     return PsPotNLGamma( NbetaNL, prj2beta, betaNL )
 
@@ -125,8 +104,7 @@ function calc_betaNL_psi( pspotNL::PsPotNLGamma, psi::Array{ComplexF64,2} )
     for i in 1:NbetaNL
         v2[i] = pspotNL.betaNL[1,i]
     end
-    
-    return conj( c + conj(c) - v1*v2' )
-    #return 2*c
+
+    return c + conj(c) - v1*v2'
 end
 
