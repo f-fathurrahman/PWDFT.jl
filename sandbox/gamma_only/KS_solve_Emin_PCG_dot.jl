@@ -28,7 +28,7 @@ function KS_solve_Emin_PCG_dot!(
 
     d = deepcopy(Kg)
     # Constrain
-    constrain_search_dir!( d, psiks )
+    #constrain_search_dir!( d, psiks )
 
     gPrevUsed = true
 
@@ -87,7 +87,7 @@ function KS_solve_Emin_PCG_dot!(
             d[i] = -Kg[i] + β*d[i]
         end
 
-        constrain_search_dir!( d, psiks )
+        #constrain_search_dir!( d, psiks )
 
         α = linmin_grad!( Ham, psiks, g, d, Etot )
         # Limite the value of α if it is too big.

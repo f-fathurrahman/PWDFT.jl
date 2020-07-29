@@ -49,12 +49,12 @@ function main(filename)
     
     Ham = HamiltonianGamma(atoms, pspfiles, ecutwfc )
     psis = randn_BlochWavefuncGamma(Ham)
-    #@time KS_solve_Emin_PCG_dot!( Ham, psis, NiterMax=200 )
+    @time KS_solve_Emin_PCG_dot!( Ham, psis, NiterMax=200 )
     
-    Ham_ = Hamiltonian( atoms, pspfiles, ecutwfc, use_symmetry=false )
-    psiks = unfold_BlochWavefuncGamma( Ham.pw, Ham_.pw, psis )
+    #Ham_ = Hamiltonian( atoms, pspfiles, ecutwfc, use_symmetry=false )
+    #psiks = unfold_BlochWavefuncGamma( Ham.pw, Ham_.pw, psis )
+    #@time KS_solve_Emin_PCG_dot!( Ham_, psiks, startingrhoe=:random, skip_initial_diag=true, NiterMax=200 )
     #@time KS_solve_Emin_PCG!( Ham_, psiks, startingrhoe=:random, skip_initial_diag=true )
-    @time KS_solve_Emin_PCG_dot!( Ham_, psiks, startingrhoe=:random, skip_initial_diag=true, NiterMax=200 )
     #@time KS_solve_Emin_PCG!( Ham_, psiks )
 
 end

@@ -92,7 +92,8 @@ function randn_BlochWavefuncGamma( Nbasis::Int64, Nstates::Int64; Nspin=1 )
         for ist in 1:Nstates
             data[ispin][1,ist] = data[ispin][1,ist] + conj(data[ispin][1,ist])
         end
-        ortho_GS_gamma!(data[ispin])
+        #ortho_GS_gamma!(data[ispin])
+        ortho_sqrt_gamma!(data[ispin])
     end
 
     return BlochWavefuncGamma(data)
@@ -159,7 +160,13 @@ function ortho_sqrt_gamma!( psis::BlochWavefuncGamma )
     C = zeros(ComplexF64,Nstates,Nstates)
     for i in 1:Nspin
         C = overlap_gamma(psis.data[i], psis.data[i])
-        psis.data *= inv(sqrt(C))
+        psis.data[i][:,:] = psis.data[i][:,:]*inv(sqrt(C))
     end
+    return
+end
+
+function ortho_sqrt_gamma!( psi::Array{ComplexF64,2} )
+    C = overlap_gamma(psi, psi)
+    psi[:,:] = psi[:,:]*inv(sqrt(C))
     return
 end

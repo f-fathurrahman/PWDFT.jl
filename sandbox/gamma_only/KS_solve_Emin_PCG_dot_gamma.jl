@@ -35,7 +35,7 @@ function KS_solve_Emin_PCG_dot!(
 
     d = deepcopy(Kg)
     # Constrain
-    constrain_search_dir!( d, psis )
+    #constrain_search_dir!( d, psis )
 
     gPrevUsed = true
 
@@ -91,7 +91,7 @@ function KS_solve_Emin_PCG_dot!(
             d.data[i] = -Kg.data[i] + β*d.data[i]
         end
 
-        constrain_search_dir!( d, psis )
+        #constrain_search_dir!( d, psis )
 
         α = linmin_grad!( Ham, psis, g, d )
         # Limite the value of α if it is too big.
@@ -108,7 +108,8 @@ function KS_solve_Emin_PCG_dot!(
         # Update psis
         for i in 1:Nspin
             psis.data[i] = psis.data[i] + α*d.data[i]
-            ortho_GS_gamma!( psis.data[i] )
+            #ortho_GS_gamma!( psis.data[i] )
+            ortho_sqrt_gamma!( psis.data[i] )
         end
 
         Etot = calc_energies_grad!( Ham, psis, g, Kg, Hsub )

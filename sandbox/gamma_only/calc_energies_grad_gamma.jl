@@ -6,19 +6,10 @@ function calc_energies_grad!(
     Hsub::Vector{Matrix{ComplexF64}}
 )
 
-    #ortho_check(psis)
-    #println("dot(psis,psis) = ", dot_BlochWavefuncGamma(psis,psis))
-
     Rhoe = calc_rhoe( Ham, psis )
     update!( Ham, Rhoe )
-    
-    #println("integ Rhoe = ", sum(Rhoe)*Ham.pw.CellVolume/prod(Ham.pw.Ns))
-
-    #println("Rhoe = ", Rhoe[1,1])
-    #println("Rhoe = ", Rhoe[2,1])
 
     Ham.energies = calc_energies( Ham, psis )
-    #println(Ham.energies)
 
     Nspin = Ham.electrons.Nspin
     for ispin in 1:Nspin
@@ -78,7 +69,8 @@ function do_step!( α::Float64, psis::BlochWavefuncGamma, d::BlochWavefuncGamma 
     Nspin = length(psis)
     for i in 1:Nspin
         psis.data[i] = psis.data[i] + α*d.data[i]
-        ortho_GS_gamma!( psis.data[i] )
+        #ortho_GS_gamma!( psis.data[i] )
+        ortho_sqrt_gamma!( psis.data[i] )
     end
     return
 end
