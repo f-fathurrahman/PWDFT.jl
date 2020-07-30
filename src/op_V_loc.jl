@@ -55,24 +55,25 @@ function op_V_loc( ik::Int64, pw::PWGrid, V_loc, psi::Array{ComplexF64,2} )
     Npoints = prod(Ns)
     Nstates = size(psi)[2]
 
-    ctmp = zeros(ComplexF64, Npoints, Nstates)
+    ctmp = zeros(ComplexF64, Npoints)
+    Vpsi = zeros(ComplexF64, pw.gvecw.Ngw[ik], Nstates)
     idx = pw.gvecw.idx_gw2r[ik]
     for ist = 1:Nstates
-        ctmp[idx,ist] = psi[:,ist]
-    end
-
-    # get values of psi in real space grid
-    G_to_R!(pw, ctmp)
-
-    for ist = 1:Nstates
+        ctmp .= 0.0 + im*0.0
+        ctmp[idx] = psi[:,ist]
+        # get values of psi in real space grid
+        G_to_R!(pw, ctmp)
+        # Multiply in real space
         for ip = 1:Npoints
-            ctmp[ip,ist] = V_loc[ip]*ctmp[ip,ist]
+            ctmp[ip] = V_loc[ip]*ctmp[ip]
         end
+        # Back to G-space
+        R_to_G!(pw, ctmp)
+        #
+        Vpsi[:,ist] = ctmp[idx]
     end
 
-    R_to_G!(pw, ctmp)
-
-    return ctmp[idx,:]
+    return Vpsi
 end
 
 #
