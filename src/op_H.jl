@@ -9,6 +9,12 @@ function op_H( Ham::Hamiltonian, psi )
     end
 end
 
+# TODO: Implement inplace op_H and other operators
+function op_H!( Ham::Hamiltonian, psi, Hpsi )
+    #
+    return
+end
+
 import Base: *
 *( Ham::Hamiltonian, psi ) = op_H( Ham, psi )
 *( psi::LinearAlgebra.Adjoint{Complex{Float64},Array{Complex{Float64},2}},
