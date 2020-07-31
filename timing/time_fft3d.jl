@@ -117,5 +117,5 @@ end
 #test_multicolumn( 40.0, 10 )
 #test_multicolumn( 50.0, 10 )
 
-#test_singlecolumn_btime(50.0)
+test_singlecolumn_btime(50.0)
 test_multicolumn_btime(50.0, 2)
