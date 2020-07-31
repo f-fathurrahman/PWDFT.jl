@@ -32,26 +32,48 @@ function time_op_kpt()
 
     @printf("Integ rhoe = %18.10f\n\n", sum(Rhoe)*CellVolume/prod(Ns))
 
+    println()
     @printf("Calc rhoe                     : ")
     @btime calc_rhoe( $Ham, $psiks )
 
+    println()
     @printf("Updating local potential      : ")
     @btime update!( $Ham, $Rhoe )
 
+    println()
     @printf("Kinetic operator              : ")
     @btime op_K( $Ham, $psiks )
 
+    Hpsiks = zeros_BlochWavefunc(Ham)
+    @printf("Kinetic operator (inplace)    : ")
+    @btime op_K!( $Ham, $psiks, $Hpsiks )
+
+    println()
     @printf("V_Ps_loc                      : ")
     @btime op_V_Ps_loc( $Ham, $psiks )
 
-    @printf("V_loc (Ps loc + Hartree + XC) : ")
+    println()
+    @printf("V_loc                         : ")
     @btime op_V_loc( $Ham, $psiks )
 
+    Hpsiks = zeros_BlochWavefunc(Ham)
+    @printf("V_loc (inplace)               : ")
+    @btime op_V_loc!( $Ham, $psiks, $Hpsiks )
+
+    println()
     @printf("V_Ps_nloc                     : ")
     @btime op_V_Ps_nloc( $Ham, $psiks )
 
+    Hpsiks = zeros_BlochWavefunc(Ham)    
+    @printf("V_Ps_nloc (inplace)           : ")
+    @btime op_V_Ps_nloc!( $Ham, $psiks, $Hpsiks )
+
+    println()
     @printf("Hamiltonian                   : ")
     @btime op_H( $Ham, $psiks )
+
+    @printf("Hamiltonian (inplace)         : ")
+    @btime op_H!( $Ham, $psiks, $Hpsiks )
 
 end
 
