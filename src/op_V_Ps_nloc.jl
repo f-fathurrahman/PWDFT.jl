@@ -59,6 +59,58 @@ function op_V_Ps_nloc( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
     return Vpsi
 end
 
+function op_V_Ps_nloc!( Ham::Hamiltonian, psiks::BlochWavefunc, Hpsiks::BlochWavefunc )
+    Nstates = size(psiks[1],2)
+    Nspin = Ham.electrons.Nspin
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt    
+    for ispin = 1:Nspin, ik in 1:Nkpt
+        Ham.ik = ik
+        Ham.ispin = ispin
+        i = ik + (ispin - 1)*Nkpt
+        op_V_Ps_nloc!( Ham, psiks[i], Hpsiks[i] )
+    end
+    return
+end
+
+function op_V_Ps_nloc!( Ham::Hamiltonian, psi::Array{ComplexF64,2}, Hpsi::Array{ComplexF64,2} )
+    ik = Ham.ik
+    # Take `Nstates` to be the size of psi and not from `Ham.electrons.Nstates`.
+    Nstates = size(psi,2)
+    # first dimension of psi should be Ngw[ik]
+    atoms = Ham.atoms
+    atm2species = atoms.atm2species
+    Natoms = atoms.Natoms
+    Pspots = Ham.pspots
+    prj2beta = Ham.pspotNL.prj2beta
+    betaNL = Ham.pspotNL.betaNL
+    Ngw_ik = Ham.pw.gvecw.Ngw[ik]
+    #
+    betaNL_psi = calc_betaNL_psi( ik, Ham.pspotNL.betaNL, psi )
+    #
+    for ist = 1:Nstates
+        for ia = 1:Natoms
+            isp = atm2species[ia]
+            psp = Pspots[isp]
+            for l = 0:psp.lmax
+            for m = -l:l
+                for iprj = 1:psp.Nproj_l[l+1]
+                for jprj = 1:psp.Nproj_l[l+1]
+                    ibeta = prj2beta[iprj,ia,l+1,m+psp.lmax+1]
+                    jbeta = prj2beta[jprj,ia,l+1,m+psp.lmax+1]
+                    hij = psp.h[l+1,iprj,jprj]
+                    for igw in 1:Ngw_ik
+                        Hpsi[igw,ist] = Hpsi[igw,ist] + hij*betaNL[ik][igw,ibeta]*betaNL_psi[ist,jbeta]
+                    end
+                end # iprj
+                end # jprj
+            end # m
+            end # l
+        end
+    end
+    return
+end
+
+
 # FIXME: remove redundant code
 function op_V_Ps_nloc( Ham::Hamiltonian, psi::Array{ComplexF64,1} )
 

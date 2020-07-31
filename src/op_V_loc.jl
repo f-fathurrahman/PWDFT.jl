@@ -15,6 +15,74 @@ function op_V_loc( Ham::Hamiltonian, psiks::BlochWavefunc )
     return out
 end
 
+
+# In-place, accumalated version
+function op_V_loc!( Ham::Hamiltonian, psiks::BlochWavefunc, Hpsiks::BlochWavefunc )
+    Nstates = size(psiks[1])[2] # Nstates should be similar for all Bloch states
+    Nspin = Ham.electrons.Nspin
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt    
+    for ispin in 1:Nspin, ik in 1:Nkpt
+        Ham.ik = ik
+        Ham.ispin = ispin
+        i = ik + (ispin - 1)*Nkpt
+        op_V_loc!( Ham, psiks[i], Hpsiks[i] )
+    end
+    return
+end
+
+
+# In-place, accumated version
+function op_V_loc!( Ham::Hamiltonian, psi::Array{ComplexF64,2}, Hpsi::Array{ComplexF64,2} )
+
+    pw = Ham.pw
+
+    ik = Ham.ik
+    ispin = Ham.ispin
+    Nkpt = pw.gvecw.kpoints.Nkpt
+    i = ik + (ispin - 1)*Nkpt
+    V_loc = Ham.potentials.Total
+    
+    CellVolume  = pw.CellVolume
+    Npoints = prod(pw.Ns)
+    Nstates = size(psi,2)
+    idx = pw.gvecw.idx_gw2r[ik]
+    Ngw_ik = pw.gvecw.Ngw[ik]
+    #
+    ctmp = zeros(ComplexF64, Npoints)
+    #
+    for ist in 1:Nstates
+        #
+        ctmp .= 0.0 + im*0.0
+        for igw in 1:Ngw_ik
+            ip = idx[igw]
+            ctmp[ip] = psi[igw,ist]
+        end
+        #
+        # get values of psi in real space grid
+        #
+        G_to_R!(pw, ctmp)
+        #
+        # Multiply in real space
+        #
+        for ip in 1:Npoints
+            ctmp[ip] = V_loc[ip,ispin]*ctmp[ip]
+        end
+        #
+        # Back to G-space
+        #
+        R_to_G!(pw, ctmp)
+        #
+        # Accumalate result in Hpsi
+        #
+        for igw in 1:Ngw_ik
+            ip = idx[igw]
+            Hpsi[igw,ist] = Hpsi[igw,ist] + ctmp[ip]
+        end
+    end
+    return
+end
+
+
 function op_V_Ps_loc( Ham::Hamiltonian, psiks::BlochWavefunc )
     Nstates = size(psiks[1])[2] # Nstates should be similar for all Bloch states
     Nspin = Ham.electrons.Nspin
