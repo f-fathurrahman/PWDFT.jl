@@ -37,11 +37,11 @@ function main( ; method="SCF" )
     end
 
     Hpsiks = zeros_BlochWavefunc(Ham)
-    PWDFT.op_H!(Ham, psiks, Hpsiks)
+    op_H!(Ham, psiks, Hpsiks)
     print("Using in-place op_H: ")
     @time begin
         for i in 1:10
-            PWDFT.op_H!(Ham, psiks, Hpsiks)
+            op_H!(Ham, psiks, Hpsiks)
         end
     end
 

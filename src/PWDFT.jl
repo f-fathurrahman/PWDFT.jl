@@ -154,7 +154,8 @@ include("op_K.jl")
 include("op_V_loc.jl")
 include("op_V_Ps_nloc.jl")
 include("op_H.jl")
-export op_H, op_K, op_V_loc, op_V_Ps_loc, op_V_Ps_nloc
+export op_H, op_K, op_V_loc, op_V_Ps_loc, op_V_Ps_nloc,
+       op_H!, op_K!, op_V_loc!, op_V_Ps_loc!, op_V_Ps_nloc!
 
 include("Poisson_solve.jl")
 export Poisson_solve
