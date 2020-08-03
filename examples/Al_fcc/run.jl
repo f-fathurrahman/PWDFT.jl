@@ -4,6 +4,11 @@ using PWDFT
 const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
 const DIR_PSP = joinpath(DIR_PWDFT,"pseudopotentials","pade_gth")
 
+import InteractiveUtils
+InteractiveUtils.versioninfo()
+import Dates
+println("Now = ", Dates.now())
+
 function main()
 
     Random.seed!(1234)

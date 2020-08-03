@@ -7,6 +7,10 @@ const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
 const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pbe_gth")
 const DIR_STRUCTURES = joinpath(DIR_PWDFT, "structures")
 
+import InteractiveUtils
+InteractiveUtils.versioninfo()
+import Dates
+println("Now = ", Dates.now())
 
 function main( ; method="SCF" )
 
