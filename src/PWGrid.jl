@@ -128,7 +128,7 @@ function calc_Ng( Ns, RecVecs, ecutrho )
         G[2] = RecVecs[2,1]*gi + RecVecs[2,2]*gj + RecVecs[2,3]*gk
         G[3] = RecVecs[3,1]*gi + RecVecs[3,2]*gj + RecVecs[3,3]*gk
         G2 = G[1]^2 + G[2]^2 + G[3]^2
-        if 0.5*G2 < ecutrho
+        if 0.5*G2 <= ecutrho
             Ng = Ng + 1
         end
     end
