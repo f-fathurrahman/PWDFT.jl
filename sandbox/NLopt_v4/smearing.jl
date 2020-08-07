@@ -21,7 +21,8 @@ function smear_fermi_entropy( ϵ::Float64, E_f::Float64, kT::Float64 )
     S = 0.0
     if f > 1e-300
         S = S - f*log(f)
-    elseif (1-f) > 1e-300
+    end
+    if (1-f) > 1e-300
         S = S - (1-f)*log(1-f)
     end
     return S
