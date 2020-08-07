@@ -6,16 +6,42 @@ include("smearing.jl")
 
 function test_01()
     evals = [1.0, 2.0, 3.0, 4.0]
-    E_f = 2.5
+    Nstates = size(evals,1)
+    E_f = 2.1
     kT = 0.1
-    
-    println( smear_fermi.( evals, E_f, kT ) )
+    x = (E_f .- evals)/kT # for wgauss and w1gauss
 
-    x = (E_f .- evals)/kT
-    println( PWDFT.wgauss.(x) )
+    println( "smear        = ", smear_fermi.( evals, E_f, kT ) )
+    println( "smear (v2)   = ", PWDFT.wgauss.(x) )
+
+    x1 = -smear_fermi_entropy.( evals, E_f, kT ) 
+    x2 = PWDFT.w1gauss.(x)
+    println( "entropy      = ", x1)
+    println( "entropy (v2) = ", x2)
+    println( "ratio        = ", x2./x1)
+
+
+    wks = [2.0]
+    #mTS = calc_entropy( [1.0], kT, reshape(evals,(4,1)), E_f, 1 )
+    mTS = 0.0
+    println("\nOriginal")
+    for ist = 1:Nstates
+        xx = wks[1]*kT*PWDFT.w1gauss( (E_f - evals[ist])/kT )
+        mTS = mTS + xx
+        @printf("xx = %18.10f\n", xx)
+    end
+    println("mTS = ", mTS)
+
+    mTS = 0.0
+    println("\nNew")
+    for ist = 1:Nstates
+        xx = -wks[1]*(2*kT)*smear_fermi_entropy( evals[ist], E_f, kT )
+        mTS = mTS + xx
+        @printf("xx = %18.10f\n", xx)
+    end
+    println("mTS = ", mTS)
 end
-
-#test_01()
+test_01()
 
 function test_02()
     evals = [1.0, 2.0, 3.0, 4.0]
@@ -48,5 +74,4 @@ function test_03()
         @printf("%3d %18.10f %18.10f %18.10f\n", ist, Focc[ist], fprime[ist], df)
     end
 end
-
-test_03()
+#test_03()
