@@ -38,7 +38,6 @@ function KS_solve_SCF_NLsolve!( Ham::Hamiltonian; use_smearing=false, kT=1e-3 )
 
     # calculate E_NN and PspCore energies
     Ham.energies.NN = calc_E_NN( Ham.atoms )
-    Ham.energies.PspCore = calc_PspCore_ene( Ham.atoms, Ham.pspots )
 
     evals = zeros( Float64, Nstates, Nkspin )
 
