@@ -27,15 +27,17 @@ function main()
     kT = 0.01
     #Ham = create_Ham_atom_Si_smearing()
     #Ham = create_Ham_atom_Al_smearing()
+    Ham = create_Ham_atom_C_smearing()
     #Ham = create_Ham_Al_fcc_smearing()
     #Ham = create_Ham_atom_Pt_smearing()
-    Ham = create_Ham_Pt_fcc_smearing()
+    #Ham = create_Ham_Pt_fcc_smearing()
     #println(Ham)
 
     #test_ElecVars(Ham)
 
     psiks = rand_BlochWavefunc(Ham)
-    setup_guess_wavefunc!( Ham, psiks, startingrhoe=:gaussian, skip_initial_diag=false )
+    #setup_guess_wavefunc!( Ham, psiks, startingrhoe=:gaussian, skip_initial_diag=false )
+    setup_guess_wavefunc!( Ham, psiks, startingrhoe=:random, skip_initial_diag=false )
     evars = ElecVars(Ham, psiks)
     
     #evars = ElecVars(Ham)

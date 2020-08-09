@@ -126,7 +126,7 @@ function print_ebands_Hsub_eigs( Ham, evars )
     for i in 1:Nkspin
         println("ikspin = ", i)
         for ist in 1:Nstates
-            @printf("%4d %18.10f %18.10f %18.10e\n", ist,
+            @printf("%4d %10.5f %18.10f %18.10f %18.10e\n", ist, Ham.electrons.Focc[ist,i],
                 ebands[ist,i], Hsub_eigs[ist,i], abs(ebands[ist,i]-Hsub_eigs[ist,i]))
         end
     end

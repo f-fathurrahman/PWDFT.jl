@@ -46,6 +46,14 @@ function KS_solve_Emin_SD_Haux!( Ham::Hamiltonian, evars::ElecVars;
         constrain_search_dir!( d, evars )
 
         α, α_Haux = linmin_grad_v2!( Ham, evars, g, d, kT, subrot )
+        if α > 2.0
+            println("α is too large, limiting it to 2.0")
+            α = 2.0
+        end
+        if α_Haux > 2.0
+            println("α_Haux is too large, limiting it to 2.0")
+            α_Haux= 2.0
+        end
         println("α      = ", α)
         println("α_Haux = ", α_Haux)
         do_step!( Ham, α, α_Haux, evars, d, subrot )
