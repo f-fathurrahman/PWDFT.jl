@@ -27,8 +27,19 @@ function KS_solve_Emin_SD_Haux!( Ham::Hamiltonian, evars::ElecVars;
 
     β = 0.0
 
+    Nconverged = 0
     # Begin iter
     for iter in 1:NiterMax
+
+        @printf("---------------------\n")
+        @printf("Begin iteration #%4d\n", iter)
+        @printf("---------------------\n")
+
+        ss = dot(evars.psiks[1], g.psiks[1])
+        @printf("dot evars.psi and g.psi     = %18.10f\n", real(ss))
+
+        ss = dot(diagm(0 => Ham.electrons.ebands[:,1]), g.Haux[1]) # ikspin=1
+        @printf("dot diagm(eorbs) and g.Haux = %18.10f\n", real(ss))
 
         gKnorm = dot_ElecGradient(g, Kg)
         @printf("gKnorm = %18.10e\n", gKnorm)
@@ -47,11 +58,13 @@ function KS_solve_Emin_SD_Haux!( Ham::Hamiltonian, evars::ElecVars;
 
         α, α_Haux = linmin_grad_v2!( Ham, evars, g, d, kT, subrot )
         if α > 2.0
-            println("α is too large, limiting it to 2.0")
+            println("α is too large: ", α)
+            println("Limiting it to 2.0")
             α = 2.0
         end
         if α_Haux > 2.0
-            println("α_Haux is too large, limiting it to 2.0")
+            println("α_Haux is too large: ", α_Haux)
+            println("Limiting it to 2.0")
             α_Haux= 2.0
         end
         println("α      = ", α)
@@ -67,6 +80,15 @@ function KS_solve_Emin_SD_Haux!( Ham::Hamiltonian, evars::ElecVars;
             println("Energy is not reducing")
         else
             println()
+        end
+        if abs(diffE) < 1e-6
+            Nconverged = Nconverged + 1
+        else
+            Nconverged = 0
+        end
+        if Nconverged >= 2
+            println("Emin_SD_Haux is converged")
+            break
         end
         calc_Hsub_eigs!(evars)
         print_ebands_Hsub_eigs(Ham, evars)

@@ -71,17 +71,17 @@ function calc_energies_grad!(
 
     dmuContrib = sum(dmuNum)/sum(dmuDen)
     dBzContrib = 0.0 # not used
+    println("fprime     = ", fprime)
+    println("fprimeNum  = ", fprimeNum)
+    println("dmuContrib = ", dmuContrib)
 
     gradF0 = zeros(ComplexF64,Nstates,Nstates)
     gradF = zeros(ComplexF64,Nstates,Nstates)
 
     g_tmp = zeros(ComplexF64,Nstates,Nstates)
     for ispin in 1:Nspin, ik in 1:Nkpt
-        #
         i = ik + (ispin - 1)*Nkpt
-        #
         gradF0[:] = evars.Hsub[i] - diagm( 0 => Ham.electrons.ebands[:,i] )
-        #gradF0[:] = diagm( 0 => ( diag(evars.Hsub[i]) - evars.Haux_eigs[:,i] ) )
         gradF[:] = copy(gradF0)
         for ist in 1:Nstates
             gradF[ist,ist] = gradF0[ist,ist] - dmuContrib # FIXME: not tested for spinpol
@@ -111,7 +111,11 @@ function calc_grad!( Ham::Hamiltonian, psiks::BlochWavefunc, g::BlochWavefunc, H
     return
 end
 
-function calc_grad!( Ham::Hamiltonian, ψ::Array{ComplexF64,2}, g::Array{ComplexF64,2}, Hsub::Matrix{ComplexF64} )
+function calc_grad!(
+    Ham::Hamiltonian,
+    ψ::Array{ComplexF64,2}, g::Array{ComplexF64,2},
+    Hsub::Matrix{ComplexF64}
+)
 
     ik = Ham.ik
     ispin = Ham.ispin
@@ -151,27 +155,6 @@ function Kprec!( ik::Int64, pw::PWGrid, psi::Array{ComplexF64,2}, Kpsi::Array{Co
     return
 end
 
-function dot_ElecGradient( v1::ElecGradient, v2::ElecGradient )
-    Nkspin = length(v1.psiks)
-    ss = 0.0
-    for i in 1:Nkspin
-        ss = ss + 2.0*real( dot(v1.psiks[i], v2.psiks[i]) )
-        ss = ss + real( dot(v1.Haux[i], v2.Haux[i]) ) # no factor of 2
-    end
-    return ss
-end
-
-function dot_ElecGradient_v2( v1::ElecGradient, v2::ElecGradient )
-    Nkspin = length(v1.psiks)
-    ss = 0.0
-    ss_Haux = 0.0
-    for i in 1:Nkspin
-        ss = ss + 2.0*real( dot(v1.psiks[i], v2.psiks[i]) )
-        ss_Haux = ss_Haux + real( dot(v1.Haux[i], v2.Haux[i]) ) # no factor of 2
-    end
-    return ss, ss_Haux
-end
-
 function compute!(
     Ham::Hamiltonian,
     evars::ElecVars,
@@ -185,10 +168,10 @@ function compute!(
     rotPrevCinv = subrot.prevCinv
     rotPrev = subrot.prev
     for i in 1:Nkspin
-        g.psiks[i] = g.psiks[i] * rotPrevCinv[i]
+        g.psiks[i]  = g.psiks[i] * rotPrevCinv[i]
         Kg.psiks[i] = Kg.psiks[i] * rotPrevCinv[i]
-        g.Haux[i] = rotPrev[i] * g.Haux[i] * rotPrev[i]'
-        Kg.Haux[i] = rotPrev[i] * Kg.Haux[i] * rotPrev[i]'
+        g.Haux[i]   = rotPrev[i] * g.Haux[i] * rotPrev[i]'
+        Kg.Haux[i]  = rotPrev[i] * Kg.Haux[i] * rotPrev[i]'
     end
 
     # No caching is done (for SubspaceRotationAdjutst)
@@ -226,29 +209,19 @@ function do_step!(
     for i in 1:Nkspin
         evars.psiks[i] = evars.psiks[i] + α*d.psiks[i]*rotPrevC[i]
 
-        # Haux fillings:
         Haux = diagm( 0 => Ham.electrons.ebands[:,i] )
-        
-        #axpy(alpha, rotExists ? dagger(rotPrev[q])*dir.Haux[q]*rotPrev[q] : dir.Haux[q], Haux);
         Haux = Haux + α_Haux*( rotPrev[i]' * d.Haux[i] * rotPrev[i] )
 
         #Haux.diagonalize(rot, eVars.Haux_eigs[q]); //rotation chosen to diagonalize auxiliary matrix
         Ham.electrons.ebands[:,i], rot = eigen(Hermitian(Haux)) # need to symmetrize?
  
-        #rotC = rot
-        #eVars.orthonormalize(q, &rotC);
         Udagger = inv( sqrt( evars.psiks[i]' * evars.psiks[i] ) )
         rotC = Udagger*rot
         evars.psiks[i] = evars.psiks[i]*rotC
-
-        #evars.psiks[i] = evars.psiks[i]*Udagger*rot
         
         rotPrev[i] = rotPrev[i] * rot
-        rotPrevC[i] = rotPrevC[i] * rotC               # original
+        rotPrevC[i] = rotPrevC[i] * rotC
         rotPrevCinv[i] = inv(rotC) * rotPrevCinv[i]
-        
-        #rotPrevC[i] = rotPrevC[i] * rot
-        #rotPrevCinv[i] = inv(rot) * rotPrevCinv[i]
 
     end
     

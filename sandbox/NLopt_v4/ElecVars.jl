@@ -132,3 +132,23 @@ function print_ebands_Hsub_eigs( Ham, evars )
     end
 end
 
+function dot_ElecGradient( v1::ElecGradient, v2::ElecGradient )
+    Nkspin = length(v1.psiks)
+    ss = 0.0
+    for i in 1:Nkspin
+        ss = ss + 2.0*real( dot(v1.psiks[i], v2.psiks[i]) )
+        ss = ss + real( dot(v1.Haux[i], v2.Haux[i]) ) # no factor of 2
+    end
+    return ss
+end
+
+function dot_ElecGradient_v2( v1::ElecGradient, v2::ElecGradient )
+    Nkspin = length(v1.psiks)
+    ss = 0.0
+    ss_Haux = 0.0
+    for i in 1:Nkspin
+        ss = ss + 2.0*real( dot(v1.psiks[i], v2.psiks[i]) )
+        ss_Haux = ss_Haux + real( dot(v1.Haux[i], v2.Haux[i]) ) # no factor of 2
+    end
+    return ss, ss_Haux
+end

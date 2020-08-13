@@ -22,7 +22,7 @@ include("KS_solve_Emin_PCG_Haux_v2.jl")
 
 function main()
 
-    Random.seed!(1234)
+    Random.seed!(12345)
 
     kT = 0.01
     #Ham = create_Ham_atom_Si_smearing()
