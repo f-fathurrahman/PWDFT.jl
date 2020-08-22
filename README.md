@@ -274,6 +274,12 @@ Please see
 [this](examples/bands_Si_fcc/run_bands.jl) as
 an example of how this can be obtained.
 
+## Citation
+
+- Fadjar Fathurrahman, Mohammad Kemal Agusta, Adhitya Gandaryus Saputro, Hermawan Kresno Dipojono [
+  PWDFT.jl : A Julia package for electronic structure calculation using density functional theory and plane wave basis](https://doi.org/10.1016/j.cpc.2020.107372).
+  Comp. Phys. Comm. **256** 107372 (2020).
+
 ## Some references
 
 Articles:
