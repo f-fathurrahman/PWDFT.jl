@@ -1,4 +1,4 @@
-\documentclass[a4paper,10pt]{article}
+\documentclass[a4paper,10pt,fleqn]{article}
 
 \usepackage[a4paper]{geometry}
 \geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
@@ -10,9 +10,10 @@
 \usepackage{amssymb}
 \usepackage{braket}
 
-\usepackage{fontspec}
-\setmonofont{DejaVu Sans Mono}
-%\setmonofont{Source Code Pro}
+\usepackage[libertine]{newtxmath}
+\usepackage[no-math]{fontspec}
+\setmainfont{Linux Libertine O}
+\setmonofont{JuliaMono-Regular}
 
 \usepackage{hyperref}
 \usepackage{url}
@@ -44,6 +45,7 @@
   rounded corners, inner sep=10pt, inner ysep=20pt]
 \tikzstyle{fancytitle} = [fill=blue, text=white]
 
+\renewcommand{\imath}{\mathrm{i}}
 
 \begin{document}
 
@@ -114,6 +116,8 @@ energy.
 \input{SCF}
 
 \input{DirectMin}
+
+\input{Forces}
 
 \appendix
 \section{Howtos}
