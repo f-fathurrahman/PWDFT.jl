@@ -1,1 +1,0 @@
-nvprof --profile-from-start off julia $1

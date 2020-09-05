@@ -1,1 +1,0 @@
-Based on QuantumESPRESSO implementation.
