@@ -5,13 +5,11 @@ function op_K( Ham::Hamiltonian, psiks::BlochWavefunc )
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     out = zeros_BlochWavefunc(Ham)
     
-    for ispin = 1:Nspin
-    for ik = 1:Nkpt
+    for ispin in 1:Nspin, ik in 1:Nkpt
         Ham.ik = ik
         Ham.ispin = ispin
         ikspin = ik + (ispin - 1)*Nkpt
         out[ikspin] = op_K( Ham, psiks[ikspin] )
-    end
     end
     return out
 end
@@ -51,8 +49,8 @@ function op_K( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
 
     out = zeros(ComplexF64,size(psi))
 
-    for ist = 1:Nstates
-        for igk = 1:Ngw[ik]
+    for ist in 1:Nstates
+        for igk in 1:Ngw[ik]
             ig = idx_gw2g[igk]
             Gw2 = (G[1,ig] + k[1])^2 + (G[2,ig] + k[2])^2 + (G[3,ig] + k[3])^2
             out[igk,ist] = psi[igk,ist]*Gw2
@@ -81,8 +79,8 @@ function op_K!(
     k1 = pw.gvecw.kpoints.k[1,ik]
     k2 = pw.gvecw.kpoints.k[2,ik]
     k3 = pw.gvecw.kpoints.k[3,ik]
-    for ist = 1:Nstates
-        for igk = 1:Ngw[ik]
+    for ist in 1:Nstates
+        for igk in 1:Ngw[ik]
             ig = idx_gw2g[igk]
             Gw2 = (G[1,ig] + k1)^2 + (G[2,ig] + k2)^2 + (G[3,ig] + k3)^2
             Hpsi[igk,ist] = Hpsi[igk,ist] + 0.5*psi[igk,ist]*Gw2
@@ -107,7 +105,7 @@ function op_K( Ham::Hamiltonian, psi::Array{ComplexF64,1} )
 
     out = zeros(ComplexF64,size(psi))
 
-    for igk = 1:Ngw[ik]
+    for igk in 1:Ngw[ik]
         ig = idx_gw2g[igk]
         Gw2 = (G[1,ig] + k[1])^2 + (G[2,ig] + k[2])^2 + (G[3,ig] + k[3])^2
         out[igk] = psi[igk]*Gw2

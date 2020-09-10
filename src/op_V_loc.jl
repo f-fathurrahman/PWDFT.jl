@@ -2,21 +2,18 @@ function op_V_loc( Ham::Hamiltonian, psiks::BlochWavefunc )
     Nstates = size(psiks[1])[2] # Nstates should be similar for all Bloch states
     Nspin = Ham.electrons.Nspin
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
-    out = zeros_BlochWavefunc(Ham)
-    
-    for ispin = 1:Nspin
-    for ik=1:Nkpt
+    out = zeros_BlochWavefunc(Ham)    
+    for ispin in 1:Nspin, ik in 1:Nkpt
         Ham.ik = ik
         Ham.ispin = ispin
         ikspin = ik + (ispin - 1)*Nkpt
         out[ikspin] = op_V_loc( Ham, psiks[ikspin] )
     end
-    end
     return out
 end
 
 
-# In-place, accumalated version
+# In-place, accumulated version
 function op_V_loc!( Ham::Hamiltonian, psiks::BlochWavefunc, Hpsiks::BlochWavefunc )
     Nstates = size(psiks[1])[2] # Nstates should be similar for all Bloch states
     Nspin = Ham.electrons.Nspin
@@ -89,13 +86,11 @@ function op_V_Ps_loc( Ham::Hamiltonian, psiks::BlochWavefunc )
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     out = zeros_BlochWavefunc(Ham)
     
-    for ispin = 1:Nspin
-    for ik=1:Nkpt
+    for ispin in 1:Nspin, ik in 1:Nkpt
         Ham.ik = ik
         Ham.ispin = ispin
         ikspin = ik + (ispin - 1)*Nkpt
         out[ikspin] = op_V_Ps_loc( Ham, psiks[ikspin] )
-    end
     end
     return out
 end
@@ -126,13 +121,15 @@ function op_V_loc( ik::Int64, pw::PWGrid, V_loc, psi::Array{ComplexF64,2} )
     ctmp = zeros(ComplexF64, Npoints)
     Vpsi = zeros(ComplexF64, pw.gvecw.Ngw[ik], Nstates)
     idx = pw.gvecw.idx_gw2r[ik]
-    for ist = 1:Nstates
-        ctmp .= 0.0 + im*0.0
+    for ist in 1:Nstates
+        #ctmp .= 0.0 + im*0.0
+        fill!(ctmp, 0.0 + im*0.0)
+        #
         ctmp[idx] = psi[:,ist]
         # get values of psi in real space grid
         G_to_R!(pw, ctmp)
         # Multiply in real space
-        for ip = 1:Npoints
+        for ip in 1:Npoints
             ctmp[ip] = V_loc[ip]*ctmp[ip]
         end
         # Back to G-space
@@ -169,7 +166,7 @@ function op_V_loc( ik::Int64, pw::PWGrid, V_loc, psi::Array{ComplexF64,1} )
     # get values of psi in real space grid
     ctmp = G_to_R( pw, ctmp )
 
-    for ip = 1:Npoints
+    for ip in 1:Npoints
         ctmp[ip] = V_loc[ip]*ctmp[ip]
     end
 

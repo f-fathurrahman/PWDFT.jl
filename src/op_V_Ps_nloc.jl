@@ -4,13 +4,11 @@ function op_V_Ps_nloc( Ham::Hamiltonian, psiks::BlochWavefunc )
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     out = zeros_BlochWavefunc(Ham)
     
-    for ispin = 1:Nspin
-    for ik=1:Nkpt
+    for ispin in 1:Nspin, ik in 1:Nkpt
         Ham.ik = ik
         Ham.ispin = ispin
         ikspin = ik + (ispin - 1)*Nkpt
         out[ikspin] = op_V_Ps_nloc( Ham, psiks[ikspin] )
-    end
     end
     return out
 end
@@ -36,18 +34,18 @@ function op_V_Ps_nloc( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
     Ngw = Ham.pw.gvecw.Ngw
     Vpsi = zeros( ComplexF64, Ngw[ik], Nstates )
 
-    for ist = 1:Nstates
-        for ia = 1:Natoms
+    for ist in 1:Nstates
+        for ia in 1:Natoms
             isp = atm2species[ia]
             psp = Pspots[isp]
-            for l = 0:psp.lmax
-            for m = -l:l
-                for iprj = 1:psp.Nproj_l[l+1]
-                for jprj = 1:psp.Nproj_l[l+1]
+            for l in 0:psp.lmax
+            for m in -l:l
+                for iprj in 1:psp.Nproj_l[l+1]
+                for jprj in 1:psp.Nproj_l[l+1]
                     ibeta = prj2beta[iprj,ia,l+1,m+psp.lmax+1]
                     jbeta = prj2beta[jprj,ia,l+1,m+psp.lmax+1]
                     hij = psp.h[l+1,iprj,jprj]
-                    for ig = 1:Ngw[ik]
+                    for ig in 1:Ngw[ik]
                         Vpsi[ig,ist] = Vpsi[ig,ist] + hij*betaNL[ik][ig,ibeta]*betaNL_psi[ist,jbeta]
                     end
                 end # iprj
@@ -63,7 +61,7 @@ function op_V_Ps_nloc!( Ham::Hamiltonian, psiks::BlochWavefunc, Hpsiks::BlochWav
     Nstates = size(psiks[1],2)
     Nspin = Ham.electrons.Nspin
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt    
-    for ispin = 1:Nspin, ik in 1:Nkpt
+    for ispin in 1:Nspin, ik in 1:Nkpt
         Ham.ik = ik
         Ham.ispin = ispin
         i = ik + (ispin - 1)*Nkpt

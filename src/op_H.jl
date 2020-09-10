@@ -31,7 +31,7 @@ function op_H!( Ham::Hamiltonian, psi, Hpsi )
     #for i in 1:N
     #    Hpsi[i] .= 0.0 + im*0.0
     #end
-    zero_out!(Hpsi)
+    zero_out!(Hpsi) # FIXME: use fill! ?
     op_K!( Ham, psi, Hpsi )
     op_V_loc!( Ham, psi, Hpsi )
     if Ham.pspotNL.NbetaNL > 0
