@@ -60,6 +60,11 @@ function calc_forces_NN!(
     mmm2 = round(Int64, tmax/t2m + 1.5)
     mmm3 = round(Int64, tmax/t3m + 1.5)
 
+    #println("R-space: tmax = ", tmax)
+    #println("R-space: mmm1 = ", mmm1)
+    #println("R-space: mmm2 = ", mmm2)
+    #println("R-space: mmm3 = ", mmm3)
+
     dtau = zeros(Float64,3)
     G = zeros(Float64,3)
     T = zeros(Float64,3)
@@ -69,9 +74,9 @@ function calc_forces_NN!(
 
     D = zeros(3)
 
-    for ia = 1:Natoms
-    for ja = 1:Natoms
-    if ia != ja
+    for ia in 1:Natoms, ja in ia+1:Natoms
+
+        #@printf("ia = %d ja = %d\n", ia, ja)
 
         dtau[1] = tau[1,ia] - tau[1,ja]
         dtau[2] = tau[2,ia] - tau[2,ja]
@@ -81,35 +86,47 @@ function calc_forces_NN!(
         jsp = atm2species[ja]
         ZiZj = Zvals[isp]*Zvals[jsp]
 
-        for i = -mmm1:mmm1
-        for j = -mmm2:mmm2
-        for k = -mmm3:mmm3
-            if (abs(i) + abs(j) + abs(k)) != 0
-                T[1] = i*t1[1] + j*t2[1] + k*t3[1]
-                T[2] = i*t1[2] + j*t2[2] + k*t3[2]
-                T[3] = i*t1[3] + j*t2[3] + k*t3[3]
-                D[1] = dtau[1] - T[1]
-                D[2] = dtau[2] - T[2]
-                D[3] = dtau[3] - T[3]
-                D2 = D[1]^2 + D[2]^2 + D[3]^2
-                Dmag = sqrt(D2)
-                F_NN_R[:,ia] = F_NN_R[:,ia] - η*_Herfc(η*Dmag)*D[:]/D2*ZiZj
+        for i in -mmm1:mmm1, j in -mmm2:mmm2, k in -mmm3:mmm3
+            if (abs(i) + abs(j) + abs(k)) == 0
+                continue
             end
+            T[1] = i*t1[1] + j*t2[1] + k*t3[1]
+            T[2] = i*t1[2] + j*t2[2] + k*t3[2]
+            T[3] = i*t1[3] + j*t2[3] + k*t3[3]
+            D[1] = dtau[1] - T[1]
+            D[2] = dtau[2] - T[2]
+            D[3] = dtau[3] - T[3]
+            D2 = D[1]^2 + D[2]^2 + D[3]^2
+            Dmag = sqrt(D2)
+            xx = _Herfc(η*Dmag)
+            #
+            df1 = η*xx*D[1]/D2*ZiZj
+            df2 = η*xx*D[2]/D2*ZiZj
+            df3 = η*xx*D[3]/D2*ZiZj
+            #
+            F_NN_R[1,ia] = F_NN_R[1,ia] - df1
+            F_NN_R[2,ia] = F_NN_R[2,ia] - df2
+            F_NN_R[3,ia] = F_NN_R[3,ia] - df3
+            #
+            F_NN_R[1,ja] = F_NN_R[1,ja] + df1
+            F_NN_R[2,ja] = F_NN_R[2,ja] + df2
+            F_NN_R[3,ja] = F_NN_R[3,ja] + df3
         end
-        end
-        end
-    end
-    end
     end
 
     mmm1 = round(Int64, gcut/g1m + 1.5)
     mmm2 = round(Int64, gcut/g2m + 1.5)
     mmm3 = round(Int64, gcut/g3m + 1.5)
 
-    for ia = 1:Natoms
-    for ja = 1:Natoms
-    if ia != ja
+    println("G-space: tmax = ", tmax)
+    println("G-space: mmm1 = ", mmm1)
+    println("G-space: mmm2 = ", mmm2)
+    println("G-space: mmm3 = ", mmm3)
+
+    for ia in 1:Natoms, ja in ia+1:Natoms
         
+        #@printf("ia = %d ja = %d\n", ia, ja)
+
         isp = atm2species[ia]
         jsp = atm2species[ja]
         ZiZj = Zvals[isp]*Zvals[jsp]
@@ -118,23 +135,29 @@ function calc_forces_NN!(
         dtau[2] = tau[2,ia] - tau[2,ja]
         dtau[3] = tau[3,ia] - tau[3,ja]
 
-        for i = -mmm1:mmm1
-        for j = -mmm2:mmm2
-        for k = -mmm3:mmm3
-        if ( abs(i) + abs(j) + abs(k) ) != 0
+        for i in -mmm1:mmm1, j in -mmm2:mmm2, k in -mmm3:mmm3
+            if ( abs(i) + abs(j) + abs(k) ) == 0
+                continue
+            end
             G[1] = i*g1[1] + j*g2[1] + k*g3[1]
             G[2] = i*g1[2] + j*g2[2] + k*g3[2]
             G[3] = i*g1[3] + j*g2[3] + k*g3[3]        
             G2 = G[1]^2 + G[2]^2 + G[3]^2
             x = 4*pi/Ω * exp(-0.25*G2/η^2)/G2
             Gtau = G[1]*dtau[1] + G[2]*dtau[2] + G[3]*dtau[3]
-            F_NN_G[:,ia] = F_NN_G[:,ia] + x*sin(Gtau)*G[:]*ZiZj
+            xsinGtau = x*sin(Gtau)
+            df1 = xsinGtau*G[1]*ZiZj
+            df2 = xsinGtau*G[2]*ZiZj
+            df3 = xsinGtau*G[3]*ZiZj
+            #
+            F_NN_G[1,ia] = F_NN_G[1,ia] + df1
+            F_NN_G[2,ia] = F_NN_G[2,ia] + df2
+            F_NN_G[3,ia] = F_NN_G[3,ia] + df3
+            #
+            F_NN_G[1,ja] = F_NN_G[1,ja] - df1
+            F_NN_G[2,ja] = F_NN_G[2,ja] - df2
+            F_NN_G[3,ja] = F_NN_G[3,ja] - df3
         end
-        end
-        end
-        end # if
-    end
-    end
     end
 
     F_NN[:] = F_NN_G[:] + F_NN_R[:]
