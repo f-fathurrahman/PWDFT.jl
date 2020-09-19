@@ -3,7 +3,7 @@ function calc_forces(
     psiks::BlochWavefunc,
 )
 
-    F_NN = calc_forces_NN( Ham.atoms )
+    F_NN = calc_forces_NN( Ham.pw, Ham.atoms )
 
     F_Ps_loc = calc_forces_Ps_loc( Ham )
 
