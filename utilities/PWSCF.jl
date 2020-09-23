@@ -59,10 +59,11 @@ Limitation:
 - Pseudopotentials are written in the same directory as input file.
   (no `prefix_psp`)
 """
-function write_pwscf( Ham::Hamiltonian; filename="PWINPUT",
+function write_pwscf( Ham; filename="PWINPUT",
                       prefix_dir="./",
                       use_smearing=false, kT=0.001,
-                      etot_conv_thr=1e-6 )
+                      mixing_beta=0.7,
+                      etot_conv_thr=1e-6, gamma_only=false, nosym=false )
     atoms = Ham.atoms
     pw = Ham.pw
     electrons = Ham.electrons
@@ -103,6 +104,10 @@ function write_pwscf( Ham::Hamiltonian; filename="PWINPUT",
         @printf(f, "  input_dft = 'pbe'\n")
     end
 
+    if nosym
+       @printf(f, "  nosym = .true.\n")
+    end
+
     # When Nelectrons is odd and no-smearing is used, we must
     # use occupations = 'from_input' and add the OCCUPATIONS card
     Nelectrons = electrons.Nelectrons
@@ -127,9 +132,10 @@ function write_pwscf( Ham::Hamiltonian; filename="PWINPUT",
 
     @printf(f, "&ELECTRONS\n")
     @printf(f, "  electron_maxstep = 150\n")
-    #@printf(f, "  mixing_beta = 0.1\n") # use default mixing_beta
+    @printf(f, "  mixing_beta = %f\n", mixing_beta)
     @printf(f, "  conv_thr = %.10e\n", etot_conv_thr)
     @printf(f, "/\n\n")
+    # etot_conv_thr is also an input variable for PWSCF (for geometry optimization)
 
     @printf(f, "ATOMIC_SPECIES\n")
     for isp = 1:Nspecies
@@ -145,10 +151,14 @@ function write_pwscf( Ham::Hamiltonian; filename="PWINPUT",
     end
     @printf(f, "\n")
 
-    kmesh = pw.gvecw.kpoints.mesh
-    @printf(f, "K_POINTS automatic\n")
-    @printf(f, "%d %d %d 0 0 0\n", kmesh[1], kmesh[2], kmesh[3])
-    @printf(f, "\n")
+    if gamma_only
+        @printf(f, "K_POINTS gamma_only\n")        
+    else
+        kmesh = pw.gvecw.kpoints.mesh
+        @printf(f, "K_POINTS automatic\n")
+        @printf(f, "%d %d %d 0 0 0\n", kmesh[1], kmesh[2], kmesh[3])
+        @printf(f, "\n")
+    end
 
     LatVecs = pw.LatVecs
     @printf(f, "CELL_PARAMETERS bohr\n")
@@ -230,7 +240,7 @@ end
 # simplified version, avoiding full construction of Hamiltonian.
 function write_pwscf( atoms::Atoms, electrons::Electrons, ecutwfc::Float64 ;
                       filename="PWINPUT",
-                      prefix="./",
+                      prefix="./", gamma_only=false,
                       use_smearing=false, kT=0.001)
 
     f = open( joinpath(prefix, filename), "w")
@@ -286,10 +296,14 @@ function write_pwscf( atoms::Atoms, electrons::Electrons, ecutwfc::Float64 ;
     end
     @printf(f, "\n")
 
-    kmesh = pw.gvecw.kpoints.mesh
-    @printf(f, "K_POINTS automatic\n")
-    @printf(f, "%d %d %d 0 0 0\n", kmesh[1], kmesh[2], kmesh[3])
-    @printf(f, "\n")
+    if gamma_only
+        @printf(f, "K_POINTS gamma_only\n")
+    else
+        kmesh = pw.gvecw.kpoints.mesh
+        @printf(f, "K_POINTS automatic\n")
+        @printf(f, "%d %d %d 0 0 0\n", kmesh[1], kmesh[2], kmesh[3])
+        @printf(f, "\n")
+    end
 
     LatVecs = pw.LatVecs
     @printf(f, "CELL_PARAMETERS bohr\n")
