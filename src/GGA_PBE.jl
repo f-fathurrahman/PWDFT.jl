@@ -123,16 +123,16 @@ function calc_Vxc_PBE( xc_calc::LibxcXCCalculator, pw::PWGrid, Rhoe::Array{Float
     Vg_xc = Vg_x + Vg_c
 
     # gradient correction
-    h = zeros(Float64,3,Npoints)
-    divh = zeros(Float64,Npoints)
-
+    hx = zeros(ComplexF64, pw.Ns)
+    hy = zeros(ComplexF64, pw.Ns)
+    hz = zeros(ComplexF64, pw.Ns)
     for ip = 1:Npoints
-        h[1,ip] = Vg_xc[ip] * gRhoe[1,ip]
-        h[2,ip] = Vg_xc[ip] * gRhoe[2,ip]
-        h[3,ip] = Vg_xc[ip] * gRhoe[3,ip]
+        hx[ip] = Vg_xc[ip] * gRhoe[1,ip]
+        hy[ip] = Vg_xc[ip] * gRhoe[2,ip]
+        hz[ip] = Vg_xc[ip] * gRhoe[3,ip]
     end
     # div ( vgrho * gRhoe )
-    divh = op_nabla_dot( pw, h )
+    divh = op_nabla_dot( pw, hx, hy, hz )
     #
     for ip = 1:Npoints
         V_xc[ip] = V_xc[ip] - 2.0*divh[ip]
@@ -203,19 +203,21 @@ function calc_Vxc_PBE( xc_calc::LibxcXCCalculator, pw::PWGrid, Rhoe::Array{Float
 
     Vg_xc = reshape(Vg_x + Vg_c, (3,Npoints))
 
-    h = zeros(Float64,3,Npoints)
+    hx = zeros(ComplexF64, pw.Ns)
+    hy = zeros(ComplexF64, pw.Ns)
+    hz = zeros(ComplexF64, pw.Ns)
     divh = zeros(Float64,Npoints)
 
     #
     # spin up
     #
     for ip = 1:Npoints
-        h[1,ip] = 2*Vg_xc[1,ip]*gRhoe_up[1,ip] + Vg_xc[2,ip]*gRhoe_dn[1,ip]
-        h[2,ip] = 2*Vg_xc[1,ip]*gRhoe_up[2,ip] + Vg_xc[2,ip]*gRhoe_dn[2,ip]
-        h[3,ip] = 2*Vg_xc[1,ip]*gRhoe_up[3,ip] + Vg_xc[2,ip]*gRhoe_dn[3,ip]
+        hx[ip] = 2*Vg_xc[1,ip]*gRhoe_up[1,ip] + Vg_xc[2,ip]*gRhoe_dn[1,ip]
+        hy[ip] = 2*Vg_xc[1,ip]*gRhoe_up[2,ip] + Vg_xc[2,ip]*gRhoe_dn[2,ip]
+        hz[ip] = 2*Vg_xc[1,ip]*gRhoe_up[3,ip] + Vg_xc[2,ip]*gRhoe_dn[3,ip]
     end
 
-    divh = op_nabla_dot( pw, h )
+    divh = op_nabla_dot( pw, hx, hy, hz )
 
     # spin up
     for ip = 1:Npoints
@@ -226,13 +228,13 @@ function calc_Vxc_PBE( xc_calc::LibxcXCCalculator, pw::PWGrid, Rhoe::Array{Float
     # Spin down
     #
     for ip = 1:Npoints
-        h[1,ip] = 2*Vg_xc[3,ip]*gRhoe_dn[1,ip] + Vg_xc[2,ip]*gRhoe_up[1,ip]
-        h[2,ip] = 2*Vg_xc[3,ip]*gRhoe_dn[2,ip] + Vg_xc[2,ip]*gRhoe_up[2,ip]
-        h[3,ip] = 2*Vg_xc[3,ip]*gRhoe_dn[3,ip] + Vg_xc[2,ip]*gRhoe_up[3,ip]
+        hx[ip] = 2*Vg_xc[3,ip]*gRhoe_dn[1,ip] + Vg_xc[2,ip]*gRhoe_up[1,ip]
+        hy[ip] = 2*Vg_xc[3,ip]*gRhoe_dn[2,ip] + Vg_xc[2,ip]*gRhoe_up[2,ip]
+        hz[ip] = 2*Vg_xc[3,ip]*gRhoe_dn[3,ip] + Vg_xc[2,ip]*gRhoe_up[3,ip]
     end
 
     #
-    divh = op_nabla_dot( pw, h )
+    divh = op_nabla_dot( pw, hx, hy, hz )
     # spin down
     for ip = 1:Npoints
         V_xc[ip,2] = V_xc[ip,2] - divh[ip]

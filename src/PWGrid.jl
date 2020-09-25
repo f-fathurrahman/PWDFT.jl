@@ -350,4 +350,31 @@ function op_nabla_dot( pw::PWGrid, h::Array{Float64,2} )
 
 end
 
+
+
+function op_nabla_dot(
+    pw::PWGrid,
+    hGx::Array{ComplexF64,3},
+    hGy::Array{ComplexF64,3},
+    hGz::Array{ComplexF64,3}
+)
+    G = pw.gvec.G
+    Ng = pw.gvec.Ng
+    idx_g2r = pw.gvec.idx_g2r
+    Npoints = prod(pw.Ns)
+
+    R_to_G!(pw, hGx)
+    R_to_G!(pw, hGy)
+    R_to_G!(pw, hGz)    
+
+    divhG_full = zeros(ComplexF64, pw.Ns)
+    
+    for ig = 1:Ng
+        ip = idx_g2r[ig]
+        divhG_full[ip] = im*( G[1,ig]*hGx[ip] + G[2,ig]*hGy[ip] + G[3,ig]*hGz[ip] )
+    end
+    G_to_R!(pw, divhG_full)
+    return real(divhG_full)
+end
+
 include("PWGrid_io.jl")
