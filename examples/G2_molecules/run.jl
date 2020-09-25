@@ -24,7 +24,7 @@ function get_default_psp(atoms::Atoms)
     return pspfiles
 end
 
-function do_calc( ; molname="H2O", method="SCF" )
+function do_calc( molname::String; method="SCF" )
 
     Random.seed!(1234)
 
@@ -57,11 +57,11 @@ function main()
     else
         molname = ARGS[1]
     end
-    @time do_calc(method="SCF")
-    @time do_calc(method="Emin")
+    @time do_calc(molname, method="SCF")
+    @time do_calc(molname, method="Emin")
     
-    @time do_calc(method="SCF")
-    @time do_calc(method="Emin")
+    @time do_calc(molname, method="SCF")
+    @time do_calc(molname, method="Emin")
 end
 
 main()
