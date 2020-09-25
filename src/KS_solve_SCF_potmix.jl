@@ -1,3 +1,8 @@
+function KS_solve_SCF_potmix!( Ham::Hamiltonian; kwargs... )
+    KS_solve_SCF!( Ham, rand_BlochWavefunc(Ham); kwargs... )
+    return
+end
+
 """
     KS_solve_SCF_potmix!( Ham, kwargs... )
 
@@ -9,10 +14,9 @@ Most arguments in `KS_solve_SCF!` are supported however not all mixing
 methods are implemented.
 """
 function KS_solve_SCF_potmix!(
-    Ham::Hamiltonian;
+    Ham::Hamiltonian, psiks::BlochWavefunc;
     NiterMax=150,
     betamix=0.2,
-    startingwfc=:random,
     startingrhoe=:gaussian,
     verbose=true,
     print_final_ebands=false,
@@ -58,18 +62,9 @@ function KS_solve_SCF_potmix!(
         println("") # blank line before SCF iteration info
     end
 
-    #
-    # Initial wave function
-    #
-    if startingwfc == :read
-        psiks = read_psiks( Ham )
-    else
-        # generate random BlochWavefunc
-        psiks = rand_BlochWavefunc( Ham )
-    end
 
     Rhoe = zeros(Float64,Npoints,Nspin)
-    if startingrhoe == :gaussian && startingwfc == :random
+    if startingrhoe == :gaussian
         if Nspin == 1
             Rhoe[:,1] = guess_rhoe( Ham )
         else
