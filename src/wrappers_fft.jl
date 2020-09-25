@@ -2,6 +2,17 @@
 ## for in-place FFT we should use plan_fft! and plan_fft! instead
 ## Probably in-place FFT is better than out-of-place FFT
 
+function G_to_R!( pw::PWGrid, fG::Array{ComplexF64,3} )
+    @views fG[:,:,:] = pw.planbw*fG[:,:,:]
+    return
+end
+
+function R_to_G!( pw::PWGrid, fR::Array{ComplexF64,3} )
+    plan = pw.planfw
+    @views fR[:,:,:] = pw.planfw*fR[:,:,:]
+    return
+end
+
 #
 # Using plan_fft and plan_ifft
 #
