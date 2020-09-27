@@ -175,6 +175,12 @@ function KS_solve_SCF_potmix!(
         end
 
         calc_rhoe!( Ham, psiks, Rhoe )
+        # Ensure that there is no negative rhoe
+        for i in 1:Npoints*Nspin
+            if Rhoe[i] < eps()
+                Rhoe[i] = eps()
+            end
+        end
 
         # Save the old (input) potential
         Vxc_inp[:,:] = Ham.potentials.XC
