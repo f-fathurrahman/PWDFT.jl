@@ -198,8 +198,13 @@ function KS_solve_SCF_potmix!(
         end
         Etot = sum(Ham.energies)
 
+        # Calculate MAE
         for ispin = 1:Nspin
-            diffRhoe[ispin] = sum(abs.(@views Rhoe[:,ispin] - Rhoe_old[:,ispin]))/Npoints
+            ss = 0.0
+            for ip in 1:Npoints
+                ss = ss + abs(Rhoe[ip,ispin] - Rhoe_old[ip,ispin])
+            end
+            diffRhoe[ispin] = ss/Npoints
         end
 
         diffEtot = abs(Etot - Etot_old)
