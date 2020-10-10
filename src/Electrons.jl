@@ -183,6 +183,45 @@ function Electrons( atoms::Atoms, Zvals::Array{Float64,1};
     return Electrons( Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin )
 end
 
+"""
+NelectronsSpin = (Nel_up, Nel_dn)
+"""
+function Electrons(
+    atoms::Atoms, Pspots::Array{PsPot_GTH,1},
+    NelectronsSpin::Tuple{Int64,Int64};
+    Nkpt=1, Nstates_extra=0
+)
+    Nspin = 2
+    Nelectrons = get_Nelectrons(atoms,Pspots)
+    @assert round(Int64,Nelectrons) == sum(NelectronsSpin)
+
+    Nstates_occ = maximum(NelectronsSpin)
+    Nstates = Nstates_occ + Nstates_extra
+
+    Focc = zeros(Float64,Nstates,Nkpt*Nspin)
+    ebands = zeros(Float64,Nstates,Nkpt*Nspin)
+    
+    Nstates
+
+    for ik in 1:Nkpt
+        for i in 1:NelectronsSpin[1]
+            Focc[i,ik] = 1.0
+        end
+        for i in 1:NelectronsSpin[2]
+            Focc[i,Nkpt+ik] = 1.0
+        end
+    end
+
+    sFocc = sum(Focc)/Nkpt
+    # Check if the generated Focc is consistent
+    if abs( sFocc - Nelectrons ) > eps()
+        @printf("sum Focc = %f, Nelectrons = %f\n", sFocc, Nelectrons)
+        error(@sprintf("ERROR: diff sum(Focc) and Nelectrons is not small\n"))
+    end
+
+    return Electrons( Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin )
+end
+
 
 """
 Returns number of electrons for a given `atoms::Atoms` and
