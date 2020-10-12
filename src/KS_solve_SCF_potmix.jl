@@ -1,5 +1,5 @@
 function KS_solve_SCF_potmix!( Ham::Hamiltonian; kwargs... )
-    KS_solve_SCF!( Ham, rand_BlochWavefunc(Ham); kwargs... )
+    KS_solve_SCF_potmix!( Ham, rand_BlochWavefunc(Ham); kwargs... )
     return
 end
 
