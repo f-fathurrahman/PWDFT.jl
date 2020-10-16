@@ -200,8 +200,6 @@ function Electrons(
 
     Focc = zeros(Float64,Nstates,Nkpt*Nspin)
     ebands = zeros(Float64,Nstates,Nkpt*Nspin)
-    
-    Nstates
 
     for ik in 1:Nkpt
         for i in 1:NelectronsSpin[1]
