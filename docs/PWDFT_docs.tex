@@ -1,7 +1,8 @@
-\documentclass[a4paper,10pt,fleqn]{article}
+\documentclass[a4paper,fleqn]{article}
 
 \usepackage[a4paper]{geometry}
-\geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
+\usepackage{NotesTeX}
+%\geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
 
 \setlength{\parskip}{\smallskipamount}
 \setlength{\parindent}{0pt}
@@ -49,12 +50,34 @@
 
 \begin{document}
 
-\title{\textsf{PWDFT.jl} Documentation}
+\title{
+  \begin{center}{
+    \Huge \textit{PWDFT.jl}}\\
+    {{\itshape Electronic Structure Calculations with Julia}}
+\end{center}
+}
 \author{Fadjar Fathurrahman}
-\date{}
+
+
+\affiliation{
+Program Studi Teknik Fisika \\
+Fakultas Teknologi Industri \\
+Institut Teknologi Bandung
+}
+
+\emailAdd{fadjar.fathurrahman@gmail.com}
+\emailAdd{fadjar@tf.itb.ac.id}
+
+%\title{\textsf{PWDFT.jl} Documentation}
+%\author{Fadjar Fathurrahman}
+%\date{}
+
 \maketitle
 
-%\tableofcontents
+\newpage
+\part{Introduction}
+
+\input{Installation}
 
 \textbf{This document is a work in progress}
 
@@ -100,6 +123,8 @@ energy.
 \item \jlinline{SymmetryInfo}: contains information about symmetry operations.
 \end{itemize}
 
+\newpage
+\part{Implementation}
 
 \input{Atoms}
 
@@ -118,6 +143,9 @@ energy.
 \input{DirectMin}
 
 \input{Forces}
+
+\newpage
+\part{Other things}
 
 \appendix
 \section{Howtos}
