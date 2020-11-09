@@ -35,9 +35,9 @@
 \definecolor{mintedbg}{rgb}{0.90,0.90,0.90}
 \usepackage{mdframed}
 
-%\BeforeBeginEnvironment{minted}{\begin{mdframed}[backgroundcolor=mintedbg,%
-%  rightline=false,leftline=false,topline=false,bottomline=false]}
-%\AfterEndEnvironment{minted}{\end{mdframed}}
+\BeforeBeginEnvironment{minted}{\begin{mdframed}[backgroundcolor=mintedbg,%
+  rightline=false,leftline=false,topline=false,bottomline=false]}
+\AfterEndEnvironment{minted}{\end{mdframed}}
 
 
 \usepackage{tikz}
@@ -77,7 +77,41 @@ Institut Teknologi Bandung
 \newpage
 \part{Introduction}
 
+\section{Overview}
+
+\txtinline{PWDFT.jl} is a package to solve electronic structure problems
+based on density functional theory (DFT) and Kohn-Sham equations
+It is written in Julia programming language.
+The Kohn-Sham orbitals are expanded using plane wave basis. This basis set is
+very popular within solid-state community and is also used in several electronic
+structure package such as Quantum ESPRESSO, ABINIT, VASP, etc.
+
+Some of implemented features are:
+\begin{itemize}
+\item Total energy calculation of molecules, surfaces, and crystalline system
+  within periodic unit cell (however, no corrections are 
+  implemented for non-periodic systems yet).
+\item SCF with electron density mixing (for semiconducting and metallic systems)
+\item Direct minimization method using conjugate gradient (for semiconducting systems)
+\item GTH pseudopotentials (included in the repository)
+\item LDA-VWN and GGA-PBE functionals (via \txtinline{Libxc.jl})
+\end{itemize}
+
+We would be very grateful if you cite the following
+reference if you find \textsf{PWDFT.jl} useful for your works:
+
+Fadjar Fathurrahman, Mohammad Kemal Agusta, Adhitya Gandaryus Saputro, and
+Hermawan Kresno Dipojono.
+PWDFT.jl : A Julia package for electronic structure calculation using density functional 
+theory and plane wave basis.
+{\footnotesize \url{https://doi.org/10.1016/j.cpc.2020.107372}}.
+Comp. Phys. Comm. \textbf{256} 107372 (2020).
+
 \input{Installation}
+\input{Usage}
+
+\newpage
+\part{Implementation}
 
 \textbf{This document is a work in progress}
 
@@ -85,7 +119,7 @@ In this part I will describe my design choices in implementing \textsf{PWDFT.jl}
 This design is by no means perfect
 and it might change in the future to accomodate more complex use cases.
 
-\section{Overview}
+\section{Design overview}
 
 The design of \textsf{PWDFT.jl} is intended to be rather simple. One constraint
 that is set to the code is that it should be possible to perform application
@@ -97,12 +131,12 @@ Hpsi = op_H(Ham, psi)
 \end{juliacode}
 %
 where \jlinline{psi} is, currently, of type \jlinline{Array{ComplexF64,2}}
-\footnote{This function may be extended take other types other that plain Julia
-array for more complex case.}.
+\sidenote{\footnotesize This function may be extended take other types other
+than plain Julia array for more complex case.}.
 %
 This comes with an important consequences: all other pieces of information
 about how this operation is done should be present in the type of \jlinline{Ham}.
-\footnote{We will also see some quirks related to this design choice later,
+\sidenote{ \footnotesize We will also see some quirks related to this design choice later,
 such as applying Hamiltonian to several k-points or spin-polarized case}.
 
 In \textsf{PWDFT.jl}, the type of \jlinline{Ham} is \jlinline{Hamiltonian}.
@@ -122,9 +156,6 @@ terms.
 energy.
 \item \jlinline{SymmetryInfo}: contains information about symmetry operations.
 \end{itemize}
-
-\newpage
-\part{Implementation}
 
 \input{Atoms}
 
