@@ -86,6 +86,11 @@ export PWGrid,
        GVectorsW,
        op_nabla, op_nabla_dot
 
+include("gamma_only/PWGridGamma.jl")
+export PWGridGamma,
+       GVectorsGamma,
+       GVectorsWGamma
+
 #
 # FFT
 #
@@ -93,6 +98,7 @@ include("wrappers_fft.jl")
 export R_to_G, R_to_G!,
        G_to_R, G_to_R!
 
+include("gamma_only/wrappers_fft_gamma.jl")
 
 #
 # Pseudopotential
@@ -147,12 +153,29 @@ export Potentials
 include("PsPotNL.jl")
 export PsPotNL, calc_betaNL_psi
 
+include("gamma_only/PsPotNLGamma.jl")
+export PsPotNLGamma
+
 include("RhoeSymmetrizer.jl")
 export RhoeSymmetrizer,
        symmetrize_rhoe!
 
 include("Hamiltonian.jl")
 export Hamiltonian, update!
+
+include("gamma_only/HamiltonianGamma.jl")
+export HamiltonianGamma
+
+include("gamma_only/BlochWavefuncGamma.jl")
+export BlochWavefuncGamma,
+       rand_BlochWavefuncGamma,
+       randn_BlochWavefuncGamma,
+       overlap_gamma,
+       ortho_sqrt_gamma, ortho_sqrt_gamma!,
+       ortho_check_gamma
+
+include("gamma_only/unfold_BlochWavefuncGamma.jl")
+export unfold_BlochWavefuncGamma
 
 include("op_K.jl")
 include("op_V_loc.jl")
@@ -161,11 +184,23 @@ include("op_H.jl")
 export op_H, op_K, op_V_loc, op_V_Ps_loc, op_V_Ps_nloc,
        op_H!, op_K!, op_V_loc!, op_V_Ps_loc!, op_V_Ps_nloc!
 
+
+include("gamma_only/op_K_gamma.jl")
+include("gamma_only/op_V_loc_gamma.jl")
+include("gamma_only/op_V_Ps_nloc_gamma.jl")
+include("gamma_only/op_H_gamma.jl")
+
+
 include("Poisson_solve.jl")
 export Poisson_solve
 
+include("gamma_only/Poisson_solve_gamma.jl")
+
+
 include("calc_rhoe.jl")
 export calc_rhoe, calc_rhoe!
+
+include("gamma_only/calc_rhoe_gamma.jl")
 
 include("Kprec.jl")
 export Kprec
@@ -178,6 +213,9 @@ export calc_energies,
        calc_E_Hartree,
        calc_E_Ps_nloc
 
+include("gamma_only/calc_energies_gamma.jl")
+
+
 include("occupations.jl")
 export calc_Focc,
        calc_entropy,
@@ -185,6 +223,9 @@ export calc_Focc,
 
 include("calc_grad.jl")
 export calc_grad
+
+include("gamma_only/calc_grad_gamma.jl")
+export calc_grad! # FIXME, also implement for kpt-version
 
 #
 # Diagonalization methods
@@ -244,15 +285,17 @@ include("read_psiks.jl")
 export read_psiks
 
 include("calc_forces_NN.jl")
-export calc_forces_NN, calc_forces_NN!
-
 include("calc_forces_Ps_loc.jl")
-export calc_forces_Ps_loc, calc_forces_Ps_loc!
-
 include("calc_forces_Ps_nloc.jl")
-export calc_forces_Ps_nloc, calc_forces_Ps_nloc!
-
 include("calc_forces.jl")
+export calc_forces_NN, calc_forces_NN!
+export calc_forces_Ps_loc, calc_forces_Ps_loc!
+export calc_forces_Ps_nloc, calc_forces_Ps_nloc!
 export calc_forces
+
+include("gamma_only/calc_forces_NN_gamma.jl")
+include("gamma_only/calc_forces_Ps_loc_gamma.jl")
+include("gamma_only/calc_forces_Ps_nloc_gamma.jl")
+include("gamma_only/calc_forces_gamma.jl")
 
 end
