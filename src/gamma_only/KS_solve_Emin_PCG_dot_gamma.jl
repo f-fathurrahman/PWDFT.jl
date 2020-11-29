@@ -63,12 +63,12 @@ function KS_solve_Emin_PCG_dot!(
 
     for iter in 1:NiterMax
 
-        gKnorm = 2*real(dot_BlochWavefuncGamma(g, Kg))
+        gKnorm = real(dot(g, Kg))
         
         if !force_grad_dir    
-            dotgd = 2*real(dot_BlochWavefuncGamma(g, d))
+            dotgd = real(dot(g, d))
             if gPrevUsed
-                dotgPrevKg = 2*real(dot_BlochWavefuncGamma(gPrev, Kg))
+                dotgPrevKg = real(dot(gPrev, Kg))
             else
                 dotgPrevKg = 0.0
             end
@@ -93,14 +93,6 @@ function KS_solve_Emin_PCG_dot!(
 
         constrain_search_dir!( d, psis )
         α = linmin_grad!( Ham, psis, g, d, psic, gt, αt=1e-5 )
-        # Limite the value of α if it is too big.
-        # At least found in the case of NH3
-        println("α = ", α)
-        #if α > 2.0
-        #    println("Limiting α to 2, because α = ", α)
-        #    α = 2.0
-        #end
-        Rhoe_old = copy(Ham.rhoe)
         
         # Update psis
         for i in 1:Nspin
@@ -111,11 +103,6 @@ function KS_solve_Emin_PCG_dot!(
         Etot = calc_energies_grad!( Ham, psis, g, Kg, Hsub )
         
         diffE = Etot_old - Etot
-        #norm_g = sqrt(2.0*real(dot(g,Kg))/length(g))
-        #norm_g = norm(g.data)/length(g.data)
-        #norm_g = 2*real(dot_BlochWavefuncGamma(g,g))
-        #mae_rhoe = sum( abs.( Ham.rhoe - Rhoe_old ) )/(Npoints*Nspin)
-        #@printf("Emin_PCG_dot gamma step %8d = %18.10f  %12.7e %12.7e %12.7e\n", iter, Etot, diffE, norm_g, mae_rhoe)
         @printf("Emin_PCG_dot gamma step %8d = %18.10f  %12.7e\n", iter, Etot, diffE)
         if diffE < 0.0
             println("*** WARNING: Etot is not decreasing")

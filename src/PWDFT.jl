@@ -170,7 +170,7 @@ include("gamma_only/BlochWavefuncGamma.jl")
 export BlochWavefuncGamma,
        rand_BlochWavefuncGamma,
        randn_BlochWavefuncGamma,
-       overlap_gamma,
+       dot_gamma, overlap_gamma,
        ortho_sqrt_gamma, ortho_sqrt_gamma!,
        ortho_check_gamma
 
@@ -264,6 +264,13 @@ export guess_rhoe, guess_rhoe_atomic
 #
 include("KS_solve_Emin_PCG.jl")
 export KS_solve_Emin_PCG!
+
+include("gamma_only/setup_guess_wavefunc.jl")
+include("gamma_only/linmin_grad_gamma.jl")
+include("gamma_only/calc_energies_grad_gamma.jl")
+include("gamma_only/KS_solve_Emin_PCG_dot_gamma.jl")
+export KS_solve_Emin_PCG_dot!,
+       setup_guess_wavefunc!
 
 include("KS_solve_SCF.jl")
 export KS_solve_SCF!
