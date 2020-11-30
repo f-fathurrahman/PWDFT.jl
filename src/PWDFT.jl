@@ -278,6 +278,8 @@ export KS_solve_Emin_PCG_dot!,
 include("KS_solve_SCF.jl")
 export KS_solve_SCF!
 
+include("gamma_only/KS_solve_SCF_gamma.jl")
+
 include("KS_solve_SCF_potmix.jl")
 export KS_solve_SCF_potmix!
 
