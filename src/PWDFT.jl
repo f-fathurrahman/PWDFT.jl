@@ -237,6 +237,9 @@ export diag_LOBPCG, diag_LOBPCG!,
        diag_Emin_PCG, diag_Emin_PCG!,
        diag_davidson, diag_davidson!
 
+include("gamma_only/diag_Emin_PCG_gamma.jl")
+
+
 #
 # Mixing functions
 #
@@ -277,6 +280,8 @@ export KS_solve_SCF!
 
 include("KS_solve_SCF_potmix.jl")
 export KS_solve_SCF_potmix!
+
+include("gamma_only/KS_solve_SCF_potmix_gamma.jl")
 
 include("KS_solve_DCM.jl")
 export KS_solve_DCM!
