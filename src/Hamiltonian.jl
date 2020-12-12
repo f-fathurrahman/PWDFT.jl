@@ -147,7 +147,11 @@ function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
         xc_calc = XCCalculator()
     else
         # Using Libxc is the default
-        xc_calc = LibxcXCCalculator()
+        if xcfunc == "SCAN"
+            xc_calc = LibxcXCCalculator(is_metagga=true, Npoints=Npoints, Nspin=Nspin)
+        else
+            xc_calc = LibxcXCCalculator()
+        end
     end
 
     return Hamiltonian( pw, potentials, energies, rhoe,
