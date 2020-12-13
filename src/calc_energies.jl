@@ -60,7 +60,7 @@ end
 Compute and return local energy terms (local pseudopotential, Hartree, and XC) for a given
 Hamiltonian `Ham` with electron density stored in `Ham.rhoe`.
 """
-function calc_E_local( Ham::Hamiltonian )
+function calc_E_local( Ham::Hamiltonian, psiks::BlochWavefunc )
 
     Npoints = prod(Ham.pw.Ns)
     dVol = Ham.pw.CellVolume/Npoints
@@ -75,7 +75,10 @@ function calc_E_local( Ham::Hamiltonian )
     E_Hartree = 0.5*dot( potentials.Hartree, Rhoe_tot ) * dVol
     E_Ps_loc = dot( potentials.Ps_loc, Rhoe_tot ) * dVol
 
-    if Ham.xcfunc == "PBE"
+    if Ham.xcfunc == "SCAN"
+        # FIXME: no spinpol yet
+        epsxc = calc_epsxc_SCAN( Ham.xc_calc, Ham.pw, psiks, Rhoe_tot )
+    elseif Ham.xcfunc == "PBE"
         epsxc = calc_epsxc_PBE( Ham.xc_calc, Ham.pw, Ham.rhoe )
     else
         epsxc = calc_epsxc_VWN( Ham.xc_calc, Ham.rhoe )
@@ -143,7 +146,7 @@ function calc_energies( Ham::Hamiltonian, psiks::BlochWavefunc )
     
     E_kin = calc_E_kin( Ham, psiks )
 
-    E_Ps_loc, E_Hartree, E_xc = calc_E_local( Ham )
+    E_Ps_loc, E_Hartree, E_xc = calc_E_local( Ham, psiks )
 
     if Ham.pspotNL.NbetaNL > 0
         E_Ps_nloc = calc_E_Ps_nloc( Ham, psiks )

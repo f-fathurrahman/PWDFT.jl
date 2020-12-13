@@ -3,9 +3,9 @@
 # This is handled by individual op_* functions
 function op_H( Ham::Hamiltonian, psi )
     if Ham.pspotNL.NbetaNL > 0
-        return op_K( Ham, psi ) + op_V_loc( Ham, psi ) + op_V_Ps_nloc( Ham, psi )
+        return op_K( Ham, psi ) + op_V_loc( Ham, psi ) + op_V_Ps_nloc( Ham, psi ) + op_Vtau( Ham, psi )
     else
-        return op_K( Ham, psi ) + op_V_loc( Ham, psi )
+        return op_K( Ham, psi ) + op_V_loc( Ham, psi ) + op_Vtau( Ham, psi )
     end
 end
 
@@ -37,6 +37,7 @@ function op_H!( Ham::Hamiltonian, psi, Hpsi )
     if Ham.pspotNL.NbetaNL > 0
         op_V_Ps_nloc!( Ham, psi, Hpsi )
     end
+    op_Vtau!(Ham, psi, Hpsi)
     return
 end
 

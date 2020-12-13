@@ -65,7 +65,7 @@ function KS_solve_Emin_PCG!(
         calc_rhoe!( Ham, psiks, Rhoe )
     end
 
-    update!(Ham, Rhoe)
+    update!(Ham, psiks, Rhoe)
 
     evals = zeros(Nstates,Nkspin)
     if !skip_initial_diag
@@ -164,7 +164,7 @@ function KS_solve_Emin_PCG!(
         
         calc_rhoe!( Ham, psic, Rhoe )
 
-        update!(Ham, Rhoe)
+        update!(Ham, psic, Rhoe)
 
         for ispin = 1:Nspin, ik = 1:Nkpt
             Ham.ik = ik
@@ -194,7 +194,7 @@ function KS_solve_Emin_PCG!(
         # Update Rhoe and potentials
         calc_rhoe!( Ham, psiks, Rhoe )
 
-        update!(Ham, Rhoe)
+        update!(Ham, psiks, Rhoe)
 
         Ham.energies = calc_energies( Ham, psiks )
         Etot = sum(Ham.energies)

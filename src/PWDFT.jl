@@ -184,10 +184,11 @@ export unfold_BlochWavefuncGamma
 include("op_K.jl")
 include("op_V_loc.jl")
 include("op_V_Ps_nloc.jl")
+include("op_Vtau.jl")
 include("op_H.jl")
 export op_H, op_K, op_V_loc, op_V_Ps_loc, op_V_Ps_nloc,
-       op_H!, op_K!, op_V_loc!, op_V_Ps_loc!, op_V_Ps_nloc!
-
+       op_H!, op_K!, op_V_loc!, op_V_Ps_loc!, op_V_Ps_nloc!,
+       op_Vtau, op_Vtau!
 
 include("gamma_only/op_K_gamma.jl")
 include("gamma_only/op_V_loc_gamma.jl")

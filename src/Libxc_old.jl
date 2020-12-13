@@ -4,16 +4,19 @@ using Libxc
 mutable struct XCFuncType
 end
 
+#const LIBXC5 = "/home/efefer/mysoftwares/libxc-5.0.0/lib/libxc.so.9"
+const LIBXC5 = "/home/efefer/mysoftwares/libxc-4.3.4/lib/libxc.so.5"
+
 function Libxc_xc_func_alloc()
     ccall(
-        (:xc_func_alloc, Libxc.libxc), Ptr{XCFuncType},
+        (:xc_func_alloc, LIBXC5), Ptr{XCFuncType},
         ()
     )
 end
 
 function Libxc_xc_func_init( p::Ptr{XCFuncType}, functional::Int, nspin::Int )
     ccall(
-        (:xc_func_init, Libxc.libxc), Cint,
+        (:xc_func_init, LIBXC5), Cint,
         (Ptr{XCFuncType}, Cint, Cint),
         p, functional, nspin
     )
@@ -21,14 +24,14 @@ end
 
 function Libxc_xc_func_end( p::Ptr{XCFuncType} )
     ccall(
-        (:xc_func_end, Libxc.libxc), Cvoid,
+        (:xc_func_end, LIBXC5), Cvoid,
         (Ptr{XCFuncType},), p
     )
 end
 
 function Libxc_xc_func_free( p::Ptr{XCFuncType} )
     ccall(
-        (:xc_func_free, Libxc.libxc), Cvoid,
+        (:xc_func_free, LIBXC5), Cvoid,
         (Ptr{XCFuncType},), p
     )
 end
@@ -39,7 +42,7 @@ function Libxc_xc_lda_vxc!(
     rho::Array{Float64, 1},
     vrho::Array{Float64, 1}
 )
-    ccall( (:xc_lda_vxc, Libxc.libxc), Cvoid,
+    ccall( (:xc_lda_vxc, LIBXC5), Cvoid,
            (Ptr{XCFuncType}, Cint, Ptr{Float64}, Ptr{Float64}),
            p, np, rho, vrho)
 
@@ -51,7 +54,7 @@ function Libxc_xc_lda_exc!(
     rho::Array{Float64,1},
     zk::Array{Float64,1}
 )
-    ccall( (:xc_lda_exc, Libxc.libxc), Cvoid,
+    ccall( (:xc_lda_exc, LIBXC5), Cvoid,
            (Ptr{XCFuncType}, Cint, Ptr{Float64}, Ptr{Float64}),
            p, np, rho, zk
     )
@@ -65,7 +68,7 @@ function Libxc_xc_lda_exc_vxc!(
     vrho::Array{Float64,1}
 )
     ccall(
-        (:xc_lda_exc_vxc, Libxc.libxc), Cvoid,
+        (:xc_lda_exc_vxc, LIBXC5), Cvoid,
         (Ptr{XCFuncType}, Cint, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}),
         p, np, rho, zk, vrho
     )
@@ -80,7 +83,7 @@ function Libxc_xc_gga_exc!(
     zk::Array{Float64,1}
 )
     ccall(
-        (:xc_gga_exc, Libxc.libxc), Cvoid,
+        (:xc_gga_exc, LIBXC5), Cvoid,
         (Ptr{XCFuncType}, Cint, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}),
         p, np, rho, sigma, zk
     )
@@ -97,7 +100,7 @@ function Libxc_xc_gga_exc_vxc!(
     vsigma::Array{Float64,1}
 )
     ccall(
-        (:xc_gga_exc_vxc, Libxc.libxc), Cvoid,
+        (:xc_gga_exc_vxc, LIBXC5), Cvoid,
         (Ptr{XCFuncType}, Cint, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}),
         p, np, rho, sigma, zk, vrho, vsigma
     )
@@ -113,7 +116,7 @@ function Libxc_xc_gga_vxc!(
     vsigma::Array{Float64,1}
 )
     ccall(
-        (:xc_gga_vxc, Libxc.libxc), Cvoid,
+        (:xc_gga_vxc, LIBXC5), Cvoid,
         (Ptr{XCFuncType}, Cint, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}),
         p, np, rho, sigma, vrho, vsigma
     )
@@ -131,7 +134,7 @@ function Libxc_xc_mgga_exc!(
     exc::Array{Float64,1}
 )
     ccall(
-        (:xc_mgga_exc, Libxc.libxc), Cvoid,
+        (:xc_mgga_exc, LIBXC5), Cvoid,
         ( Ptr{XCFuncType}, Cint,
           Ptr{Float64}, Ptr{Float64}, Ptr{Float64}, Ptr{Float64},
           Ptr{Float64}
@@ -155,7 +158,7 @@ function Libxc_xc_mgga_vxc!(
     vtau::Array{Float64,1}
 )
     ccall(
-        (:xc_mgga_vxc, Libxc.libxc), Cvoid,
+        (:xc_mgga_vxc, LIBXC5), Cvoid,
         ( Ptr{XCFuncType}, Cint,
           Ptr{Float64}, Ptr{Float64}, Ptr{Float64}, Ptr{Float64},
           Ptr{Float64}, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}
@@ -180,7 +183,7 @@ function Libxc_xc_mgga_exc_vxc!(
     vtau::Array{Float64,1}
 )
     ccall(
-        (:xc_mgga_exc_vxc, Libxc.libxc), Cvoid,
+        (:xc_mgga_exc_vxc, LIBXC5), Cvoid,
         ( Ptr{XCFuncType}, Cint,
           Ptr{Float64}, Ptr{Float64}, Ptr{Float64}, Ptr{Float64},
           Ptr{Float64}, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}

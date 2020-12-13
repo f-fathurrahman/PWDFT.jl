@@ -31,6 +31,7 @@ function calc_KEdens!(
         G_to_R!(pw, ∇ψx)
         G_to_R!(pw, ∇ψy)
         G_to_R!(pw, ∇ψz)
+        # FIXME: Need to add wk and Focc weight?
         for ip in 1:Npoints
             KEdens[ip] = KEdens[ip] + real( conj(∇ψx[ip])*∇ψx[ip] +
                 conj(∇ψy[ip])*∇ψy[ip] + conj(∇ψz[ip])*∇ψz[ip] )
@@ -66,7 +67,7 @@ function calc_epsxc_SCAN(
     end
 
     # Need to symmetryize KEdens?
-    KEdens = zeros(Npoints)
+    KEdens = zeros(Float64,Npoints)
     calc_KEdens!(1, pw, psiks[1], KEdens)
 
     lapl = zeros(Npoints)
@@ -162,6 +163,7 @@ function calc_Vxc_SCAN!(
     #
     for ip = 1:Npoints
         V_xc[ip] = V_x[ip] + V_c[ip] - 2.0*divh[ip]
+        #V_xc[ip] = V_x[ip] + V_c[ip] - divh[ip]
         xc_calc.Vtau[ip,1] = Vtau_x[ip] + Vtau_c[ip]
     end
 

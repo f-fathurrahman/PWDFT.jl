@@ -249,15 +249,25 @@ function Hamiltonian( atoms::Atoms, ecutwfc::Float64;
 end
 
 # FIXME: should be merged with Array{Float64,2} version.
-function update!(Ham::Hamiltonian, rhoe::Array{Float64,1})
+# psiks is needed for metagga
+function update!( Ham::Hamiltonian, psiks::BlochWavefunc, rhoe::Array{Float64,1} )
     # assumption Nspin = 1
     Ham.rhoe[:,1] = rhoe
+    dVol = Ham.pw.CellVolume/prod(Ham.pw.Ns)
+    #println("integ rhoe = ", sum(rhoe)*dVol)
+    Vxc = zeros(size(rhoe,1))
     Ham.potentials.Hartree = real( G_to_R( Ham.pw, Poisson_solve(Ham.pw, rhoe) ) )
-    if Ham.xcfunc == "PBE"
+    
+    if Ham.xcfunc == "SCAN"
+        calc_Vxc_SCAN!( Ham.xc_calc, Ham.pw, psiks, rhoe, Vxc )
+        Ham.potentials.XC[:,1] = Vxc[:]
+        #println("integ Ham.potentials.XC = ", sum(Ham.potentials.XC)*dVol)
+    elseif Ham.xcfunc == "PBE"
         Ham.potentials.XC[:,1] = calc_Vxc_PBE( Ham.xc_calc, Ham.pw, rhoe )
     else  # VWN is the default
         Ham.potentials.XC[:,1] = calc_Vxc_VWN( Ham.xc_calc, rhoe )
     end
+    
     Npoints = prod(Ham.pw.Ns)
     for ip = 1:Npoints
         Ham.potentials.Total[ip,1] = Ham.potentials.Ps_loc[ip] + Ham.potentials.Hartree[ip] +
@@ -270,11 +280,13 @@ end
     update!(Ham, rhoe)
 
 Update Ham.rhoe and calculate Hartree and XC potentials for given `rhoe` in real space.
+
+FIXME: metagga
 """
-function update!(Ham::Hamiltonian, rhoe::Array{Float64,2})
+function update!(Ham::Hamiltonian, psiks::BlochWavefunc, rhoe::Array{Float64,2})
     Nspin = size(rhoe)[2]
     if Nspin == 1
-        update!(Ham, rhoe[:,1])
+        update!(Ham, psiks, rhoe[:,1])
         return
     end
     Ham.rhoe = rhoe[:,:]

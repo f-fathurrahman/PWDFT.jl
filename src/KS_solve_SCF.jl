@@ -122,7 +122,7 @@ function KS_solve_SCF!(
         println("")
     end
 
-    update!(Ham, Rhoe)
+    update!(Ham, psiks, Rhoe)
 
     Etot_old = 0.0
 
@@ -288,7 +288,7 @@ function KS_solve_SCF!(
             #@printf("After renormalize Rhoe: = %18.10f\n", integRhoe)
         end
 
-        update!( Ham, Rhoe )
+        update!(Ham, psiks, Rhoe)
 
         # Calculate energies
         Ham.energies = calc_energies( Ham, psiks )
