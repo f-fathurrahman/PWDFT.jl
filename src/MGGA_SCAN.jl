@@ -31,13 +31,17 @@ function calc_KEdens!(
         G_to_R!(pw, ∇ψx)
         G_to_R!(pw, ∇ψy)
         G_to_R!(pw, ∇ψz)
+        #
+        ∇ψx[:] = ∇ψx[:]*sqrt(Npoints/pw.CellVolume)*sqrt(Npoints)
+        ∇ψy[:] = ∇ψy[:]*sqrt(Npoints/pw.CellVolume)*sqrt(Npoints)
+        ∇ψz[:] = ∇ψz[:]*sqrt(Npoints/pw.CellVolume)*sqrt(Npoints)
         # FIXME: Need to add wk and Focc weight?
         for ip in 1:Npoints
             KEdens[ip] = KEdens[ip] + real( conj(∇ψx[ip])*∇ψx[ip] +
                 conj(∇ψy[ip])*∇ψy[ip] + conj(∇ψz[ip])*∇ψz[ip] )
         end
     end
-    @views KEdens[:] = 0.5*KEdens[:]
+    #@views KEdens[:] = 0.5*KEdens[:]
     return 
 end
 
@@ -56,6 +60,9 @@ function calc_epsxc_SCAN(
     FUNC_IDX = 263 # mgga x scan
     FUNC_IDC = 267 # mgga c scan
 
+    #FUNC_IDX = 202 # mgga x tpss
+    #FUNC_IDC = 231 # mgga c tpss
+
     Npoints = size(Rhoe)[1]
     Nspin = 1
 
@@ -71,6 +78,14 @@ function calc_epsxc_SCAN(
     calc_KEdens!(1, pw, psiks[1], KEdens)
 
     lapl = zeros(Npoints)
+
+    # apply threshold
+    #for ip in 1:Npoints
+    #    #Rhoe[ip] = max(Rhoe[ip], 1e-12)
+    #    Rhoe[ip] = abs(Rhoe[ip])
+    #    gRhoe2[ip] = max(gRhoe2[ip], 1e-24)
+    #    KEdens[ip] = max(KEdens[ip], 1e-12)
+    #end
 
     eps_x = zeros(Float64,Npoints)
     eps_c = zeros(Float64,Npoints)
@@ -107,6 +122,9 @@ function calc_Vxc_SCAN!(
     FUNC_IDX = 263 # mgga x scan
     FUNC_IDC = 267 # mgga c scan
 
+    #FUNC_IDX = 202 # mgga x tpss
+    #FUNC_IDC = 231 # mgga c tpss
+
     Npoints = size(Rhoe,1)
     Nspin = 1
 
@@ -125,12 +143,19 @@ function calc_Vxc_SCAN!(
     lapl = zeros(Npoints)
     Vlapl = zeros(Npoints)
 
+    # apply threshold
+    #for ip in 1:Npoints
+    #    #Rhoe[ip] = max(Rhoe[ip], 1e-12)
+    #    Rhoe[ip] = abs(Rhoe[ip])
+    #    gRhoe2[ip] = max(gRhoe2[ip], 1e-24)
+    #    KEdens[ip] = max(KEdens[ip], 1e-12)
+    #end
+
     V_x = zeros(Float64,Npoints)
     V_c = zeros(Float64,Npoints)
 
     Vg_x = zeros(Float64,Npoints)
     Vg_c = zeros(Float64,Npoints)
-    Vg_xc = zeros(Float64,Npoints)
 
     Vtau_x = zeros(Float64,Npoints)
     Vtau_c = zeros(Float64,Npoints)
@@ -147,23 +172,20 @@ function calc_Vxc_SCAN!(
     Libxc_xc_mgga_vxc!(ptr, Npoints, Rhoe, gRhoe2, lapl, KEdens, V_c, Vg_c, Vlapl, Vtau_c)
     Libxc_xc_func_end(ptr)
 
-    Vg_xc = Vg_x + Vg_c
-
     # gradient correction
     hx = zeros(ComplexF64, pw.Ns)
     hy = zeros(ComplexF64, pw.Ns)
     hz = zeros(ComplexF64, pw.Ns)
     for ip = 1:Npoints
-        hx[ip] = Vg_xc[ip] * gRhoe[1,ip]
-        hy[ip] = Vg_xc[ip] * gRhoe[2,ip]
-        hz[ip] = Vg_xc[ip] * gRhoe[3,ip]
+        hx[ip] = ( Vg_x[ip] + Vg_c[ip] ) * gRhoe[1,ip]
+        hy[ip] = ( Vg_x[ip] + Vg_c[ip] ) * gRhoe[2,ip]
+        hz[ip] = ( Vg_x[ip] + Vg_c[ip] ) * gRhoe[3,ip]
     end
     # div ( vgrho * gRhoe )
     divh = op_nabla_dot( pw, hx, hy, hz )
     #
     for ip = 1:Npoints
         V_xc[ip] = V_x[ip] + V_c[ip] - 2.0*divh[ip]
-        #V_xc[ip] = V_x[ip] + V_c[ip] - divh[ip]
         xc_calc.Vtau[ip,1] = Vtau_x[ip] + Vtau_c[ip]
     end
 
