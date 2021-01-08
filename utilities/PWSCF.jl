@@ -133,7 +133,7 @@ function write_pwscf( Ham; filename="PWINPUT",
     @printf(f, "&ELECTRONS\n")
     @printf(f, "  electron_maxstep = 150\n")
     @printf(f, "  mixing_beta = %f\n", mixing_beta)
-    @printf(f, "  conv_thr = %.10e\n", etot_conv_thr)
+    @printf(f, "  conv_thr = %.10e\n", 2*etot_conv_thr) # convert Ha to Ry
     @printf(f, "/\n\n")
     # etot_conv_thr is also an input variable for PWSCF (for geometry optimization)
 
