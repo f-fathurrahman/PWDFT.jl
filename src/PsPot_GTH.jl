@@ -210,16 +210,12 @@ Evaluate GTH projector function in R-space.
 """
 function eval_proj_R( psp::PsPot_GTH, l, i, r::Float64 )
     x = sqrt( gamma( l + (4*i-1)/2.0 ) )
-    if l==0 & i==1
-        rr = 1.0
-    else
-        rr = r^(l + 2*(i-1))
-    end
-    fprj = sqrt(2) * rr * exp( -r^2 / (2*psp.rc[l+1]^2) ) /
-           ( psp.rc[l+1]^(l + (4*i-1)/2) * x )
+    rr = r^(l + 2*(i-1))
+    rl = psp.rc[l+1]
+    fprj = sqrt(2) * rr * exp( -r^2 / (2*rl^2) ) /
+           ( rl^(l + (4*i-1)/2) * x )
     return fprj
 end
-
 
 
 """
