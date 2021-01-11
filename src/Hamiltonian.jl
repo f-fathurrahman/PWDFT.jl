@@ -325,7 +325,7 @@ end
 function update!(Ham::Hamiltonian, rhoe::Array{Float64,2})
     Nspin = size(rhoe)[2]
     if Nspin == 1
-        update!(Ham, psiks, rhoe[:,1])
+        update!(Ham, rhoe[:,1])
         return
     end
     Ham.rhoe = rhoe[:,:]

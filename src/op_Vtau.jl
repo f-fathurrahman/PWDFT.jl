@@ -1,5 +1,8 @@
 function op_Vtau( Ham::Hamiltonian, psiks::BlochWavefunc )
     Vpsiks = zeros_BlochWavefunc(Ham)
+    if Ham.xcfunc != "SCAN"
+        return Vpsiks
+    end
     Nkpt = size(psiks,1)
     # FIXME: spinpol is not yet implemented
     for ik in 1:Nkpt
@@ -10,6 +13,9 @@ function op_Vtau( Ham::Hamiltonian, psiks::BlochWavefunc )
 end
 
 function op_Vtau!( Ham::Hamiltonian, psiks::BlochWavefunc, Vpsiks::BlochWavefunc )
+    if Ham.xcfunc != "SCAN"
+        return
+    end
     # FIXME: spinpol is not yet implemented
     Nkpt = size(psiks,1)
     for ik in 1:Nkpt
@@ -27,7 +33,6 @@ end
 
 # operator Vtau
 function op_Vtau!( Ham::Hamiltonian, psi::Array{ComplexF64,2}, Vpsi::Array{ComplexF64,2} )
-
     if Ham.xcfunc != "SCAN"
         return
     end
