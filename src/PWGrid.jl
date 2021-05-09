@@ -53,9 +53,14 @@ Create an instance of `PWGrid` given the following inputs:
   arranged **by column**.
 - `kpoints`: optional, an instance of `KPoints`.
 """
-function PWGrid( ecutwfc::Float64, LatVecs::Array{Float64,2}; kpoints=nothing, Ns_=(0,0,0) )
+function PWGrid(
+    ecutwfc::Float64, LatVecs::Array{Float64,2};
+    kpoints=nothing, Ns_=(0,0,0), dual=4.0
+)
 
-    ecutrho = 4.0*ecutwfc
+    @assert dual >= 4.0
+
+    ecutrho = dual*ecutwfc
     #
     RecVecs = 2*pi*inv(Matrix(LatVecs'))
 
