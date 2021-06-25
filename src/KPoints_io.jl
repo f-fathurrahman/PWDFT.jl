@@ -23,7 +23,7 @@ function show( io::IO, kpoints::KPoints; header=true )
     @printf(io, "kpoints in Cartesian coordinate (unscaled)\n")
     @printf(io, "\n")
     kcart = copy(kpoints.k)
-    for ik = 1:kpoints.Nkpt
+    for ik in 1:kpoints.Nkpt
         @printf(io, "%4d [%14.10f %14.10f %14.10f] %14.10f\n",
                 ik, kcart[1,ik], kcart[2,ik], kcart[3,ik], kpoints.wk[ik])
     end
@@ -39,7 +39,7 @@ function show( io::IO, kpoints::KPoints; header=true )
     @printf(io, "\n")
     kcart = kcart/ss
 
-    for ik = 1:kpoints.Nkpt
+    for ik in 1:kpoints.Nkpt
         @printf(io, "%4d [%14.10f %14.10f %14.10f] %14.10f\n",
                 ik, kcart[1,ik], kcart[2,ik], kcart[3,ik], kpoints.wk[ik])
     end

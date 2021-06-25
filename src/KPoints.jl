@@ -36,7 +36,7 @@ function KPoints( atoms::Atoms )
     return KPoints( Nkpt, (0,0,0), k, wk, RecVecs )
 end
 
-
+# XXX Test me
 function KPoints( atoms::Atoms, mesh::Tuple{Int64,Int64,Int64}, is_shift::Array{Int64,1};
                   time_reversal=1 )
     return KPoints( atoms, (mesh[1], mesh[2], mesh[3]), is_shift, time_reversal=time_reversal )
@@ -74,8 +74,8 @@ function KPoints( atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{Int64,1};
     NkptTotal = prod(mesh)
 
     list_ir_k = []
-    for ikk = 1:Nkpt
-        for ik = 1:NkptTotal
+    for ikk in 1:Nkpt
+        for ik in 1:NkptTotal
             if umap[ikk] == mapping[ik]
                 append!( list_ir_k, [kgrid[:,ik]] )
                 break
@@ -84,7 +84,7 @@ function KPoints( atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{Int64,1};
     end
 
     kred = zeros(Float64,3,Nkpt)
-    for ik = 1:Nkpt
+    for ik in 1:Nkpt
         kred[1,ik] = list_ir_k[ik][1] / mesh[1]
         kred[2,ik] = list_ir_k[ik][2] / mesh[2]
         kred[3,ik] = list_ir_k[ik][3] / mesh[3]
@@ -92,7 +92,7 @@ function KPoints( atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{Int64,1};
     
     # count for occurence of each unique mapping
     kcount = zeros(Int64,Nkpt)
-    for ik = 1:Nkpt
+    for ik in 1:Nkpt
         kcount[ik] = count( i -> ( i == umap[ik] ), mapping )
     end
 
@@ -284,7 +284,7 @@ function parse_kpts_string(kpts_string::String)
 
     kpts = zeros(3,Nkpt)
     wk = zeros(Nkpt)
-    for ik = 1:Nkpt
+    for ik in 1:Nkpt
         ll = split(lines[ik+1], " ", keepempty=false)
         k1 = parse(Float64, ll[1])
         k2 = parse(Float64, ll[2])
@@ -318,7 +318,7 @@ function kpoints_from_file( atoms::Atoms, filename::String )
     str = readline(file)
     Nkpt = parse( Int, str )
     kred = zeros( Float64, 3,Nkpt )
-    for ik = 1:Nkpt
+    for ik in 1:Nkpt
         str = split(readline(file))
         kred[1,ik] = parse( Float64, str[1] )
         kred[2,ik] = parse( Float64, str[2] )
@@ -339,7 +339,7 @@ function kpath_from_file( atoms::Atoms, filename::String )
     str = readline(file)
     Nkpt = parse( Int64, str )
     kred = zeros( Float64, 3,Nkpt )
-    for ik = 1:Nkpt
+    for ik in 1:Nkpt
         str = split(readline(file))
         kred[1,ik] = parse( Float64, str[1] )
         kred[2,ik] = parse( Float64, str[2] )
@@ -351,7 +351,7 @@ function kpath_from_file( atoms::Atoms, filename::String )
     println("Nkpt_spec = ", Nkpt_spec)
     kpt_spec_red = zeros(Float64, 3,Nkpt_spec)
     kpt_spec_labels = Array{String}(undef,Nkpt_spec)
-    for ik = 1:Nkpt_spec
+    for ik in 1:Nkpt_spec
         str = split(readline(file))
         kpt_spec_red[1,ik] = parse(Float64, str[1])
         kpt_spec_red[2,ik] = parse(Float64, str[2])
@@ -373,15 +373,11 @@ end
 function gen_MonkhorstPack( mesh::Array{Int64,1} )
     ik = 0
     kpts = zeros(Float64,3,prod(mesh))
-    for k = 1:mesh[3]
-    for j = 1:mesh[2]
-    for i = 1:mesh[1]
+    for k in 1:mesh[3], j in 1:mesh[2], i in 1:mesh[1]
         ik = ik + 1
         kpts[1,ik] = (2*i - mesh[1] - 1)/(2*mesh[1])
         kpts[2,ik] = (2*j - mesh[2] - 1)/(2*mesh[2])
         kpts[3,ik] = (2*k - mesh[3] - 1)/(2*mesh[3])
-    end
-    end
     end
     return kpts
 end
