@@ -101,8 +101,8 @@ function calc_dbetaNL(
             isp = atm2species[ia]
             psp = pspots[isp]
             for l = 0:psp.lmax
-            for iprj = 1:psp.Nproj_l[l+1]
             for m = -l:l
+            for iprj = 1:psp.Nproj_l[l+1]
                 ibeta = ibeta + 1
                 idx_gw2g = pw.gvecw.idx_gw2g[ik]
                 for igk = 1:Ngw[ik]

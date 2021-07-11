@@ -34,25 +34,23 @@ function op_V_Ps_nloc( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
     Ngw = Ham.pw.gvecw.Ngw
     Vpsi = zeros( ComplexF64, Ngw[ik], Nstates )
 
-    for ist in 1:Nstates
-        for ia in 1:Natoms
-            isp = atm2species[ia]
-            psp = Pspots[isp]
-            for l in 0:psp.lmax
-            for m in -l:l
-                for iprj in 1:psp.Nproj_l[l+1]
-                for jprj in 1:psp.Nproj_l[l+1]
-                    ibeta = prj2beta[iprj,ia,l+1,m+psp.lmax+1]
-                    jbeta = prj2beta[jprj,ia,l+1,m+psp.lmax+1]
-                    hij = psp.h[l+1,iprj,jprj]
-                    for ig in 1:Ngw[ik]
-                        Vpsi[ig,ist] = Vpsi[ig,ist] + hij*betaNL[ik][ig,ibeta]*betaNL_psi[ist,jbeta]
-                    end
-                end # iprj
-                end # jprj
-            end # m
-            end # l
-        end
+    for ia in 1:Natoms
+        isp = atm2species[ia]
+        psp = Pspots[isp]
+        for l in 0:psp.lmax
+        for m in -l:l
+            for iprj in 1:psp.Nproj_l[l+1]
+            for jprj in 1:psp.Nproj_l[l+1]
+                ibeta = prj2beta[iprj,ia,l+1,m+psp.lmax+1]
+                jbeta = prj2beta[jprj,ia,l+1,m+psp.lmax+1]
+                hij = psp.h[l+1,iprj,jprj]
+                for ist in 1:Nstates, ig in 1:Ngw[ik]
+                    Vpsi[ig,ist] = Vpsi[ig,ist] + hij*betaNL[ik][ig,ibeta]*betaNL_psi[ist,jbeta]
+                end
+            end # iprj
+            end # jprj
+        end # m
+        end # l
     end
     return Vpsi
 end
@@ -85,25 +83,23 @@ function op_V_Ps_nloc!( Ham::Hamiltonian, psi::Array{ComplexF64,2}, Hpsi::Array{
     #
     betaNL_psi = calc_betaNL_psi( ik, Ham.pspotNL.betaNL, psi )
     #
-    for ist = 1:Nstates
-        for ia = 1:Natoms
-            isp = atm2species[ia]
-            psp = Pspots[isp]
-            for l = 0:psp.lmax
-            for m = -l:l
-                for iprj = 1:psp.Nproj_l[l+1]
-                for jprj = 1:psp.Nproj_l[l+1]
-                    ibeta = prj2beta[iprj,ia,l+1,m+psp.lmax+1]
-                    jbeta = prj2beta[jprj,ia,l+1,m+psp.lmax+1]
-                    hij = psp.h[l+1,iprj,jprj]
-                    for igw in 1:Ngw_ik
-                        Hpsi[igw,ist] = Hpsi[igw,ist] + hij*betaNL[ik][igw,ibeta]*betaNL_psi[ist,jbeta]
-                    end
-                end # iprj
-                end # jprj
-            end # m
-            end # l
-        end
+    for ia = 1:Natoms
+        isp = atm2species[ia]
+        psp = Pspots[isp]
+        for l = 0:psp.lmax
+        for m = -l:l
+            for iprj = 1:psp.Nproj_l[l+1]
+            for jprj = 1:psp.Nproj_l[l+1]
+                ibeta = prj2beta[iprj,ia,l+1,m+psp.lmax+1]
+                jbeta = prj2beta[jprj,ia,l+1,m+psp.lmax+1]
+                hij = psp.h[l+1,iprj,jprj]
+                for ist in 1:Nstates, igw in 1:Ngw_ik
+                    Hpsi[igw,ist] = Hpsi[igw,ist] + hij*betaNL[ik][igw,ibeta]*betaNL_psi[ist,jbeta]
+                end
+            end # iprj
+            end # jprj
+        end # m
+        end # l
     end
     return
 end

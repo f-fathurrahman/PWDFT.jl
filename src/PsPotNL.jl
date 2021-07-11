@@ -38,8 +38,8 @@ function PsPotNL( atoms::Atoms, pw::PWGrid, Pspots::Array{PsPot_GTH,1}; check_no
         isp = atm2species[ia]
         psp = Pspots[isp]
         for l = 0:psp.lmax
-            for iprj = 1:psp.Nproj_l[l+1]
-                for m = -l:l
+            for m = -l:l
+                for iprj = 1:psp.Nproj_l[l+1]
                     NbetaNL = NbetaNL + 1
                     prj2beta[iprj,ia,l+1,m+psp.lmax+1] = NbetaNL
                 end
@@ -72,8 +72,8 @@ function PsPotNL( atoms::Atoms, pw::PWGrid, Pspots::Array{PsPot_GTH,1}; check_no
             isp = atm2species[ia]
             psp = Pspots[isp]
             for l = 0:psp.lmax
-            for iprj = 1:psp.Nproj_l[l+1]
             for m = -l:l
+            for iprj = 1:psp.Nproj_l[l+1]
                 ibeta = ibeta + 1
                 idx_gw2g = pw.gvecw.idx_gw2g[ik]
                 for igk = 1:Ngw[ik]
