@@ -1,4 +1,4 @@
-mutable struct Hamiltonian
+mutable struct Hamiltonian{Txc<:AbstractXCCalculator}
     pw::PWGrid
     potentials::Potentials
     energies::Energies
@@ -10,7 +10,9 @@ mutable struct Hamiltonian
     pspots::Array{PsPot_GTH,1}
     pspotNL::PsPotNL
     xcfunc::String
-    xc_calc::AbstractXCCalculator
+    xc_calc::Txc
+    #xc_calc::Union{LibxcXCCalculator,XCCalculator}
+    #xc_calc::AbstractXCCalculator
     ik::Int64   # current kpoint index
     ispin::Int64 # current spin index
 end
