@@ -111,6 +111,7 @@ function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
         if is_using_extension_upf(pspfiles[isp])            
             println("\nUsing UPF\n")
             Pspots[isp] = PsPot_UPF( pspfiles[isp] )
+            _build_prj_interp_table!(Pspots[isp], pw)
         else
             Pspots[isp] = PsPot_GTH( pspfiles[isp] )
         end

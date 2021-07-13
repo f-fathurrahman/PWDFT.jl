@@ -47,8 +47,8 @@ function op_V_Ps_nloc( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
                 for ist in 1:Nstates, ig in 1:Ngw[ik]
                     Vpsi[ig,ist] = Vpsi[ig,ist] + hij*betaNL[ik][ig,ibeta]*betaNL_psi[ist,jbeta]
                 end
-            end # iprj
-            end # jprj
+            end
+            end
         end # m
         end # l
     end

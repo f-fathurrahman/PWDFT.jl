@@ -1,10 +1,11 @@
-# interp table need to be initialized later, so we declare it as mutable
-# Probably using spline is better?
+using SpecialFunctions: sphericalbesselj, erf
 
 function is_using_extension_upf(filename::String)
     return lowercase(split(filename, ".")[end]) == "upf"
 end
 
+# interp table need to be initialized later, so we declare it as mutable
+# Probably using spline is better?
 mutable struct PsPot_UPF <: AbstractPsPot
     pspfile::String
     atsymb::String
@@ -201,6 +202,8 @@ function PsPot_UPF( upf_file::String )
     for l in 0:lmax
         Nproj_l[l+1] = count(proj_l .== l)
     end
+    #println("proj_l = ", proj_l)
+    #println("Nproj_l = ", Nproj_l)
 
     h = zeros(Float64,4,3,3)
     istart = 0
@@ -545,7 +548,6 @@ function _build_prj_interp_table!( psp::PsPot_UPF, pw::PWGrid )
     return
 end
 
-import PWDFT: eval_proj_G
 function eval_proj_G(psp::PsPot_UPF, iprjl::Int64, Gm::Float64)
     #
     dq = 0.01 # HARDCODED
@@ -570,5 +572,6 @@ end
 
 import Base: show
 function show( io::IO, psp::PsPot_UPF; header=true )
+    println("\nUPF Info")
     @printf(io, "File = %s\n", psp.pspfile)
 end
