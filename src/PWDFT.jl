@@ -4,6 +4,7 @@ using Printf
 using LinearAlgebra
 using Random
 using FFTW
+using LightXML
 
 # constants
 #
@@ -103,11 +104,16 @@ include("gamma_only/wrappers_fft_gamma.jl")
 #
 # Pseudopotential
 #
+abstract type AbstractPsPot end
+
 include("PsPot_GTH.jl")
 export PsPot_GTH,
-       eval_Vloc_G,
+       eval_Vloc_G, eval_Vloc_G!,
        eval_proj_G,
        write_psp10
+
+include("PsPot_UPF.jl")
+export PsPot_UPF
 
 #
 # Electronic variables

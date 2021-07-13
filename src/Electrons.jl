@@ -29,7 +29,7 @@ Creates an instance of `Electrons` given following inputs:
 
 - `atoms`: an instance of `Atoms`
 
-- `Pspots`: an array of `PsPot_GTH` instance(s)
+- `Pspots`: an array of `PsPot_GTH` or `PsPot_UPF` instance(s)
 
 - `Nspin`: (optional) number of spin. `Nspin=1` means without spin polarization.
   `Nspin=2` means with spin-polarization.
@@ -41,7 +41,7 @@ Creates an instance of `Electrons` given following inputs:
 - `Nstates_empty`: (optional) number of additional states which will be
   regarded as empty.
 """
-function Electrons( atoms::Atoms, Pspots::Array{PsPot_GTH,1};
+function Electrons( atoms::Atoms, Pspots;
                     Nspin=1, Nkpt=1,
                     Nstates=nothing, Nstates_empty=0 )
     
@@ -187,7 +187,7 @@ end
 NelectronsSpin = (Nel_up, Nel_dn)
 """
 function Electrons(
-    atoms::Atoms, Pspots::Array{PsPot_GTH,1},
+    atoms::Atoms, Pspots,
     NelectronsSpin::Tuple{Int64,Int64};
     Nkpt=1, Nstates_extra=0
 )
@@ -223,10 +223,10 @@ end
 
 """
 Returns number of electrons for a given `atoms::Atoms` and
-`Pspots::Array{PsPot_GTH,1}`. Number of electrons will be
+`Pspots::Array{AbstractPsPot,1}`. Number of electrons will be
 calculated as sum of valence electrons for each atom.
 """
-function get_Nelectrons( atoms::Atoms, Pspots::Array{PsPot_GTH,1} )
+function get_Nelectrons( atoms::Atoms, Pspots )
     Nelectrons = 0.0
     Natoms = atoms.Natoms
     atm2species = atoms.atm2species
@@ -240,7 +240,7 @@ end
 """
 Returns array `Zvals[1:Nspecies]` from a given `PsPots`.
 """
-function get_Zvals( PsPots::Array{PsPot_GTH,1} )
+function get_Zvals( PsPots )
     Nspecies = size(PsPots)[1]
     Zvals = zeros(Float64, Nspecies)
     for isp = 1:Nspecies

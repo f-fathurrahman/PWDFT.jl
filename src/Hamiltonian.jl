@@ -1,4 +1,4 @@
-mutable struct Hamiltonian{Txc<:AbstractXCCalculator}
+mutable struct Hamiltonian{Txc<:AbstractXCCalculator,Tpsp<:AbstractPsPot}
     pw::PWGrid
     potentials::Potentials
     energies::Energies
@@ -7,7 +7,7 @@ mutable struct Hamiltonian{Txc<:AbstractXCCalculator}
     atoms::Atoms
     sym_info::SymmetryInfo
     rhoe_symmetrizer::RhoeSymmetrizer
-    pspots::Array{PsPot_GTH,1}
+    pspots::Array{Tpsp,1}
     pspotNL::PsPotNL
     xcfunc::String
     xc_calc::Txc
@@ -93,7 +93,6 @@ function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
     #
     # Initialize pseudopotentials and local potentials
     #
-    Pspots = Array{PsPot_GTH}(undef,Nspecies)
     G2_shells = pw.gvec.G2_shells
     Ngl = length(G2_shells)
     Vgl = zeros(Float64, Ngl)
@@ -101,13 +100,26 @@ function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
     V_Ps_loc = zeros(Float64, Npoints)
     Vg = zeros(ComplexF64, Npoints)
 
+    # XXX We don't support mixed pseudopotentials set
+    if is_using_extension_upf(pspfiles[1])
+        Pspots = Array{PsPot_UPF}(undef,Nspecies)
+    else
+        Pspots = Array{PsPot_GTH}(undef,Nspecies)
+    end
+
     for isp = 1:Nspecies
-        Pspots[isp] = PsPot_GTH( pspfiles[isp] )
+        if is_using_extension_upf(pspfiles[isp])            
+            println("\nUsing UPF\n")
+            Pspots[isp] = PsPot_UPF( pspfiles[isp] )
+        else
+            Pspots[isp] = PsPot_GTH( pspfiles[isp] )
+        end
         psp = Pspots[isp]
         #
-        for igl = 1:Ngl
-            Vgl[igl] = eval_Vloc_G( psp, G2_shells[igl] )
-        end
+        #for igl = 1:Ngl
+        #    Vgl[igl] = eval_Vloc_G( psp, G2_shells[igl] )
+        #end
+        eval_Vloc_G!( psp, G2_shells, Vgl )
         #
         for ig = 1:Ng
             ip = idx_g2r[ig]

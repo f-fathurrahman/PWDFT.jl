@@ -1,6 +1,6 @@
 using SpecialFunctions: erf, gamma
 
-struct PsPot_GTH
+struct PsPot_GTH <: AbstractPsPot
     pspfile::String
     atsymb::String
     zval::Int64
@@ -150,6 +150,34 @@ function eval_Vloc_G( psp::PsPot_GTH, G2::Array{Float64,1} )
         Vg[ig] = eval_Vloc_G( psp, G2[ig] )
     end
     return Vg
+end
+
+
+function eval_Vloc_G!( psp::PsPot_GTH, G2::Array{Float64,1}, Vg::Array{Float64,1} )
+    rloc = psp.rlocal
+    zval = psp.zval
+    c1 = psp.c[1]
+    c2 = psp.c[2]
+    c3 = psp.c[3]
+    c4 = psp.c[4]
+
+    pre1 = -4*pi*zval
+    pre2 = sqrt(8*pi^3)*rloc^3
+
+    SMALL = 1.0e-8
+    Ng = length(G2)
+    for ig in 1:Ng
+        G2l = sqrt(G2[ig]) 
+        Gr = G2l*rloc
+        expGr2 = exp(-0.5*Gr^2)
+        if sqrt(G2l) > SMALL
+            Vg[ig] = pre1/G2[ig]*expGr2 + pre2*expGr2 * (c1 + c2*(3.0 - Gr^2) +
+                 c3*(15.0 - 10.0*Gr^2 + Gr^4) + c4*(105.0 - 105.0*Gr^2 + 21.0*Gr^4 - Gr^6) )
+        else
+            Vg[ig] = 2*pi*zval*rloc^2 + (2*pi)^1.5 * rloc^3 * (c1 + 3.0*c2 + 15.0*c3 + 105.0*c4)
+        end
+    end
+    return
 end
 
 

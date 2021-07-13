@@ -11,8 +11,8 @@ function PsPotNL()
     return PsPotNL(0, zeros(Int64,1,1,1,1), betaNL )
 end
 
-function PsPotNL( atoms::Atoms, pw::PWGrid, Pspots::Array{PsPot_GTH,1}; check_norm=false )
-
+#function PsPotNL( atoms::Atoms, pw::PWGrid, Pspots::Array{PsPot_GTH,1}; check_norm=false )
+function PsPotNL( atoms::Atoms, pw::PWGrid, Pspots; check_norm=false )
     Natoms = atoms.Natoms
     atm2species = atoms.atm2species
     atpos = atoms.positions
