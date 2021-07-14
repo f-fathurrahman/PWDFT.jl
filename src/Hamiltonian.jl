@@ -112,6 +112,12 @@ function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
             println("\nUsing UPF\n")
             Pspots[isp] = PsPot_UPF( pspfiles[isp] )
             _build_prj_interp_table!(Pspots[isp], pw)
+            if Pspots[isp].is_nlcc
+                println()
+                @printf("!!! WARNING: %s is generated with nonlocal-core correction\n", pspfiles[isp])
+                @printf("!!! WARNING: This is not yet supported\n")
+                println()
+            end
         else
             Pspots[isp] = PsPot_GTH( pspfiles[isp] )
         end
