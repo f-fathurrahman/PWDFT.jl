@@ -1,0 +1,224 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\begin_preamble
+\usepackage{babel}
+\end_preamble
+\use_default_options false
+\maintain_unincluded_children false
+\language american
+\language_package default
+\inputencoding iso8859-15
+\fontencoding T1
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family sfdefault
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry true
+\use_package amsmath 2
+\use_package amssymb 2
+\use_package cancel 0
+\use_package esint 1
+\use_package mathdots 0
+\use_package mathtools 0
+\use_package mhchem 0
+\use_package stackrel 0
+\use_package stmaryrd 0
+\use_package undertilde 0
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 0
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 3cm
+\topmargin 3cm
+\rightmargin 3cm
+\bottommargin 3cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation skip
+\defskip smallskip
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Standard
+(Marx, from Equation 3.30)
+\end_layout
+
+\begin_layout Standard
+Norm-conserving pseudopotentials, semilocal form:
+\begin_inset Formula 
+\[
+V^{\mathrm{Ps}}(\mathbf{r},\mathbf{r}')=\sum_{l=0}^{\infty}\sum_{m=-l}^{l}Y_{lm}^{*}(\hat{\mathbf{r}})\ V_{l}(\mathbf{r})\ \delta(\mathbf{r}-\mathbf{r}')\ Y_{lm}(\hat{\mathbf{r}'})
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Separable nonlocal pseudopotential:
+\begin_inset Formula 
+\[
+V^{\mathrm{Ps}}(\mathbf{r},\mathbf{r}')=\left(V^{\mathrm{core}}(\mathbf{r})+\Delta V^{\mathrm{loc}}(\mathbf{r})\right)\delta(\mathbf{r}-\mathbf{r}')+\sum_{k.l}P_{k}^{*}(\mathbf{r})\ w_{kl}\ P_{l}(\mathbf{r}')
+\]
+
+\end_inset
+
+The local part had been split into two parts:
+\end_layout
+
+\begin_layout Itemize
+core part, which behaves as 
+\begin_inset Formula $\sim\dfrac{1}{r}$
+\end_inset
+
+ for 
+\begin_inset Formula $r\rightarrow\infty$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+short-ranged local part
+\end_layout
+
+\begin_layout Standard
+The local potential 
+\begin_inset Formula $\Delta V^{\mathrm{loc}}(\mathbf{r})$
+\end_inset
+
+ and the projectors 
+\begin_inset Formula $P_{k}(\mathbf{r})$
+\end_inset
+
+ are atom-centered functions of the form:
+\begin_inset Formula 
+\[
+\varphi(\mathbf{r})=\varphi(|\mathbf{r}-\mathbf{R}_{I}|)Y_{lm}(\theta,\phi)
+\]
+
+\end_inset
+
+that can be expanded in plane waves:
+\begin_inset Formula 
+\[
+\varphi(\mathbf{r})=\sum_{\mathbf{G}}\varphi(G)\ \exp\left[\imath\mathbf{G}\cdot\mathbf{r}\right]S_{I}(\mathbf{G})Y_{lm}(\tilde{\theta},\tilde{\phi})
+\]
+
+\end_inset
+
+where spherical polar coordinates 
+\begin_inset Formula $\mathbf{r}=(r,\theta,\phi)$
+\end_inset
+
+, 
+\begin_inset Formula $\mathbf{G}=(G,\tilde{\theta},\tilde{\phi})$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Structure factor:
+\begin_inset Formula 
+\[
+S_{I}(\mathbf{G})=\exp\left[-\imath\mathbf{G\cdot}\mathbf{R}_{I}\right]
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The functions 
+\begin_inset Formula $\varphi(G)$
+\end_inset
+
+ are calculated from 
+\begin_inset Formula $\varphi(r)$
+\end_inset
+
+ via Bessel transform:
+\begin_inset Formula 
+\[
+\varphi(G)=4\pi(-\imath)^{l}\int_{0}^{\infty}r^{2}\varphi(r)j_{l}(Gr)\ \mathrm{d}r
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In 
+\begin_inset Formula $\mathbf{G}$
+\end_inset
+
+-space, the local pseudopotential is given by
+\begin_inset Formula 
+\[
+\Delta V^{\mathrm{loc}}(\mathbf{G})=\frac{4\pi}{\Omega}\int_{0}^{\infty}r^{2}\Delta V^{\mathrm{loc}}(r)j_{0}(Gr)\ \mathrm{d}r
+\]
+
+\end_inset
+
+And the projectors are given by:
+\begin_inset Formula 
+\[
+P_{k}(\mathbf{G})=\frac{4\pi}{\sqrt{\Omega}}(-\imath)^{l}\int_{0}^{\infty}r^{2}P_{k}(r)j_{l}(Gr)Y_{lm}(\tilde{\theta},\tilde{\phi})\ \mathrm{d}r
+\]
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document
