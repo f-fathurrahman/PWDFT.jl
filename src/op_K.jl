@@ -17,7 +17,7 @@ end
 # In-place, accumulated version
 function op_K!( Ham::Hamiltonian, psiks::BlochWavefunc, Hpsiks::BlochWavefunc )
     #
-    Nstates = size(psiks[1])[2] # Nstates should be similar for all Bloch states
+    Nstates = size(psiks[1],2) # Nstates should be similar for all Bloch states
     #
     Nspin = Ham.electrons.Nspin
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
@@ -34,11 +34,11 @@ end
 
 # Apply kinetic operator to wave function in reciprocal space
 
-function op_K( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
+function op_K( Ham::Hamiltonian, psi::AbstractArray{ComplexF64,2} )
     #
     ik = Ham.ik
 
-    Nstates = size(psi)[2]
+    Nstates = size(psi,2)
 
     pw = Ham.pw
     Ngwx = pw.gvecw.Ngwx

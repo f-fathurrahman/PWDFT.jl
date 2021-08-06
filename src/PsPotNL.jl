@@ -151,7 +151,7 @@ function _init_prj2beta(Natoms::Int64, atm2species, pspots)
     #  1,  2, 3, 4, 5  -> 3 + m, lmax = 2 + 1
 
     prj2beta = Array{Int64}(undef,3,Natoms,4,7)
-    prj2beta[:,:,:,:] .= -1   # set to invalid index
+    fill!(prj2beta, -1)   # set to invalid index
 
     NbetaNL = 0
     for ia in 1:Natoms
@@ -227,7 +227,7 @@ end
 function calc_betaNL_psi(
     ik::Int64,
     betaNL::Array{Array{ComplexF64,2},1},
-    psi::Array{ComplexF64,2}
+    psi::AbstractArray{ComplexF64,2}
 )
 
     Nstates = size(psi)[2]
@@ -241,7 +241,7 @@ end
 function calc_betaNL_psi(
     ik::Int64,
     betaNL::Array{Array{ComplexF64,2},1},
-    psi::Array{ComplexF64,1}
+    psi::AbstractArray{ComplexF64,1}
 )
     NbetaNL = size(betaNL[1],2)
 

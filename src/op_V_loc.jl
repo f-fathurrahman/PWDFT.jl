@@ -29,7 +29,10 @@ end
 
 
 # In-place, accumated version
-function op_V_loc!( Ham::Hamiltonian, psi::Array{ComplexF64,2}, Hpsi::Array{ComplexF64,2} )
+function op_V_loc!( Ham::Hamiltonian,
+    psi::AbstractArray{ComplexF64,2},
+    Hpsi::AbstractArray{ComplexF64,2}
+)
 
     pw = Ham.pw
 
@@ -96,7 +99,7 @@ function op_V_Ps_loc( Ham::Hamiltonian, psiks::BlochWavefunc )
 end
 
 # apply V_Ps_loc, Hartree, and XC potentials
-function op_V_loc( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
+function op_V_loc( Ham::Hamiltonian, psi::AbstractArray{ComplexF64,2} )
     ispin = Ham.ispin
     ik = Ham.ik
     V_loc = @view Ham.potentials.Total[:,ispin]
@@ -104,14 +107,16 @@ function op_V_loc( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
 end
 
 # only apply V_Ps_loc
-function op_V_Ps_loc( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
+function op_V_Ps_loc( Ham::Hamiltonian, psi::AbstractArray{ComplexF64,2} )
     return op_V_loc( Ham.ik, Ham.pw, Ham.potentials.Ps_loc, psi )
 end
 
 # apply general V_loc
 # ik must be given to get information about
 # mapping between psi in G-space to real space
-function op_V_loc( ik::Int64, pw::PWGrid, V_loc, psi::Array{ComplexF64,2} )
+function op_V_loc( ik::Int64, pw::PWGrid, V_loc,
+    psi::AbstractArray{ComplexF64,2}
+)
 
     Ns = pw.Ns
     CellVolume  = pw.CellVolume
@@ -144,17 +149,19 @@ end
 #
 # single-column version
 #
-function op_V_loc( Ham::Hamiltonian, psi::Array{ComplexF64,1} )
+function op_V_loc( Ham::Hamiltonian, psi::AbstractArray{ComplexF64,1} )
     ispin = Ham.ispin
     V_loc = @view Ham.potentials.Total[:,ispin]
     return op_V_loc( Ham.ik, Ham.pw, V_loc, psi )
 end
 
-function op_V_Ps_loc( Ham::Hamiltonian, psi::Array{ComplexF64,1} )
+function op_V_Ps_loc( Ham::Hamiltonian, psi::AbstractArray{ComplexF64,1} )
     return op_V_loc( Ham.ik, Ham.pw, Ham.potentials.Ps_loc, psi )
 end
 
-function op_V_loc( ik::Int64, pw::PWGrid, V_loc, psi::Array{ComplexF64,1} )
+function op_V_loc( ik::Int64, pw::PWGrid, V_loc,
+    psi::AbstractArray{ComplexF64,1}
+)
     Ns = pw.Ns
     CellVolume  = pw.CellVolume
     Npoints = prod(Ns)

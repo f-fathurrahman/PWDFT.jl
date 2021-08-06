@@ -49,14 +49,14 @@ On return, X will be rewritten as the corresponding eigenvectors.
 
 **IMPORTANT** `X` must be orthonormalized before.
 """
-function diag_LOBPCG!( Ham::Hamiltonian, X::Array{ComplexF64,2};
+function diag_LOBPCG!( Ham::Hamiltonian, X::AbstractArray{ComplexF64,2};
                        tol=1e-5, NiterMax=100, verbose=false,
                        verbose_last=false, Nstates_conv=0 )
 
     pw = Ham.pw
     # get size info
-    Nbasis = size(X)[1]
-    Nstates = size(X)[2]
+    Nbasis = size(X,1)
+    Nstates = size(X,2)
 
     if Nstates_conv == 0
         Nstates_conv = Nstates

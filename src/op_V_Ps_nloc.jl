@@ -13,7 +13,7 @@ function op_V_Ps_nloc( Ham::Hamiltonian, psiks::BlochWavefunc )
     return out
 end
 
-function op_V_Ps_nloc( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
+function op_V_Ps_nloc( Ham::Hamiltonian, psi::AbstractArray{ComplexF64,2} )
 
     ik = Ham.ik
 
@@ -68,7 +68,10 @@ function op_V_Ps_nloc!( Ham::Hamiltonian, psiks::BlochWavefunc, Hpsiks::BlochWav
     return
 end
 
-function op_V_Ps_nloc!( Ham::Hamiltonian, psi::Array{ComplexF64,2}, Hpsi::Array{ComplexF64,2} )
+function op_V_Ps_nloc!( Ham::Hamiltonian,
+    psi::AbstractArray{ComplexF64,2},
+    Hpsi::AbstractArray{ComplexF64,2}
+)
     ik = Ham.ik
     # Take `Nstates` to be the size of psi and not from `Ham.electrons.Nstates`.
     Nstates = size(psi,2)
@@ -106,7 +109,7 @@ end
 
 
 # FIXME: remove redundant code
-function op_V_Ps_nloc( Ham::Hamiltonian, psi::Array{ComplexF64,1} )
+function op_V_Ps_nloc( Ham::Hamiltonian, psi::AbstractArray{ComplexF64,1} )
 
     ik = Ham.ik
 
