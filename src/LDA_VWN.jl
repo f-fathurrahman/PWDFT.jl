@@ -60,7 +60,7 @@ function calc_epsxc_VWN( xc_calc::LibxcXCCalculator, Rhoe::Array{Float64,2} )
     # correlation part
     Libxc_xc_func_init(ptr, 7, Nspin)
     Libxc_xc_lda_exc!(ptr, Npoints, Rhoe_tmp, eps_c)
-    Libxx_xc_func_end(ptr)
+    Libxc_xc_func_end(ptr)
 
     #
     Libxc_xc_func_free(ptr)
