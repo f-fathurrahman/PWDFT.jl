@@ -16,7 +16,7 @@ function mix_pulay!( x, gx, beta, X, F, iter, MIXDIM::Int64,
         X[:,iter] = dx[:]
         F[:,iter] = df[:]
     else
-        for i = 1:MIXDIM-1
+        for i in 1:MIXDIM-1
             X[:,i] = X[:,i+1]
             F[:,i] = F[:,i+1]
         end

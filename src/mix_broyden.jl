@@ -35,8 +35,8 @@ function mix_broyden!( deltain, deltaout, alphamix::Float64, iter::Int64, n_iter
 
     beta = zeros(maxter,maxter)
 
-    for i = 1:iter_used
-        for j = i+1:iter_used
+    for i in 1:iter_used
+        for j in i+1:iter_used
             beta[i,j] = wg[i] * wg[j] * dot( df[:,j], df[:,i] )
             beta[j,i] = beta[i,j]
         end
@@ -48,15 +48,15 @@ function mix_broyden!( deltain, deltaout, alphamix::Float64, iter::Int64, n_iter
     beta[1:iter_used,1:iter_used] = beta_inv[:,:]
 
     work = zeros(iter_used)
-    for i = 1:iter_used
+    for i in 1:iter_used
         work[i] = dot(df[:,i], deltaout)
     end
     
     deltain[:] = deltain[:] + alphamix*deltaout[:]
 
-    for i = 1:iter_used
+    for i in 1:iter_used
         gammamix = 0.0
-        for j = 1:iter_used
+        for j in 1:iter_used
             gammamix = gammamix + beta[j,i] * wg[j] * work[j]
         end
         deltain[:] = deltain[:] - wg[i]*gammamix*( alphamix*df[:,i] + dv[:,i] )

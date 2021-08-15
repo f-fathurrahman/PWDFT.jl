@@ -22,8 +22,8 @@ function mix_anderson!( vin, vout,
 
     if (iter > 1)
         gammas = pinv(df[:,1:iterused])*dvout  
-        for i = 1:iterused
-            vin[:]  = vin[:]  - gammas[i] * dv[:,i]
+        for i in 1:iterused
+            vin[:]  = vin[:] - gammas[i] * dv[:,i]
             dvout[:] = dvout[:] - gammas[i] * df[:,i]
         end
     end

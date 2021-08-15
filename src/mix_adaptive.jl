@@ -2,7 +2,7 @@ function mix_adaptive!( mu, nu, beta0::Float64, beta, f; betamax=0.8 )
 
     Npts = length(mu)
     
-    for i = 1:Npts
+    for i in 1:Npts
         
         t = nu[i] - mu[i]
 
