@@ -41,15 +41,17 @@ function mix_rpulay!( x, gx, beta, X, F, iter, MIXDIM, x_old, f_old )
         # Restart, use the last history
         if active_dim == 0
             #
-            X[:,1] = @view X[:,MIXDIM]
-            F[:,1] = @view F[:,MIXDIM]
-            X[:,2:MIXDIM] .= 0.0
-            F[:,2:MIXDIM] .= 0.0
+            for ip in 1:Npts
+                X[ip,1] = X[ip,MIXDIM]
+                F[ip,1] = F[ip,MIXDIM]
+                X[ip,2:MIXDIM] .= 0.0
+                F[ip,2:MIXDIM] .= 0.0
+            end
             #
             Xk = @view X[:,1]
             Fk = @view F[:,1]
             addv = (Xk + beta*Fk)*inv(Fk'*Fk)*(Fk'*f)
-            for i = 1:Npts
+            for i in 1:Npts
                 # probably x_old and f_old is not needed
                 x_old[i] = x[i]  
                 f_old[i] = f[i]
@@ -58,9 +60,11 @@ function mix_rpulay!( x, gx, beta, X, F, iter, MIXDIM, x_old, f_old )
 
         else
 
-            for i = active_dim:-1:2
-                X[:,i] = @view X[:,i-1]
-                F[:,i] = @view F[:,i-1]
+            for i in active_dim:-1:2
+                for ip in 1:Npts
+                    X[ip,i] = X[ip,i-1]
+                    F[ip,i] = F[ip,i-1]
+                end
             end
             X[:,1] = dx
             F[:,1] = df
@@ -68,22 +72,22 @@ function mix_rpulay!( x, gx, beta, X, F, iter, MIXDIM, x_old, f_old )
             Xk = @view X[:,1:active_dim]
             Fk = @view F[:,1:active_dim]
             addv = (Xk + beta*Fk)*inv(Fk'*Fk)*(Fk'*f)
-            for i = 1:Npts
+            for ip in 1:Npts
                 # probably x_old and f_old is not needed
-                x_old[i] = x[i]  
-                f_old[i] = f[i]
-                x[i] = x[i] + beta*f[i] - addv[i]
+                x_old[ip] = x[ip]
+                f_old[ip] = f[ip]
+                x[ip] = x[ip] + beta*f[ip] - addv[ip]
             end
         end
     else
-        for i in 1:Npts
-            X[i,1] = x[i]
-            F[i,1] = f[i]
+        for ip in 1:Npts
+            X[ip,1] = x[ip]
+            F[ip,1] = f[ip]
             # probably x_old and f_old is not needed
-            x_old[i] = x[i]  
-            f_old[i] = f[i]
+            x_old[ip] = x[ip]  
+            f_old[ip] = f[ip]
             #
-            x[i] = x[i] + beta*f[i]  # write the result
+            x[ip] = x[ip] + beta*f[ip]  # write the result
         end
     end
     return
