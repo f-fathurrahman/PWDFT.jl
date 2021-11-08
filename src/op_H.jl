@@ -25,13 +25,15 @@ function zero_out!( psi::Array{ComplexF64,2} )
     return
 end
 
+import Base: fill!
+function fill!( psiks::BlochWavefunc, x )
+    for i in length(psiks)
+        fill!(psiks[i], x)
+    end
+end
+
 function op_H!( Ham::Hamiltonian, psi, Hpsi )
-    #
-    #N = length(Hpsi)
-    #for i in 1:N
-    #    Hpsi[i] .= 0.0 + im*0.0
-    #end
-    zero_out!(Hpsi) # FIXME: use fill! ?
+    fill!(Hpsi, 0.0 + im*0.0)
     op_K!( Ham, psi, Hpsi )
     op_V_loc!( Ham, psi, Hpsi )
     if Ham.pspotNL.NbetaNL > 0

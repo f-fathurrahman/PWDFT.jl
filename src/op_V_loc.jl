@@ -1,5 +1,5 @@
 function op_V_loc( Ham::Hamiltonian, psiks::BlochWavefunc )
-    Nstates = size(psiks[1])[2] # Nstates should be similar for all Bloch states
+    Nstates = size(psiks[1],2) # Nstates should be similar for all Bloch states
     Nspin = Ham.electrons.Nspin
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     out = zeros_BlochWavefunc(Ham)    
@@ -15,7 +15,7 @@ end
 
 # In-place, accumulated version
 function op_V_loc!( Ham::Hamiltonian, psiks::BlochWavefunc, Hpsiks::BlochWavefunc )
-    Nstates = size(psiks[1])[2] # Nstates should be similar for all Bloch states
+    Nstates = size(psiks[1],2) # Nstates should be similar for all Bloch states
     Nspin = Ham.electrons.Nspin
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt    
     for ispin in 1:Nspin, ik in 1:Nkpt
@@ -30,8 +30,8 @@ end
 
 # In-place, accumated version
 function op_V_loc!( Ham::Hamiltonian,
-    psi::AbstractArray{ComplexF64,2},
-    Hpsi::AbstractArray{ComplexF64,2}
+    psi::AbstractArray{ComplexF64},
+    Hpsi::AbstractArray{ComplexF64}
 )
 
     pw = Ham.pw
@@ -52,7 +52,7 @@ function op_V_loc!( Ham::Hamiltonian,
     #
     for ist in 1:Nstates
         #
-        ctmp .= 0.0 + im*0.0
+        fill!(ctmp, 0.0 + im*0.0)
         for igw in 1:Ngw_ik
             ip = idx[igw]
             ctmp[ip] = psi[igw,ist]
@@ -84,7 +84,7 @@ end
 
 
 function op_V_Ps_loc( Ham::Hamiltonian, psiks::BlochWavefunc )
-    Nstates = size(psiks[1])[2] # Nstates should be similar for all Bloch states
+    Nstates = size(psiks[1],2) # Nstates should be similar for all Bloch states
     Nspin = Ham.electrons.Nspin
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     out = zeros_BlochWavefunc(Ham)
@@ -121,7 +121,7 @@ function op_V_loc( ik::Int64, pw::PWGrid, V_loc,
     Ns = pw.Ns
     CellVolume  = pw.CellVolume
     Npoints = prod(Ns)
-    Nstates = size(psi)[2]
+    Nstates = size(psi,2)
 
     ctmp = zeros(ComplexF64, Npoints)
     Vpsi = zeros(ComplexF64, pw.gvecw.Ngw[ik], Nstates)

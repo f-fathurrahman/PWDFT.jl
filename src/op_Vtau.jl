@@ -25,7 +25,7 @@ function op_Vtau!( Ham::Hamiltonian, psiks::BlochWavefunc, Vpsiks::BlochWavefunc
     return Vpsiks
 end
 
-function op_Vtau( Ham::Hamiltonian, psi::AbstractArray{ComplexF64,2} )
+function op_Vtau( Ham::Hamiltonian, psi::AbstractArray{ComplexF64} )
     Vpsi = zeros(ComplexF64,size(psi))
     op_Vtau!(Ham, psi, Vpsi)
     return Vpsi
@@ -33,8 +33,8 @@ end
 
 # operator Vtau
 function op_Vtau!( Ham::Hamiltonian,
-    psi::AbstractArray{ComplexF64,2},
-    Vpsi::AbstractArray{ComplexF64,2}
+    psi::AbstractArray{ComplexF64},
+    Vpsi::AbstractArray{ComplexF64}
 )
     if Ham.xcfunc != "SCAN"
         return
