@@ -21,8 +21,8 @@ struct GVectorsW
     kpoints::KPoints
 end
 
-const PLANFW_TYPE = typeof(plan_fft(zeros(ComplexF64,(1,1,1))))
-const PLANBW_TYPE = typeof(plan_ifft(zeros(ComplexF64,(1,1,1))))
+const PLANFW_TYPE = typeof(plan_fft!(zeros(ComplexF64,(1,1,1))))
+const PLANBW_TYPE = typeof(plan_ifft!(zeros(ComplexF64,(1,1,1))))
 
 """
 The type for describing plane wave basis set for a given periodic unit cell.
@@ -94,8 +94,8 @@ function PWGrid(
 
     gvecw = init_gvecw( ecutwfc, gvec, kpoints )
 
-    planfw = plan_fft( zeros(ComplexF64,Ns) )
-    planbw = plan_ifft( zeros(ComplexF64,Ns) )
+    planfw = plan_fft!( zeros(ComplexF64,Ns) )
+    planbw = plan_ifft!( zeros(ComplexF64,Ns) )
 
     return PWGrid( ecutwfc, ecutrho, Ns, LatVecs, RecVecs, CellVolume, gvec, gvecw,
                    planfw, planbw )

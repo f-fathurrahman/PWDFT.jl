@@ -1,113 +1,70 @@
-## TODO:
-## for in-place FFT we should use plan_fft! and plan_fft! instead
-## Probably in-place FFT is better than out-of-place FFT
-
+#
+# In-place version, input 3d data as 3d array
+#
 function G_to_R!( pw::PWGrid, fG::Array{ComplexF64,3} )
-    @views fG[:,:,:] = pw.planbw*fG[:,:,:]
+    pw.planbw*fG
     return
 end
 
 function R_to_G!( pw::PWGrid, fR::Array{ComplexF64,3} )
-    plan = pw.planfw
-    @views fR[:,:,:] = pw.planfw*fR[:,:,:]
+    pw.planfw*fR
     return
 end
 
 #
-# Using plan_fft and plan_ifft
+# In-place version, input 3d data as column vector
 #
-function G_to_R( pw::PWGrid, fG::Array{ComplexF64,1} )
-    Ns = pw.Ns
-    Npoints = prod(Ns)
-    plan = pw.planbw
-    out = reshape( plan*reshape(fG,Ns), Npoints )
-    return out
-end
-
-# without reshape
-function G_to_R( pw::PWGrid, fG::Array{ComplexF64,3} )
-    return pw.planbw*fG
-end
-
-function G_to_R( pw::PWGrid, fG::Array{ComplexF64,2} )
-    Ns = pw.Ns
-    Npoints = prod(Ns)
-    plan = pw.planbw
-    out = zeros( ComplexF64, size(fG) )
-    for ic = 1:size(fG,2)
-        out[:,ic] = reshape( plan*reshape(fG[:,ic],Ns), Npoints )
-    end
-    return out
-end
-
-function G_to_R!( pw::PWGrid, fG::Array{ComplexF64,1} )
-    Ns = pw.Ns
-    Npoints = prod(Ns)
-    plan = pw.planbw
-    @views fG[:] = reshape( plan*reshape(fG[:],Ns), Npoints )
+function G_to_R!( pw::PWGrid, fG::Vector{ComplexF64} )
+    ff = reshape(fG, pw.Ns)
+    pw.planbw*ff
     return
 end
 
-function G_to_R!( pw::PWGrid, fG::Array{ComplexF64,2} )
-    Ns = pw.Ns
-    Npoints = prod(Ns)
-    plan = pw.planbw
-    for ic = 1:size(fG,2)
-        @views fG[:,ic] = reshape( plan*reshape(fG[:,ic],Ns), Npoints )
-    end
+function R_to_G!( pw::PWGrid, fR::Vector{ComplexF64} )
+    ff = reshape(fR, pw.Ns)
+    pw.planfw*ff
     return
 end
 
-function R_to_G( pw::PWGrid, fR::Array{ComplexF64,1} )
-    Ns = pw.Ns
-    Npoints = prod(Ns)
-    plan = pw.planfw
-    out = reshape( plan*reshape(fR,Ns), Npoints )
-    return out
+
+#
+# Return a new array
+#
+function G_to_R( pw::PWGrid, fG::Vector{ComplexF64} )
+    ff = copy(fG)
+    ff = reshape(ff, pw.Ns)
+    pw.planbw*ff
+    return reshape(ff, prod(pw.Ns))
 end
 
-function R_to_G( pw::PWGrid, fR::Array{ComplexF64,3} )
-    return pw.planfw*fR
+function R_to_G( pw::PWGrid, fR::Vector{ComplexF64} )
+    ff = copy(fR)
+    ff = reshape(fR, pw.Ns)
+    pw.planfw*ff
+    return reshape(ff, prod(pw.Ns))
 end
 
+
+#
 # used in Poisson solver
-function R_to_G( pw::PWGrid, fR_::Array{Float64,1} )
-    Ns = pw.Ns
-    Npoints = prod(Ns)
-    plan = pw.planfw
-    fR = convert(Array{ComplexF64,1},fR_)
-    out = reshape( plan*reshape(fR,Ns), Npoints )
-    return out
+#
+function R_to_G( pw::PWGrid, fR_::Vector{Float64} )
+    fR = convert(Array{ComplexF64,1}, fR_) # This will make a copy
+    ff = reshape(fR, pw.Ns)
+    pw.planfw*ff
+    return reshape(ff, prod(pw.Ns))
 end
 
-function R_to_G( pw::PWGrid, fR::Array{ComplexF64,2} )
-    Ns = pw.Ns
-    plan = pw.planfw
-    Npoints = prod(Ns)
-    Ncol = size(fR,2)
-    out = zeros( ComplexF64, size(fR) )
-    for ic = 1:Ncol
-        out[:,ic] = reshape( plan*reshape(fR[:,ic],Ns), Npoints )
+
+#
+# Used in calc_rhoe
+#
+function G_to_R!( pw::PWGrid, fG::Matrix{ComplexF64} )
+    plan = pw.planbw
+    for i in 1:size(fG,2)
+        @views ff = reshape(fG[:,i], pw.Ns)
+        pw.planbw*ff
     end
-    return out
-end
-
-function R_to_G!( pw::PWGrid, fR::Array{ComplexF64,2} )
-    Ns = pw.Ns
-    plan = pw.planfw
-    Npoints = prod(Ns)
-    Ncol = size(fR,2)
-    for ic = 1:Ncol
-        @views fR[:,ic] = reshape( plan*reshape(fR[:,ic],Ns), Npoints )
-    end
-    return
-end
-
-function R_to_G!( pw::PWGrid, fR::Array{ComplexF64,1} )
-    Ns = pw.Ns
-    plan = pw.planfw
-    Npoints = prod(Ns)
-    @views fR[:] = reshape( plan*reshape(fR[:],Ns), Npoints )
     return
 end
 
