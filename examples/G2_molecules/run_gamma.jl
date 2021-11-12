@@ -45,20 +45,19 @@ function do_calc( molname::String; method="SCF", xcfunc="VWN" )
     # Initialize Hamiltonian
     pspfiles = get_default_psp(atoms, xcfunc=xcfunc)
     ecutwfc = 20.0
-    Ham = Hamiltonian( atoms, pspfiles, ecutwfc,
+    Ham = HamiltonianGamma( atoms, pspfiles, ecutwfc,
         use_xc_internal=true, xcfunc=xcfunc )
-    println(Ham)
-    psiks = rand_BlochWavefunc(Ham)
+    psis = rand_BlochWavefuncGamma(Ham)
 
     if method == "SCF"
-        KS_solve_SCF!(Ham, psiks, mix_method="anderson",
+        KS_solve_SCF!(Ham, psis, mix_method="anderson",
             startingrhoe=:random)
 
     elseif method == "SCF_potmix"
-        KS_solve_SCF_potmix!(Ham, psiks, startingrhoe=:random)
+        KS_solve_SCF_potmix!(Ham, psis, startingrhoe=:random)
 
     elseif method == "Emin"
-        KS_solve_Emin_PCG!(Ham, psiks,
+        KS_solve_Emin_PCG_dot!(Ham, psis,
             startingrhoe=:random, skip_initial_diag=true)
 
     else
@@ -78,6 +77,7 @@ function main()
         @time do_calc(molname, method="SCF", xcfunc="VWN")
         @time do_calc(molname, method="SCF_potmix", xcfunc="VWN")
         @time do_calc(molname, method="Emin", xcfunc="VWN")
+        # PBE not yet working
     end
 end
 
