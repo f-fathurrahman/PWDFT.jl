@@ -201,8 +201,8 @@ function PWGridGamma( ecutwfc::Float64, LatVecs::Array{Float64,2}; Ns_=(0,0,0) )
 
     gvecw = GVectorsWGamma( ecutwfc, gvec )
 
-    planfw = plan_fft( zeros(ComplexF64,Ns) )
-    planbw = plan_ifft( zeros(ComplexF64,Ns) )
+    planfw = plan_fft!( zeros(ComplexF64,Ns) )
+    planbw = plan_ifft!( zeros(ComplexF64,Ns) )
 
     return PWGridGamma(
         ecutwfc, ecutrho, Ns, LatVecs, RecVecs, CellVolume, gvec, gvecw,

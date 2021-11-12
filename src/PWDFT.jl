@@ -99,8 +99,6 @@ include("wrappers_fft.jl")
 export R_to_G, R_to_G!,
        G_to_R, G_to_R!
 
-include("gamma_only/wrappers_fft_gamma.jl")
-
 #
 # Pseudopotential
 #

@@ -2,7 +2,7 @@ using Libxc
 
 # TODO cumulate spin 1,2 as one function or dispatch by julia's type system
 
-function calc_epsxc_PBE( xc_calc::LibxcXCCalculator, pw::PWGrid, Rhoe::Array{Float64,1} )
+function calc_epsxc_PBE( xc_calc::LibxcXCCalculator, pw, Rhoe::Array{Float64,1} )
 
     Npoints = size(Rhoe)[1]
     Nspin = 1
@@ -36,7 +36,7 @@ function calc_epsxc_PBE( xc_calc::LibxcXCCalculator, pw::PWGrid, Rhoe::Array{Flo
 
 end
 
-function calc_epsxc_PBE( xc_calc::LibxcXCCalculator, pw::PWGrid, Rhoe::Array{Float64,2} )
+function calc_epsxc_PBE( xc_calc::LibxcXCCalculator, pw, Rhoe::Array{Float64,2} )
 
     Nspin = size(Rhoe)[2]
     if Nspin == 1
@@ -87,7 +87,7 @@ function calc_epsxc_PBE( xc_calc::LibxcXCCalculator, pw::PWGrid, Rhoe::Array{Flo
 
 end
 
-function calc_Vxc_PBE( xc_calc::LibxcXCCalculator, pw::PWGrid, Rhoe::Array{Float64,1} )
+function calc_Vxc_PBE( xc_calc::LibxcXCCalculator, pw, Rhoe::Array{Float64,1} )
 
     Npoints = size(Rhoe)[1]
     Nspin = 1
@@ -143,7 +143,7 @@ function calc_Vxc_PBE( xc_calc::LibxcXCCalculator, pw::PWGrid, Rhoe::Array{Float
 
 end
 
-function calc_Vxc_PBE( xc_calc::LibxcXCCalculator, pw::PWGrid, Rhoe::Array{Float64,2} )
+function calc_Vxc_PBE( xc_calc::LibxcXCCalculator, pw, Rhoe::Array{Float64,2} )
 
     Nspin = size(Rhoe)[2]
     if Nspin == 1

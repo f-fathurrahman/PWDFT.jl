@@ -130,3 +130,27 @@ function update!( Ham::HamiltonianGamma, Rhoe::Array{Float64,2} )
     
     return
 end
+
+
+import Base: show
+function show( io::IO, Ham::HamiltonianGamma; header=true )
+    if header
+        @printf("\n")
+        @printf("                           --------------------------\n")
+        @printf("                           Hamiltonian (Γ-point only)\n")
+        @printf("                           --------------------------\n")
+        @printf("\n")
+    end
+    @printf(io, "size (MiB) = %18.5f\n", Base.summarysize(Ham)/1024/1024)
+    println(io, "")
+    println(io, "xcfunc     = ", Ham.xcfunc)
+    println(io, "xc_calc    = ", Ham.xc_calc)
+    println(io, "")
+    show(io, Ham.atoms)
+    #show(io, Ham.pw)
+    show(io, Ham.electrons)
+    for isp = 1:Ham.atoms.Nspecies
+        show(io, Ham.pspots[isp])
+    end
+end
+show( Ham::HamiltonianGamma; header=true ) = show( stdout, Ham, header=header )

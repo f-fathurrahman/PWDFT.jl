@@ -1,12 +1,12 @@
 #
 # In-place version, input 3d data as 3d array
 #
-function G_to_R!( pw::PWGrid, fG::Array{ComplexF64,3} )
+function G_to_R!( pw, fG::Array{ComplexF64,3} )
     pw.planbw*fG
     return
 end
 
-function R_to_G!( pw::PWGrid, fR::Array{ComplexF64,3} )
+function R_to_G!( pw, fR::Array{ComplexF64,3} )
     pw.planfw*fR
     return
 end
@@ -14,13 +14,13 @@ end
 #
 # In-place version, input 3d data as column vector
 #
-function G_to_R!( pw::PWGrid, fG::Vector{ComplexF64} )
+function G_to_R!( pw, fG::Vector{ComplexF64} )
     ff = reshape(fG, pw.Ns)
     pw.planbw*ff
     return
 end
 
-function R_to_G!( pw::PWGrid, fR::Vector{ComplexF64} )
+function R_to_G!( pw, fR::Vector{ComplexF64} )
     ff = reshape(fR, pw.Ns)
     pw.planfw*ff
     return
@@ -30,14 +30,14 @@ end
 #
 # Return a new array
 #
-function G_to_R( pw::PWGrid, fG::Vector{ComplexF64} )
+function G_to_R( pw, fG::Vector{ComplexF64} )
     ff = copy(fG)
     ff = reshape(ff, pw.Ns)
     pw.planbw*ff
     return reshape(ff, prod(pw.Ns))
 end
 
-function R_to_G( pw::PWGrid, fR::Vector{ComplexF64} )
+function R_to_G( pw, fR::Vector{ComplexF64} )
     ff = copy(fR)
     ff = reshape(fR, pw.Ns)
     pw.planfw*ff
@@ -48,7 +48,7 @@ end
 #
 # used in Poisson solver
 #
-function R_to_G( pw::PWGrid, fR_::Vector{Float64} )
+function R_to_G( pw, fR_::Vector{Float64} )
     fR = convert(Array{ComplexF64,1}, fR_) # This will make a copy
     ff = reshape(fR, pw.Ns)
     pw.planfw*ff
@@ -59,7 +59,7 @@ end
 #
 # Used in calc_rhoe
 #
-function G_to_R!( pw::PWGrid, fG::Matrix{ComplexF64} )
+function G_to_R!( pw, fG::Matrix{ComplexF64} )
     plan = pw.planbw
     for i in 1:size(fG,2)
         @views ff = reshape(fG[:,i], pw.Ns)
