@@ -32,6 +32,8 @@ mutable struct PsPot_UPF <: AbstractPsPot
     h::Array{Float64,3}   # l,1:3,1:3
     lmax::Int64           # l = 0, 1, 2, 3 (s, p, d, f)
     Nproj_l::Array{Int64,1}  # originally 0:3
+    # Core density
+    rho_atc::Vector{Float64}
     # Augmentation stuffs
     nqf::Int64
     nqlc::Int64
@@ -257,6 +259,7 @@ function PsPot_UPF( upf_file::String )
         is_nlcc, is_ultrasoft, is_paw,
         Nr, r, rab, V_local, Nproj, proj_l, rcut_l, kkbeta, proj_func, Dion, prj_interp_table,
         h, lmax, Nproj_l,
+        rho_atc,
         nqf, nqlc, qqq, q_with_l, qfuncl,
         Nwfc, chi,
         rhoatom
