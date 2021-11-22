@@ -1,5 +1,9 @@
-function calc_rhoe!( Ham::Hamiltonian, psiks::BlochWavefunc, Rhoe::Array{Float64,2}; renormalize=true)
-
+function calc_rhoe!(
+    Ham::Hamiltonian,
+    psiks::BlochWavefunc,
+    Rhoe::Array{Float64,2};
+    renormalize=true
+)
     pw = Ham.pw
     Focc = Ham.electrons.Focc
     Nspin = Ham.electrons.Nspin
@@ -10,58 +14,47 @@ function calc_rhoe!( Ham::Hamiltonian, psiks::BlochWavefunc, Rhoe::Array{Float64
     Nkpt = pw.gvecw.kpoints.Nkpt
     Ngw = pw.gvecw.Ngw
     wk = pw.gvecw.kpoints.wk
+    idx_gw2r = pw.gvecw.idx_gw2r
     Npoints = prod(Ns)
     Nstates = size(psiks[1])[2]
 
-    psiR = zeros(ComplexF64, Npoints, Nstates)
+    ctmp = zeros(ComplexF64, Npoints)
 
     # dont forget to zero out the Rhoe first
-    Rhoe[:,:] .= 0.0
-
-    for ispin = 1:Nspin
-    for ik = 1:Nkpt
-
+    fill!(Rhoe, 0.0)
+    NptsPerSqrtVol = Npoints/sqrt(CellVolume)
+    for ispin in 1:Nspin, ik in 1:Nkpt
+        #
         ikspin = ik + (ispin - 1)*Nkpt
-
-        psiR .= 0.0 + im*0.0
-        
-        # Transform to real space
-        idx = pw.gvecw.idx_gw2r[ik]
         psi = psiks[ikspin]
-
-        psiR[idx,:] = psi[:,:]
-        
-        G_to_R!(pw, psiR)
-
-        # orthonormalization in real space
-        #ortho_sqrt!( psiR )
-        #ortho_gram_schmidt!( psiR ) # for comparison
-        #psiR = sqrt(Npoints/CellVolume)*psiR
-        
-        # by pass orthonormalization, only use scaling
-        psiR = sqrt(Npoints/CellVolume)*sqrt(Npoints)*psiR
-
-        for ist = 1:Nstates
+        #
+        for ist in 1:Nstates
+            #
+            fill!(ctmp, 0.0 + im*0.0)
+            #
+            for igw in 1:Ngw[ik]
+                ip = idx_gw2r[ik][igw]
+                ctmp[ip] = psi[igw,ist]
+            end
+            # to real space
+            G_to_R!(pw, ctmp)
+            # Renormalize
+            for ip in 1:Npoints
+                ctmp[ip] *= NptsPerSqrtVol
+            end
             w = wk[ik]*Focc[ist,ikspin]
-            for ip = 1:Npoints
-                Rhoe[ip,ispin] = Rhoe[ip,ispin] + w*real( conj(psiR[ip,ist])*psiR[ip,ist] )
+            for ip in 1:Npoints
+                # accumulate
+                Rhoe[ip,ispin] += w*real( conj(ctmp[ip])*ctmp[ip] )
             end
         end
-    end # ik
-    end # ikspin
-
-    # Ensure that there is no negative rhoe
-    #for i in 1:length(Rhoe)
-    #    if Rhoe[i] < eps()
-    #        Rhoe[i] = eps()
-    #    end
-    #end
+    end # ik, ispin
 
     # renormalize
     if renormalize
         integ_rho = sum(Rhoe)*CellVolume/Npoints
-        for ip in eachindex(Rhoe)
-            Rhoe[ip] = Nelectrons_true/integ_rho * Rhoe[ip]
+        for i in 1:length(Rhoe)
+            Rhoe[i] *= Nelectrons_true/integ_rho
         end
     end
 
@@ -80,5 +73,3 @@ function calc_rhoe( Ham::Hamiltonian, psiks::BlochWavefunc )
     calc_rhoe!( Ham, psiks, Rhoe )
     return Rhoe
 end
-
-
