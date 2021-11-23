@@ -130,7 +130,7 @@ function symmetrize_rhoe!(
 
     RhoeG = zeros(ComplexF64,Npoints,Nspin)
     for ispin = 1:Nspin
-        RhoeG[:,ispin] = R_to_G(pw, Rhoe[:,ispin])
+        @views RhoeG[:,ispin] = R_to_G(pw, Rhoe[:,ispin])
     end
 
     sg = zeros(Float64,3)
@@ -228,7 +228,7 @@ function symmetrize_rhoe!(
     end # ngl
 
     for ispin = 1:Nspin
-        Rhoe[:,ispin] = real(G_to_R(pw, RhoeG[:,ispin]))
+        @views Rhoe[:,ispin] = real(G_to_R(pw, RhoeG[:,ispin]))
     end
 
     return

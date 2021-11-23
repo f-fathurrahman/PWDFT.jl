@@ -14,13 +14,13 @@ end
 #
 # In-place version, input 3d data as column vector
 #
-function G_to_R!( pw, fG::Vector{ComplexF64} )
+function G_to_R!( pw, fG::AbstractVector{ComplexF64} )
     ff = reshape(fG, pw.Ns)
     pw.planbw*ff
     return
 end
 
-function R_to_G!( pw, fR::Vector{ComplexF64} )
+function R_to_G!( pw, fR::AbstractVector{ComplexF64} )
     ff = reshape(fR, pw.Ns)
     pw.planfw*ff
     return
@@ -30,14 +30,14 @@ end
 #
 # Return a new array
 #
-function G_to_R( pw, fG::Vector{ComplexF64} )
+function G_to_R( pw, fG::AbstractVector{ComplexF64} )
     ff = copy(fG)
     ff = reshape(ff, pw.Ns)
     pw.planbw*ff
     return reshape(ff, prod(pw.Ns))
 end
 
-function R_to_G( pw, fR::Vector{ComplexF64} )
+function R_to_G( pw, fR::AbstractVector{ComplexF64} )
     ff = copy(fR)
     ff = reshape(fR, pw.Ns)
     pw.planfw*ff
@@ -48,7 +48,7 @@ end
 #
 # used in Poisson solver
 #
-function R_to_G( pw, fR_::Vector{Float64} )
+function R_to_G( pw, fR_::AbstractVector{Float64} )
     fR = convert(Array{ComplexF64,1}, fR_) # This will make a copy
     ff = reshape(fR, pw.Ns)
     pw.planfw*ff
