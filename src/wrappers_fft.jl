@@ -12,6 +12,21 @@ function R_to_G!( pw, fR::Array{ComplexF64,3} )
 end
 
 #
+# Return new array, input 3d data as 3d array
+#
+function G_to_R( pw, fG::Array{ComplexF64,3} )
+    ff = copy(fG)
+    pw.planbw*ff
+    return ff
+end
+
+function R_to_G( pw, fR::Array{ComplexF64,3} )
+    ff = copy(fR)
+    pw.planfw*ff
+    return ff
+end
+
+#
 # In-place version, input 3d data as column vector
 #
 function G_to_R!( pw, fG::AbstractVector{ComplexF64} )
