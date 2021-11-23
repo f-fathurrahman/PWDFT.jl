@@ -17,7 +17,10 @@ function time_calc_rhoe()
     ecutwfc = 15.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc,
                        meshk=[8,8,8], extra_states=4 )
-        
+
+    println("Nsyms = ", Ham.sym_info.Nsyms)
+    println("Nrots = ", Ham.sym_info.Nrots)
+
     # Shortcuts
     pw = Ham.pw
     Focc = Ham.electrons.Focc
@@ -58,7 +61,55 @@ function time_calc_rhoe2()
                 joinpath(DIR_PSP, "O-q6.gth")]
     ecutwfc = 15.0
     Ham = Hamiltonian( atoms, pspfiles, ecutwfc )
-        
+
+    println("Nsyms = ", Ham.sym_info.Nsyms)
+    println("Nrots = ", Ham.sym_info.Nrots)
+
+    # Shortcuts
+    pw = Ham.pw
+    Focc = Ham.electrons.Focc
+    CellVolume = pw.CellVolume
+    Npoints = prod(Ham.pw.Ns)
+    Nspin = Ham.electrons.Nspin
+
+    Random.seed!(4321)
+    psiks = rand_BlochWavefunc( Ham )
+
+    Rhoe = zeros(Npoints,Nspin)
+
+    @printf("Using calc_rhoe:  ")
+    @btime $Rhoe = calc_rhoe( $Ham, $psiks )
+
+    @printf("Using calc_rhoe!: ")
+    @btime calc_rhoe!( $Ham, $psiks, $Rhoe )
+
+end
+
+
+function time_calc_rhoe3()
+
+    @printf("\n")
+    @printf("------------------------------------------\n")
+    @printf("Timing calc_rhoe (CO molecule) no symmetry\n")
+    @printf("------------------------------------------\n")
+    @printf("\n")
+
+    atoms = Atoms(xyz_string_frac=
+        """
+        2
+
+        C  0.0  0.0  0.0
+        O  1.5  0.0  0.0
+        """, LatVecs=gen_lattice_sc(16.0))
+    
+    pspfiles = [joinpath(DIR_PSP, "C-q4.gth"),
+                joinpath(DIR_PSP, "O-q6.gth")]
+    ecutwfc = 15.0
+    Ham = Hamiltonian( atoms, pspfiles, ecutwfc, use_symmetry=false )
+
+    println("Nsyms = ", Ham.sym_info.Nsyms)
+    println("Nrots = ", Ham.sym_info.Nrots)
+
     # Shortcuts
     pw = Ham.pw
     Focc = Ham.electrons.Focc
@@ -81,4 +132,5 @@ end
 
 time_calc_rhoe()
 time_calc_rhoe2()
+time_calc_rhoe3()
 
