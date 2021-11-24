@@ -207,7 +207,13 @@ function PsPot_UPF( upf_file::String )
     #println("proj_l = ", proj_l)
     #println("Nproj_l = ", Nproj_l)
 
-    h = zeros(Float64,4,3,3)
+    # This is somewhat wasteful
+    # Currently the 1st dimension of h is max number of supported angular
+    # momentum, i.e. l=3 (or 4 in 1-based indexing)
+    # 2nd and 3rd column should be number of projector per l. In GTH pspot
+    # it is 3 at maximum
+    nprjlmax = maximum(Nproj_l)
+    h = zeros(Float64,4,nprjlmax,nprjlmax)
     istart = 0
     for l in 0:lmax
         idx = (istart+1):(istart+Nproj_l[l+1])

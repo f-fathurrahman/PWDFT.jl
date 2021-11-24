@@ -150,7 +150,15 @@ function _init_prj2beta(Natoms::Int64, atm2species, pspots)
     # -2, -1, 0, 1, 2  -> m
     #  1,  2, 3, 4, 5  -> 3 + m, lmax = 2 + 1
 
-    prj2beta = Array{Int64}(undef,3,Natoms,4,7)
+    # Fix for full-relativistic ONCV
+    nprojlmax = 1
+    for psp in pspots
+        nn = maximum(psp.Nproj_l)
+        if nprojlmax < nn
+            nprojlmax = nn
+        end
+    end
+    prj2beta = Array{Int64}(undef,nprojlmax,Natoms,4,7)
     fill!(prj2beta, -1)   # set to invalid index
 
     NbetaNL = 0
