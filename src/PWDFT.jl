@@ -168,6 +168,9 @@ include("RhoeSymmetrizer.jl")
 export RhoeSymmetrizer,
        symmetrize_rhoe!
 
+include("calc_rhoe_core.jl")
+export calc_rhoe_core!
+
 include("Hamiltonian.jl")
 export Hamiltonian, update!
 
