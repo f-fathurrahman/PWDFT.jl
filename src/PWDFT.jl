@@ -204,7 +204,7 @@ include("gamma_only/op_H_gamma.jl")
 
 
 include("Poisson_solve.jl")
-export Poisson_solve
+export Poisson_solve, Poisson_solve!
 
 include("gamma_only/Poisson_solve_gamma.jl")
 
