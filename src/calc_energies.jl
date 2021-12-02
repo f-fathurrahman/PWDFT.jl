@@ -67,9 +67,9 @@ function calc_E_local( Ham::Hamiltonian, psiks::BlochWavefunc )
     Nspin = Ham.electrons.Nspin
     potentials = Ham.potentials
 
-    Rhoe_tot = zeros(Npoints)
-    for ispin in 1:Nspin
-        Rhoe_tot[:] = Rhoe_tot[:] + Ham.rhoe[:,ispin]
+    Rhoe_tot = zeros(Float64,Npoints)
+    for ispin in 1:Nspin, ip in 1:Npoints
+        Rhoe_tot[ip] = Rhoe_tot[ip] + Ham.rhoe[ip,ispin]
     end
 
     E_Hartree = 0.5*dot( potentials.Hartree, Rhoe_tot ) * dVol
