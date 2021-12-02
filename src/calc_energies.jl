@@ -68,7 +68,7 @@ function calc_E_local( Ham::Hamiltonian, psiks::BlochWavefunc )
     potentials = Ham.potentials
 
     Rhoe_tot = zeros(Npoints)
-    for ispin = 1:Nspin
+    for ispin in 1:Nspin
         Rhoe_tot[:] = Rhoe_tot[:] + Ham.rhoe[:,ispin]
     end
 
@@ -80,10 +80,20 @@ function calc_E_local( Ham::Hamiltonian, psiks::BlochWavefunc )
         epsxc = calc_epsxc_SCAN( Ham.xc_calc, Ham.pw, psiks, Rhoe_tot )
     elseif Ham.xcfunc == "PBE"
         epsxc = calc_epsxc_PBE( Ham.xc_calc, Ham.pw, Ham.rhoe )
+        # FIXME: NLCC is not yet handled
     else
-        epsxc = calc_epsxc_VWN( Ham.xc_calc, Ham.rhoe )
+        if Ham.rhoe_core == nothing
+            epsxc = calc_epsxc_VWN( Ham.xc_calc, Ham.rhoe )
+        else
+            epsxc = calc_epsxc_VWN( Ham.xc_calc, Ham.rhoe + Ham.rhoe_core )
+        end
     end
-    E_xc = dot( epsxc, Rhoe_tot ) * dVol
+    #
+    if Ham.rhoe_core == nothing
+        E_xc = dot( epsxc, Rhoe_tot ) * dVol
+    else
+        E_xc = dot( epsxc, Rhoe_tot + Ham.rhoe_core ) * dVol
+    end
 
     return E_Ps_loc, E_Hartree, E_xc
 end

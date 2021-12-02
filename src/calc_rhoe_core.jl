@@ -9,7 +9,7 @@ function calc_rhoe_core!(atoms, pw, pspots, rhoe_core)
     idx_g2shells = pw.gvec.idx_g2shells
     CellVolume = pw.CellVolume
 
-    rhoe_core = zeros(Float64, Npoints)
+    Nspin = 1 # FIXME
     strf = calc_strfact(atoms, pw)
     rhoecgl = zeros(Float64, Ngl)
     rhoecG = zeros(ComplexF64, Npoints)
@@ -29,14 +29,14 @@ function calc_rhoe_core!(atoms, pw, pspots, rhoe_core)
         #
         rhoe_core[:] = rhoe_core[:] + real(G_to_R(pw, rhoecG)) * Npoints / CellVolume
         for ip in 1:Npoints
-            if rhoe_core[ip] < 0.0
-                neg_rhoec = neg_rhoec + rhoe_core[ip]
+            if rhoe_core[ip,1] < 0.0
+                neg_rhoec = neg_rhoec + rhoe_core[ip,1]
             end
         end
     end
     println("integ rhoec = ", sum(rhoe_core)*CellVolume/Npoints)
     println("neg_rhoec = ", neg_rhoec*CellVolume/Npoints)
-    return rhoe_core
+    return
 end
 
 

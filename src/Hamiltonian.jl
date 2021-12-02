@@ -3,6 +3,7 @@ mutable struct Hamiltonian{Txc<:AbstractXCCalculator,Tpsp<:AbstractPsPot}
     potentials::Potentials
     energies::Energies
     rhoe::Array{Float64,2} # spin dependent
+    rhoe_core::Union{Array{Float64,2},Nothing}
     electrons::Electrons
     atoms::Atoms
     sym_info::SymmetryInfo
@@ -146,6 +147,21 @@ function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
     energies = Energies()
     #
     rhoe = zeros( Float64, Npoints, Nspin )
+    
+    need_nlcc = false
+    for isp in 1:Nspecies
+        if Pspots[isp].is_nlcc
+            need_nlcc = true
+            break
+        end
+    end
+    if need_nlcc
+        rhoe_core = zeros(Float64, Npoints, 1) # FIXME: Nspin=1
+        calc_rhoe_core!(atoms, pw, Pspots, rhoe_core)
+        println("sum rhoe_core = ", sum(rhoe_core))
+    else
+        rhoe_core = nothing
+    end
 
     electrons = Electrons( atoms, Pspots, Nspin=Nspin, Nkpt=kpoints.Nkpt,
                            Nstates_empty=extra_states )
@@ -175,7 +191,7 @@ function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
         end
     end
 
-    return Hamiltonian( pw, potentials, energies, rhoe,
+    return Hamiltonian( pw, potentials, energies, rhoe, rhoe_core,
                         electrons, atoms, sym_info, rhoe_symmetrizer,
                         Pspots, pspotNL, xcfunc, xc_calc, ik, ispin )
 end
@@ -264,7 +280,7 @@ function Hamiltonian( atoms::Atoms, ecutwfc::Float64;
         xc_calc = LibxcXCCalculator()
     end
 
-    return Hamiltonian( pw, potentials, energies, rhoe,
+    return Hamiltonian( pw, potentials, energies, rhoe, nothing,
                         electrons, atoms, sym_info, rhoe_symmetrizer,
                         Pspots, pspotNL, xcfunc, xc_calc, ik, ispin )
 end
@@ -272,17 +288,25 @@ end
 # FIXME: should be merged with Array{Float64,2} version.
 # psiks is needed for metagga
 function update!( Ham::Hamiltonian, psiks::BlochWavefunc, rhoe::Array{Float64,1} )
+
     # assumption Nspin = 1
     Ham.rhoe[:,1] = rhoe
     Vxc = zeros(size(rhoe,1))
-    Ham.potentials.Hartree = real( G_to_R( Ham.pw, Poisson_solve(Ham.pw, rhoe) ) )    
+    
+    Ham.potentials.Hartree = real( G_to_R( Ham.pw, Poisson_solve(Ham.pw, rhoe) ) )
+
     if Ham.xcfunc == "SCAN"
         calc_Vxc_SCAN!( Ham.xc_calc, Ham.pw, psiks, rhoe, Vxc )
         Ham.potentials.XC[:,1] = Vxc[:]
     elseif Ham.xcfunc == "PBE"
         Ham.potentials.XC[:,1] = calc_Vxc_PBE( Ham.xc_calc, Ham.pw, rhoe )
-    else  # VWN is the default
-        Ham.potentials.XC[:,1] = calc_Vxc_VWN( Ham.xc_calc, rhoe )
+    else
+        # VWN is the default
+        if Ham.rhoe_core == nothing
+            Ham.potentials.XC[:,1] = calc_Vxc_VWN( Ham.xc_calc, rhoe )
+        else
+            Ham.potentials.XC[:,1] = calc_Vxc_VWN( Ham.xc_calc, rhoe + Ham.rhoe_core )
+        end
     end
     
     Npoints = prod(Ham.pw.Ns)
@@ -311,8 +335,14 @@ function update!(Ham::Hamiltonian, psiks::BlochWavefunc, rhoe::Array{Float64,2})
     Ham.potentials.Hartree = real( G_to_R( Ham.pw, Poisson_solve(Ham.pw, Rhoe_total) ) )
     if Ham.xcfunc == "PBE"
         Ham.potentials.XC = calc_Vxc_PBE( Ham.xc_calc, Ham.pw, rhoe )
-    else  # VWN is the default
-        Ham.potentials.XC = calc_Vxc_VWN( Ham.xc_calc, rhoe )
+        # FIXME: NLCC is not yet handled
+    else 
+        # VWN is the default
+        if Ham.rhoe_core == nothing
+            Ham.potentials.XC = calc_Vxc_VWN( Ham.xc_calc, rhoe )
+        else
+            Ham.potentials.XC = calc_Vxc_VWN( Ham.xc_calc, rhoe + Ham.rhoe_core )
+        end
     end
     Npoints = prod(Ham.pw.Ns)
     for ispin = 1:Nspin
@@ -332,8 +362,13 @@ function update!( Ham::Hamiltonian, rhoe::Array{Float64,1} )
     Ham.potentials.Hartree = real( G_to_R( Ham.pw, Poisson_solve(Ham.pw, rhoe) ) )    
     if Ham.xcfunc == "PBE"
         Ham.potentials.XC[:,1] = calc_Vxc_PBE( Ham.xc_calc, Ham.pw, rhoe )
-    else  # VWN is the default
-        Ham.potentials.XC[:,1] = calc_Vxc_VWN( Ham.xc_calc, rhoe )
+    else
+        # VWN is the default
+        if Ham.rhoe_core == nothing
+            Ham.potentials.XC[:,1] = calc_Vxc_VWN( Ham.xc_calc, rhoe )
+        else
+            Ham.potentials.XC[:,1] = calc_Vxc_VWN( Ham.xc_calc, rhoe + Ham.rhoe_core )
+        end
     end
     Npoints = prod(Ham.pw.Ns)
     for ip = 1:Npoints
