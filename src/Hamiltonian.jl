@@ -298,28 +298,36 @@ function update!( Ham::Hamiltonian, psiks::BlochWavefunc, rhoe::Array{Float64,1}
 
     # assumption Nspin = 1
     Ham.rhoe[:,1] = rhoe
-    Vxc = zeros(size(rhoe,1))
     
-    Ham.potentials.Hartree = real( G_to_R( Ham.pw, Poisson_solve(Ham.pw, rhoe) ) )
+    pw = Ham.pw
+    xc_calc = Ham.xc_calc
+    V_Hartree = Ham.potentials.Hartree
+    V_XC = Ham.potentials.XC
+    V_Total = Ham.potentials.Total
+    V_Ps_loc = Ham.potentials.Ps_loc
+
+    Poisson_solve!(pw, rhoe, V_Hartree)
 
     if Ham.xcfunc == "SCAN"
-        calc_Vxc_SCAN!( Ham.xc_calc, Ham.pw, psiks, rhoe, Vxc )
-        Ham.potentials.XC[:,1] = Vxc[:]
+        Vxc_tmp = zeros(size(rhoe,1)) # FIXME: use V_XC directly
+        calc_Vxc_SCAN!( xc_calc, pw, psiks, rhoe, Vxc_tmp )
+        V_XC[:,1] = Vxc_tmp[:]
+    #
     elseif Ham.xcfunc == "PBE"
-        Ham.potentials.XC[:,1] = calc_Vxc_PBE( Ham.xc_calc, Ham.pw, rhoe )
+        V_XC[:,1] = calc_Vxc_PBE( xc_calc, pw, rhoe )
+    #
     else
         # VWN is the default
         if Ham.rhoe_core == nothing
-            Ham.potentials.XC[:,1] = calc_Vxc_VWN( Ham.xc_calc, rhoe )
+            @views V_XC[:,1] = calc_Vxc_VWN( xc_calc, rhoe )
         else
-            Ham.potentials.XC[:,1] = calc_Vxc_VWN( Ham.xc_calc, rhoe + Ham.rhoe_core )
+            @views V_XC[:,1] = calc_Vxc_VWN( xc_calc, rhoe + Ham.rhoe_core )
         end
     end
     
-    Npoints = prod(Ham.pw.Ns)
-    for ip = 1:Npoints
-        Ham.potentials.Total[ip,1] = Ham.potentials.Ps_loc[ip] + Ham.potentials.Hartree[ip] +
-                                     Ham.potentials.XC[ip,1]  
+    Npoints = size(rhoe,1)
+    for ip in 1:Npoints
+        V_Total[ip,1] = V_Ps_loc[ip] + V_Hartree[ip] + V_XC[ip,1]  
     end
     return
 end
