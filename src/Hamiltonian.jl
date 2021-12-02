@@ -3,7 +3,7 @@ mutable struct Hamiltonian{Txc<:AbstractXCCalculator,Tpsp<:AbstractPsPot}
     potentials::Potentials
     energies::Energies
     rhoe::Array{Float64,2} # spin dependent
-    rhoe_core::Union{Array{Float64,2},Nothing}
+    rhoe_core::Union{Nothing,Array{Float64,2}}
     electrons::Electrons
     atoms::Atoms
     sym_info::SymmetryInfo
@@ -103,38 +103,50 @@ function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
 
     # XXX We don't support mixed pseudopotentials set
     if is_using_extension_upf(pspfiles[1])
-        Pspots = Array{PsPot_UPF}(undef,Nspecies)
+        pspots = Array{PsPot_UPF}(undef,Nspecies)
     else
-        Pspots = Array{PsPot_GTH}(undef,Nspecies)
-    end
+        pspots = Array{PsPot_GTH}(undef,Nspecies)
+    end    
 
+    #
+    # Initialize pseudopotentials and local ionic potentials
+    #
+    is_psp_using_nlcc = zeros(Bool,Nspecies) # by default we don't use any NLCC
+    #
     for isp = 1:Nspecies
+        #
         if is_using_extension_upf(pspfiles[isp])            
+            #
+            # Using UPF
+            #
             println("\nUsing UPF\n")
-            Pspots[isp] = PsPot_UPF( pspfiles[isp] )
-            _build_prj_interp_table!(Pspots[isp], pw)
-            if Pspots[isp].is_nlcc
+            pspots[isp] = PsPot_UPF( pspfiles[isp] )
+            # build the interpolation table needed for nonlocal projectors
+            _build_prj_interp_table!( pspots[isp], pw )
+            #
+            if pspots[isp].is_nlcc
+                is_psp_using_nlcc[isp] = true
                 println()
-                @printf("!!! WARNING: %s is generated with nonlinear-core correction\n", pspfiles[isp])
+                @printf("!!! WARNING: %s is generated with nonlinear-core correction\n",
+                    pspfiles[isp])
                 @printf("!!! WARNING: This is not yet supported\n")
                 println()
             end
         else
-            Pspots[isp] = PsPot_GTH( pspfiles[isp] )
+            #
+            # Using GTH pseudopotential
+            #
+            pspots[isp] = PsPot_GTH( pspfiles[isp] )
         end
-        psp = Pspots[isp]
         #
-        #for igl = 1:Ngl
-        #    Vgl[igl] = eval_Vloc_G( psp, G2_shells[igl] )
-        #end
+        psp = pspots[isp] # shortcut
+        #
         eval_Vloc_G!( psp, G2_shells, Vgl )
-        #
         for ig = 1:Ng
             ip = idx_g2r[ig]
             igl = idx_g2shells[ig]
             Vg[ip] = strf[ig,isp] * Vgl[igl]
         end
-        #
         V_Ps_loc[:] = V_Ps_loc[:] + real( G_to_R(pw, Vg) ) * Npoints / CellVolume
     end
 
@@ -147,29 +159,24 @@ function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
     energies = Energies()
     #
     rhoe = zeros( Float64, Npoints, Nspin )
-    
-    need_nlcc = false
-    for isp in 1:Nspecies
-        if Pspots[isp].is_nlcc
-            need_nlcc = true
-            break
-        end
-    end
-    if need_nlcc
+    #
+    # Initialize core electron density for NLCC if needed
+    #
+    if any(is_psp_using_nlcc)
         rhoe_core = zeros(Float64, Npoints, 1) # FIXME: Nspin=1
-        calc_rhoe_core!(atoms, pw, Pspots, rhoe_core)
+        calc_rhoe_core!(atoms, pw, pspots, rhoe_core)
         println("sum rhoe_core = ", sum(rhoe_core))
     else
         rhoe_core = nothing
     end
 
-    electrons = Electrons( atoms, Pspots, Nspin=Nspin, Nkpt=kpoints.Nkpt,
+    electrons = Electrons( atoms, pspots, Nspin=Nspin, Nkpt=kpoints.Nkpt,
                            Nstates_empty=extra_states )
 
     # NL pseudopotentials
-    pspotNL = PsPotNL( atoms, pw, Pspots, check_norm=false )
+    pspotNL = PsPotNL( atoms, pw, pspots, check_norm=false )
 
-    atoms.Zvals = get_Zvals( Pspots )
+    atoms.Zvals = get_Zvals( pspots )
 
     ik = 1
     ispin = 1
@@ -193,7 +200,7 @@ function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
 
     return Hamiltonian( pw, potentials, energies, rhoe, rhoe_core,
                         electrons, atoms, sym_info, rhoe_symmetrizer,
-                        Pspots, pspotNL, xcfunc, xc_calc, ik, ispin )
+                        pspots, pspotNL, xcfunc, xc_calc, ik, ispin )
 end
 
 
@@ -235,8 +242,8 @@ function Hamiltonian( atoms::Atoms, ecutwfc::Float64;
     Npoints = prod(pw.Ns)
 
     # dummy pspots
-    Pspots = Array{PsPot_GTH}(undef,1)
-    Pspots[1] = PsPot_GTH()
+    pspots = Array{PsPot_GTH}(undef,1)
+    pspots[1] = PsPot_GTH()
 
     #
     # Coulomb potential as local potential
@@ -282,7 +289,7 @@ function Hamiltonian( atoms::Atoms, ecutwfc::Float64;
 
     return Hamiltonian( pw, potentials, energies, rhoe, nothing,
                         electrons, atoms, sym_info, rhoe_symmetrizer,
-                        Pspots, pspotNL, xcfunc, xc_calc, ik, ispin )
+                        pspots, pspotNL, xcfunc, xc_calc, ik, ispin )
 end
 
 # FIXME: should be merged with Array{Float64,2} version.
