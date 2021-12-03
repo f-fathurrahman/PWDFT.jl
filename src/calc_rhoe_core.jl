@@ -27,7 +27,12 @@ function calc_rhoe_core!(atoms, pw, pspots, rhoe_core)
             rhoecG[ip] = strf[ig,isp] * rhoecgl[igl]
         end
         #
-        rhoe_core[:] = rhoe_core[:] + real(G_to_R(pw, rhoecG)) * Npoints / CellVolume
+        #rhoe_core[:] = rhoe_core[:] + real(G_to_R(pw, rhoecG)) * Npoints / CellVolume
+        G_to_R!(pw, rhoecG)
+        for ip in 1:Npoints
+            rhoe_core[ip,1] += real(rhoecG[ip])*Npoints/CellVolume
+        end
+        # Check for negative rhoe
         for ip in 1:Npoints
             if rhoe_core[ip,1] < 0.0
                 neg_rhoec = neg_rhoec + rhoe_core[ip,1]
@@ -67,7 +72,9 @@ function _calc_rhoecgl!(
     for igl in 2:Ngl
         Gx = sqrt(G2_shells[igl])
         for ir in 1:Nr
-            aux[ir] = r[ir]^2 * rho_atc[ir] * sin(Gx*r[ir])/Gx
+            #aux[ir] = r[ir]^2 * rho_atc[ir] * sphericalbesselj(0, Gx*r[ir])
+            # or
+            aux[ir] = r[ir] * rho_atc[ir] * sin(Gx*r[ir])/Gx
         end
         rhoecgl[igl] = pref*integ_simpson(Nr, aux, rab)
     end
