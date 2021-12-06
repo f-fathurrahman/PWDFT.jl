@@ -24,5 +24,5 @@ function init_Ham_G2mols( molname::String; xcfunc="VWN" )
     atoms = Atoms( ext_xyz_file=joinpath(DIR_STRUCTURES, "DATA_G2_mols", filename) )
     pspfiles = get_default_psp(atoms, xcfunc=xcfunc)
     ecutwfc = 15.0
-    return Hamiltonian( atoms, pspfiles, ecutwfc, xcfunc=xcfunc )
+    return Hamiltonian( atoms, pspfiles, ecutwfc, xcfunc=xcfunc, use_symmetry=false )
 end
