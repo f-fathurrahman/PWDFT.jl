@@ -96,9 +96,9 @@ function my_scf!(
                 Eband = Eband + Focc[ist,i]*wk[ik]*evals[ist,i]
             end
         end
-
-        Vin[:] = Ham.potentials.Hartree[:] + Ham.potentials.XC[:]
-        deband = -sum( Vin .* Rhoe_new[:,1] )*dVol
+        
+        @views Vin[:] = Ham.potentials.Hartree[:] + Ham.potentials.XC[:]
+        @views deband = -dot( Vin, Rhoe_new[:,1] )*dVol
 
         # Mix
         @views Rhoe[:] = betamix*Rhoe_new[:] + (1-betamix)*Rhoe[:]
@@ -109,11 +109,11 @@ function my_scf!(
         for ip in 1:Npoints
            dρ = Rhoe[ip,1] - Rhoe_new[ip,1]
            V = Ham.potentials.Hartree[ip] + Ham.potentials.XC[ip,1]
-           descf = descf + V*dρ
+           descf += V*dρ
         end
         descf *= dVol
 
-        EHartree = 0.5*sum(Ham.potentials.Hartree.*Rhoe[:,1])*dVol
+        @views EHartree = 0.5*dot(Ham.potentials.Hartree, Rhoe[:,1])*dVol
 
         if Ham.xcfunc == "PBE"
             epsxc = calc_epsxc_PBE( Ham.xc_calc, Ham.pw, Ham.rhoe )
@@ -124,13 +124,6 @@ function my_scf!(
                 epsxc = calc_epsxc_VWN( Ham.xc_calc, Ham.rhoe + Ham.rhoe_core )
             end
         end
-        srhoe = Ham.rhoe + Ham.rhoe_core
-        println("size srhoe = ", size(srhoe))
-        println("integ rhoe + rhoe_core = ", sum(srhoe)*dVol)
-        println("some rhoe_core: ")
-        println(Ham.rhoe_core[1:3])
-        println(Ham.rhoe_core[4:6])
-        println("sum rhoe_core = ", sum(Ham.rhoe_core))
         if Ham.rhoe_core == nothing
             Exc = dot( epsxc, Ham.rhoe ) * dVol
         else
@@ -143,21 +136,9 @@ function my_scf!(
         
         #Etot = sum(Ham.energies)
         Etot = Eband + deband + EHartree + Exc + Ham.energies.NN + descf # entropy missed
-
-        @printf("Eband    = %18.10f\n", Eband)
-        @printf("deband   = %18.10f\n", deband)
-        @printf("OneEle   = %18.10f\n", Eband + deband)
-        @printf("descf    = %18.10f\n", descf)
-        @printf("EHartree = %18.10f\n", EHartree)
-        @printf("Exc      = %18.10f\n", Exc)
-        @printf("NN       = %18.10f\n", Ham.energies.NN)
-        @printf("-----------------------------\n")
-        @printf("Total    = %18.10f\n", Etot)
-
         diffE = abs( Etot - Etot_old )
 
-        @printf("\nSCF: %8d %18.10f %18.10e %18.10e\n", iter, Etot, diffE, diffRhoe[1] )
-        @printf("integ Rhoe = %18.10f\n", sum(Rhoe)*dVol)
+        @printf("SCF: %8d %18.10f %18.10e %18.10e\n", iter, Etot, diffE, diffRhoe[1] )
         
         if diffE < etot_conv_thr
             CONVERGED = CONVERGED + 1
@@ -167,13 +148,16 @@ function my_scf!(
 
         if CONVERGED >= 2
             @printf("SCF is converged: iter: %d , diffE = %10.7e\n", iter, diffE)
-            println("Energies in Ry:")
-            @printf("OneEle   = %18.10f\n", 2*(Eband + deband))
-            @printf("EHartree = %18.10f\n", 2*EHartree)
-            @printf("Exc      = %18.10f\n", 2*Exc)
-            @printf("NN       = %18.10f\n", 2*Ham.energies.NN)
+            println()
+            println("Total energy terms in Ry:")
+            @printf("Eband    = %18.10f Ry\n", 2*Eband)
+            @printf("deband   = %18.10f Ry\n", 2*deband)
+            @printf("OneEle   = %18.10f Ry\n", 2*(Eband + deband))
+            @printf("EHartree = %18.10f Ry\n", 2*EHartree)
+            @printf("Exc      = %18.10f Ry\n", 2*Exc)
+            @printf("NN       = %18.10f Ry\n", 2*Ham.energies.NN)
             @printf("-----------------------------\n")
-            @printf("Total    = %18.10f\n", 2*Etot)
+            @printf("Total    = %18.10f Ry\n", 2*Etot)
             break
         end
         #
@@ -182,7 +166,7 @@ function my_scf!(
         flush(stdout)
     end
 
-    Ham.electrons.ebands = evals
+    Ham.electrons.ebands[:] = evals[:] # FIXME
 
     return
 end
