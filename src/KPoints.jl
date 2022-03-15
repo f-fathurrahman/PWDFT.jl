@@ -61,6 +61,7 @@ Generate an instance of `KPoints` with uniform grid-points reduced by symmetry
 
 - `verbose`: if `true`, additional information will be printed out.
  """
+#=
 function KPoints( atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{Int64,1};
                   time_reversal=1 )
 
@@ -109,6 +110,7 @@ function KPoints( atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{Int64,1};
     return KPoints( Nkpt, (mesh[1], mesh[2], mesh[3]), kred, wk, RecVecs )
 
 end
+=#
 
 
 # Adapted from Quantum ESPRESSO 6.4: PW/src/kpoint_grid.f90
