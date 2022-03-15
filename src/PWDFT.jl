@@ -39,9 +39,9 @@ export gen_lattice_fcc, gen_lattice_bcc, gen_lattice_trigonal, gen_lattice_trigo
        gen_lattice_orthorhombic, gen_lattice_monoclinic,
        gen_lattice_sc, gen_lattice_rhombohedral
 
-include("spglib.jl")
-export spg_get_symmetry,
-       spg_get_ir_reciprocal_mesh
+#include("spglib.jl")
+#export spg_get_symmetry,
+#       spg_get_ir_reciprocal_mesh
 
 include("SymmetryInfo.jl")
 export SymmetryInfo
@@ -215,7 +215,7 @@ export calc_rhoe, calc_rhoe!
 include("gamma_only/calc_rhoe_gamma.jl")
 
 include("Kprec.jl")
-export Kprec
+export Kprec, Kprec!, Kprec_inplace!
 
 include("calc_energies.jl")
 export calc_energies,
