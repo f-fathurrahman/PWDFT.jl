@@ -29,7 +29,7 @@ structure package such as Quantum ESPRESSO, ABINIT, VASP, etc.
   - `FFTW`
   - `SpecialFunctions`
   - `Libxc` (a wrapper to [Libxc](https://gitlab.com/libxc/libxc))
-  - `LibSymspg` (a wrapper to [spglib](https://github.com/atztogo/spglib))
+  - `LightXML` (for parsing UPF file)
 
 These packages are registered so they can be installed by using Julia's package manager.
 
@@ -38,13 +38,11 @@ using Pkg
 Pkg.add("FFTW")
 Pkg.add("SpecialFunctions")
 Pkg.add("Libxc")
-Pkg.add("LibSymspg")
+Pkg.add("LightXML")
 ```
 
 These packages should be automatically installed `PWDFT.jl` is installed as
 local package (see below).
-
-Many thanks to @unkcpz for providing `Libxc` and `LibSymspg`.
 
 ## Installation
 
