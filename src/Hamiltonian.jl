@@ -44,17 +44,21 @@ Thw following is the most commonly used optional arguments:
 - `Ns_`: a tuple of three integers for overriding FFT grid.
 - `use_xc_internal`: if false then Libxc will be used.
 """
-function Hamiltonian( atoms::Atoms, pspfiles::Array{String,1},
-                      ecutwfc::Float64 ;
-                      Nspin=1,
-                      meshk=[1,1,1], shiftk=[0,0,0], time_reversal=true,
-                      Ns_=(0,0,0),
-                      kpoints=nothing,
-                      kpts_str="",
-                      xcfunc="VWN",
-                      use_xc_internal=false,
-                      extra_states=0,
-                      use_symmetry=true )
+function Hamiltonian(
+    atoms::Atoms, pspfiles::Array{String,1},
+    ecutwfc::Float64 ;
+    Nspin::Int64=1,
+    meshk::Vector{Int64}=[1,1,1],
+    shiftk::Vector{Int64}=[0,0,0],
+    time_reversal::Bool=true,
+    Ns_::Tuple{Int64,Int64,Int64}=(0,0,0),
+    kpoints::Union{KPoints,Nothing}=nothing,
+    kpts_str::String="",
+    xcfunc::String="VWN",
+    use_xc_internal::Bool=false,
+    extra_states::Int64=0,
+    use_symmetry::Bool=true
+)
 
     if use_symmetry == false
         sym_info = SymmetryInfo()

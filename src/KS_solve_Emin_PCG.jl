@@ -26,12 +26,17 @@ by Ismail-Beigi and Arias.
 """
 function KS_solve_Emin_PCG!(
     Ham::Hamiltonian, psiks::BlochWavefunc;
-    startingrhoe=:gaussian,
-    skip_initial_diag=false,
-    α_t=3e-5, NiterMax=200, verbose=true,
-    print_final_ebands=false, print_final_energies=true,
-    i_cg_beta=2, etot_conv_thr=1e-6,
-    α_max=2.1, restrict_linmin=false
+    startingrhoe::Symbol=:gaussian,
+    skip_initial_diag::Bool=false,
+    α_t::Float64=3e-5,
+    NiterMax::Int64=200,
+    verbose::Bool=true,
+    print_final_ebands::Bool=false,
+    print_final_energies::Bool=true,
+    i_cg_beta::Int64=2,
+    etot_conv_thr::Float64=1e-6,
+    α_max::Float64=2.1,
+    restrict_linmin::Bool=false
 )
 
     pw = Ham.pw

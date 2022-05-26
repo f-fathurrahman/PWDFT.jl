@@ -22,24 +22,24 @@ Commonly used arguments:
 """
 function KS_solve_SCF!(
     Ham::Hamiltonian, psiks::BlochWavefunc;
-    startingrhoe=:gaussian,
-    betamix=0.2,
-    NiterMax=100,
-    verbose=true,
-    print_final_ebands=false,
-    print_final_energies=true,
-    print_integ_rhoe=false,
-    check_rhoe=false,
-    use_smearing=false,
-    kT=1e-3,
-    update_psi="LOBPCG",
-    cheby_degree=8,
-    mix_method="simple",
-    mixdim=5,
-    print_e_gap=false,
-    etot_conv_thr=1e-6,
-    ethr_evals_last=1e-5,
-    starting_magnetization=nothing
+    startingrhoe::Symbol=:gaussian,
+    betamix::Float64=0.2,
+    NiterMax::Int64=100,
+    verbose::Bool=true,
+    print_final_ebands::Bool=false,
+    print_final_energies::Bool=true,
+    print_integ_rhoe::Bool=false,
+    check_rhoe::Bool=false,
+    use_smearing::Bool=false,
+    kT::Float64=1e-3,
+    update_psi::String="LOBPCG",
+    cheby_degree::Int64=8,
+    mix_method::String="simple",
+    mixdim::Int64=5,
+    print_e_gap::Bool=false,
+    etot_conv_thr::Float64=1e-6,
+    ethr_evals_last::Float64=1e-5,
+    starting_magnetization::Union{Vector{Float64},Nothing}=nothing
 )
 
     pw = Ham.pw

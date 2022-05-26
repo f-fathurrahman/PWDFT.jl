@@ -15,22 +15,22 @@ methods are implemented.
 """
 function KS_solve_SCF_potmix!(
     Ham::Hamiltonian, psiks::BlochWavefunc;
-    NiterMax=150,
-    betamix=0.2,
-    startingrhoe=:gaussian,
-    verbose=true,
-    print_final_ebands=false,
-    print_final_energies=true,
-    savewfc=false,
-    use_smearing=false,
-    mix_method="simple",
-    mixdim=5,
-    kT=1e-3,
-    update_psi="LOBPCG",
-    cheby_degree=8,
-    etot_conv_thr=1e-6,
-    ethr_evals_last=1e-5,
-    starting_magnetization=nothing 
+    NiterMax::Int64=150,
+    betamix::Float64=0.2,
+    startingrhoe::Symbol=:gaussian,
+    verbose::Bool=true,
+    print_final_ebands::Bool=false,
+    print_final_energies::Bool=true,
+    savewfc::Bool=false,
+    use_smearing::Bool=false,
+    mix_method::String="simple",
+    mixdim::Int64=5,
+    kT::Float64=1e-3,
+    update_psi::String="LOBPCG",
+    cheby_degree::Int64=8,
+    etot_conv_thr::Float64=1e-6,
+    ethr_evals_last::Float64=1e-5,
+    starting_magnetization::Union{Vector{Float64},Nothing}=nothing 
 )
 
     Npoints = prod(Ham.pw.Ns)
