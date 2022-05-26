@@ -30,7 +30,7 @@ function allowed( nr::Int64 )
     end
 
     if nr != ( mr * 2^pwr[1]* 3^pwr[2] * 5^pwr[3] * 7^pwr[4] * 11^pwr[5] )
-        error("Cannot fint nr")
+        error("Cannot find nr")
     end
 
 
