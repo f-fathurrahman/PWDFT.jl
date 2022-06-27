@@ -73,7 +73,8 @@ push!(LOAD_PATH, expanduser("~/.julia/dev"))
   to `PWDFT` (with no `.jl` extension).
 
   Alternatively, create symlink under `$HOME/.julia/dev`
-  to point to you cloned (or extracted) `PWDFT.jl` directory. The link name should not
+  to point to you cloned (or extracted) `PWDFT.jl` directory.
+  The link name ~~should~~ may not
   contain the `.jl` part. For example:
 
 ```bash
