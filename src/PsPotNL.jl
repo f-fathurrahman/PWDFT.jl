@@ -109,6 +109,7 @@ function PsPotNL( atoms::Atoms, pw::PWGrid, pspots::Array{PsPot_UPF,1}; check_no
             isp = atm2species[ia]
             psp = pspots[isp]
             iprjl = 0
+            # FIXME: This loop is not optimal, probably should loop over combined index lm
             for l in 0:psp.lmax, iprj in 1:psp.Nproj_l[l+1]
                 iprjl = iprjl + 1 # increment projector index
                 for m in -l:l
@@ -151,6 +152,7 @@ function _init_prj2beta(Natoms::Int64, atm2species, pspots)
     #  1,  2, 3, 4, 5  -> 3 + m, lmax = 2 + 1
 
     # Fix for full-relativistic ONCV
+    # FIXME: Note that full-relativistic pspot is not yet supported
     nprojlmax = 1
     for psp in pspots
         nn = maximum(psp.Nproj_l)
@@ -242,6 +244,18 @@ function calc_betaNL_psi(
     NbetaNL = size(betaNL[1],2)
 
     betaNL_psi = zeros( ComplexF64, Nstates, NbetaNL )
-    betaNL_psi[:,:] = conj( psi' * betaNL[ik] )
+    betaNL_psi[:,:] = conj( psi' * betaNL[ik] ) # we calculate < betaNL | psi |
     return betaNL_psi
+end
+
+import Base: show
+function show( io::IO, pspotNL::PsPotNL )
+    
+    println("--------")
+    println("PsPotNL:")
+    println("--------")
+    
+    println("NbetaNL  = ", pspotNL.NbetaNL)
+
+    return
 end
