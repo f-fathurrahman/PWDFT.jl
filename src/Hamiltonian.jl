@@ -8,7 +8,7 @@ mutable struct Hamiltonian{Txc<:AbstractXCCalculator,Tpsp<:AbstractPsPot}
     atoms::Atoms
     sym_info::SymmetryInfo
     rhoe_symmetrizer::RhoeSymmetrizer
-    pspots::Array{Tpsp,1}
+    pspots::Vector{Tpsp}
     pspotNL::PsPotNL
     xcfunc::String
     xc_calc::Txc
@@ -45,8 +45,10 @@ Thw following is the most commonly used optional arguments:
 - `use_xc_internal`: if false then Libxc will be used.
 """
 function Hamiltonian(
-    atoms::Atoms, pspfiles::Array{String,1},
-    ecutwfc::Float64 ;
+    atoms::Atoms,
+    pspfiles::Vector{String},
+    ecutwfc::Float64;
+    # Keyword arguments
     Nspin::Int64=1,
     meshk::Vector{Int64}=[1,1,1],
     shiftk::Vector{Int64}=[0,0,0],
