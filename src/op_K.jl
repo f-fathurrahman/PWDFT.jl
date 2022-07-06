@@ -33,7 +33,10 @@ end
 
 
 # Apply kinetic operator to wave function in reciprocal space
-function op_K( Ham::Hamiltonian, psi::AbstractArray{ComplexF64} )
+function op_K(
+    Ham::Hamiltonian,
+    psi::AbstractArray{ComplexF64}
+)
     out = zeros(ComplexF64,size(psi))
     op_K!(Ham, psi, out)
     return out
@@ -42,8 +45,9 @@ end
 # with preallocated array
 # NOTE: The result is ACCUMULATED in Hpsi
 function op_K!(
-    Ham::Hamiltonian, psi::Array{ComplexF64},
-    Hpsi::Array{ComplexF64}
+    Ham::Hamiltonian,
+    psi::AbstractArray{ComplexF64},
+    Hpsi::AbstractArray{ComplexF64}
 )
     #
     ik = Ham.ik
