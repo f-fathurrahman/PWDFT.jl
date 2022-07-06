@@ -53,10 +53,10 @@ function op_V_Ps_nloc!( Ham::Hamiltonian,
     for ia = 1:Natoms
         isp = atm2species[ia]
         psp = Pspots[isp]
-        for l = 0:psp.lmax
-        for m = -l:l
-            for iprj = 1:psp.Nproj_l[l+1]
-            for jprj = 1:psp.Nproj_l[l+1]
+        for l in 0:psp.lmax
+        for m in -l:l
+            for iprj in 1:psp.Nproj_l[l+1]
+            for jprj in 1:psp.Nproj_l[l+1]
                 ibeta = prj2beta[iprj,ia,l+1,m+psp.lmax+1]
                 jbeta = prj2beta[jprj,ia,l+1,m+psp.lmax+1]
                 hij = psp.h[l+1,iprj,jprj]
