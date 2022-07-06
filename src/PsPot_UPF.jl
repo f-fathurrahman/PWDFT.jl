@@ -302,6 +302,18 @@ function _read_us_aug(
     # number of angular momenta in Q
     nqlc = parse(Int64, LightXML.attributes_dict(pp_aug[1])["nqlc"])
     
+    # From init_us_1.f90 in QE:
+    #!
+    #! the following prevents an out-of-bound error: upf(nt)%nqlc=2*lmax+1
+    #! but in some versions of the PP files lmax is not set to the maximum
+    #! l of the beta functions but includes the l of the local potential
+    #!
+    #do nt=1,ntyp
+    #   upf(nt)%nqlc = MIN ( upf(nt)%nqlc, lmaxq )
+    #   IF ( upf(nt)%nqlc < 0 )  upf(nt)%nqlc = 0
+    #end do
+
+
     # number of Q coefficients
     nqf = parse(Int64, LightXML.attributes_dict(pp_aug[1])["nqf"])
     
