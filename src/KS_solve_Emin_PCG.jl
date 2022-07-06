@@ -157,7 +157,7 @@ function KS_solve_Emin_PCG!(
                     end                    
                 end
             end
-            if β[i] < 0.0
+            if β[i] < 0.0 || isnan(β[i])
                 #println("Resetting β")
                 β[i] = 0.0
             end
