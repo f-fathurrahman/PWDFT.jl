@@ -209,7 +209,7 @@ function KS_solve_Emin_PCG!(
             @printf("Emin_PCG step %4d = %18.10f %16.6e\n", iter, Etot, diffE)
         end
         
-        if (diffE < 0.0) && (iter > 1)
+        if verbose && (diffE < 0.0) && (iter > 1)
             println("*** WARNING: Etot is not decreasing")
         end
         
