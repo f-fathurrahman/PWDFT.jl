@@ -19,7 +19,11 @@ function op_V_Ps_nloc( Ham::Hamiltonian, psi::AbstractArray{ComplexF64} )
     return Vpsi
 end
 
-function op_V_Ps_nloc!( Ham::Hamiltonian, psiks::BlochWavefunc, Hpsiks::BlochWavefunc )
+function op_V_Ps_nloc!(
+    Ham::Hamiltonian,
+    psiks::BlochWavefunc,
+    Hpsiks::BlochWavefunc
+)
     Nstates = size(psiks[1],2)
     Nspin = Ham.electrons.Nspin
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt    
@@ -32,10 +36,12 @@ function op_V_Ps_nloc!( Ham::Hamiltonian, psiks::BlochWavefunc, Hpsiks::BlochWav
     return
 end
 
-function op_V_Ps_nloc!( Ham::Hamiltonian,
+function op_V_Ps_nloc!(
+    Ham::Hamiltonian{Txc,PsPot_GTH},
     psi::AbstractArray{ComplexF64},
     Hpsi::AbstractArray{ComplexF64}
-)
+) where Txc <: AbstractXCCalculator
+    #
     ik = Ham.ik
     # Take `Nstates` to be the size of psi and not from `Ham.electrons.Nstates`.
     Nstates = size(psi,2)
@@ -69,4 +75,52 @@ function op_V_Ps_nloc!( Ham::Hamiltonian,
         end # l
     end
     return
+end
+
+
+# For UPF pspot
+function op_V_Ps_nloc!(
+    Ham::Hamiltonian{Txc,PsPot_UPF},
+    psi::AbstractArray{ComplexF64},
+    Hpsi::AbstractArray{ComplexF64}
+) where Txc <: AbstractXCCalculator
+    
+    ik = Ham.ik
+    Nstates = size(psi, 2)
+
+    Nspecies = Ham.atoms.Nspecies
+    Natoms = Ham.atoms.Natoms
+    atm2species = Ham.atoms.atm2species
+
+    NbetaNL = Ham.pspotNL.NbetaNL
+    Deeq = Ham.pspotNL.Deeq
+    nh = Ham.pspotNL.nh
+    indv_ijkb0 = Ham.pspotNL.indv_ijkb0
+    betaNL_k = Ham.pspotNL.betaNL[ik]
+
+    # Use * directly?
+    betaNL_psi = calc_betaNL_psi(ik, Ham.pspotNL, psi)
+
+    ps = zeros(ComplexF64, NbetaNL, Nstates)
+
+    for isp in 1:Nspecies
+
+        if nh[isp] == 0
+            continue
+        end
+
+        for ia in 1:Natoms
+            if atm2species[ia] != isp
+                continue
+            end
+            idx1 = (indv_ijkb0[ia]+1):(indv_ijkb0[ia]+nh[isp])
+            @views ps[idx1,:] = Deeq[1:nh[isp],1:nh[isp],ia] * betaNL_psi[idx1,:]
+        end
+    end
+
+    # Accumulate
+    @views Hpsi[:,:] += betaNL_k * ps
+
+    return
+
 end

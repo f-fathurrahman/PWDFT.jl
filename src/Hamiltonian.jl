@@ -9,7 +9,7 @@ mutable struct Hamiltonian{Txc<:AbstractXCCalculator,Tpsp<:AbstractPsPot}
     sym_info::SymmetryInfo
     rhoe_symmetrizer::RhoeSymmetrizer
     pspots::Vector{Tpsp}
-    pspotNL::PsPotNL
+    pspotNL::Union{PsPotNL,PsPotNL_UPF}
     xcfunc::String
     xc_calc::Txc
     #xc_calc::Union{LibxcXCCalculator,XCCalculator}
@@ -180,7 +180,21 @@ function Hamiltonian(
                            Nstates_empty=extra_states )
 
     # NL pseudopotentials
-    pspotNL = PsPotNL( atoms, pw, pspots, check_norm=false )
+    are_using_upf = zeros(Bool, Nspecies)
+    for isp in 1:Nspecies
+        are_using_upf[isp] = is_using_extension_upf(pspfiles[isp])
+    end
+    if all(are_using_upf)
+        pspotNL = PsPotNL_UPF(atoms, pw, pspots)
+    elseif all(.!are_using_upf)
+        pspotNL = PsPotNL( atoms, pw, pspots, check_norm=false )
+    else
+        error("Not supporting mixed pseudopotential types: GTH and UPF")
+    end
+    # XXX For the moment we treat GTH and UPF as different.
+    # We also do not support mixing UPF and GTH pspots
+    # Ideally we should have one PsPotNL type only.
+
 
     atoms.Zvals = get_Zvals( pspots )
 

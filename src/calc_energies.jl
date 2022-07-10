@@ -4,7 +4,10 @@
 Compute and return non-local pseudopotential energy for a given Hamiltonian `Ham` (with properly updated
 electron density) and BlochWavefunc `psiks`.
 """
-function calc_E_Ps_nloc( Ham::Hamiltonian, psiks::BlochWavefunc )
+function calc_E_Ps_nloc(
+    Ham::Hamiltonian{Txc,PsPot_GTH},
+    psiks::BlochWavefunc
+) where Txc <: AbstractXCCalculator
 
     Nstates = Ham.electrons.Nstates
     Focc = Ham.electrons.Focc
@@ -52,6 +55,77 @@ function calc_E_Ps_nloc( Ham::Hamiltonian, psiks::BlochWavefunc )
     return E_Ps_nloc
 
 end
+
+
+function calc_E_Ps_nloc(
+    Ham::Hamiltonian{Txc,PsPot_UPF},
+    psiks::BlochWavefunc
+) where Txc <: AbstractXCCalculator
+
+    Nstates = Ham.electrons.Nstates
+    Focc = Ham.electrons.Focc
+    Nspin = Ham.electrons.Nspin
+
+    Natoms = Ham.atoms.Natoms
+    Nspecies = Ham.atoms.Nspecies
+    atm2species = Ham.atoms.atm2species
+
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+    wk = Ham.pw.gvecw.kpoints.wk
+    Ngw = Ham.pw.gvecw.Ngw
+    Ngwx = maximum(Ngw)
+
+    NbetaNL = Ham.pspotNL.NbetaNL
+    Deeq = Ham.pspotNL.Deeq
+    nh = Ham.pspotNL.nh
+    indv_ijkb0 = Ham.pspotNL.indv_ijkb0
+
+    betaNL_psi = zeros(ComplexF64, NbetaNL, Nstates)
+    ps = zeros(ComplexF64, NbetaNL, Nstates)
+    Vpsi = zeros(ComplexF64, Ngwx, Nstates)
+
+    E_Ps_nloc = 0.0
+
+    for ispin in 1:Nspin, ik in 1:Nkpt
+        
+        ikspin = ik + (ispin - 1)*Nkpt
+        psi = psiks[ikspin]
+        
+        #
+        # Here is the operation of op_V_Ps_nloc
+        #
+        betaNL_k = Ham.pspotNL.betaNL[ik]
+
+        mul!(betaNL_psi, betaNL_k', psi)
+        fill!(ps, 0.0) # XXX need this?
+
+        for isp in 1:Nspecies
+            if nh[isp] == 0
+                continue
+            end
+            for ia in 1:Natoms
+                if atm2species[ia] != isp
+                    continue
+                end
+                idx1 = (indv_ijkb0[ia]+1):(indv_ijkb0[ia]+nh[isp])
+                @views ps[idx1,:] = Deeq[1:nh[isp],1:nh[isp],ia] * betaNL_psi[idx1,:]
+            end
+        end
+
+        # Accumulate
+        @views Vpsi[1:Ngw[ik],:] = betaNL_k * ps
+        for ist in 1:Nstates
+            @views ss = real(dot(psi[:,ist], Vpsi[1:Ngw[ik],ist]))
+            E_Ps_nloc += wk[ik]*Focc[ist,ikspin]*ss
+        end
+
+    end
+
+    return E_Ps_nloc
+
+end
+
+
 
 
 """
