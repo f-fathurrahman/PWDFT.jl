@@ -6,7 +6,7 @@ mutable struct PsPotNL_UPF
     lmaxkb::Int64
     nh::Vector{Int64}
     nhm::Int64
-    nkb::Int64
+    NbetaNL::Int64  # it is originally nkb
     ap::Array{Float64,3}
     lpx::Array{Int64,2}
     lpl::Array{Int64,3}
@@ -50,10 +50,10 @@ function PsPotNL_UPF(
         end
     end
 
-    nkb = 0
+    NbetaNL = 0
     for ia in 1:Natoms
        isp = atm2species[ia]
-       nkb = nkb + nh[isp]
+       NbetaNL = NbetaNL + nh[isp]
     end
 
     ap, lpx, lpl = _calc_clebsch_gordan(lmaxkb + 1)
@@ -125,7 +125,7 @@ function PsPotNL_UPF(
     Nkpt = pw.gvecw.kpoints.Nkpt
     betaNL = Vector{Matrix{ComplexF64}}(undef,Nkpt)
     for ik in 1:Nkpt
-        betaNL[ik] = zeros(ComplexF64, pw.gvecw.Ngw[ik], nkb)
+        betaNL[ik] = zeros(ComplexF64, pw.gvecw.Ngw[ik], NbetaNL)
         _init_Vnl_KB!(
             ik, atoms, pw, pspots,
             lmaxkb, nh, nhm, nhtol, nhtolm, indv,
@@ -151,7 +151,7 @@ function PsPotNL_UPF(
 
     return PsPotNL_UPF(
         lmaxx, lqmax, lmaxkb,
-        nh, nhm, nkb, ap, lpx, lpl,
+        nh, nhm, NbetaNL, ap, lpx, lpl,
         indv, nhtol, nhtolm, indv_ijkb0,
         Dvan, Deeq, qradG, qq_nt, qq_at,
         betaNL,
@@ -519,6 +519,15 @@ function _calc_qradG(
 end
 
 
+# TODO: 
+function calc_betaNL_psi(
+    ik::Int64,
+    pspotNL::PsPotNL_UPF,
+    psi::AbstractArray{ComplexF64}
+)
+
+    return pspotNL.betaNL[ik]' * psi
+end
 
 
 import Base: show
@@ -528,10 +537,10 @@ function show( io::IO, pspotNL::PsPotNL_UPF )
     println("PsPotNL_UPF:")
     println("------------")
     
-    println("lmaxx  = ", pspotNL.lmaxx)
-    println("lqmax  = ", pspotNL.lqmax)
-    println("lmaxkb = ", pspotNL.lmaxkb)
-    println("nkb    = ", pspotNL.nkb)
+    println("lmaxx   = ", pspotNL.lmaxx)
+    println("lqmax   = ", pspotNL.lqmax)
+    println("lmaxkb  = ", pspotNL.lmaxkb)
+    println("NbetaNL = ", pspotNL.NbetaNL)
 
     return
 end
