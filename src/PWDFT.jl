@@ -5,6 +5,7 @@ using LinearAlgebra
 using Random
 using FFTW
 using LightXML
+using OffsetArrays
 
 # constants
 #
@@ -74,6 +75,9 @@ export Ylm_real
 
 include("Ylm_complex.jl")
 export Ylm_complex
+
+include("Ylm_real_qe.jl")
+export Ylm_real_qe!
 
 include("fft_support.jl")
 export good_fft_order
@@ -160,6 +164,10 @@ export Potentials
 
 include("PsPotNL.jl")
 export PsPotNL, calc_betaNL_psi
+
+include("qvan2.jl")
+include("PsPotNL_UPF.jl")
+export PsPotNL_UPF, qvan2!
 
 include("gamma_only/PsPotNLGamma.jl")
 export PsPotNLGamma

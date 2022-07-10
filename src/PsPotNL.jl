@@ -73,6 +73,7 @@ function PsPotNL( atoms::Atoms, pw::PWGrid, pspots::Array{PsPot_GTH,1}; check_no
 end
 
 
+#=
 # For PsPot_UPF
 # XXX Reduce redundant codes
 function PsPotNL( atoms::Atoms, pw::PWGrid, pspots::Array{PsPot_UPF,1}; check_norm=false )
@@ -137,7 +138,7 @@ function PsPotNL( atoms::Atoms, pw::PWGrid, pspots::Array{PsPot_UPF,1}; check_no
     return PsPotNL( NbetaNL, prj2beta, betaNL )
 
 end
-
+=#
 
 function _init_prj2beta(Natoms::Int64, atm2species, pspots)
     # 4: indexed from 0:3
