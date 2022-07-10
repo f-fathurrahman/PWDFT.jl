@@ -144,7 +144,7 @@ function PsPotNL_UPF(
             isp = atm2species[ia]
             nht = nh[isp]
             for ispin in 1:Nspin
-                Deeq[1:nht,1:nht,ia,ispin] = Dvan[1:nht,1:nht,isp]
+                @views Deeq[1:nht,1:nht,ia,ispin] = Dvan[1:nht,1:nht,isp]
             end
         end
     #end
@@ -233,8 +233,7 @@ function _init_Vnl_KB!(
         #
         psp = pspots[isp]
         tab = psp.prj_interp_table
-        println("isp = ", isp)
-        println("psp.Nproj = ", psp.Nproj)
+        #
         # calculate beta in G-space using an interpolation table:
         # f_l(q)=\int _0 ^\infty dr r^2 f_l(r) j_l(q.r)
         for ibeta in 1:psp.Nproj
@@ -268,8 +267,6 @@ function _init_Vnl_KB!(
 
         end
 
-        println("sum vkb1 = ", sum(vkb1[:,1:nh[isp]]))
-
         # vkb1 contains all betas including angular part for type nt
         # now add the structure factor and factor (-i)^l
 
@@ -296,17 +293,10 @@ function _init_Vnl_KB!(
                 for igk in 1:Ngw[ik]
                     Vnl_KB[igk,jkb] = vkb1[igk,ih] * Sf[igk] * pref
                 end
-                # clean up garbage in the last block
-                #DO ig = npw_+1, npwx
-                #    vkb_(ig, jkb) = (0.0_DP, 0.0_DP)
-                #ENDDO
             end
         end
     
     end
-
-    println("sum Vnl_KB = ", sum(Vnl_KB))
-    println("shape Vnl_KB = ", size(Vnl_KB))
 
     return
 
@@ -347,7 +337,7 @@ function _prepare_aug_charges(
 
     # finally we set the atomic specific qq_at matrices
     for ia in 1:Natoms
-        qq_at[:,:,ia] = qq_nt[:,:,atm2species[ia]]
+        @views qq_at[:,:,ia] = qq_nt[:,:,atm2species[ia]]
     end
 
     return qradG, qq_nt, qq_at

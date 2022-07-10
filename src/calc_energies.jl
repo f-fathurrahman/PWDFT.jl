@@ -97,7 +97,6 @@ function calc_E_Ps_nloc(
         betaNL_k = Ham.pspotNL.betaNL[ik]
 
         mul!(betaNL_psi, betaNL_k', psi)
-        fill!(ps, 0.0) # XXX need this?
 
         for isp in 1:Nspecies
             if nh[isp] == 0
