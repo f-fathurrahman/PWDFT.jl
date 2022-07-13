@@ -49,6 +49,7 @@ function Hamiltonian(
     pspfiles::Vector{String},
     ecutwfc::Float64;
     # Keyword arguments
+    dual::Float64=4.0,
     Nspin::Int64=1,
     meshk::Vector{Int64}=[1,1,1],
     shiftk::Vector{Int64}=[0,0,0],
@@ -68,6 +69,8 @@ function Hamiltonian(
         sym_info = SymmetryInfo(atoms)
     end
 
+    @assert dual >= 4.0
+
     # kpoints
     if kpoints == nothing
         if kpts_str == ""
@@ -82,7 +85,7 @@ function Hamiltonian(
     end
 
     # Initialize plane wave grids
-    pw = PWGrid( ecutwfc, atoms.LatVecs, kpoints=kpoints, Ns_=Ns_ )
+    pw = PWGrid( ecutwfc, atoms.LatVecs, kpoints=kpoints, Ns_=Ns_, dual=dual )
 
     Nspecies = atoms.Nspecies
     if Nspecies != size(pspfiles)[1]
