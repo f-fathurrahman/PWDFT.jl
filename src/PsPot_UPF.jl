@@ -1,8 +1,11 @@
 using SpecialFunctions: sphericalbesselj, erf
 
 function is_using_extension_upf(filename::String)
-    return lowercase(split(filename, ".")[end]) == "upf"
+    fil_ext = lowercase(split(filename, ".")[end])
+    # We also allow upf2 as a valid extension file UPF
+    return (fil_ext == "upf") || (fil_ext == "upf2")
 end
+
 
 # interp table need to be initialized later, so we declare it as mutable
 # Probably using spline is better?
