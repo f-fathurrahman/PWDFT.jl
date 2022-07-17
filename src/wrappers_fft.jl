@@ -29,15 +29,25 @@ end
 #
 # In-place version, input 3d data as column vector
 #
-function G_to_R!( pw, fG::AbstractVector{ComplexF64} )
-    ff = reshape(fG, pw.Ns)
-    pw.planbw*ff
+function G_to_R!( pw, fG::AbstractVector{ComplexF64}; smooth=false )
+    if smooth
+        ff = reshape(fG, pw.Nss)
+        pw.planbws*ff
+    else
+        ff = reshape(fG, pw.Ns)
+        pw.planbw*ff
+    end
     return
 end
 
-function R_to_G!( pw, fR::AbstractVector{ComplexF64} )
-    ff = reshape(fR, pw.Ns)
-    pw.planfw*ff
+function R_to_G!( pw, fR::AbstractVector{ComplexF64}; smooth=false )
+    if smooth
+        ff = reshape(fR, pw.Nss)
+        pw.planfws*ff
+    else
+        ff = reshape(fR, pw.Ns)
+        pw.planfw*ff
+    end
     return
 end
 
