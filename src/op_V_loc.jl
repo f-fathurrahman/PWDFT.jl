@@ -28,8 +28,9 @@ function op_V_loc!( Ham::Hamiltonian, psiks::BlochWavefunc, Hpsiks::BlochWavefun
 end
 
 
-# In-place, accumated version
-function op_V_loc!( Ham::Hamiltonian,
+# In-place, accumulated version
+function op_V_loc!(
+    Ham::Hamiltonian,
     psi::AbstractArray{ComplexF64},
     Hpsi::AbstractArray{ComplexF64}
 )
@@ -40,10 +41,15 @@ function op_V_loc!( Ham::Hamiltonian,
     ispin = Ham.ispin
     Nkpt = pw.gvecw.kpoints.Nkpt
     i = ik + (ispin - 1)*Nkpt
-    V_loc = Ham.potentials.Total
+    if pw.using_dual_grid
+        V_loc = Ham.potentials.TotalSmooth
+        Npoints = prod(pw.Nss)
+    else
+        V_loc = Ham.potentials.Total
+        Npoints = prod(pw.Ns)
+    end
     
     CellVolume  = pw.CellVolume
-    Npoints = prod(pw.Ns)
     Nstates = size(psi,2)
     idx = pw.gvecw.idx_gw2r[ik]
     Ngw_ik = pw.gvecw.Ngw[ik]
@@ -60,7 +66,7 @@ function op_V_loc!( Ham::Hamiltonian,
         #
         # get values of psi in real space grid
         #
-        G_to_R!(pw, ctmp)
+        G_to_R!(pw, ctmp, smooth=pw.using_dual_grid)
         #
         # Multiply in real space
         #
@@ -70,7 +76,7 @@ function op_V_loc!( Ham::Hamiltonian,
         #
         # Back to G-space
         #
-        R_to_G!(pw, ctmp)
+        R_to_G!(pw, ctmp, smooth=pw.using_dual_grid)
         #
         # Accumalate result in Hpsi
         #
@@ -80,6 +86,21 @@ function op_V_loc!( Ham::Hamiltonian,
         end
     end
     return
+end
+
+# apply V_Ps_loc, Hartree, and XC potentials
+# XXX call op_V_loc!
+function op_V_loc( Ham::Hamiltonian, psi::AbstractArray{ComplexF64,2} )
+    ispin = Ham.ispin
+    ik = Ham.ik
+
+    # Old implementation
+    #V_loc = @view Ham.potentials.Total[:,ispin]
+    #return op_V_loc( ik, Ham.pw, V_loc, psi )
+
+    Vpsi = zeros(ComplexF64, size(psi))
+    op_V_loc!(Ham, psi, Vpsi)
+    return Vpsi
 end
 
 
@@ -96,14 +117,6 @@ function op_V_Ps_loc( Ham::Hamiltonian, psiks::BlochWavefunc )
         out[ikspin] = op_V_Ps_loc( Ham, psiks[ikspin] )
     end
     return out
-end
-
-# apply V_Ps_loc, Hartree, and XC potentials
-function op_V_loc( Ham::Hamiltonian, psi::AbstractArray{ComplexF64,2} )
-    ispin = Ham.ispin
-    ik = Ham.ik
-    V_loc = @view Ham.potentials.Total[:,ispin]
-    return op_V_loc( ik, Ham.pw, V_loc, psi )
 end
 
 # only apply V_Ps_loc
@@ -146,6 +159,8 @@ function op_V_loc( ik::Int64, pw::PWGrid, V_loc,
     return Vpsi
 end
 
+#
+# (XXX: Need these ?)
 #
 # single-column version
 #
