@@ -143,7 +143,7 @@ export AbstractXCCalculator, XCCalculator, LibxcXCCalculator
 include("Libxc_old.jl")
 
 include("LDA_VWN.jl")
-export calc_epsxc_VWN, calc_Vxc_VWN
+export calc_epsxc_VWN, calc_Vxc_VWN, calc_epsxc_Vxc_VWN
 
 include("GGA_PBE.jl")
 export calc_epsxc_PBE, calc_Vxc_PBE
