@@ -6,6 +6,7 @@ end
 
 #const LIBXC5 = "/home/efefer/mysoftwares/libxc-5.0.0/lib/libxc.so.9"
 #const LIBXC5 = "/home/efefer/mysoftwares/libxc-4.3.4/lib/libxc.so.5"
+#const LIBXC5 = "/usr/lib/x86_64-linux-gnu/libxc.so.5"
 const LIBXC5 = Libxc.libxc
 
 function Libxc_xc_func_alloc()
@@ -34,6 +35,15 @@ function Libxc_xc_func_free( p::Ptr{XCFuncType} )
     ccall(
         (:xc_func_free, LIBXC5), Cvoid,
         (Ptr{XCFuncType},), p
+    )
+end
+
+
+function Libxc_xc_func_set_dens_threshold(p::Ptr{XCFuncType}, dens_threshold::Float64)
+    ccall(
+        (:xc_func_set_dens_threshold, LIBXC5), Cvoid,
+        (Ptr{XCFuncType}, Float64),
+        p, dens_threshold
     )
 end
 
