@@ -165,10 +165,9 @@ function Hamiltonian(
     V_loc_tot = zeros( Float64, Npoints, Nspin )
     if pw.using_dual_grid
         # We initialize smooth local potential here (total)
-        Vsmooth = 
         potentials = Potentials(
             V_Ps_loc, V_Hartree, V_xc, V_loc_tot,
-            zeros(Float64, prod(pw.Nss))
+            zeros(Float64, prod(pw.Nss), Nspin)
         )
     else
         potentials = Potentials(
@@ -295,10 +294,9 @@ function Hamiltonian( atoms::Atoms, ecutwfc::Float64;
     V_loc_tot = zeros( Float64, Npoints, Nspin )
     if pw.using_dual_grid
         # We initialize smooth local potential here (total)
-        Vsmooth = 
         potentials = Potentials(
             V_Ps_loc, V_Hartree, V_xc, V_loc_tot,
-            zeros(Float64, prod(pw.Nss))
+            zeros(Float64, prod(pw.Nss), Nspin)
         )
     else
         potentials = Potentials(
