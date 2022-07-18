@@ -9,4 +9,5 @@ mutable struct Potentials
     Hartree::Array{Float64,1}
     XC::Array{Float64,2}  # spin dependent
     Total::Array{Float64,2}
+    TotalSmooth::Union{Array{Float64,2},Nothing} # smooth potential
 end

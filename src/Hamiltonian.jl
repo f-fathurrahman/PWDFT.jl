@@ -163,7 +163,21 @@ function Hamiltonian(
     V_Hartree = zeros( Float64, Npoints )
     V_xc = zeros( Float64, Npoints, Nspin )
     V_loc_tot = zeros( Float64, Npoints, Nspin )
-    potentials = Potentials( V_Ps_loc, V_Hartree, V_xc, V_loc_tot )
+    if pw.using_dual_grid
+        # We initialize smooth local potential here (total)
+        Vsmooth = 
+        potentials = Potentials(
+            V_Ps_loc, V_Hartree, V_xc, V_loc_tot,
+            zeros(Float64, prod(pw.Nss))
+        )
+    else
+        potentials = Potentials(
+            V_Ps_loc, V_Hartree, V_xc, V_loc_tot,
+            nothing
+        )
+    end
+
+
     #
     energies = Energies()
     #
@@ -279,7 +293,19 @@ function Hamiltonian( atoms::Atoms, ecutwfc::Float64;
     V_Hartree = zeros( Float64, Npoints )
     V_xc = zeros( Float64, Npoints, Nspin )
     V_loc_tot = zeros( Float64, Npoints, Nspin )
-    potentials = Potentials( V_Ps_loc, V_Hartree, V_xc, V_loc_tot )
+    if pw.using_dual_grid
+        # We initialize smooth local potential here (total)
+        Vsmooth = 
+        potentials = Potentials(
+            V_Ps_loc, V_Hartree, V_xc, V_loc_tot,
+            zeros(Float64, prod(pw.Nss))
+        )
+    else
+        potentials = Potentials(
+            V_Ps_loc, V_Hartree, V_xc, V_loc_tot,
+            nothing
+        )
+    end
     #
     energies = Energies()
 
