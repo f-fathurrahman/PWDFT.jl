@@ -121,6 +121,7 @@ function Hamiltonian(
     # Initialize pseudopotentials and local ionic potentials
     #
     is_psp_using_nlcc = zeros(Bool,Nspecies) # by default we don't use any NLCC
+    V_of_0 = 0.0
     #
     for isp = 1:Nspecies
         #
@@ -156,8 +157,11 @@ function Hamiltonian(
             igl = idx_g2shells[ig]
             Vg[ip] = strf[ig,isp] * Vgl[igl]
         end
+        V_of_0 += real(Vg[1])*CellVolume/Npoints # update V_of_0
+        println("isp = ", isp, " Vgl = ", sum(Vgl))
         V_Ps_loc[:] = V_Ps_loc[:] + real( G_to_R(pw, Vg) ) * Npoints / CellVolume
     end
+    @printf("V_of_0 = %18.10f\n", V_of_0)
 
     # other potential terms are set to zero
     V_Hartree = zeros( Float64, Npoints )
