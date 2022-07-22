@@ -115,7 +115,7 @@ export PsPot_GTH,
        write_psp10
 
 include("PsPot_UPF.jl")
-export PsPot_UPF
+export PsPot_UPF, calc_Natomwfc
 
 #
 # Electronic variables
