@@ -46,6 +46,8 @@ mutable struct PsPot_UPF <: AbstractPsPot
     #
     Nwfc::Int64
     chi::Array{Float64,2}
+    lchi::Array{Int64,1}
+    occ_chi::Array{Float64,1}
     rhoatom::Array{Float64,1}
 end
 
@@ -236,11 +238,16 @@ function PsPot_UPF( upf_file::String )
     # Pseudo wave function
     #
     pp_pswfc = LightXML.get_elements_by_tagname(xroot, "PP_PSWFC")
-    Nwfc = parse(Int64, LightXML.attributes_dict(pp_header[1])["number_of_wfc"] )
+    Nwfc = parse(Int64, LightXML.attributes_dict(pp_header[1])["number_of_wfc"])
     chi = zeros(Float64,Nr,Nwfc)
+    lchi = zeros(Int64,Nwfc) # angular momentum (s: l=0, p: l=1, etc)
+    occ_chi = zeros(Float64,Nwfc)
     for iwf in 1:Nwfc
         tagname = "PP_CHI."*string(iwf)
         pp_chi = LightXML.get_elements_by_tagname(pp_pswfc[1], tagname)
+        #
+        occ_chi[iwf] = parse(Float64, LightXML.attributes_dict(pp_chi[1])["occupation"])
+        lchi[iwf] = parse(Float64, LightXML.attributes_dict(pp_chi[1])["l"])
         #
         pp_chi_str = LightXML.content(pp_chi[1])
         pp_chi_str = replace(pp_chi_str, "\n" => " ")
@@ -270,7 +277,7 @@ function PsPot_UPF( upf_file::String )
         h, lmax, Nproj_l,
         rho_atc,
         nqf, nqlc, qqq, q_with_l, qfuncl,
-        Nwfc, chi,
+        Nwfc, chi, lchi, occ_chi,
         rhoatom
     )
 
@@ -479,6 +486,26 @@ function _setqfnew!(nqf, qfcoef, Nr, r, l, n, rho)
         rho[ir] = rho[ir]*r[ir]^(l + n)
     end
     return
+end
+
+
+# From uspp.f90 n_atom_wfc function
+# Copyright (C) 2004-2011 Quantum ESPRESSO group
+function calc_Natomwfc( atoms::Atoms, pspots::Vector{PsPot_UPF} )
+    Natoms = atoms.Natoms
+    atm2species = atoms.atm2species
+    # Find number of starting atomic orbitals    
+    Natomwfc = 0
+    for ia in 1:Natoms
+        isp = atm2species[ia]
+        psp = pspots[isp]
+        for i in 1:psp.Nwfc
+            if psp.occ_chi[i] >= 0.0
+                Natomwfc += 2*psp.lchi[i] + 1
+            end
+        end
+    end
+    return Natomwfc
 end
 
 

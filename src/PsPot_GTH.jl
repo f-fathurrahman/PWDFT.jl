@@ -382,4 +382,9 @@ function eval_proj_G( psp::PsPot_GTH, l::Int64, iproj::Int64, Gm::Float64, CellV
     return Vprj
 end
 
+# We don't have atomic wfc information, so we return 0 here
+function calc_Natomwfc( atoms::Atoms, pspots::Vector{PsPot_GTH} )
+    return 0
+end
+
 include("PsPot_GTH_io.jl")
