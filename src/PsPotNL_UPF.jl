@@ -503,7 +503,8 @@ function _calc_qradG(
                 end # igl
             end # l
         end
-        qradG[isp][:,:,:] = qradG[isp][:,:,:]*prefr
+        qradG[isp][:,:,:] = 4*qradG[isp][:,:,:]*prefr
+        # Factor of 4 to fix the unit of Deeq and op_S
     end
     return qradG
 end

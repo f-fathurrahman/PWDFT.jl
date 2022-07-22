@@ -368,6 +368,7 @@ function _read_us_aug(
     Nq = Int64( Nproj*(Nproj+1)/2 )
     qfunc = zeros(Float64, Nr, Nq)
     qfuncl = zeros(Float64,Nr,Nq,nqlc) # last index is l
+    QFUNC2Ha = 1.0
 
     if !q_with_l
         for iprj in 1:Nproj, jprj in iprj:Nproj
@@ -381,9 +382,10 @@ function _read_us_aug(
             pp_qij_str = LightXML.content(pp_qij[1])
             pp_qij_str = replace(pp_qij_str, "\n" => " ")
             spl_str = split(pp_qij_str, keepempty=false)
-            # FIXME" using comp_idx?
+            # FIXME: using comp_idx?
+            # FIXME: Need to check the unit of qfunc, need to convert to Ha?
             for i in 1:Nr
-                qfunc[i,comp_idx] = parse(Float64,spl_str[i])
+                qfunc[i,comp_idx] = parse(Float64,spl_str[i])*QFUNC2Ha
             end
         end
 
@@ -438,9 +440,10 @@ function _read_us_aug(
                 str1 = LightXML.content(pp_qijl[1])
                 str1 = replace(str1, "\n" => " ")
                 spl_str = split(str1, keepempty=false)
-                # FIXME" using comp_idx?
+                # FIXME: using comp_idx?
+                # FIXME: convert to Ha?
                 for i in 1:Nr
-                    qfuncl[i,comp_idx,l+1] = parse(Float64,spl_str[i])
+                    qfuncl[i,comp_idx,l+1] = parse(Float64,spl_str[i])*QFUNC2Ha
                 end
             end
         end
