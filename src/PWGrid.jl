@@ -135,7 +135,11 @@ function PWGrid(
         kpoints = KPoints( 1, (1,1,1), zeros(3,1), [1.0], RecVecs )
     end
 
-    gvecw = init_gvecw( ecutwfc, gvec, kpoints )
+    if using_dual_grid
+        gvecw = init_gvecw( ecutwfc, gvecs, kpoints )
+    else
+        gvecw = init_gvecw( ecutwfc, gvec, kpoints )
+    end
 
     return PWGrid(
         using_dual_grid,
