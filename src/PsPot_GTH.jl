@@ -1,5 +1,10 @@
 using SpecialFunctions: erf, gamma
 
+function is_using_extension_gth(filename::String)
+    fil_ext = lowercase(split(filename, ".")[end])
+    return (fil_ext == "gth")
+end
+
 struct PsPot_GTH <: AbstractPsPot
     pspfile::String
     atsymb::String

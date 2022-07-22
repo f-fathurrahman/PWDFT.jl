@@ -117,6 +117,8 @@ export PsPot_GTH,
 include("PsPot_UPF.jl")
 export PsPot_UPF, calc_Natomwfc
 
+export is_using_extension_gth, is_using_extension_upf
+
 #
 # Electronic variables
 #
