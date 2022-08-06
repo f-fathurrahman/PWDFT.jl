@@ -76,7 +76,7 @@ function calc_E_Ps_nloc(
     Ngwx = maximum(Ngw)
 
     NbetaNL = Ham.pspotNL.NbetaNL
-    Deeq = Ham.pspotNL.Deeq
+    Dvan = Ham.pspotNL.Dvan # XXX Note that we are using Dvan instead of Deeq here
     nh = Ham.pspotNL.nh
     indv_ijkb0 = Ham.pspotNL.indv_ijkb0
 
@@ -107,7 +107,7 @@ function calc_E_Ps_nloc(
                     continue
                 end
                 idx1 = (indv_ijkb0[ia]+1):(indv_ijkb0[ia]+nh[isp])
-                @views ps[idx1,:] = Deeq[1:nh[isp],1:nh[isp],ia] * betaNL_psi[idx1,:]
+                @views ps[idx1,:] = Dvan[1:nh[isp],1:nh[isp],isp] * betaNL_psi[idx1,:]
             end
         end
 
@@ -191,22 +191,18 @@ function calc_E_kin( Ham::Hamiltonian, psiks::BlochWavefunc )
     k = Ham.pw.gvecw.kpoints.k
 
     E_kin = 0.0
-    for ispin = 1:Nspin
-    for ik = 1:Nkpt
-        Ham.ik = ik
-        Ham.ispin = ispin
+    for ispin in 1:Nspin, ik in 1:Nkpt
         ikspin = ik + (ispin - 1)*Nkpt
         psi = psiks[ikspin]
-        for ist = 1:Nstates
+        for ist in 1:Nstates
             psiKpsi = 0.0
-            for igk = 1:Ngw[ik]
+            for igk in 1:Ngw[ik]
                 ig = idx_gw2g[ik][igk]
                 Gw2 = (G[1,ig] + k[1,ik])^2 + (G[2,ig] + k[2,ik])^2 + (G[3,ig] + k[3,ik])^2
                 psiKpsi = psiKpsi + abs(psi[igk,ist])^2*Gw2
             end
             E_kin = E_kin + wk[ik]*Focc[ist,ikspin]*psiKpsi
         end
-    end
     end
     return 0.5*E_kin
 
