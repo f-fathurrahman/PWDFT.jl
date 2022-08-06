@@ -1,11 +1,11 @@
 #
 # Adapted from PWSCF/Yambo
 #
-function mix_broyden!( deltain, deltaout, alphamix::Float64, iter::Int64, n_iter::Int64, df, dv )
+function mix_broyden!( deltain, deltaout_, alphamix::Float64, iter::Int64, n_iter::Int64, df, dv )
     # df(ndim,n_iter)
     # dv(ndim,n_iter)
 
-    #deltaout = copy(deltaout_)  # do not replace deltaout_
+    deltaout = copy(deltaout_)  # do not replace deltaout_
 
     maxter = 8
     wg0 = 0.01
