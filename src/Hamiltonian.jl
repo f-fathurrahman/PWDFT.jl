@@ -51,7 +51,7 @@ function Hamiltonian(
     # Keyword arguments
     dual::Float64=4.0,
     Nspin::Int64=1,
-    meshk::Vector{Int64}=[1,1,1],
+    meshk::Vector{Int64}=[1,1,1],  # FIXME: convert to tuple?
     shiftk::Vector{Int64}=[0,0,0],
     time_reversal::Bool=true,
     Ns_::Tuple{Int64,Int64,Int64}=(0,0,0),
@@ -123,7 +123,7 @@ function Hamiltonian(
     is_psp_using_nlcc = zeros(Bool,Nspecies) # by default we don't use any NLCC
     V_of_0 = 0.0
     #
-    for isp = 1:Nspecies
+    for isp in 1:Nspecies
         #
         if is_using_extension_upf(pspfiles[isp])            
             #
@@ -139,7 +139,7 @@ function Hamiltonian(
                 println()
                 @printf("!!! WARNING: %s is generated with nonlinear-core correction\n",
                     pspfiles[isp])
-                @printf("!!! WARNING: This is not yet supported\n")
+                @printf("!!! WARNING: This is not yet fully supported\n")
                 println()
             end
         else
@@ -152,16 +152,16 @@ function Hamiltonian(
         psp = pspots[isp] # shortcut
         #
         eval_Vloc_G!( psp, G2_shells, Vgl )
-        for ig = 1:Ng
+        #
+        for ig in 1:Ng
             ip = idx_g2r[ig]
             igl = idx_g2shells[ig]
-            Vg[ip] = strf[ig,isp] * Vgl[igl]
+            Vg[ip] += strf[ig,isp] * Vgl[igl] / CellVolume
         end
-        V_of_0 += real(Vg[1])*CellVolume/Npoints # update V_of_0
-        println("isp = ", isp, " Vgl = ", sum(Vgl))
-        V_Ps_loc[:] = V_Ps_loc[:] + real( G_to_R(pw, Vg) ) * Npoints / CellVolume
     end
-    @printf("V_of_0 = %18.10f\n", V_of_0)
+    V_of_0 += real(Vg[1]) # using PWSCF convention
+    V_Ps_loc = real(G_to_R(pw, Vg))
+    V_Ps_loc *= Npoints # Rescale using PWSCF convetion
 
     # other potential terms are set to zero
     V_Hartree = zeros( Float64, Npoints )
@@ -191,7 +191,6 @@ function Hamiltonian(
     if any(is_psp_using_nlcc)
         rhoe_core = zeros(Float64, Npoints, 1) # FIXME: Nspin=1
         calc_rhoe_core!(atoms, pw, pspots, rhoe_core)
-        println("sum rhoe_core = ", sum(rhoe_core))
     else
         rhoe_core = nothing
     end
@@ -244,6 +243,7 @@ function Hamiltonian(
 end
 
 
+#=
 #
 # No pspfiles given. Use Coulomb potential (all electrons)
 #
@@ -342,6 +342,8 @@ function Hamiltonian( atoms::Atoms, ecutwfc::Float64;
                         electrons, atoms, sym_info, rhoe_symmetrizer,
                         pspots, pspotNL, xcfunc, xc_calc, ik, ispin )
 end
+=#
+
 
 # FIXME: should be merged with Array{Float64,2} version.
 # psiks is needed for metagga
