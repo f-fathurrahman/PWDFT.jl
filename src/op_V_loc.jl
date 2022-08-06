@@ -39,8 +39,7 @@ function op_V_loc!(
 
     ik = Ham.ik
     ispin = Ham.ispin
-    Nkpt = pw.gvecw.kpoints.Nkpt
-    i = ik + (ispin - 1)*Nkpt
+    #
     if pw.using_dual_grid
         V_loc = Ham.potentials.TotalSmooth
         Npoints = prod(pw.Nss)
@@ -48,8 +47,7 @@ function op_V_loc!(
         V_loc = Ham.potentials.Total
         Npoints = prod(pw.Ns)
     end
-    
-    CellVolume  = pw.CellVolume
+
     Nstates = size(psi,2)
     idx = pw.gvecw.idx_gw2r[ik]
     Ngw_ik = pw.gvecw.Ngw[ik]
@@ -88,6 +86,7 @@ function op_V_loc!(
     return
 end
 
+
 # apply V_Ps_loc, Hartree, and XC potentials
 # XXX call op_V_loc!
 function op_V_loc( Ham::Hamiltonian, psi::AbstractArray{ComplexF64,2} )
@@ -104,6 +103,7 @@ function op_V_loc( Ham::Hamiltonian, psi::AbstractArray{ComplexF64,2} )
 end
 
 
+#=
 function op_V_Ps_loc( Ham::Hamiltonian, psiks::BlochWavefunc )
     Nstates = size(psiks[1],2) # Nstates should be similar for all Bloch states
     Nspin = Ham.electrons.Nspin
@@ -158,7 +158,10 @@ function op_V_loc( ik::Int64, pw::PWGrid, V_loc,
 
     return Vpsi
 end
+=#
 
+
+#=
 #
 # (XXX: Need these ?)
 #
@@ -195,4 +198,4 @@ function op_V_loc( ik::Int64, pw::PWGrid, V_loc,
     cVpsi = R_to_G( pw, ctmp )
     return cVpsi[idx]
 end
-
+=#
