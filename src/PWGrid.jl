@@ -59,8 +59,11 @@ Create an instance of `PWGrid` given the following inputs:
 - `kpoints`: optional, an instance of `KPoints`.
 """
 function PWGrid(
-    ecutwfc::Float64, LatVecs::Array{Float64,2};
-    kpoints=nothing, Ns_=(0,0,0), dual=4.0
+    ecutwfc::Float64,
+    LatVecs::Array{Float64,2};
+    kpoints::Union{Nothing,KPoints}=nothing,
+    Ns_::Tuple{Int64,Int64,Int64}=(0,0,0),
+    dual::Float64=4.0
 )
 
     @assert dual >= 4.0
