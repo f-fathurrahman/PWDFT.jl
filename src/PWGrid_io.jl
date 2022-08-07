@@ -29,13 +29,22 @@ function show( io::IO, pw::PWGrid; header=true )
         @printf(io, "%18.10f %18.10f %18.10f\n", RecVecs[i,1], RecVecs[i,2], RecVecs[i,3])
     end
     @printf(io, "\n")
-    @printf(io, "Direct lattive volume = %18.10f bohr^3\n", pw.CellVolume )
-    @printf(io, "ecutwfc               = %18.10f Ha\n", pw.ecutwfc)
-    @printf(io, "ecutrho               = %18.10f Ha\n", pw.ecutrho)    
-    @printf(io, "Sampling points       = (%5d,%5d,%5d)\n", pw.Ns[1], pw.Ns[2], pw.Ns[3])
+    @printf(io, "Direct lattive volume  = %18.10f bohr^3\n", pw.CellVolume )
+    @printf(io, "ecutwfc                = %18.10f Ha\n", pw.ecutwfc)
+    @printf(io, "ecutrho                = %18.10f Ha\n", pw.ecutrho)    
+    @printf(io, "Sampling points        = (%5d,%5d,%5d)\n", pw.Ns[1], pw.Ns[2], pw.Ns[3])
+    if pw.Nss != nothing
+        @printf(io, "Sampling points smooth = (%5d,%5d,%5d)\n", pw.Nss[1], pw.Nss[2], pw.Nss[3])
+    end
     #
     show( io, pw.gvec )
-    show( io, pw.gvec, pw.gvecw )
+    if pw.using_dual_grid
+        println("\nUsing dual grid")
+        show( io, pw.gvecs )
+        show( io, pw.gvecs, pw.gvecw )
+    else
+        show( io, pw.gvec, pw.gvecw )
+    end
 end
 show( pw::PWGrid; header=true ) = show( stdout, pw, header=header )
 
@@ -85,7 +94,8 @@ function show( io::IO, gvec::GVectors, gvecw::GVectorsW )
     @printf(io, "                                    ---------\n")
     @printf(io, "\n")
     @printf(io, "Ngwx = %12d\n", Ngwx)
-        
+
+    # TFIXME: his loop does some calculations, remove it
     for ik = 1:Nkpt
         idx_gw2g = gvecw.idx_gw2g[ik]
         Gw = zeros(3,Ngw[ik])
@@ -96,6 +106,7 @@ function show( io::IO, gvec::GVectors, gvecw::GVectorsW )
             Gw2[igk] = Gw[1,igk]^2 + Gw[2,igk]^2 + Gw[3,igk]^2
         end
         @printf(io, "Ngw = %8d, Max Gw2 = %18.10f\n", Ngw[ik], maximum(Gw2))
+        @printf(io, "gvecw.Ngw[ik] = %8d (should be the same as Ngw above)\n", gvecw.Ngw[ik])
     end
 end
 show( gvec::GVectors, gvecw::GVectorsW ) = show( stdout, gvec, gvecw )
