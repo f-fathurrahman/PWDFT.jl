@@ -44,7 +44,7 @@ mutable struct PsPot_UPF <: AbstractPsPot
     q_with_l::Bool
     qfuncl::Array{Float64,3}
     #
-    Nwfc::Int64
+    Nchi::Int64 # different from Nwfc
     chi::Array{Float64,2}
     lchi::Array{Int64,1}
     occ_chi::Array{Float64,1}
@@ -238,11 +238,11 @@ function PsPot_UPF( upf_file::String )
     # Pseudo wave function
     #
     pp_pswfc = LightXML.get_elements_by_tagname(xroot, "PP_PSWFC")
-    Nwfc = parse(Int64, LightXML.attributes_dict(pp_header[1])["number_of_wfc"])
-    chi = zeros(Float64,Nr,Nwfc)
-    lchi = zeros(Int64,Nwfc) # angular momentum (s: l=0, p: l=1, etc)
-    occ_chi = zeros(Float64,Nwfc)
-    for iwf in 1:Nwfc
+    Nchi = parse(Int64, LightXML.attributes_dict(pp_header[1])["number_of_wfc"])
+    chi = zeros(Float64,Nr,Nchi)
+    lchi = zeros(Int64,Nchi) # angular momentum (s: l=0, p: l=1, etc)
+    occ_chi = zeros(Float64,Nchi)
+    for iwf in 1:Nchi
         tagname = "PP_CHI."*string(iwf)
         pp_chi = LightXML.get_elements_by_tagname(pp_pswfc[1], tagname)
         #
@@ -277,7 +277,7 @@ function PsPot_UPF( upf_file::String )
         h, lmax, Nproj_l,
         rho_atc,
         nqf, nqlc, qqq, q_with_l, qfuncl,
-        Nwfc, chi, lchi, occ_chi,
+        Nchi, chi, lchi, occ_chi,
         rhoatom
     )
 
@@ -499,7 +499,9 @@ function calc_Natomwfc( atoms::Atoms, pspots::Vector{PsPot_UPF} )
     for ia in 1:Natoms
         isp = atm2species[ia]
         psp = pspots[isp]
-        for i in 1:psp.Nwfc
+        # We use Nchi here
+        # Nwfc is reserved for wfcs for projectors (beta function)
+        for i in 1:psp.Nchi
             if psp.occ_chi[i] >= 0.0
                 Natomwfc += 2*psp.lchi[i] + 1
             end
