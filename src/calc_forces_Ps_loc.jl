@@ -27,35 +27,32 @@ function calc_forces_Ps_loc!(
     
     Rhoe_tot = zeros(Float64,Npoints)
     Nspin = size(Rhoe)[2]
-    for ispin = 1:Nspin
-        for ip = 1:Npoints
+    # XXX Use sum or reduce
+    for ispin in 1:Nspin, for ip in 1:Npoints
             Rhoe_tot[ip] = Rhoe_tot[ip] + Rhoe[ip,ispin]
         end
     end
-
+    #
     RhoeG = R_to_G(pw, Rhoe_tot)/Npoints  # this normalization is required
-
-    Ω = pw.CellVolume
-
-    atpos = atoms.positions
-    
-    for ia = 1:Natoms
-        
+    X = atoms.positions
+    #
+    for ia in 1:Natoms
+        #   
         isp = atoms.atm2species[ia]
         psp = pspots[isp]
-        
+        #
         # G=0 contribution is zero, G[:,ig=0] = [0, 0, 0]
-        for ig = 2:Ng
-            
-            GX = atpos[1,ia]*G[1,ig] + atpos[2,ia]*G[2,ig] + atpos[3,ia]*G[3,ig]
+        for ig in 2:Ng
+            #
+            GX = G[1,ig]*X[1,ia] + G[2,ig]*X[2,ia] + G[3,ig]*X[3,ia]
             Sf = cos(GX) - im*sin(GX)
-
+            #
             Vg_ig = eval_Vloc_G( psp, G2[ig] )
-
+            #
             ip = idx_g2r[ig]
-            F_Ps_loc[:,ia] = F_Ps_loc[:,ia] + real(im*G[:,ig]*Vg_ig*conj(RhoeG[ip])*Sf)
+            @views F_Ps_loc[:,ia] += real(im*G[:,ig]*Vg_ig*conj(RhoeG[ip])*Sf)
         end
     end
-
-    return F_Ps_loc
+    #
+    return
 end
