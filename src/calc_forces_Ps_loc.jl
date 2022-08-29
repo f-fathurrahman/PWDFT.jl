@@ -28,9 +28,8 @@ function calc_forces_Ps_loc!(
     Rhoe_tot = zeros(Float64,Npoints)
     Nspin = size(Rhoe)[2]
     # XXX Use sum or reduce
-    for ispin in 1:Nspin, for ip in 1:Npoints
-            Rhoe_tot[ip] = Rhoe_tot[ip] + Rhoe[ip,ispin]
-        end
+    for ispin in 1:Nspin, ip in 1:Npoints
+        Rhoe_tot[ip] = Rhoe_tot[ip] + Rhoe[ip,ispin]
     end
     #
     RhoeG = R_to_G(pw, Rhoe_tot)/Npoints  # this normalization is required
