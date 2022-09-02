@@ -17,6 +17,8 @@ function calc_forces_Ps_loc!(
     
     Ng = pw.gvec.Ng
     Natoms = atoms.Natoms
+    Nspecies = atoms.Nspecies
+    atm2species = atoms.atm2species
 
     G = pw.gvec.G
     G2 = pw.gvec.G2
@@ -25,31 +27,45 @@ function calc_forces_Ps_loc!(
     
     Npoints = prod(pw.Ns)
     
-    Rhoe_tot = zeros(Float64,Npoints)
-    Nspin = size(Rhoe)[2]
+    RhoeG = zeros(ComplexF64, Npoints)
+    Nspin = size(Rhoe,2)
     # XXX Use sum or reduce
     for ispin in 1:Nspin, ip in 1:Npoints
-        Rhoe_tot[ip] = Rhoe_tot[ip] + Rhoe[ip,ispin]
+        RhoeG[ip] = RhoeG[ip] + Rhoe[ip,ispin]
     end
+    R_to_G!(pw, RhoeG)
+    @views RhoeG[:] .= RhoeG[:]/Npoints # this normalization is required
     #
-    RhoeG = R_to_G(pw, Rhoe_tot)/Npoints  # this normalization is required
+    # Precalculate Vg for each species
+    # Using G-shells
+    G2_shells = pw.gvec.G2_shells
+    Ngl = length(G2_shells)
+    Vgl = zeros(Float64, Ngl)
+    idx_g2shells = pw.gvec.idx_g2shells
+    Vgl = zeros(Float64, Ngl, Nspecies)
+    for isp in 1:Nspecies
+        psp = pspots[isp]
+        for igl in 1:Ngl
+            Vgl[igl,isp] = eval_Vloc_G( psp, G2_shells[igl] )
+        end
+    end
+    # We don't need factor of CellVolume.
+    # It will be cancelled by multiplication in the expression for F_Ps_loc
+    
     X = atoms.positions
     #
     for ia in 1:Natoms
-        #   
-        isp = atoms.atm2species[ia]
+        #
+        isp = atm2species[ia]
         psp = pspots[isp]
         #
         # G=0 contribution is zero, G[:,ig=0] = [0, 0, 0]
         for ig in 2:Ng
-            #
             GX = G[1,ig]*X[1,ia] + G[2,ig]*X[2,ia] + G[3,ig]*X[3,ia]
             Sf = cos(GX) - im*sin(GX)
-            #
-            Vg_ig = eval_Vloc_G( psp, G2[ig] )
-            #
             ip = idx_g2r[ig]
-            @views F_Ps_loc[:,ia] += real(im*G[:,ig]*Vg_ig*conj(RhoeG[ip])*Sf)
+            igl = idx_g2shells[ig]
+            @views F_Ps_loc[:,ia] .+= real(im*G[:,ig]*Vgl[igl,isp]*conj(RhoeG[ip])*Sf)
         end
     end
     #
