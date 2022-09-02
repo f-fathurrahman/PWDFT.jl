@@ -43,6 +43,7 @@ function KPoints( atoms::Atoms, mesh::Tuple{Int64,Int64,Int64}, is_shift::Array{
 end
 
 
+#=
 """
 Generate an instance of `KPoints` with uniform grid-points reduced by symmetry
 (using routines from `spglib`) given the following inputs:
@@ -61,7 +62,6 @@ Generate an instance of `KPoints` with uniform grid-points reduced by symmetry
 
 - `verbose`: if `true`, additional information will be printed out.
  """
-#=
 function KPoints( atoms::Atoms, mesh::Array{Int64,1}, is_shift::Array{Int64,1};
                   time_reversal=1 )
 

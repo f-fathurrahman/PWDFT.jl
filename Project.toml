@@ -5,7 +5,6 @@ version = "0.2.0"
 
 [deps]
 FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
-LibSymspg = "2098c8a6-82c4-11e9-1f54-e72760d085ce"
 Libdl = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 Libxc = "66e17ffc-8502-11e9-23b5-c9248d0eb96d"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
