@@ -19,13 +19,13 @@ function show( io::IO, pw::PWGrid; header=true )
     RecVecs = pw.RecVecs
     @printf(io, "Direct lattice vectors:\n")
     @printf(io, "\n")
-    for i = 1:3
+    for i in 1:3
         @printf(io, "%18.10f %18.10f %18.10f\n", LatVecs[i,1], LatVecs[i,2], LatVecs[i,3])
     end
     @printf(io, "\n")
     @printf(io, "Reciprocal lattice vectors:\n")
     @printf(io, "\n")
-    for i = 1:3
+    for i in 1:3
         @printf(io, "%18.10f %18.10f %18.10f\n", RecVecs[i,1], RecVecs[i,2], RecVecs[i,3])
     end
     @printf(io, "\n")
@@ -63,11 +63,11 @@ function show( io::IO, gvec::GVectors )
     @printf(io, "\n")
     @printf(io, "Ng = %12d\n", Ng)
     @printf(io, "\n")
-    for ig = 1:3
+    for ig in 1:3
         @printf(io, "%8d [%18.10f,%18.10f,%18.10f] : %18.10f\n", ig, G[1,ig], G[2,ig], G[3,ig], G2[ig])        
     end
     @printf(io, " ....... \n")
-    for ig = Ng-3:Ng
+    for ig in Ng-3:Ng
         @printf(io, "%8d [%18.10f.%18.10f,%18.10f] : %18.10f\n", ig, G[1,ig], G[2,ig], G[3,ig], G2[ig])
     end
     @printf(io, "\n")
@@ -95,18 +95,18 @@ function show( io::IO, gvec::GVectors, gvecw::GVectorsW )
     @printf(io, "\n")
     @printf(io, "Ngwx = %12d\n", Ngwx)
 
-    # TFIXME: his loop does some calculations, remove it
-    for ik = 1:Nkpt
+    # FIXME: this loop does some calculations and allocates memory, remove it
+    for ik in 1:Nkpt
         idx_gw2g = gvecw.idx_gw2g[ik]
         Gw = zeros(3,Ngw[ik])
         Gw2 = zeros(Ngw[ik])
-        for igk = 1:Ngw[ik]
+        for igk in 1:Ngw[ik]
             ig = idx_gw2g[igk]
-            Gw[:,igk] = G[:,ig] + k[:,ik]
+            @views Gw[:,igk] = G[:,ig] + k[:,ik]
             Gw2[igk] = Gw[1,igk]^2 + Gw[2,igk]^2 + Gw[3,igk]^2
         end
         @printf(io, "Ngw = %8d, Max Gw2 = %18.10f\n", Ngw[ik], maximum(Gw2))
-        @printf(io, "gvecw.Ngw[ik] = %8d (should be the same as Ngw above)\n", gvecw.Ngw[ik])
+        #@printf(io, "gvecw.Ngw[ik] = %8d (should be the same as Ngw above)\n", gvecw.Ngw[ik])
     end
 end
 show( gvec::GVectors, gvecw::GVectorsW ) = show( stdout, gvec, gvecw )
