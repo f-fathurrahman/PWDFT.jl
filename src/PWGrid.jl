@@ -21,8 +21,8 @@ struct GVectorsW
     kpoints::KPoints
 end
 
-const PLANFW_TYPE = typeof(plan_fft!(zeros(ComplexF64,(1,1,1))))
-const PLANBW_TYPE = typeof(plan_ifft!(zeros(ComplexF64,(1,1,1))))
+const PLANFW_TYPE = typeof(plan_fft!(zeros(ComplexF64,(1,1,1)), flags=FFTW.MEASURE))
+const PLANBW_TYPE = typeof(plan_ifft!(zeros(ComplexF64,(1,1,1)), flags=FFTW.MEASURE))
 
 """
 The type for describing plane wave basis set for a given periodic unit cell.
@@ -95,8 +95,8 @@ function PWGrid(
     Npoints = prod(Ns)
     
     gvec = init_gvec( Ns, RecVecs, ecutrho )
-    planfw = plan_fft!( zeros(ComplexF64,Ns) )
-    planbw = plan_ifft!( zeros(ComplexF64,Ns) )
+    planfw = plan_fft!( zeros(ComplexF64,Ns), flags=FFTW.MEASURE )
+    planbw = plan_ifft!( zeros(ComplexF64,Ns), flags=FFTW.MEASURE )
 
 
     # If dual is larger than 4 then we need to allocate a smooth grid:
@@ -125,8 +125,8 @@ function PWGrid(
         #       Need to calculate Ngs (no. of G-vectors for smooth grid)
         #       gvecs will be a subset of gvec
         gvecs = init_gvec( Nss, RecVecs, 4*ecutwfc )
-        planfws = plan_fft!( zeros(ComplexF64,Nss) )
-        planbws = plan_ifft!( zeros(ComplexF64,Nss) )
+        planfws = plan_fft!( zeros(ComplexF64,Nss), flags=FFTW.MEASURE )
+        planbws = plan_ifft!( zeros(ComplexF64,Nss), flags=FFTW.MEASURE )
     else
         Nss = nothing
         gvecs = nothing
