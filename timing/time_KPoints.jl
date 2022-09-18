@@ -18,13 +18,6 @@ function time_KPoints()
         @btime kpoints = KPoints( $atoms, $meshk, $shiftk, $sym_info.s )
     end
 
-    println("Using LibSymspg + Julia (more complicated): ")
-    for k in range(5,stop=10)
-        meshk = [k, k, k]
-        @printf("meshk = [%2d,%2d,%2d] : ", k, k, k)
-        @btime kpoints = KPoints( $atoms, $meshk, $shiftk )
-    end
-
 end
 
 time_KPoints()
