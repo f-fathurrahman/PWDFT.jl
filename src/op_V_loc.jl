@@ -29,6 +29,7 @@ end
 
 
 # In-place, accumulated version
+# Potential is taken from Ham.potentials.Total or Ham.potentials.TotalSmooth
 function op_V_loc!(
     Ham::Hamiltonian,
     psi::AbstractArray{ComplexF64},
@@ -103,7 +104,9 @@ function op_V_loc( Ham::Hamiltonian, psi::AbstractArray{ComplexF64,2} )
 end
 
 
-#=
+# op_V_Ps_loc is used in DCM
+# FIXME: Maybe we need an in-place version of op_V_Ps_loc
+
 function op_V_Ps_loc( Ham::Hamiltonian, psiks::BlochWavefunc )
     Nstates = size(psiks[1],2) # Nstates should be similar for all Bloch states
     Nspin = Ham.electrons.Nspin
@@ -127,7 +130,13 @@ end
 # apply general V_loc
 # ik must be given to get information about
 # mapping between psi in G-space to real space
-function op_V_loc( ik::Int64, pw::PWGrid, V_loc,
+
+# FIXME: May be we should implement op_V_loc!(Ham, V_loc, psi, Vpsi)
+# ik and pw are taken from Ham
+function op_V_loc(
+    ik::Int64,
+    pw::PWGrid,
+    V_loc,
     psi::AbstractArray{ComplexF64,2}
 )
 
@@ -139,11 +148,11 @@ function op_V_loc( ik::Int64, pw::PWGrid, V_loc,
     ctmp = zeros(ComplexF64, Npoints)
     Vpsi = zeros(ComplexF64, pw.gvecw.Ngw[ik], Nstates)
     idx = pw.gvecw.idx_gw2r[ik]
+
     for ist in 1:Nstates
-        #ctmp .= 0.0 + im*0.0
         fill!(ctmp, 0.0 + im*0.0)
         #
-        ctmp[idx] = psi[:,ist]
+        @views ctmp[idx] .= psi[:,ist]
         # get values of psi in real space grid
         G_to_R!(pw, ctmp)
         # Multiply in real space
@@ -153,12 +162,11 @@ function op_V_loc( ik::Int64, pw::PWGrid, V_loc,
         # Back to G-space
         R_to_G!(pw, ctmp)
         #
-        Vpsi[:,ist] = ctmp[idx]
+        @views Vpsi[:,ist] .= ctmp[idx]
     end
 
     return Vpsi
 end
-=#
 
 
 #=
