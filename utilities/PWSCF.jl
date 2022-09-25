@@ -7,7 +7,8 @@ function write_psp_pwscf( psp::PsPot_GTH; prefix="." )
     zatom = PWDFT.ZATOMS[atsymb]
     lmax = psp.lmax
     
-    f = open( joinpath(prefix, atsymb*".gth"), "w")
+    pspfile = joinpath(prefix, atsymb*"-q"*string(zval)*".gth")
+    f = open(pspfile, "w")
     @printf(f, "Hartwigsen-Goedecker-Hutter psp for %s, from PRB58, 3641 (1998)\n", atsymb)
     @printf(f, "%d %d 010605\n", Int(zatom), Int(zval))
     @printf(f, "10 1 %d 0 2001 0\n", lmax)
@@ -140,7 +141,8 @@ function write_pwscf( Ham; filename="PWINPUT",
     @printf(f, "ATOMIC_SPECIES\n")
     for isp = 1:Nspecies
         ss = SpeciesSymbols[isp]
-        @printf(f, "%5s 1.0 %s\n", ss, ss*".gth")
+        pspfile = joinpath(prefix, ss*"-q"*string(Ham.atoms.Zvals[isp])*".gth")
+        @printf(f, "%5s 1.0 %s\n", ss, pspfile)
     end
     @printf(f, "\n")
 
