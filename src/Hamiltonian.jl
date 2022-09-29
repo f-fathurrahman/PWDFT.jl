@@ -171,12 +171,14 @@ function Hamiltonian(
         # We initialize smooth local potential here (total)
         potentials = Potentials(
             V_Ps_loc, V_Hartree, V_xc, V_loc_tot,
-            zeros(Float64, prod(pw.Nss), Nspin)
+            zeros(Float64, prod(pw.Nss), Nspin),
+            zeros(Float64, Npoints, Nspin)
         )
     else
         potentials = Potentials(
             V_Ps_loc, V_Hartree, V_xc, V_loc_tot,
-            nothing
+            nothing,
+            zeros(Float64, Npoints, Nspin)
         )
     end
 
@@ -385,6 +387,13 @@ function update!( Ham::Hamiltonian, psiks::BlochWavefunc, rhoe::Array{Float64,1}
     return
 end
 
+
+
+
+#
+# TODO: save old total potential XXXXX
+# XXX: Add option to save old potential to the Hamiltonian
+#
 
 """
     update!(Ham, psiks, rhoe)

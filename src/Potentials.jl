@@ -10,4 +10,5 @@ mutable struct Potentials
     XC::Array{Float64,2}  # spin dependent
     Total::Array{Float64,2}
     TotalSmooth::Union{Array{Float64,2},Nothing} # smooth potential
+    TotalOld::Array{Float64,2}
 end
