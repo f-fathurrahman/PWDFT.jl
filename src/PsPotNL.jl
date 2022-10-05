@@ -1,17 +1,17 @@
 struct PsPotNL
     NbetaNL::Int64
     prj2beta::Array{Int64,4}
-    betaNL::Array{Array{ComplexF64,2},1}
+    betaNL::Vector{Matrix{ComplexF64}}
 end
 
 function PsPotNL()
     # return dummy PsPotNL
-    betaNL = Array{Array{ComplexF64,2},1}(undef,1)
+    betaNL = Vector{Matrix{ComplexF64}}(undef,1)
     betaNL[1] = zeros(ComplexF64,1,1)
     return PsPotNL(0, zeros(Int64,1,1,1,1), betaNL )
 end
 
-function PsPotNL( atoms::Atoms, pw::PWGrid, pspots::Array{PsPot_GTH,1}; check_norm=false )
+function PsPotNL( atoms::Atoms, pw::PWGrid, pspots::Vector{PsPot_GTH}; check_norm=false )
 
     Natoms = atoms.Natoms
     atm2species = atoms.atm2species
