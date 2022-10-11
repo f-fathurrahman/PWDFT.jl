@@ -1,4 +1,10 @@
-function calc_rhoe_core!(atoms, pw, pspots, rhoe_core)
+function calc_rhoe_core!(
+    atoms::Atoms,
+    pw::PWGrid,
+    pspots::Vector{PsPot_UPF},
+    rhoe_core
+)
+    # XXX: rhoe_core is assumed to have shape (Npoints,1)
 
     Nspecies = atoms.Nspecies
     Npoints = prod(pw.Ns)
@@ -17,11 +23,12 @@ function calc_rhoe_core!(atoms, pw, pspots, rhoe_core)
     neg_rhoec = 0.0
     for isp in 1:Nspecies
         psp = pspots[isp]
+        # Skip this pspot if nlcc is not included
         if !psp.is_nlcc
             continue
         end
         _calc_rhoecgl!(psp, G2_shells, rhoecgl)
-        for ig = 1:Ng
+        for ig in 1:Ng
             ip = idx_g2r[ig]
             igl = idx_g2shells[ig]
             rhoecG[ip] = strf[ig,isp] * rhoecgl[igl]
@@ -39,8 +46,9 @@ function calc_rhoe_core!(atoms, pw, pspots, rhoe_core)
             end
         end
     end
-    println("integ rhoec = ", sum(rhoe_core)*CellVolume/Npoints)
-    println("neg_rhoec = ", neg_rhoec*CellVolume/Npoints)
+    #println("\ncalc_rhoe_core:")
+    #println("integ rhoec = ", sum(rhoe_core)*CellVolume/Npoints)
+    #println("neg_rhoec   = ", neg_rhoec*CellVolume/Npoints)
     return
 end
 
