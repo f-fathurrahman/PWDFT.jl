@@ -1,5 +1,6 @@
 using Libxc
 
+# Calculate kinetic energy density for one k-point
 function calc_KEdens!(
     ik::Int64,
     pw::PWGrid,
@@ -21,7 +22,7 @@ function calc_KEdens!(
         fill!(∇ψx, 0.0 + im*0.0)
         fill!(∇ψy, 0.0 + im*0.0)
         fill!(∇ψz, 0.0 + im*0.0)
-        for igw = 1:Ngw
+        for igw in 1:Ngw
             ig = idx_gw2g[igw]
             ip = idx_gw2r[igw]
             ∇ψx[ip] = im*G[1,ig]*psi[igw,ist]
@@ -41,6 +42,8 @@ function calc_KEdens!(
                 conj(∇ψy[ip])*∇ψy[ip] + conj(∇ψz[ip])*∇ψz[ip] )
         end
     end
+    # Focc == 2 and factor of 0.5 result in overall factor of one
+    # we don't need this
     #@views KEdens[:] = 0.5*KEdens[:]
     return 
 end
