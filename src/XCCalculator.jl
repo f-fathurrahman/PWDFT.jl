@@ -18,7 +18,7 @@ function LibxcXCCalculator( ; x_id=1, c_id=7, is_metagga=false, Npoints=0, Nspin
         @assert Npoints > 0
         Vlapl = zeros(Npoints,Nspin)
         Vtau = zeros(Npoints,Nspin)
-        return LibxcXCCalculator(x_id, c_id, Vlapl, Vtau) # XXX use SCAN
+        return LibxcXCCalculator(263, 267, Vlapl, Vtau) # XXX use SCAN
     else
         return LibxcXCCalculator(x_id, c_id, zeros(1,1),zeros(1,1))
     end
