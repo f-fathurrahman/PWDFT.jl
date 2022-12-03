@@ -141,7 +141,8 @@ function write_pwscf( Ham; filename="PWINPUT",
     @printf(f, "ATOMIC_SPECIES\n")
     for isp = 1:Nspecies
         ss = SpeciesSymbols[isp]
-        pspfile = joinpath(prefix, ss*"-q"*string(Ham.atoms.Zvals[isp])*".gth")
+        # XXX make sure that zval is Int
+        pspfile = ss*"-q"*string(Ham.pspfiles[isp].zval)*".gth"
         @printf(f, "%5s 1.0 %s\n", ss, pspfile)
     end
     @printf(f, "\n")
