@@ -150,7 +150,7 @@ function calc_E_local( Ham::Hamiltonian, psiks::BlochWavefunc )
 
     if Ham.xcfunc == "SCAN"
         # FIXME: no spinpol yet
-        epsxc = calc_epsxc_SCAN( Ham.xc_calc, Ham.pw, psiks, Rhoe_tot )
+        epsxc = calc_epsxc_SCAN( Ham, psiks, Rhoe_tot )
     elseif Ham.xcfunc == "PBE"
         epsxc = calc_epsxc_PBE( Ham.xc_calc, Ham.pw, Ham.rhoe )
         # FIXME: NLCC is not yet handled

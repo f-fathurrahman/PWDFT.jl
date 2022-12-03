@@ -365,7 +365,7 @@ function update!( Ham::Hamiltonian, psiks::BlochWavefunc, rhoe::Array{Float64,1}
 
     if Ham.xcfunc == "SCAN"
         Vxc_tmp = zeros(size(rhoe,1)) # FIXME: use V_XC directly
-        calc_Vxc_SCAN!( xc_calc, pw, psiks, rhoe, Vxc_tmp )
+        calc_Vxc_SCAN!( Ham, psiks, rhoe, Vxc_tmp )
         V_XC[:,1] = Vxc_tmp[:]
     #
     elseif Ham.xcfunc == "PBE"

@@ -1,64 +1,94 @@
 using Libxc
 
-# Calculate kinetic energy density for one k-point
 function calc_KEdens!(
-    ik::Int64,
-    pw::PWGrid,
-    psi::Array{ComplexF64,2},
-    KEdens::Array{Float64,1}
+    Ham::Hamiltonian,
+    psiks::BlochWavefunc,
+    KEdens::Array{Float64,2}
 )
-    G = pw.gvec.G
-    Ngw = pw.gvecw.Ngw[ik]
-    idx_gw2r = pw.gvecw.idx_gw2r[ik]
-    idx_gw2g = pw.gvecw.idx_gw2g[ik]
-    Npoints = prod(pw.Ns)
-    Nstates = size(psi,2)
 
-    ∇ψx = zeros(ComplexF64,Npoints) 
-    ∇ψy = zeros(ComplexF64,Npoints)
-    ∇ψz = zeros(ComplexF64,Npoints)
+    pw = Ham.pw
+    Nkpt = pw.gvecw.kpoints.Nkpt
+    wk = pw.gvecw.kpoints.wk
+    Focc = Ham.electrons.Focc
+    k = pw.gvecw.kpoints.k
+
+    G = pw.gvec.G
+    Ngw = pw.gvecw.Ngw
+    idx_gw2r = pw.gvecw.idx_gw2r
+    idx_gw2g = pw.gvecw.idx_gw2g
+    Npoints = prod(pw.Ns)
+    Nstates = size(psiks[1],2)
+
+    Nspin = size(KEdens, 2)
+    @assert Nspin == 1
+
+    fill!(KEdens, 0.0)
+
+    ∇ψx = zeros(ComplexF64, Npoints) 
+    ∇ψy = zeros(ComplexF64, Npoints)
+    ∇ψz = zeros(ComplexF64, Npoints)
     
-    for ist in 1:Nstates
-        fill!(∇ψx, 0.0 + im*0.0)
-        fill!(∇ψy, 0.0 + im*0.0)
-        fill!(∇ψz, 0.0 + im*0.0)
-        for igw in 1:Ngw
-            ig = idx_gw2g[igw]
-            ip = idx_gw2r[igw]
-            ∇ψx[ip] = im*G[1,ig]*psi[igw,ist]
-            ∇ψy[ip] = im*G[2,ig]*psi[igw,ist]
-            ∇ψz[ip] = im*G[3,ig]*psi[igw,ist]
-        end
-        G_to_R!(pw, ∇ψx)
-        G_to_R!(pw, ∇ψy)
-        G_to_R!(pw, ∇ψz)
-        #
-        ∇ψx[:] = ∇ψx[:]*sqrt(Npoints/pw.CellVolume)*sqrt(Npoints)
-        ∇ψy[:] = ∇ψy[:]*sqrt(Npoints/pw.CellVolume)*sqrt(Npoints)
-        ∇ψz[:] = ∇ψz[:]*sqrt(Npoints/pw.CellVolume)*sqrt(Npoints)
-        # FIXME: Need to add wk and Focc weight?
-        for ip in 1:Npoints
-            KEdens[ip] = KEdens[ip] + real( conj(∇ψx[ip])*∇ψx[ip] +
-                conj(∇ψy[ip])*∇ψy[ip] + conj(∇ψz[ip])*∇ψz[ip] )
+    # XXX: Assumption: Nspin == 1
+    ispin = 1
+    for ik in 1:Nkpt
+
+        ikspin = ik + (ispin-1)*Nkpt
+        psi = psiks[ikspin]
+
+        for ist in 1:Nstates
+            #
+            fill!(∇ψx, 0.0 + im*0.0)
+            fill!(∇ψy, 0.0 + im*0.0)
+            fill!(∇ψz, 0.0 + im*0.0)
+            #
+            for igw in 1:Ngw[ik]
+                ig = idx_gw2g[ik][igw]
+                ip = idx_gw2r[ik][igw]
+                ∇ψx[ip] = im*(G[1,ig] + k[1,ik])*psi[igw,ist]
+                ∇ψy[ip] = im*(G[2,ig] + k[2,ik])*psi[igw,ist]
+                ∇ψz[ip] = im*(G[3,ig] + k[3,ik])*psi[igw,ist]
+            end
+            #
+            G_to_R!(pw, ∇ψx)
+            G_to_R!(pw, ∇ψy)
+            G_to_R!(pw, ∇ψz)
+            #
+            # Rescale
+            scal = Npoints/sqrt(pw.CellVolume)
+            @views ∇ψx[:] = ∇ψx[:]*scal
+            @views ∇ψy[:] = ∇ψy[:]*scal
+            @views ∇ψz[:] = ∇ψz[:]*scal
+            # FIXME: Need to add wk and Focc weight?
+            for ip in 1:Npoints
+                KEdens[ip,ispin] += 0.5*Focc[ist]*wk[ik]*real(
+                    conj(∇ψx[ip])*∇ψx[ip] + conj(∇ψy[ip])*∇ψy[ip] + conj(∇ψz[ip])*∇ψz[ip]
+                )
+            end
         end
     end
-    # Focc == 2 and factor of 0.5 result in overall factor of one
-    # we don't need this
-    #@views KEdens[:] = 0.5*KEdens[:]
+
+    # Symmetrize Rhoe if needed
+    #println("Before symmetrize_rhoe: sum(KEdens) = ", sum(KEdens))
+    #println("KEdens[1,1] = ", KEdens[1,1])
+    if Ham.sym_info.Nsyms > 1
+        symmetrize_rhoe!( pw, Ham.sym_info, Ham.rhoe_symmetrizer, KEdens )
+    end
+    #println("After symmetrize_rhoe: sum(KEdens) = ", sum(KEdens))
+    #println("KEdens[1,1] = ", KEdens[1,1])
+
     return 
 end
 
 
 
 function calc_epsxc_SCAN(
-    xc_calc::LibxcXCCalculator,
-    pw::PWGrid,
+    Ham::Hamiltonian,
     psiks::BlochWavefunc,
     Rhoe::Array{Float64,1}
 )
 
-    @assert size(psiks,1) == 1
-    @assert pw.gvecw.kpoints.Nkpt == 1
+    xc_calc = Ham.xc_calc
+    pw = Ham.pw
 
     FUNC_IDX = 263 # mgga x scan
     FUNC_IDC = 267 # mgga c scan
@@ -72,13 +102,15 @@ function calc_epsxc_SCAN(
     # calculate gRhoe2
     gRhoe = op_nabla( pw, Rhoe )
     gRhoe2 = zeros( Float64, Npoints )
-    for ip = 1:Npoints
+    for ip in 1:Npoints
         gRhoe2[ip] = gRhoe[1,ip]*gRhoe[1,ip] + gRhoe[2,ip]*gRhoe[2,ip] + gRhoe[3,ip]*gRhoe[3,ip]
     end
 
     # Need to symmetryize KEdens?
-    KEdens = zeros(Float64,Npoints)
-    calc_KEdens!(1, pw, psiks[1], KEdens)
+    KEdens_ = zeros(Float64, Npoints, Nspin)
+    #calc_KEdens!(1, pw, psiks[1], KEdens)
+    calc_KEdens!(Ham, psiks, KEdens_)
+    KEdens = reshape(KEdens_, Npoints)
 
     lapl = zeros(Npoints)
 
@@ -96,13 +128,13 @@ function calc_epsxc_SCAN(
     ptr = Libxc_xc_func_alloc()
     # exchange part
     Libxc_xc_func_init(ptr, FUNC_IDX, Nspin)
-    Libxc_xc_mgga_exc!(ptr, Npoints, Rhoe, gRhoe2, lapl, KEdens, eps_x)
+    @views Libxc_xc_mgga_exc!(ptr, Npoints, Rhoe, gRhoe2, lapl, KEdens, eps_x)
     Libxc_xc_func_end(ptr)
 
     #
     # correlation part
     Libxc_xc_func_init(ptr, FUNC_IDC, Nspin)
-    Libxc_xc_mgga_exc!(ptr, Npoints, Rhoe, gRhoe2, lapl, KEdens, eps_c)
+    @views Libxc_xc_mgga_exc!(ptr, Npoints, Rhoe, gRhoe2, lapl, KEdens, eps_c)
     Libxc_xc_func_end(ptr)
 
     #
@@ -113,14 +145,14 @@ function calc_epsxc_SCAN(
 end
 
 function calc_Vxc_SCAN!(
-    xc_calc::LibxcXCCalculator,
-    pw::PWGrid,
+    Ham::Hamiltonian,
     psiks::BlochWavefunc,
     Rhoe::Array{Float64,1},
     V_xc::Array{Float64,1}
 )
 
-    @assert size(psiks,1) == 1
+    xc_calc = Ham.xc_calc
+    pw = Ham.pw
 
     FUNC_IDX = 263 # mgga x scan
     FUNC_IDC = 267 # mgga c scan
@@ -134,13 +166,15 @@ function calc_Vxc_SCAN!(
     # calculate gRhoe2
     gRhoe = op_nabla( pw, Rhoe )
     gRhoe2 = zeros( Float64, Npoints )
-    for ip = 1:Npoints
+    for ip in 1:Npoints
         gRhoe2[ip] = gRhoe[1,ip]*gRhoe[1,ip] + gRhoe[2,ip]*gRhoe[2,ip] + gRhoe[3,ip]*gRhoe[3,ip]
     end
 
     # Need to symmetryize KEdens?
-    KEdens = zeros(Npoints)
-    calc_KEdens!(1, pw, psiks[1], KEdens)
+    KEdens_ = zeros(Npoints, Nspin)
+    #calc_KEdens!(1, pw, psiks[1], KEdens)
+    calc_KEdens!(Ham, psiks, KEdens_)
+    KEdens = reshape(KEdens_, Npoints)
 
     # Not used
     lapl = zeros(Npoints)
@@ -179,7 +213,7 @@ function calc_Vxc_SCAN!(
     hx = zeros(ComplexF64, pw.Ns)
     hy = zeros(ComplexF64, pw.Ns)
     hz = zeros(ComplexF64, pw.Ns)
-    for ip = 1:Npoints
+    for ip in 1:Npoints
         hx[ip] = ( Vg_x[ip] + Vg_c[ip] ) * gRhoe[1,ip]
         hy[ip] = ( Vg_x[ip] + Vg_c[ip] ) * gRhoe[2,ip]
         hz[ip] = ( Vg_x[ip] + Vg_c[ip] ) * gRhoe[3,ip]
@@ -187,7 +221,7 @@ function calc_Vxc_SCAN!(
     # div ( vgrho * gRhoe )
     divh = op_nabla_dot( pw, hx, hy, hz )
     #
-    for ip = 1:Npoints
+    for ip in 1:Npoints
         V_xc[ip] = V_x[ip] + V_c[ip] - 2.0*divh[ip]
         xc_calc.Vtau[ip,1] = Vtau_x[ip] + Vtau_c[ip]
     end

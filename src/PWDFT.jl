@@ -146,10 +146,6 @@ export calc_epsxc_VWN, calc_Vxc_VWN, calc_epsxc_Vxc_VWN
 include("GGA_PBE.jl")
 export calc_epsxc_PBE, calc_Vxc_PBE
 
-include("MGGA_SCAN.jl")
-export calc_epsxc_SCAN, calc_Vxc_SCAN!
-export calc_KEdens!
-
 include("XC_functionals_internal.jl")
 include("LDA_VWN_internal.jl")
 include("GGA_PBE_internal.jl")
@@ -193,6 +189,11 @@ export BlochWavefuncGamma,
 
 include("gamma_only/unfold_BlochWavefuncGamma.jl")
 export unfold_BlochWavefuncGamma
+
+# We need Hamiltonian to be declared here (?)
+include("MGGA_SCAN.jl")
+export calc_epsxc_SCAN, calc_Vxc_SCAN!
+export calc_KEdens!
 
 include("op_K.jl")
 include("op_V_loc.jl")
