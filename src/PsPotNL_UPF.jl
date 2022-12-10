@@ -13,6 +13,7 @@ mutable struct PsPotNL_UPF
     indv::Array{Int64,2}
     nhtol::Array{Int64,2}
     nhtolm::Array{Int64,2}
+    ijtoh::Array{Int64,3}
     indv_ijkb0::Vector{Int64}
     Dvan::Array{Float64,3}
     Deeq::Array{Float64,4}
@@ -67,6 +68,7 @@ function PsPotNL_UPF(
     nhtol = zeros(Int64, nhm, Nspecies)
     nhtolm = zeros(Int64, nhm, Nspecies)
     indv_ijkb0 = zeros(Int64, Natoms)
+    ijtoh = zeros(Int64, nhm, nhm, Nspecies)
     Dvan = zeros(Float64, nhm, nhm, Nspecies)
 
     ijkb0 = 0
@@ -82,6 +84,17 @@ function PsPotNL_UPF(
                 ih = ih + 1
             end
         end
+        #
+        # ijtoh map augmentation channel indexes ih and jh to composite
+        # "triangular" index ijh
+        @views ijtoh[:,:,isp] .= -1
+        ijv = 0
+        for ih in 1:nh[isp], jh in ih:nh[isp]
+             ijv = ijv + 1
+             ijtoh[ih,jh,isp] = ijv
+             ijtoh[jh,ih,isp] = ijv
+        end
+        #
         # ijkb0 points to the last beta "in the solid" for atom ia-1
         # i.e. ijkb0+1,.. ijkb0+nh(ityp(ia)) are the nh beta functions of
         #      atom ia in the global list of beta functions (ijkb0=0 for ia=1)
@@ -152,7 +165,7 @@ function PsPotNL_UPF(
     return PsPotNL_UPF(
         lmaxx, lqmax, lmaxkb,
         nh, nhm, NbetaNL, ap, lpx, lpl,
-        indv, nhtol, nhtolm, indv_ijkb0,
+        indv, nhtol, nhtolm, ijtoh, indv_ijkb0,
         Dvan, Deeq, qradG, qq_nt, qq_at,
         betaNL,
         are_ultrasoft
@@ -488,6 +501,7 @@ function _calc_qradG(
                         ijv = round(Int64, mb*(mb - 1)/2) + nb
                         lnb = psp.proj_l[nb]
                         lmb = psp.proj_l[mb]
+                        # Selection rule
                         cond1 = l >= abs( lnb - lmb )
                         cond2 = l <=      lnb + lmb
                         cond3 = mod(l + lnb + lmb, 2) == 0
