@@ -575,6 +575,7 @@ struct SymmetryInfo
     s::Array{Int64,3}
     inv_s::Array{Int64,3}
     sname::Array{String}
+    sr::Array{Float64,3}
     ft::Array{Float64,2}
     non_symmorphic::Array{Bool,1}
     irt::Array{Int64,2}
@@ -588,6 +589,9 @@ function SymmetryInfo()
     s[2,2,1] = 1
     s[3,3,1] = 1
     #
+    sr = zeros(Float64,3,3,1) # XXX: This should not be used
+    # We need Atoms.LatVecs to properly set up this
+    #
     inv_s = copy(s)
     #
     sname = ["identity"]
@@ -598,7 +602,7 @@ function SymmetryInfo()
     #
     irt = zeros(Int64,1,1)
     #
-    return SymmetryInfo( Nrots, Nsyms, s, inv_s, sname, ft, non_symmorphic, irt )
+    return SymmetryInfo( Nrots, Nsyms, s, inv_s, sname, sr, ft, non_symmorphic, irt )
 end
 
 function SymmetryInfo( atoms::Atoms )
@@ -627,9 +631,18 @@ function SymmetryInfo( atoms::Atoms )
                                  (abs(ft[3,isym]) >= SMALL) )
     end
 
+    sr = zeros(Float64,3,3,Nsyms) # s in Cartesian
+    RecVecs = 2*pi*inv(Matrix(atoms.LatVecs'))
+    sb = zeros(Float64, 3, 3)
+    for isym in 1:Nsyms
+        @views sb[:,:] = RecVecs * s[:,:,isym]
+        @views sr[:,:,isym] = atoms.LatVecs * sb'
+    end
+
     return SymmetryInfo(
         Nrots, Nsyms,
         s[:,:,1:Nsyms], inv_s, sname[1:Nsyms],
+        sr,
         ft[:,1:Nsyms], non_symmorphic,
         irt[1:Nsyms,:]
     )
