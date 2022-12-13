@@ -632,7 +632,7 @@ function SymmetryInfo( atoms::Atoms )
     end
 
     sr = zeros(Float64,3,3,Nsyms) # s in Cartesian
-    RecVecs = 2*pi*inv(Matrix(atoms.LatVecs'))
+    RecVecs = inv(Matrix(atoms.LatVecs')) # exclude 2π factor
     sb = zeros(Float64, 3, 3)
     for isym in 1:Nsyms
         @views sb[:,:] = RecVecs * s[:,:,isym]
