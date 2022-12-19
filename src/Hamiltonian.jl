@@ -137,9 +137,9 @@ function Hamiltonian(
             if pspots[isp].is_nlcc
                 is_psp_using_nlcc[isp] = true
                 println()
-                @printf("!!! WARNING: %s is generated with nonlinear-core correction\n",
+                @printf("*** WARNING: %s is generated with nonlinear-core correction\n",
                     pspfiles[isp])
-                @printf("!!! WARNING: This is not yet fully supported\n")
+                @printf("*** WARNING: This is not yet fully supported\n")
                 println()
             end
         else
