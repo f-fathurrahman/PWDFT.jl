@@ -7,7 +7,7 @@ include("newd.jl")
 include("op_S.jl")
 include("calc_rhoe_uspp.jl")
 include("ortho_with_S.jl")
-
+include("diag_davidson_qe_v2.jl")
 
 # An implementation of electrons_scf subroutine in PWSCF
 # Total energy is calculated using double-counting formula
@@ -58,7 +58,7 @@ function electrons_scf!(
     # Mix directly in R-space
     mixer = BroydenMixer(Rhoe, betamix, mixdim=8)
 
-    Rhoe_in = zeros(size(Rhoe))
+    Rhoe_in = zeros(Float64,size(Rhoe))
 
     ethr = 1e-5 # default
 
@@ -108,7 +108,7 @@ function electrons_scf!(
         #diffRhoe = norm(Rhoe - Rhoe_in)
         diffRhoe = dot(Rhoe - Rhoe_in, Rhoe - Rhoe_in)
         @printf("Before mix: diffRhoe = %e\n", diffRhoe)
-        do_mix!(mixer, Rhoe, Rhoe_new, iterSCF)
+        do_mix!(mixer, Rhoe, Rhoe_in, iterSCF)
         println("integ Rhoe after mix: ", sum(Rhoe)*dVol)
 
         # Check convergence here? (using diffRhoe)

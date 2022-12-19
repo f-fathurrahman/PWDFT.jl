@@ -275,6 +275,13 @@ export mix_anderson!,
        mix_ppulay!,
        mix_broyden!
 
+# Newer
+include("BroydenMixer.jl")
+export do_mix!,
+       BroydenMixer
+
+
+
 include("gen_wavefunc.jl")
 export rand_Wavefunc, rand_BlochWavefunc, zeros_BlochWavefunc
 
@@ -319,7 +326,7 @@ export read_psiks
 
 
 include("electrons_scf.jl")
-export electrons_scf
+export electrons_scf!
 
 
 include("calc_forces_NN.jl")
