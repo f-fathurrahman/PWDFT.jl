@@ -317,6 +317,11 @@ export chebyfilt,
 include("read_psiks.jl")
 export read_psiks
 
+
+include("electrons_scf.jl")
+export electrons_scf
+
+
 include("calc_forces_NN.jl")
 include("calc_forces_Ps_loc.jl")
 include("calc_forces_Ps_nloc.jl")
