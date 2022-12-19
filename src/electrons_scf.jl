@@ -83,8 +83,8 @@ function electrons_scf!(
         #
         ethr = _calc_diag_ethr_conv(iterSCF, ethr, ethr_evals_last)
         #
-        println("\niterSCF = ", iterSCF)
-        println("Davidson diagonalization with ethr = ", ethr)
+        #println("\niterSCF = ", iterSCF)
+        #println("Davidson diagonalization with ethr = ", ethr)
         evals[:,:] .= diag_davidson_qe!( Ham, psiks, tol=ethr )
 
         #
@@ -92,7 +92,7 @@ function electrons_scf!(
         #
         Eband = _calc_Eband(wk, Focc, evals)
         Rhoe[:,:] = calc_rhoe_uspp( Ham, psiks )
-        println("integ output Rhoe = ", sum(Rhoe)*dVol)
+        #println("integ output Rhoe = ", sum(Rhoe)*dVol)
 
         # This is not used later?
         hwf_energy = Eband + deband_hwf + Ehartree + Exc + Ham.energies.NN
@@ -107,9 +107,9 @@ function electrons_scf!(
         #
         #diffRhoe = norm(Rhoe - Rhoe_in)
         diffRhoe = dot(Rhoe - Rhoe_in, Rhoe - Rhoe_in)
-        @printf("Before mix: diffRhoe = %e\n", diffRhoe)
+        #@printf("Before mix: diffRhoe = %e\n", diffRhoe)
         do_mix!(mixer, Rhoe, Rhoe_in, iterSCF)
-        println("integ Rhoe after mix: ", sum(Rhoe)*dVol)
+        #println("integ Rhoe after mix: ", sum(Rhoe)*dVol)
 
         # Check convergence here? (using diffRhoe)
 
@@ -122,7 +122,7 @@ function electrons_scf!(
     
         #
         diffEtot = abs(Etot - Etot_old)
-        @printf("\nSCF: %5d %18.10f %10.5e %10.5e\n", iterSCF, Etot, diffEtot, diffRhoe)
+        @printf("SCF: %5d %18.10f %10.5e %10.5e\n", iterSCF, Etot, diffEtot, diffRhoe)
         if diffEtot <= etot_conv_thr
             Nconv = Nconv + 1
         else
