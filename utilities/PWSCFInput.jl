@@ -42,6 +42,8 @@ function PWSCFInput( filename::String )
     in_fraction = false
     in_bohr = false
 
+    cell_in_angstrom = false
+
     is_parse_species = false
     N_parse_species = 0
     pspfiles = String[]
@@ -106,6 +108,12 @@ function PWSCFInput( filename::String )
         # FIXME: They are assumed to be given in bohr !!!!
         if occursin("CELL_PARAMETERS", l)
             is_parse_cell = true
+            if occursin("angstrom", l)
+                cell_in_angstrom = true
+            end
+            if occursin("bohr", l)
+                cell_in_angstrom = false
+            end
         end
 
         if is_parse_cell && N_parse_cell <= 3
@@ -175,6 +183,8 @@ function PWSCFInput( filename::String )
         # Read atomic species
         #
         # FIXME: Nspecies must be read before
+        # FIXME: The order of pseudopotentials must be the same as in atomic coordinates
+        # Otherwise, the  pseudopotentials might get mixed up.
         if occursin("ATOMIC_SPECIES", l)
             is_parse_species = true
         end
@@ -218,6 +228,11 @@ function PWSCFInput( filename::String )
 
     end
     close(f)
+
+    # Convert LatVecs to bohr if required
+    if cell_in_angstrom
+        LatVecs[:,:] = LatVecs[:,:]*ANG2BOHR
+    end
 
 
     println(species_symbols)
