@@ -91,14 +91,14 @@ function XC_c_pw_spin( Rhoe, zeta )
     fz = ( (1.0 + zeta)^(4.0/3.0) + (1.0 - zeta)^(4.0/3.0) - 2.0) / (2.0^(4.0/3.0) - 2.0)
     dfz = ( (1.0 + zeta)^(1.0/3.0) - (1.0 - zeta)^(1.0/3.0) ) * 4.0 / (3.0 * (2.0^(4.0/3.0) - 2.0) )
   
-    ec = epwc + alpha * fz * (1.0 - zeta4) / fz0 + (epwcp - epwc) * fz * zeta4
+    ec = epwc - alpha * fz * (1.0 - zeta4) / fz0 + (epwcp - epwc) * fz * zeta4
   
-    vcup = vpwc + vpwca * fz * (1.0 - zeta4) / fz0 + (vpwcp - vpwc)*fz*zeta4 +
-           (alpha / fz0 * (dfz * (1.0 - zeta4) - 4.0*fz*zeta3) +
+    vcup = vpwc - vpwca * fz * (1.0 - zeta4) / fz0 + (vpwcp - vpwc)*fz*zeta4 +
+           (-alpha / fz0 * (dfz * (1.0 - zeta4) - 4.0*fz*zeta3) +
            (epwcp - epwc) * (dfz * zeta4 + 4.0 * fz * zeta3) ) * (1.0 - zeta)
 
-    vcdw = vpwc + vpwca * fz * (1.0 - zeta4) / fz0 + (vpwcp - vpwc) * fz * zeta4 -
-          (alpha / fz0 * (dfz * (1.0 - zeta4) - 4.0 * fz * zeta3) +
+    vcdw = vpwc - vpwca * fz * (1.0 - zeta4) / fz0 + (vpwcp - vpwc) * fz * zeta4 -
+          (-alpha / fz0 * (dfz * (1.0 - zeta4) - 4.0 * fz * zeta3) +
             (epwcp - epwc) * (dfz * zeta4 + 4.0 * fz * zeta3) ) * (1.0 + zeta)
 
     return ec, vcup, vcdw

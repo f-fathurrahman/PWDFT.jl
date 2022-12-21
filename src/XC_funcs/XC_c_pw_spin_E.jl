@@ -75,7 +75,7 @@ function XC_c_pw_spin_E( Rhoe, zeta )
   
     fz = ( (1.0 + zeta)^(4.0/3.0) + (1.0 - zeta)^(4.0/3.0) - 2.0) / (2.0^(4.0/3.0) - 2.0)
   
-    ec = epwc + alpha * fz * (1.0 - zeta4) / fz0 + (epwcp - epwc) * fz * zeta4
+    ec = epwc - alpha * fz * (1.0 - zeta4) / fz0 + (epwcp - epwc) * fz * zeta4
 
     return ec
 end
