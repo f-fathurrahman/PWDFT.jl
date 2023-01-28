@@ -69,6 +69,7 @@ function electrons_scf!(
     deband = 0.0
     descf = 0.0
     Etot = 0.0
+    mTS = 0.0
 
     for iterSCF in 1:NiterMax
         
@@ -86,6 +87,12 @@ function electrons_scf!(
         #println("\niterSCF = ", iterSCF)
         #println("Davidson diagonalization with ethr = ", ethr)
         evals[:,:] .= diag_davidson_qe!( Ham, psiks, tol=ethr )
+
+        if use_smearing
+            Focc, E_fermi = calc_Focc( Nelectrons, wk, kT, evals, Nspin )
+            mTS = calc_entropy( wk, kT, evals, E_fermi, Nspin )
+            Ham.electrons.Focc = copy(Focc)
+        end
 
         #
         # Calculate electron density and band energy
@@ -118,7 +125,7 @@ function electrons_scf!(
 
         descf = -sum( (Rhoe_in[:,1] .- Rhoe[:,1]).*(Vhartree + Vxc[:,1]) )*dVol
 
-        Etot = Eband + deband + Ehartree + Exc + Ham.energies.NN + descf # entropy missed
+        Etot = Eband + deband + Ehartree + Exc + Ham.energies.NN + descf + mTS
     
         #
         diffEtot = abs(Etot - Etot_old)
@@ -166,6 +173,9 @@ function electrons_scf!(
 
     # Compare the energy using the usual formula (not using double-counting)
     energies = calc_energies(Ham, psiks)
+    if use_smearing
+        energis.mTS = mTS
+    end
     println("\nUsing original formula for total energy")
     println(energies)
 
