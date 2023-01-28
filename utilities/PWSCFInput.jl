@@ -4,6 +4,9 @@ struct PWSCFInput
     ecutrho::Float64
     pspfiles::Vector{String}
     meshk::Tuple{Int64,Int64,Int64}
+    nbnd::Int64
+    degauss::Float64
+    smearing::String
 end
 
 
@@ -51,6 +54,13 @@ function PWSCFInput( filename::String )
     species_masses = Float64[]
     pseudo_dir = "./"
 
+    ibrav = 0
+
+    nbnd = -1 # invalid value
+
+    smearing = ""
+    degauss = 0.0
+
     f = open(filename, "r")
     
     while !eof(f)
@@ -61,6 +71,17 @@ function PWSCFInput( filename::String )
         if occursin("  A =", l)
             ll = split(l, "=")
             acell = parse(Float64,ll[end])*ANG2BOHR
+            println("Read A = ", acell)
+        end
+
+        # TODO: read bcell, ccell, cosAB, cosBC, cosAC
+        # TODO: read celldm
+
+        # Read Bravais lattice info (ibrav)
+        if occursin(" ibrav =", l)
+            ll = split(l, "=", keepempty=false)
+            ibrav = parse(Int64, ll[end])
+            println("Read ibrav = ", ibrav)
         end
 
         # Read number of atoms
@@ -244,12 +265,35 @@ function PWSCFInput( filename::String )
     #
 
     if ecutwfc <= 0.0
-        error("Cannot read ecutwfc, please check or reformat the file")
+        println("-------------------------------------------------------")
+        println("Cannot read ecutwfc, please check or reformat the file")
+        println("-------------------------------------------------------")
+        error()
     end
 
     if Nspecies <= 0.0
-        error("Cannot read Nspecies (ntyp), please check or reformat the file")
+        println("-------------------------------------------------------")
+        println("Cannot read Nspecies (ntyp), please check or reformat the file")
+        println("-------------------------------------------------------")
+        error()
     end
+
+    if (ibrav == 0) && (!is_parse_cell)
+        println("-------------------------------------------------------")
+        println("acell (A) must be provided because ibrav = ", ibrav)
+        println("-------------------------------------------------------")
+        error()
+    end
+
+    # TODO: also check for other parameters: esp. celldm, etc
+    # Some ibrav need other parameters beside acell
+    if (ibrav != 0) && (acell <= 0.0)
+        println("-------------------------------------------------------")
+        println("CELL_PARAMETERS must be provided because ibrav = ", ibrav)
+        println("-------------------------------------------------------")
+        error()
+    end 
+
 
 
     #
@@ -261,9 +305,17 @@ function PWSCFInput( filename::String )
         ecutrho = 4*ecutwfc
     end
 
+    #
+    # Prepare for Atoms
+    #
+
     # Only scale LatVecs with acell if it is a positive value
-    if acell > 0.0
+    if ( acell > 0.0 ) && is_parse_cell
         LatVecs = acell*LatVecs
+    end
+
+    if ibrav == 2
+        LatVecs = gen_lattice_fcc(acell)
     end
 
     if in_fraction
@@ -284,9 +336,12 @@ function PWSCFInput( filename::String )
     # Set unit lattice vectors manually
     atoms.LatVecs = LatVecs
 
+    println(atoms)
+
     # Don't forget to convert ecutwfc and ecutrho to Ha
     return PWSCFInput(
         atoms, 0.5*ecutwfc, 0.5*ecutrho, pspfiles,
-        (meshk1, meshk2, meshk3)
+        (meshk1, meshk2, meshk3),
+        nbnd, degauss, smearing
     )
 end
