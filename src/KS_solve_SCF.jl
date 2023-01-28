@@ -79,6 +79,8 @@ function KS_solve_SCF!(
         println("")
     end
 
+    # This is mostly used for debugging purpose, probably it is better
+    # to remove this functionality
     E_GAP_INFO = false
     if Nstates_occ < Nstates
         E_GAP_INFO = true
@@ -91,20 +93,20 @@ function KS_solve_SCF!(
         end
     end
 
-    #
-    # Calculated electron density from this wave function and update Hamiltonian
-    #
-    Rhoe = zeros(Float64,Npoints,Nspin)
-
+    # Initialize electron density
+    Rhoe = zeros(Float64, Npoints, Nspin)
     if startingrhoe == :gaussian
+        # From superposition of atom-centered densities
         if Nspin == 1
             Rhoe[:,1] = guess_rhoe( Ham )
         else
             Rhoe = guess_rhoe_atomic( Ham, starting_magnetization=starting_magnetization )
         end
     elseif startingrhoe == :none
+        # Use previously calculated density stored in Ham.rhoe
         Rhoe = copy(Ham.rhoe)
     else
+        # Density will be calculated from input wave function
         calc_rhoe!( Ham, psiks, Rhoe )
     end
 
