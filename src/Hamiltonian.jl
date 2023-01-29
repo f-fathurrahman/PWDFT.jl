@@ -199,17 +199,16 @@ function Hamiltonian(
     end
 
 
-    if ( Nstates < 0 ) && (extra_states < 0)
-        println("Please specify Nstates only or extra_states only")
-        error()
-    end
-
     if extra_states > -1
         electrons = Electrons( atoms, pspots, Nspin=Nspin, Nkpt=kpoints.Nkpt,
             Nstates_empty=extra_states )
     elseif Nstates > -1
         electrons = Electrons( atoms, pspots, Nspin=Nspin, Nkpt=kpoints.Nkpt,
             Nstates=Nstates )
+    elseif (Nstates == -1) && (extra_states == -1)
+        # Default value for Nstates and Nstates_empty
+        # Nstates will be calculated automatically
+        electrons = Electrons( atoms, pspots, Nspin=Nspin, Nkpt=kpoints.Nkpt )
     else
         error("Error in initializing instance of Electrons")
     end

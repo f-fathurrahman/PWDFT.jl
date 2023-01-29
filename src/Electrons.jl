@@ -94,8 +94,11 @@ function Electrons(
         end
         if Nstates_empty > 0
             Nstates = Nstates + Nstates_empty
+        else
+            Nstates_empty = 0 # Given Nstates_empty a valid value
         end
     else
+        # Nstates is not given its default (invalid value)
         if Nstates_empty != -1
             println("Please specify Nstates only or Nstates_empty only")
             error()
@@ -109,16 +112,19 @@ function Electrons(
         end
         if Nstates > NstatesMin
             Nstates_empty = Nstates - NstatesMin
-        end 
+        end
     end
+
+    #println("Nstates = ", Nstates)
+    #println("Nstates_empty = ", Nstates_empty)
 
     Focc = zeros(Float64,Nstates,Nkpt*Nspin)
     ebands = zeros(Float64,Nstates,Nkpt*Nspin)
-
-    Nstates_occ = Nstates - Nstates_empty
     
+    Nstates_occ = Nstates - Nstates_empty
+
     if Nspin == 1
-        for ist = 1:Nstates_occ-1
+        for ist in 1:Nstates_occ-1
             Focc[ist,:] .= 2.0
         end
         if is_odd
