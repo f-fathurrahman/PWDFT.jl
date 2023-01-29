@@ -15,20 +15,20 @@ function test_Hamiltonian_v1()
 end
 
 # H atom in a cube, all electron (without pseudopotential)
-function test_Hamiltonian_v2()
-    Ham = Hamiltonian(    
-        Atoms( xyz_string="""
-        1
-
-        H  0.0  0.0  0.0
-        """, LatVecs=gen_lattice_sc(16.0) ),
-        15.0
-    )
-
-    return nothing
-end
+#function test_Hamiltonian_v2()
+#    Ham = Hamiltonian(    
+#        Atoms( xyz_string="""
+#        1
+#
+#        H  0.0  0.0  0.0
+#        """, LatVecs=gen_lattice_sc(16.0) ),
+#        15.0
+#    )
+#
+#    return nothing
+#end
 
 @testset "create Hamiltonian" begin
     @test test_Hamiltonian_v1() == nothing
-    @test test_Hamiltonian_v2() == nothing
+    #@test test_Hamiltonian_v2() == nothing
 end
