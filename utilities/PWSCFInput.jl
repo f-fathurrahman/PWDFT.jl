@@ -1,3 +1,5 @@
+using Logging
+
 struct PWSCFInput
     atoms::Atoms
     ecutwfc::Float64
@@ -61,6 +63,9 @@ function PWSCFInput( filename::String )
     smearing = ""
     degauss = 0.0
 
+    IGNORED = ["", "\n", "/", "&ELECTRONS", "&CONTROL", "&SYSTEM"]
+
+
     f = open(filename, "r")
     
     while !eof(f)
@@ -72,6 +77,7 @@ function PWSCFInput( filename::String )
             ll = split(l, "=")
             acell = parse(Float64,ll[end])*ANG2BOHR
             println("Read A = ", acell)
+            continue
         end
 
         # TODO: read bcell, ccell, cosAB, cosBC, cosAC
@@ -82,6 +88,7 @@ function PWSCFInput( filename::String )
             ll = split(l, "=", keepempty=false)
             ibrav = parse(Int64, ll[end])
             println("Read ibrav = ", ibrav)
+            continue
         end
 
         # Read number of atoms
@@ -89,6 +96,7 @@ function PWSCFInput( filename::String )
             ll = split(l, "=", keepempty=false)
             Natoms = parse(Int64, ll[end])
             println("Read Natoms = ", Natoms)
+            continue
         end
 
         # Read number of species (ntyp)
@@ -96,6 +104,7 @@ function PWSCFInput( filename::String )
             ll = split(l, "=", keepempty=false)
             Nspecies = parse(Int64, ll[end])
             println("Read Nspecies = ", Nspecies)
+            continue
         end
 
 
@@ -104,6 +113,7 @@ function PWSCFInput( filename::String )
             ll = split(l, "=", keepempty=false)
             ecutwfc = parse(Float64, ll[end])
             println("Read ecutwfc (in Ry) = ", ecutwfc)
+            continue
         end
 
         # Read ecutrho
@@ -111,6 +121,7 @@ function PWSCFInput( filename::String )
             ll = split(l, "=", keepempty=false)
             ecutrho = parse(Float64, ll[end])
             println("Read ecutrho (in Ry) = ", ecutrho)
+            continue
         end
 
         # Read pseudo_dir
@@ -120,6 +131,7 @@ function PWSCFInput( filename::String )
             ll = split(l, " = ", keepempty=false)
             pseudo_dir = replace(replace(ll[end], "'" => ""), "\"" => "")
             println("Read pseudo_dir = ", pseudo_dir)
+            continue
         end
 
 
@@ -147,6 +159,7 @@ function PWSCFInput( filename::String )
             LatVecs[2,N_parse_cell] = parse(Float64, ll[2])
             LatVecs[3,N_parse_cell] = parse(Float64, ll[3])
             N_parse_cell = N_parse_cell + 1
+            continue
         end
 
 
@@ -178,6 +191,7 @@ function PWSCFInput( filename::String )
             end
             xyz_string_frac = xyz_string_frac*l*"\n"
             N_parse_xyz = N_parse_xyz + 1
+            continue
         end
 
         # Atomic positions are given in angstrom
@@ -188,6 +202,7 @@ function PWSCFInput( filename::String )
             end
             xyz_string_angstrom = xyz_string_angstrom*l*"\n"
             N_parse_xyz = N_parse_xyz + 1
+            continue
         end
 
         # Atomic positions are given in bohr
@@ -221,6 +236,7 @@ function PWSCFInput( filename::String )
             push!(species_masses, parse(Float64, ll[2]))
             push!(pspfiles, joinpath(pseudo_dir, ll[3]))
             N_parse_species = N_parse_species + 1
+            continue
         end
 
         #
@@ -245,6 +261,12 @@ function PWSCFInput( filename::String )
             #
             # FIXME: Shifts are not read yet
             #
+            #
+            continue
+        end
+
+        if !(l in IGNORED)
+            @info "Line = $(l) is not processed"
         end
 
     end
