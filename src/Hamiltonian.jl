@@ -59,7 +59,8 @@ function Hamiltonian(
     kpts_str::String="",
     xcfunc::String="VWN",
     use_xc_internal::Bool=false,
-    extra_states::Int64=0,
+    extra_states::Int64=-1,
+    Nstates::Int64=-1,
     use_symmetry::Bool=true
 )
 
@@ -112,9 +113,9 @@ function Hamiltonian(
 
     # XXX We don't support mixed pseudopotentials set
     if is_using_extension_upf(pspfiles[1])
-        pspots = Array{PsPot_UPF}(undef,Nspecies)
+        pspots = Vector{PsPot_UPF}(undef,Nspecies)
     else
-        pspots = Array{PsPot_GTH}(undef,Nspecies)
+        pspots = Vector{PsPot_GTH}(undef,Nspecies)
     end    
 
     #
@@ -197,8 +198,22 @@ function Hamiltonian(
         rhoe_core = nothing
     end
 
-    electrons = Electrons( atoms, pspots, Nspin=Nspin, Nkpt=kpoints.Nkpt,
-                           Nstates_empty=extra_states )
+
+    if ( Nstates < 0 ) && (extra_states < 0)
+        println("Please specify Nstates only or extra_states only")
+        error()
+    end
+
+    if extra_states > -1
+        electrons = Electrons( atoms, pspots, Nspin=Nspin, Nkpt=kpoints.Nkpt,
+            Nstates_empty=extra_states )
+    elseif Nstates > -1
+        electrons = Electrons( atoms, pspots, Nspin=Nspin, Nkpt=kpoints.Nkpt,
+            Nstates=Nstates )
+    else
+        error("Error in initializing instance of Electrons")
+    end
+
 
     # NL pseudopotentials
     are_using_upf = zeros(Bool, Nspecies)
