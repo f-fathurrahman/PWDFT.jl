@@ -343,4 +343,9 @@ include("gamma_only/calc_forces_Ps_loc_gamma.jl")
 include("gamma_only/calc_forces_Ps_nloc_gamma.jl")
 include("gamma_only/calc_forces_gamma.jl")
 
+
+# Some utilities
+include("get_default_psp.jl")
+export get_default_PsPot_GTH
+
 end
