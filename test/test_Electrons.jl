@@ -3,6 +3,9 @@ function test_O2()
     atoms = Atoms(ext_xyz_file=filename)
     pspots = get_default_PsPot_GTH(atoms)
 
+    electrons = Electrons( atoms, pspots )
+    println(electrons)
+
     electrons = Electrons( atoms, pspots, (5,7) )
     println(electrons)
 
