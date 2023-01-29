@@ -16,7 +16,9 @@ function electrons_scf!(
     NiterMax=150,
     betamix=0.5,
     etot_conv_thr=1e-6,
-    ethr_evals_last=1e-13
+    ethr_evals_last=1e-13,
+    use_smearing=false,
+    kT::Float64=1e-3,
 )
 
     # Prepare for SCF
@@ -52,6 +54,7 @@ function electrons_scf!(
     Vxc = Ham.potentials.XC
     Focc = Ham.electrons.Focc
     wk = Ham.pw.gvecw.kpoints.wk
+    Nelectrons = Ham.electrons.Nelectrons
 
     evals = Ham.electrons.ebands
         
@@ -89,7 +92,7 @@ function electrons_scf!(
         evals[:,:] .= diag_davidson_qe!( Ham, psiks, tol=ethr )
 
         if use_smearing
-            Focc, E_fermi = calc_Focc( Nelectrons, wk, kT, evals, Nspin )
+            Focc[:,:], E_fermi = calc_Focc( Nelectrons, wk, kT, evals, Nspin )
             mTS = calc_entropy( wk, kT, evals, E_fermi, Nspin )
             Ham.electrons.Focc = copy(Focc)
         end
@@ -102,7 +105,7 @@ function electrons_scf!(
         #println("integ output Rhoe = ", sum(Rhoe)*dVol)
 
         # This is not used later?
-        hwf_energy = Eband + deband_hwf + Ehartree + Exc + Ham.energies.NN
+        hwf_energy = Eband + deband_hwf + Ehartree + Exc + Ham.energies.NN + mTS
         # entropy term missing
 
         # Calculate deband (using new Rhoe)
@@ -159,6 +162,7 @@ function electrons_scf!(
     @printf("Ehartree = %18.10f\n", 2*Ehartree)
     @printf("Exc      = %18.10f\n", 2*Exc)
     @printf("NN       = %18.10f\n", 2*Ham.energies.NN)
+    @printf("mTS      = %18.10f\n", 2*mTS)
     @printf("-----------------------------\n")
     @printf("! Total  = %18.10f\n", 2*Etot)
 
@@ -174,10 +178,10 @@ function electrons_scf!(
     # Compare the energy using the usual formula (not using double-counting)
     energies = calc_energies(Ham, psiks)
     if use_smearing
-        energis.mTS = mTS
+        energies.mTS = mTS
     end
     println("\nUsing original formula for total energy")
-    println(energies)
+    println(energies, use_smearing=use_smearing)
 
     return
 end
