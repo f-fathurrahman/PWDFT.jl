@@ -7,8 +7,9 @@ struct PWSCFInput
     pspfiles::Vector{String}
     meshk::Tuple{Int64,Int64,Int64}
     nbnd::Int64
-    degauss::Float64
+    occupations::String
     smearing::String
+    degauss::Float64
 end
 
 
@@ -60,6 +61,7 @@ function PWSCFInput( filename::String )
 
     nbnd = -1 # invalid value
 
+    occupations = ""
     smearing = ""
     degauss = 0.0
 
@@ -123,6 +125,31 @@ function PWSCFInput( filename::String )
             println("Read ecutrho (in Ry) = ", ecutrho)
             continue
         end
+
+        # Occupations
+        if occursin("occupations =", l)
+            ll = split(l, "=", keepempty=false)
+            occupations = replace(replace(ll[end], "'" => ""), "\"" => "") |> strip
+            # Be careful of space, need to strip the string
+            println("occupations = ", occupations)
+            continue
+        end
+
+        # degauss
+        if occursin("degauss =", l)
+            ll = split(l, "=", keepempty=false)
+            degauss = parse(Float64, ll[end])
+            println("degauss = ", degauss)
+            continue
+        end
+
+        if occursin("nbnd =", l)
+            ll = split(l, "=", keepempty=false)
+            nbnd = parse(Int64, ll[end])
+            println("nbnd = ", nbnd)
+            continue
+        end
+
 
         # Read pseudo_dir
         if occursin("pseudo_dir =", l)
@@ -364,6 +391,6 @@ function PWSCFInput( filename::String )
     return PWSCFInput(
         atoms, 0.5*ecutwfc, 0.5*ecutrho, pspfiles,
         (meshk1, meshk2, meshk3),
-        nbnd, degauss, smearing
+        nbnd, occupations, smearing, degauss
     )
 end

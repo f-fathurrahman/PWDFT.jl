@@ -23,6 +23,13 @@ function init_Ham_from_pwinput(; filename::Union{Nothing,String}=nothing)
     end
 
     meshk = pwinput.meshk
+    if pwinput.nbnd != -1
+        Ham = Hamiltonian(atoms, pspfiles, ecutwfc,
+            meshk=[meshk[1], meshk[2], meshk[3]], dual=dual, Nstates=pwinput.nbnd)
+    else
+        Ham = Hamiltonian(atoms, pspfiles, ecutwfc,
+            meshk=[meshk[1], meshk[2], meshk[3]], dual=dual)
+    end
 
-    return Hamiltonian(atoms, pspfiles, ecutwfc, meshk=[meshk[1], meshk[2], meshk[3]], dual=dual)
+    return Ham, pwinput
 end
