@@ -112,8 +112,12 @@ function Electrons(
         end
         if Nstates > NstatesMin
             Nstates_empty = Nstates - NstatesMin
+        else
+            Nstates_empty = 0
         end
     end
+    # Nstates, Nstates_empty must be set up to their valid values now
+    # i.e. they should not have value of -1
 
     #println("Nstates = ", Nstates)
     #println("Nstates_empty = ", Nstates_empty)
