@@ -110,6 +110,9 @@ export PsPot_GTH,
        eval_proj_G,
        write_psp10
 
+include("PAWData_UPF.jl")
+export PAWData_UPF
+
 include("PsPot_UPF.jl")
 export PsPot_UPF, calc_Natomwfc
 
