@@ -351,9 +351,9 @@ function _read_us_aug(
     # XXX Also need to read q_with_l
     # For GBRV this is false
     str1 = LightXML.attributes_dict(pp_aug[1])["q_with_l"]
-    if (str1 == "F") #|| (str1 == "false")
+    if str1 == "F"
         q_with_l = false
-    elseif (str1 == "T") #|| (str1 == "true")
+    elseif str1 == "T"
         q_with_l = true
     else
         q_with_l = parse(Bool, str1)
