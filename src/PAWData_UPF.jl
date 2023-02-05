@@ -94,7 +94,13 @@ function PAWData_UPF(xroot, r::Vector{Float64}, lmax::Int64, Nproj::Int64)
     # These are data under PP_PAW
     #
     pp_paw = LightXML.get_elements_by_tagname(xroot, "PP_PAW")
-    core_energy = parse(Float64, LightXML.attributes_dict(pp_paw[1])["core_energy"])
+    core_energy = 0.0
+    try
+        core_energy = parse(Float64, LightXML.attributes_dict(pp_paw[1])["core_energy"])
+    catch e
+        println("Cannot read PP_PAW: core_energy")
+        println("core_energy is set to 0")
+    end
     println("core_energy = ", core_energy)
 
     pp_occ = LightXML.get_elements_by_tagname(pp_paw[1], "PP_OCCUPATIONS")
