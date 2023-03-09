@@ -10,6 +10,7 @@ struct PWSCFInput
     occupations::String
     smearing::String
     degauss::Float64
+    input_dft::String
 end
 
 
@@ -65,6 +66,9 @@ function PWSCFInput( filename::String )
     smearing = ""
     degauss = 0.0
 
+    celldm_1 = -1.0
+    input_dft = ""
+
     IGNORED = ["", "\n", "/", "&ELECTRONS", "&CONTROL", "&SYSTEM"]
 
 
@@ -79,6 +83,14 @@ function PWSCFInput( filename::String )
             ll = split(l, "=")
             acell = parse(Float64,ll[end])*ANG2BOHR
             println("Read A = ", acell)
+            continue
+        end
+
+        # Try reading celldm(1)
+        if occursin("  celldm(1) =", l)
+            ll = split(l, "=")
+            celldm_1 = parse(Float64,ll[end])
+            println("Read celldm(1) = ", celldm_1)
             continue
         end
 
@@ -158,6 +170,14 @@ function PWSCFInput( filename::String )
             ll = split(l, " = ", keepempty=false)
             pseudo_dir = replace(replace(ll[end], "'" => ""), "\"" => "")
             println("Read pseudo_dir = ", pseudo_dir)
+            continue
+        end
+
+        # input_dft
+        if occursin("input_dft =", l)
+            ll = split(l, " = ", keepempty=false)
+            input_dft = replace(replace(ll[end], "'" => ""), "\"" => "")
+            println("Read input_dft = ", input_dft)
             continue
         end
 
@@ -336,7 +356,7 @@ function PWSCFInput( filename::String )
 
     # TODO: also check for other parameters: esp. celldm, etc
     # Some ibrav need other parameters beside acell
-    if (ibrav != 0) && (acell <= 0.0)
+    if (ibrav != 0) && (acell <= 0.0) && (celldm_1 <= 0)
         println("-------------------------------------------------------")
         println("CELL_PARAMETERS must be provided because ibrav = ", ibrav)
         println("-------------------------------------------------------")
@@ -363,8 +383,23 @@ function PWSCFInput( filename::String )
         LatVecs = acell*LatVecs
     end
 
-    if ibrav == 2
-        LatVecs = gen_lattice_fcc(acell)
+    # FIXME: Special case for commonly used ibrav 
+    if ibrav == 2 || ibrav == 1
+        if acell > 0.0
+            LatVecs = gen_lattice_fcc(acell)
+        elseif celldm_1 > 0.0
+            LatVecs = gen_lattice_fcc(celldm_1)
+        else
+            println("-------------------------------------------------------")
+            println("ibrav = ", ibrav, " but both acell and celldm_1 is are not valid")
+            println("acell = ", acell, " ibrav = ", ibrav)
+            println("-------------------------------------------------------")
+            error()
+        end
+    else
+        @info "--------------------"
+        @info "Please check LatVecs"
+        @info "--------------------"
     end
 
     if in_fraction
@@ -391,6 +426,6 @@ function PWSCFInput( filename::String )
     return PWSCFInput(
         atoms, 0.5*ecutwfc, 0.5*ecutrho, pspfiles,
         (meshk1, meshk2, meshk3),
-        nbnd, occupations, smearing, degauss
+        nbnd, occupations, smearing, degauss, input_dft
     )
 end
