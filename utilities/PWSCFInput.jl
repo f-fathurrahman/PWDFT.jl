@@ -1,4 +1,6 @@
-using Logging
+# using Logging
+# It seems that @info and other Logging functions does not play nicely with println?
+# The output also is not written to file when using tee
 
 struct PWSCFInput
     atoms::Atoms
@@ -11,6 +13,9 @@ struct PWSCFInput
     smearing::String
     degauss::Float64
     input_dft::String
+    nr1::Int64
+    nr2::Int64
+    nr3::Int64
 end
 
 
@@ -70,6 +75,13 @@ function PWSCFInput( filename::String )
     input_dft = ""
 
     IGNORED = ["", "\n", "/", "&ELECTRONS", "&CONTROL", "&SYSTEM"]
+
+    # Default values in PWDFT.jl
+    # If any of nr1, nr2, nr3 is zero then the FFT grid size
+    # will be determined automatically
+    nr1 = 0
+    nr2 = 0
+    nr3 = 0
 
 
     f = open(filename, "r")
@@ -159,6 +171,28 @@ function PWSCFInput( filename::String )
             ll = split(l, "=", keepempty=false)
             nbnd = parse(Int64, ll[end])
             println("nbnd = ", nbnd)
+            continue
+        end
+
+        # TODO: reduce redundant codes
+        if occursin("nr1 =", l)
+            ll = split(l, "=", keepempty=false)
+            nr1 = parse(Int64, ll[end])
+            println("nr1 = ", nbnd)
+            continue
+        end
+
+        if occursin("nr2 =", l)
+            ll = split(l, "=", keepempty=false)
+            nr2 = parse(Int64, ll[end])
+            println("nr2 = ", nbnd)
+            continue
+        end
+
+        if occursin("nr3 =", l)
+            ll = split(l, "=", keepempty=false)
+            nr3 = parse(Int64, ll[end])
+            println("nr3 = ", nbnd)
             continue
         end
 
@@ -313,7 +347,7 @@ function PWSCFInput( filename::String )
         end
 
         if !(l in IGNORED)
-            @info "Line = $(l) is not processed"
+            println("INFO: Line = $(l) is not processed")
         end
 
     end
@@ -325,9 +359,9 @@ function PWSCFInput( filename::String )
     end
 
 
-    println(species_symbols)
-    println(species_masses)
-    println(pspfiles)
+    println("species_symbols = ", species_symbols)
+    println("species_masses = ", species_masses)
+    println("pspfiles = ", pspfiles)
 
     #
     # Some sanity checks
@@ -383,8 +417,10 @@ function PWSCFInput( filename::String )
         LatVecs = acell*LatVecs
     end
 
-    # FIXME: Special case for commonly used ibrav 
-    if ibrav == 2 || ibrav == 1
+    # FIXME: Special case for commonly used ibrav
+    # TODO: Need better code for these 
+    if ibrav == 2
+        println("INFO: Generating FCC lattice vectors")
         if acell > 0.0
             LatVecs = gen_lattice_fcc(acell)
         elseif celldm_1 > 0.0
@@ -396,10 +432,23 @@ function PWSCFInput( filename::String )
             println("-------------------------------------------------------")
             error()
         end
+    elseif ibrav == 1
+        println("INFO: Generating SC lattice vectors")
+        if acell > 0.0
+            LatVecs = gen_lattice_sc(acell)
+        elseif celldm_1 > 0.0
+            LatVecs = gen_lattice_sc(celldm_1)
+        else
+            println("-------------------------------------------------------")
+            println("ibrav = ", ibrav, " but both acell and celldm_1 is are not valid")
+            println("acell = ", acell, " ibrav = ", ibrav)
+            println("-------------------------------------------------------")
+            error()
+        end
     else
-        @info "--------------------"
-        @info "Please check LatVecs"
-        @info "--------------------"
+        println("WARNING: --------------------")
+        println("WARNING: Please check LatVecs")
+        println("WARNING: --------------------")
     end
 
     if in_fraction
@@ -426,6 +475,7 @@ function PWSCFInput( filename::String )
     return PWSCFInput(
         atoms, 0.5*ecutwfc, 0.5*ecutrho, pspfiles,
         (meshk1, meshk2, meshk3),
-        nbnd, occupations, smearing, degauss, input_dft
+        nbnd, occupations, smearing, degauss, input_dft,
+        nr1, nr2, nr3
     )
 end
