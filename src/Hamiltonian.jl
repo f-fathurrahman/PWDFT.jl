@@ -248,6 +248,8 @@ function Hamiltonian(
         # Using Libxc is the default
         if xcfunc == "SCAN"
             xc_calc = LibxcXCCalculator(is_metagga=true, Npoints=Npoints, Nspin=Nspin)
+        elseif xcfunc == "PBE"
+            xc_calc = LibxcXCCalculator(x_id=101, c_id=130)
         else
             xc_calc = LibxcXCCalculator()
         end
