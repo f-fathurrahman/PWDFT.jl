@@ -90,11 +90,11 @@ function calc_epsxc_SCAN(
     xc_calc = Ham.xc_calc
     pw = Ham.pw
 
-    FUNC_IDX = 263 # mgga x scan
-    FUNC_IDC = 267 # mgga c scan
+    FUNC_ID_X = 263 # mgga x scan
+    FUNC_ID_C = 267 # mgga c scan
 
-    #FUNC_IDX = 202 # mgga x tpss
-    #FUNC_IDC = 231 # mgga c tpss
+    #FUNC_ID_X = 202 # mgga x tpss
+    #FUNC_ID_C = 231 # mgga c tpss
 
     Npoints = size(Rhoe)[1]
     Nspin = 1
@@ -115,25 +115,25 @@ function calc_epsxc_SCAN(
     lapl = zeros(Npoints)
 
     # apply threshold
-    #for ip in 1:Npoints
-    #    #Rhoe[ip] = max(Rhoe[ip], 1e-12)
-    #    Rhoe[ip] = abs(Rhoe[ip])
-    #    gRhoe2[ip] = max(gRhoe2[ip], 1e-24)
-    #    KEdens[ip] = max(KEdens[ip], 1e-12)
-    #end
+    for ip in 1:Npoints
+        Rhoe[ip] = max(Rhoe[ip], 1e-12)
+        #Rhoe[ip] = abs(Rhoe[ip])
+        gRhoe2[ip] = max(gRhoe2[ip], 1e-24)
+        KEdens[ip] = max(KEdens[ip], 1e-12)
+    end
 
     eps_x = zeros(Float64,Npoints)
     eps_c = zeros(Float64,Npoints)
 
     ptr = Libxc_xc_func_alloc()
     # exchange part
-    Libxc_xc_func_init(ptr, FUNC_IDX, Nspin)
+    Libxc_xc_func_init(ptr, FUNC_ID_X, Nspin)
     @views Libxc_xc_mgga_exc!(ptr, Npoints, Rhoe, gRhoe2, lapl, KEdens, eps_x)
     Libxc_xc_func_end(ptr)
 
     #
     # correlation part
-    Libxc_xc_func_init(ptr, FUNC_IDC, Nspin)
+    Libxc_xc_func_init(ptr, FUNC_ID_C, Nspin)
     @views Libxc_xc_mgga_exc!(ptr, Npoints, Rhoe, gRhoe2, lapl, KEdens, eps_c)
     Libxc_xc_func_end(ptr)
 
@@ -154,8 +154,8 @@ function calc_Vxc_SCAN!(
     xc_calc = Ham.xc_calc
     pw = Ham.pw
 
-    FUNC_IDX = 263 # mgga x scan
-    FUNC_IDC = 267 # mgga c scan
+    FUNC_ID_X = 263 # mgga x scan
+    FUNC_ID_C = 267 # mgga c scan
 
     #FUNC_IDX = 202 # mgga x tpss
     #FUNC_IDC = 231 # mgga c tpss
@@ -181,12 +181,12 @@ function calc_Vxc_SCAN!(
     Vlapl = zeros(Npoints)
 
     # apply threshold
-    #for ip in 1:Npoints
-    #    #Rhoe[ip] = max(Rhoe[ip], 1e-12)
+    for ip in 1:Npoints
+        Rhoe[ip] = max(Rhoe[ip], 1e-12)
     #    Rhoe[ip] = abs(Rhoe[ip])
-    #    gRhoe2[ip] = max(gRhoe2[ip], 1e-24)
-    #    KEdens[ip] = max(KEdens[ip], 1e-12)
-    #end
+        gRhoe2[ip] = max(gRhoe2[ip], 1e-24)
+        KEdens[ip] = max(KEdens[ip], 1e-12)
+    end
 
     V_x = zeros(Float64,Npoints)
     V_c = zeros(Float64,Npoints)
@@ -199,13 +199,13 @@ function calc_Vxc_SCAN!(
 
     ptr = Libxc_xc_func_alloc()
     # exchange part
-    Libxc_xc_func_init(ptr, FUNC_IDX, Nspin)
+    Libxc_xc_func_init(ptr, FUNC_ID_X, Nspin)
     Libxc_xc_mgga_vxc!(ptr, Npoints, Rhoe, gRhoe2, lapl, KEdens, V_x, Vg_x, Vlapl, Vtau_x)
     Libxc_xc_func_end(ptr)
 
     #
     # correlation part
-    Libxc_xc_func_init(ptr, FUNC_IDC, Nspin)
+    Libxc_xc_func_init(ptr, FUNC_ID_C, Nspin)
     Libxc_xc_mgga_vxc!(ptr, Npoints, Rhoe, gRhoe2, lapl, KEdens, V_c, Vg_c, Vlapl, Vtau_c)
     Libxc_xc_func_end(ptr)
 
