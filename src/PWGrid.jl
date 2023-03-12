@@ -356,7 +356,7 @@ end
 # Some differential operators
 #-------------------------------------------------------------
 
-function op_nabla( pw::PWGrid, Rhoe::Array{Float64,1} )
+function op_nabla( pw::PWGrid, Rhoe::AbstractVector{Float64} )
     G = pw.gvec.G
     Ng = pw.gvec.Ng
     idx_g2r = pw.gvec.idx_g2r

@@ -124,7 +124,8 @@ function electrons_scf!(
         # Check convergence here? (using diffRhoe)
 
         #
-        Ehartree, Exc, Evtxc = update_from_rhoe!(Ham, Rhoe)
+        Ehartree, Exc, Evtxc = update_from_rhoe!(Ham, psiks, Rhoe)
+        println("Evtxc = ", Evtxc)
 
         descf = -sum( (Rhoe_in[:,1] .- Rhoe[:,1]).*(Vhartree + Vxc[:,1]) )*dVol
 
@@ -192,7 +193,7 @@ function _prepare_scf!(Ham, psiks)
     # Initial density
     Rhoe, RhoeG = atomic_rho_g(Ham)
     # Update the potentials
-    Ehartree, Exc, Evtxc = update_from_rhoe!( Ham, Rhoe, RhoeG )
+    Ehartree, Exc, Evtxc = update_from_rhoe!( Ham, psiks, Rhoe, RhoeG )
     #
     # Reorthonormalize with S
     # FIXME: need to be included in rand_Blochwavefunc)

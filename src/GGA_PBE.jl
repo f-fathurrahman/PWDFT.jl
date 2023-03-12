@@ -1,6 +1,79 @@
 using Libxc
 
-# TODO cumulate spin 1,2 as one function or dispatch by julia's type system
+# TODO: cumulate spin 1,2 as one function or dispatch by julia's type system
+
+
+
+function calc_epsxc_Vxc_PBE!(
+    Ham,
+    Rhoe::AbstractVector{Float64},
+    epsxc::AbstractVector{Float64},
+    Vxc::AbstractVector{Float64}
+)
+
+    pw = Ham.pw
+    xc_calc = Ham.xc_calc
+    # TODO: Use x_id and c_id from xc_calc
+
+    Npoints = size(Rhoe, 1)
+    Nspin = 1
+
+    # calculate gRhoe2
+    gRhoe = op_nabla( pw, Rhoe )
+    gRhoe2 = zeros( Float64, Npoints )
+    for ip in 1:Npoints
+        gRhoe2[ip] = gRhoe[1,ip]^2 + gRhoe[2,ip]^2 + gRhoe[3,ip]^2
+    end
+
+    eps_x = zeros(Float64,Npoints)
+    eps_c = zeros(Float64,Npoints)
+
+    V_x = zeros(Float64,Npoints)
+    V_c = zeros(Float64,Npoints)
+ 
+    Vg_x = zeros(Float64,Npoints)
+    Vg_c = zeros(Float64,Npoints)
+ 
+    ptr = Libxc_xc_func_alloc()
+    # exchange part
+    Libxc_xc_func_init(ptr, 101, Nspin)
+    Libxc_xc_gga_exc_vxc!(ptr, Npoints, Rhoe, gRhoe2, eps_x, V_x, Vg_x)
+    Libxc_xc_func_end(ptr)
+
+    #
+    # correlation part
+    Libxc_xc_func_init(ptr, 130, Nspin)
+    Libxc_xc_gga_exc_vxc!(ptr, Npoints, Rhoe, gRhoe2, eps_c, V_c, Vg_c)
+    Libxc_xc_func_end(ptr)
+
+    #
+    Libxc_xc_func_free(ptr)
+
+    @views epsxc[:] .= eps_x[:] .+ eps_c[:]
+
+    @views Vxc[:] .= V_x[:] .+ V_c[:] # update V_xc (the output)
+
+    # gradient correction
+    Vg_xc = Vg_x + Vg_c
+    hx = zeros(ComplexF64, pw.Ns)
+    hy = zeros(ComplexF64, pw.Ns)
+    hz = zeros(ComplexF64, pw.Ns)
+    for ip in 1:Npoints # using linear indexing
+        hx[ip] = Vg_xc[ip] * gRhoe[1,ip]
+        hy[ip] = Vg_xc[ip] * gRhoe[2,ip]
+        hz[ip] = Vg_xc[ip] * gRhoe[3,ip]
+    end
+    # div ( vgrho * gRhoe )
+    divh = op_nabla_dot( pw, hx, hy, hz )
+    #
+    for ip in 1:Npoints
+        Vxc[ip] = Vxc[ip] - 2.0*divh[ip]
+    end
+
+    return
+end
+
+
 
 function calc_epsxc_PBE( xc_calc::LibxcXCCalculator, pw, Rhoe::Array{Float64,1} )
 

@@ -1,3 +1,29 @@
+function update_from_rhoe!(Ham, psiks::BlochWavefunc, Rhoe)
+    # RhoeG is not given we need to calculate it
+    RhoeG = _rhoeG_from_rhoe(Ham, Rhoe)
+    #
+    return update_from_rhoe!(Ham, psiks, Rhoe, RhoeG)
+end
+
+function _rhoeG_from_rhoe(Ham, Rhoe)
+    Nspin = size(Rhoe,2)
+    Npoints = size(Rhoe,1)
+    RhoeG = zeros(ComplexF64, Npoints, Nspin)
+    ctmp = zeros(ComplexF64, Npoints)
+    for ispin in 1:Nspin
+        ctmp[:] = Rhoe[:,1]
+        #
+        R_to_G!(Ham.pw, ctmp) # FIXME: add method
+        RhoeG[:,1] = ctmp[:]/Npoints
+        # Need to be careful about the normalization
+        # Check the charge in G-space
+        charge = RhoeG[1,1]*Ham.pw.CellVolume
+        # println("Check charge from RhoeG: ", charge)    
+    end
+    return RhoeG
+end
+
+#=
 function update_from_rhoe!(Ham, Rhoe)
 
     Nspin = size(Rhoe,2)
@@ -20,8 +46,42 @@ function update_from_rhoe!(Ham, Rhoe)
     #
     return update_from_rhoe!(Ham, Rhoe, RhoeG)
 end
+=#
+
+# Can be used for metaGGA
+function update_from_rhoe!(Ham, psiks, Rhoe, RhoeG)
+
+    Ham.rhoe[:,:] = Rhoe[:,:] # Need copy?
+
+    # Save old potential
+    Ham.potentials.TotalOld[:,:] .= Ham.potentials.Total[:,:]
+
+    # Reset total effective potential to zero
+    fill!(Ham.potentials.Total, 0.0)
+
+    # FIXME: also set Ham.potentials.XC and Ham.potentials.Hartree
+    Exc, Evtxc = _add_V_xc!( Ham, psiks, Rhoe, RhoeG )
+    Ehartree = _add_V_Hartree!( Ham, Rhoe, RhoeG )
+
+    # Add V_Ps_loc contribution
+    Nspin = Ham.electrons.Nspin
+    for ispin in 1:Nspin
+        Ham.potentials.Total[:,ispin] .+= Ham.potentials.Ps_loc[:]
+    end
+
+    if Ham.pw.using_dual_grid
+        dense_to_smooth!( Ham.pw, Ham.potentials.Total, Ham.potentials.TotalSmooth )
+    end
+    # XXX: Also need to interpolate xc_calc.Vtau or kedtau in case of USPP
+
+    # Also update nonlocal potential coefficients here
+    calc_newDeeq!( Ham )
+
+    return Ehartree, Exc, Evtxc # energies?
+end
 
 
+#=
 function update_from_rhoe!(Ham, Rhoe, RhoeG)
 
     Ham.rhoe[:,:] = Rhoe[:,:] # Need copy?
@@ -53,9 +113,68 @@ function update_from_rhoe!(Ham, Rhoe, RhoeG)
 
     return Ehartree, Exc, Evtxc # energies?
 end
+=#
+
+
+# Can be used for metaGGA functionals
+function _add_V_xc!(Ham, psiks, Rhoe, RhoeG)
+
+    Nspin = Ham.electrons.Nspin
+    
+    @assert Nspin == 1
+
+    Npoints = size(Rhoe, 1)
+    epsxc = zeros(Float64, Npoints)
+    Vxc = Ham.potentials.XC
+
+    dVol = Ham.pw.CellVolume / Npoints
+
+    # XC potential
+    if Ham.rhoe_core == nothing
+        #
+        # No core-correction
+        #
+        if Ham.xcfunc == "SCAN"
+
+            @views calc_epsxc_Vxc_SCAN!( Ham, psiks, Rhoe[:,1], epsxc, Vxc[:,1] )
+            # Note that we are using the inplace version of calc_epsxc_Vxc_SCAN
+        
+        elseif Ham.xcfunc == "PBE"
+        
+            @views calc_epsxc_Vxc_PBE!( Ham, Rhoe[:,1], epsxc, Vxc[:,1] )
+            println("sum Vxc ater calling Libxc = ", sum(Vxc))
+        
+        else
+            # VWN
+            epsxc[:], Vxc[:,1] = calc_epsxc_Vxc_VWN( Ham.xc_calc, Rhoe[:,1] )
+        end
+        Exc = sum(epsxc .* Rhoe[:,1])*dVol
+    else
+        #
+        # Using core-correction
+        #
+        if xcfunc == "VWN"
+            epsxc[:], Vxc[:,1] = calc_epsxc_Vxc_VWN( Ham.xc_calc, Rhoe[:,1] + Ham.rhoe_core )
+            Exc = sum(epsxc .* (Rhoe[:,1] + Ham.rhoe_core))*dVol
+        else
+            println("Other than VWN, core correction is not supported")
+            error()
+        end
+    end
+
+    println("sum abs Vxc in _add_V_xc = ", sum(abs.(Vxc)))
+    # Also calculate Evtxc
+    Evtxc = sum(Vxc[:,1] .* Rhoe)*dVol # Evtxc does not include rhoe_core
+    println("This is Evtxc in _add_V_xc = ", Evtxc)
+
+    Ham.potentials.Total[:,1] += Vxc[:,1] # Update
+
+    return Exc, Evtxc
+end
 
 
 
+#=
 function _add_V_xc!(Ham, Rhoe, RhoeG)
 
     Nspin = Ham.electrons.Nspin
@@ -85,6 +204,7 @@ function _add_V_xc!(Ham, Rhoe, RhoeG)
 
     return Exc, Evtxc
 end
+=#
 
 
 # Note that RhoeG is already in FFT grid
