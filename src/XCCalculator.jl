@@ -9,19 +9,62 @@ end
 struct LibxcXCCalculator <: AbstractXCCalculator
     x_id::Int64
     c_id::Int64
-    Vlapl::Array{Float64,2}
-    Vtau::Array{Float64,2}
+    need_gradient::Bool # of electron density
+    need_KE_dens::Bool
+    need_laplacian::Bool # of electron density
+    Vlapl::Union{Nothing,Array{Float64,2}}
+    Vtau::Union{Nothing,Array{Float64,2}}
 end
 
-function LibxcXCCalculator( ; x_id=1, c_id=7, is_metagga=false, Npoints=0, Nspin=1 )
-    if is_metagga
+"""
+For now, is_gga and is_metagga need to be set manually
+Ideally it should be inferred from x_id and c_id
+
+The current behavior of this constructor:
+
+- is_gga=false and is_metagga=false, then c_id=1 and x_id=7
+
+- is_gga=true and is_metagga=false, then x_id=101 and c_id=130
+
+- is_metagga=true and is_gga=false, then x_id=263 and c_id=267
+
+Note that we x_id and c_id are not used.
+"""
+function LibxcXCCalculator( ; x_id=1, c_id=7, is_gga=false, is_metagga=false, Npoints=0, Nspin=1 )
+    
+    if is_metagga && !is_gga
+
         @assert Npoints > 0
-        Vlapl = zeros(Npoints,Nspin)
+        Vlapl = nothing # Not needed for SCAN
         Vtau = zeros(Npoints,Nspin)
-        return LibxcXCCalculator(263, 267, Vlapl, Vtau) # XXX use SCAN
+        need_gradient = true
+        need_KE_dens = true
+        need_laplacian = false # for SCAN
+        x_id = 263
+        c_id = 267
+        return LibxcXCCalculator(x_id, c_id, need_gradient, need_KE_dens, need_laplacian, Vlapl, Vtau)
+    
+    elseif is_gga && !is_metagga
+
+        Vlapl = nothing
+        Vtau = nothing
+        need_gradient = true
+        need_KE_dens = false
+        need_laplacian = false
+        x_id = 101
+        c_id = 130
+        return LibxcXCCalculator(x_id, c_id, need_gradient, need_KE_dens, need_laplacian, Vlapl, Vtau)
+
     else
-        return LibxcXCCalculator(x_id, c_id, zeros(1,1),zeros(1,1))
+        
+        Vlapl = nothing
+        Vtau = nothing
+        need_gradient = false
+        need_KE_dens = false
+        need_laplacian = false
+        return LibxcXCCalculator(x_id, c_id, need_gradient, need_KE_dens, need_laplacian, Vlapl, Vtau)
+
     end
+
 end
 
-# These types should contain xcfunc field
