@@ -49,6 +49,8 @@ function op_Vtau!( Ham::Hamiltonian,
     idx_gw2g = pw.gvecw.idx_gw2g[ik]
     Npoints = prod(pw.Ns)
     Nstates = size(psi,2)
+    k = pw.gvecw.kpoints.k
+
     Vtau = Ham.xc_calc.Vtau
 
     # use linear indexing
@@ -60,12 +62,15 @@ function op_Vtau!( Ham::Hamiltonian,
         fill!(Cx, 0.0 + im*0.0)
         fill!(Cy, 0.0 + im*0.0)
         fill!(Cz, 0.0 + im*0.0)
-        for igw = 1:Ngw
+        for igw in 1:Ngw
             ig = idx_gw2g[igw]
             ip = idx_gw2r[igw]
-            Cx[ip] = im*G[1,ig]*psi[igw,ist]
-            Cy[ip] = im*G[2,ig]*psi[igw,ist]
-            Cz[ip] = im*G[3,ig]*psi[igw,ist]
+            Gk1 = G[1,ig] + k[1,ik]
+            Gk2 = G[2,ig] + k[2,ik]
+            Gk3 = G[3,ig] + k[3,ik]
+            Cx[ip] = im*Gk1*psi[igw,ist]
+            Cy[ip] = im*Gk2*psi[igw,ist]
+            Cz[ip] = im*Gk3*psi[igw,ist]
         end
         G_to_R!(pw, Cx)
         G_to_R!(pw, Cy)
@@ -85,7 +90,10 @@ function op_Vtau!( Ham::Hamiltonian,
         for igw in 1:Ngw
             ig = idx_gw2g[igw]
             ip = idx_gw2r[igw]
-            Vpsi[igw,ist] = Vpsi[igw,ist] - 0.5*im*( G[1,ig]*Cx[ip] + G[2,ig]*Cy[ip] + G[3,ig]*Cz[ip] )
+            Gk1 = G[1,ig] + k[1,ik]
+            Gk2 = G[2,ig] + k[2,ik]
+            Gk3 = G[3,ig] + k[3,ik]
+            Vpsi[igw,ist] = Vpsi[igw,ist] - 0.5*im*( Gk1*Cx[ip] + Gk2*Cy[ip] + Gk3*Cz[ip] )
         end
     end
     return 
