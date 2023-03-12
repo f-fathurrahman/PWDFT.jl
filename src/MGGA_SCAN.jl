@@ -88,9 +88,9 @@ end
 function calc_epsxc_Vxc_SCAN!(
     Ham::Hamiltonian,
     psiks::BlochWavefunc,
-    Rhoe::Array{Float64,1},
-    epsxc::Array{Float64,1},
-    V_xc::Array{Float64,1}
+    Rhoe::AbstractVector{Float64},
+    epsxc::AbstractVector{Float64},
+    V_xc::AbstractVector{Float64}
 )
 
     fill!(epsxc, 0.0)
