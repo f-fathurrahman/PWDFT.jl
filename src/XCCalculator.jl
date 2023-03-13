@@ -9,6 +9,7 @@ end
 struct LibxcXCCalculator <: AbstractXCCalculator
     x_id::Int64
     c_id::Int64
+    family::Symbol
     need_gradient::Bool # of electron density
     need_KE_dens::Bool
     need_laplacian::Bool # of electron density
@@ -42,7 +43,9 @@ function LibxcXCCalculator( ; x_id=1, c_id=7, is_gga=false, is_metagga=false, Np
         need_laplacian = false # for SCAN
         x_id = 263
         c_id = 267
-        return LibxcXCCalculator(x_id, c_id, need_gradient, need_KE_dens, need_laplacian, Vlapl, Vtau)
+        family = :metaGGA
+        return LibxcXCCalculator(x_id, c_id, family,
+            need_gradient, need_KE_dens, need_laplacian, Vlapl, Vtau)
     
     elseif is_gga && !is_metagga
 
@@ -53,7 +56,9 @@ function LibxcXCCalculator( ; x_id=1, c_id=7, is_gga=false, is_metagga=false, Np
         need_laplacian = false
         x_id = 101
         c_id = 130
-        return LibxcXCCalculator(x_id, c_id, need_gradient, need_KE_dens, need_laplacian, Vlapl, Vtau)
+        family = :GGA
+        return LibxcXCCalculator(x_id, c_id, family,
+            need_gradient, need_KE_dens, need_laplacian, Vlapl, Vtau)
 
     else
         
@@ -62,7 +67,9 @@ function LibxcXCCalculator( ; x_id=1, c_id=7, is_gga=false, is_metagga=false, Np
         need_gradient = false
         need_KE_dens = false
         need_laplacian = false
-        return LibxcXCCalculator(x_id, c_id, need_gradient, need_KE_dens, need_laplacian, Vlapl, Vtau)
+        family = :LDA
+        return LibxcXCCalculator(x_id, c_id, family,
+            need_gradient, need_KE_dens, need_laplacian, Vlapl, Vtau)
 
     end
 
