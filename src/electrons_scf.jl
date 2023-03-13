@@ -74,10 +74,22 @@ function electrons_scf!(
     Etot = 0.0
     mTS = 0.0
 
+    xc_calc = Ham.xc_calc
+    if xc_calc.family == :metaGGA
+        KEdens = zeros(Float64, Npoints, Nspin)
+        KEdens_in = zeros(Float64, Npoints, Nspin)  # ????
+    end
+
     for iterSCF in 1:NiterMax
         
         @views Vin[:] .= Vhartree[:] + Vxc[:,1]
         deband_hwf = -sum(Vin .* Rhoe[:,1])*dVol
+        #
+        if xc_calc.family == :metaGGA
+            # this is not efficient as it recalculates
+            calc_KEdens!(Ham, psiks, KEdens)
+            deband_hwf -= sum(xc_calc.Vtau .* KEdens[:,1])*dVol
+        end
 
         # Copy input rhoe
         @views Rhoe_in[:,:] .= Rhoe[:,:]
@@ -110,7 +122,13 @@ function electrons_scf!(
 
         # Calculate deband (using new Rhoe)
         @views Vin[:] .= Vhartree[:] + Vxc[:,1]
-        deband = -sum(Vin .* Rhoe[:,1])*dVol
+        deband = -sum(Vin .* Rhoe[:,1])*dVol # TODO: use dot instead?
+        #
+        if xc_calc.family == :metaGGA
+            # this is not efficient as it recalculates
+            calc_KEdens!(Ham, psiks, KEdens)
+            deband -= sum(xc_calc.Vtau .* KEdens[:,1])*dVol
+        end
 
         #
         # Mix the density
@@ -125,9 +143,10 @@ function electrons_scf!(
 
         #
         Ehartree, Exc, Evtxc = update_from_rhoe!(Ham, psiks, Rhoe)
-        println("Evtxc = ", Evtxc)
+        #println("Evtxc = ", Evtxc)
 
         descf = -sum( (Rhoe_in[:,1] .- Rhoe[:,1]).*(Vhartree + Vxc[:,1]) )*dVol
+        # metagga contribution is not included in descf yet !!!
 
         Etot = Eband + deband + Ehartree + Exc + Ham.energies.NN + descf + mTS
     

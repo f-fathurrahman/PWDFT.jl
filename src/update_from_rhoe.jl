@@ -83,7 +83,6 @@ function _add_V_xc!(Ham, psiks, Rhoe, RhoeG)
         elseif Ham.xcfunc == "PBE"
         
             @views calc_epsxc_Vxc_PBE!( Ham, Rhoe[:,1], epsxc, Vxc[:,1] )
-            println("sum Vxc ater calling Libxc = ", sum(Vxc))
         
         else
             # VWN
@@ -103,10 +102,8 @@ function _add_V_xc!(Ham, psiks, Rhoe, RhoeG)
         end
     end
 
-    println("sum abs Vxc in _add_V_xc = ", sum(abs.(Vxc)))
     # Also calculate Evtxc
     Evtxc = sum(Vxc[:,1] .* Rhoe)*dVol # Evtxc does not include rhoe_core
-    println("This is Evtxc in _add_V_xc = ", Evtxc)
 
     # XXX: Evtxc is vtxc in QE, it seems that is is not used for total energy calculation
 
