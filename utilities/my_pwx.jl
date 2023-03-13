@@ -27,9 +27,9 @@ function test_main()
         kT = pwinput.degauss*0.5 # convert from Ry to Ha
     end
 
-    # electrons_scf!(Ham, psiks, NiterMax=100, use_smearing=use_smearing, kT=kT)
+    electrons_scf!(Ham, psiks, NiterMax=100, use_smearing=use_smearing, kT=kT)
 
-
+#=
     # Not yet working for smearing
     KS_solve_Emin_PCG!(Ham, psiks, NiterMax=100)
     energies = Ham.energies
@@ -58,7 +58,7 @@ function test_main()
 
     E_total = E_elec + energies.NN
     @printf("! Total = %18.10f Ry\n", 2*E_total)
-
+=#
 
 end
 
