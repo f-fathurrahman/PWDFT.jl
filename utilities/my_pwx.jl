@@ -10,8 +10,8 @@ using PWDFT
 include("PWSCFInput.jl")
 include("init_Ham_from_pwinput.jl")
 
-function test_main()
-    Ham, pwinput = init_Ham_from_pwinput()
+function test_main(; filename=nothing)
+    Ham, pwinput = init_Ham_from_pwinput(filename=filename)
 
     write_xsf("ATOMS_from_pwinput.xsf", Ham.atoms)
     println(Ham)
@@ -27,7 +27,7 @@ function test_main()
         kT = pwinput.degauss*0.5 # convert from Ry to Ha
     end
 
-    electrons_scf!(Ham, psiks, NiterMax=100, use_smearing=use_smearing, kT=kT)
+    electrons_scf!(Ham, psiks, NiterMax=100, use_smearing=use_smearing, kT=kT, betamix=0.1)
 
 #=
     # Not yet working for smearing
@@ -62,4 +62,4 @@ function test_main()
 
 end
 
-test_main()
+#test_main()
