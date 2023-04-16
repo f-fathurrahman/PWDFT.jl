@@ -13,7 +13,7 @@ struct LibxcXCCalculator <: AbstractXCCalculator
     need_gradient::Bool # of electron density
     need_KE_dens::Bool
     need_laplacian::Bool # of electron density
-    Vlapl::Union{Nothing,Array{Float64,2}}
+    Vlapl::Union{Nothing,Array{Float64,2}}  # this might be better to reside in Potentials
     Vtau::Union{Nothing,Array{Float64,2}}
 end
 
