@@ -9,11 +9,10 @@ mutable struct Hamiltonian{Txc<:AbstractXCCalculator,Tpsp<:AbstractPsPot}
     sym_info::SymmetryInfo
     rhoe_symmetrizer::RhoeSymmetrizer
     pspots::Vector{Tpsp}
-    pspotNL::Union{PsPotNL,PsPotNL_UPF}
+    pspotNL::Union{PsPotNL,PsPotNL_UPF} # TODO: rename or add alias: PsPotNL to PsPotNL_GTH
     xcfunc::String
     xc_calc::Txc
     #xc_calc::Union{LibxcXCCalculator,XCCalculator}
-    #xc_calc::AbstractXCCalculator
     ik::Int64   # current kpoint index
     ispin::Int64 # current spin index
 end
@@ -63,6 +62,9 @@ function Hamiltonian(
     Nstates::Int64=-1,
     use_symmetry::Bool=true
 )
+
+    # FIXME: This constructor is type-unstable (?)
+
 
     if use_symmetry == false
         sym_info = SymmetryInfo()
