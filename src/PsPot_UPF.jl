@@ -21,6 +21,10 @@ mutable struct PsPot_UPF <: AbstractPsPot
     Nr::Int64
     r::Array{Float64,1}
     rab::Array{Float64,1}
+    dx::Float64
+    rmin::Float64
+    rmax::Float64
+    zmesh::Float64
     #
     V_local::Array{Float64,1}
     # Projectors
@@ -119,6 +123,29 @@ function PsPot_UPF( upf_file::String )
     pp_r_str = LightXML.content(pp_r[1])
     pp_r_str = replace(pp_r_str, "\n" => " ")
     spl_str = split(pp_r_str, keepempty=false)
+
+    # Ugh... some UPF does not have these variables
+    # Example: ONCV pseudopotentials
+    dx = 0.0
+    xmin = 0.0
+    rmax = 0.0
+    zmesh = 0.0
+    try
+        dx = parse(Float64, LightXML.attributes_dict(pp_mesh[1])["dx"])
+        xmin = parse(Float64, LightXML.attributes_dict(pp_mesh[1])["xmin"])
+        rmax = parse(Float64, LightXML.attributes_dict(pp_mesh[1])["rmax"])
+        zmesh = parse(Float64, LightXML.attributes_dict(pp_mesh[1])["zmesh"])
+    catch exception
+        #println("Error reading radial grid parameters")
+        dx = 0.0
+        xmin = 0.0
+        rmax = 0.0
+        zmesh = 0.0
+    end
+    # These are used in PAW cases
+    # I assume that these variables are available in the PAW pseudotentials
+    # TODO: Probably only read these in case of PAW pseudopotential
+
 
     @assert(length(spl_str) == Nr)
 
@@ -292,7 +319,8 @@ function PsPot_UPF( upf_file::String )
 
     return PsPot_UPF(upf_file, atsymb, zval,
         is_nlcc, is_ultrasoft, is_paw,
-        Nr, r, rab, V_local, Nproj, proj_l, rcut_l, kkbeta, proj_func, Dion, prj_interp_table,
+        Nr, r, rab, dx, xmin, rmax, zmesh,
+        V_local, Nproj, proj_l, rcut_l, kkbeta, proj_func, Dion, prj_interp_table,
         h, lmax, Nproj_l,
         lmax_rho,
         rho_atc,
