@@ -10,7 +10,7 @@ using PWDFT
 include("PWSCFInput.jl")
 include("init_Ham_from_pwinput.jl")
 
-function test_main(; filename=nothing)
+function my_pwx(; filename=nothing)
     Ham, pwinput = init_Ham_from_pwinput(filename=filename)
 
     write_xsf("ATOMS_from_pwinput.xsf", Ham.atoms)
@@ -62,4 +62,4 @@ function test_main(; filename=nothing)
 
 end
 
-#test_main()
+my_pwx()
