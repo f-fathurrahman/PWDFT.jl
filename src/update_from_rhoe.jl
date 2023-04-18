@@ -93,11 +93,11 @@ function _add_V_xc!(Ham, psiks, Rhoe, RhoeG)
         #
         # Using core-correction
         #
-        if xcfunc == "VWN"
+        if Ham.xcfunc == "VWN"
             epsxc[:], Vxc[:,1] = calc_epsxc_Vxc_VWN( Ham.xc_calc, Rhoe[:,1] + Ham.rhoe_core )
             Exc = sum(epsxc .* (Rhoe[:,1] + Ham.rhoe_core))*dVol
         else
-            println("Other than VWN, core correction is not supported")
+            println("Other than VWN, core correction is yet not supported")
             error()
         end
     end
