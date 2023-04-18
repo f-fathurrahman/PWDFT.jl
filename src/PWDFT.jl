@@ -162,6 +162,10 @@ export Potentials
 include("PsPotNL.jl")
 export PsPotNL, calc_betaNL_psi
 
+include("PAWAtomicSphere.jl")
+include("PAWVariables.jl")
+export PAWAtomicSphere, PAWVariables
+
 include("qvan2.jl")
 include("PsPotNL_UPF.jl")
 export PsPotNL_UPF, qvan2!

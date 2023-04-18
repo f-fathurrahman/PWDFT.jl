@@ -22,6 +22,8 @@ mutable struct PsPotNL_UPF
     qq_at::Union{Array{Float64,3},Nothing}
     betaNL::Vector{Matrix{ComplexF64}}
     are_ultrasoft::Vector{Bool}
+    are_paw::Vector{Bool}
+    paw::Union{Nothing,PAWVariables}
 end
 
 
@@ -162,13 +164,28 @@ function PsPotNL_UPF(
         end
     #end
 
+
+    are_paw = zeros(Bool,Nspecies)
+    for isp in 1:Nspecies
+        are_paw[isp] = pspots[isp].is_paw
+    end
+    # FIXME: We do not consider mixing PAW and USPP
+    if all(are_paw)
+        paw = PAWVariables(atoms, pspots, nhm, is_gga=false, Nspin=Nspin)
+    else
+        paw = nothing
+    end
+
+
     return PsPotNL_UPF(
         lmaxx, lqmax, lmaxkb,
         nh, nhm, NbetaNL, ap, lpx, lpl,
         indv, nhtol, nhtolm, ijtoh, indv_ijkb0,
         Dvan, Deeq, qradG, qq_nt, qq_at,
         betaNL,
-        are_ultrasoft
+        are_ultrasoft,
+        are_paw,
+        paw
     )
 
 end
