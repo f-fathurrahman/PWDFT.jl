@@ -221,12 +221,26 @@ function PsPot_UPF( upf_file::String )
             proj_func[i,iprj] = parse(Float64,spl_str[i])*0.5 # Convert to Hartree
         end
     end
+
+    # Read PAW early
+    if is_paw
+        paw_data = PAWData_UPF(xroot, r, lmax, Nproj)
+    else
+        paw_data = nothing
+    end
+
     # Used in USPP, kkbeta: for obtaining maximum rcut
     if length(kbeta) > 0
         kkbeta = maximum(kbeta)
     else
         kkbeta = 0
     end
+
+    # For PAW, augmentation charge may extend a bit further:
+    if is_paw
+        kkbeta = max(kkbeta, paw_data.iraug)
+    end
+
 
     #
     # Dion matrix elements
@@ -303,12 +317,6 @@ function PsPot_UPF( upf_file::String )
     spl_str = split(pp_rhoatom_str, keepempty=false)
     for i in 1:Nr
         rhoatom[i] = parse(Float64, spl_str[i])
-    end
-
-    if is_paw
-        paw_data = PAWData_UPF(xroot, r, lmax, Nproj)
-    else
-        paw_data = nothing
     end
 
     LightXML.free(xdoc)

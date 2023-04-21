@@ -48,7 +48,7 @@ function PAWVariables(atoms::Atoms, pspots, nhm::Int64; is_gga=false, Nspin=1)
 
     end
 
-    nhmm = floor(Int64, nhm*(nhm+1))
+    nhmm = floor(Int64, nhm*(nhm+1)/2)
     ddd_paw = zeros(Float64, nhmm, atoms.Natoms, Nspin)
 
     return PAWVariables(
