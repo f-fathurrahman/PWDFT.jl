@@ -5,8 +5,13 @@ struct PAWVariables
     radial_grad_style::Int64 # = 0 or 1, algorithm to use for d/dr
     spheres::Vector{PAWAtomicSphere}
     ddd_paw::Array{Float64,3}
+    total_core_energy::Float64
 end
 
+
+#
+# Adapted from paw_init.f90 of QE
+#
 function PAWVariables(atoms::Atoms, pspots, nhm::Int64; is_gga=false, Nspin=1)
     lm_fact = 3
     lm_fact_x = 3
@@ -51,9 +56,22 @@ function PAWVariables(atoms::Atoms, pspots, nhm::Int64; is_gga=false, Nspin=1)
     nhmm = floor(Int64, nhm*(nhm+1)/2)
     ddd_paw = zeros(Float64, nhmm, atoms.Natoms, Nspin)
 
+    # determine constant to constant to be added to total energy
+    # to get all-electron energy 
+    total_core_energy = 0.0
+    Natoms = atoms.Natoms
+    atm2species = atoms.atm2species
+    for ia in 1:Natoms
+        isp = atm2species[ia]
+        if pspots[isp].is_paw
+            total_core_energy += pspots[isp].paw_data.core_energy
+        end
+    end
+    println("total_core_energy = ", total_core_energy)
+
     return PAWVariables(
         lm_fact, lm_fact_x, xlm, radial_grad_style,
-        paw_spheres, ddd_paw
+        paw_spheres, ddd_paw, total_core_energy
     )
 
 end

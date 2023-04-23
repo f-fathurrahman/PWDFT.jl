@@ -101,6 +101,7 @@ function PAWData_UPF(xroot, r::Vector{Float64}, lmax::Int64, Nproj::Int64)
     core_energy = 0.0
     try
         core_energy = parse(Float64, LightXML.attributes_dict(pp_paw[1])["core_energy"])
+        core_energy *= 0.5 # don't forget to convert to Ha
     catch e
         println("Cannot read PP_PAW: core_energy")
         println("core_energy is set to 0")
