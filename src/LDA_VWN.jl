@@ -9,18 +9,19 @@ function calc_epsxc_Vxc_VWN(
     end
 end
 
-function calc_epsxc_Vxc_VWN(
+function calc_epsxc_Vxc_VWN!(
     xc_calc::LibxcXCCalculator,
-    Rhoe::AbstractVector{Float64}
+    Rhoe::AbstractVector{Float64},
+    epsxc::AbstractVector{Float64},
+    Vxc::AbstractVector{Float64}
 )
 
     Npoints = size(Rhoe, 1)
     Nspin = 1
-    eps_x = zeros(Float64,Npoints)
-    eps_c = zeros(Float64,Npoints)
-    v_x = zeros(Float64,Npoints)
-    v_c = zeros(Float64,Npoints)
-
+    eps_x = zeros(Float64, Npoints)
+    eps_c = zeros(Float64, Npoints)
+    v_x = zeros(Float64, Npoints)
+    v_c = zeros(Float64, Npoints)
 
     ptr = Libxc_xc_func_alloc()
     # exchange part
@@ -28,19 +29,31 @@ function calc_epsxc_Vxc_VWN(
     Libxc_xc_func_set_dens_threshold(ptr, 1e-10)
     Libxc_xc_lda_exc_vxc!(ptr, Npoints, Rhoe, eps_x, v_x)
     Libxc_xc_func_end(ptr)
-
     #
     # correlation part
     Libxc_xc_func_init(ptr, xc_calc.c_id, Nspin) # LDA_C_VWN
     Libxc_xc_func_set_dens_threshold(ptr, 1e-10)
     Libxc_xc_lda_exc_vxc!(ptr, Npoints, Rhoe, eps_c, v_c)
     Libxc_xc_func_end(ptr)
-
     #
     Libxc_xc_func_free(ptr)
 
-    return eps_x + eps_c, v_x + v_c
+    epsxc[:] .= eps_x[:] .+ eps_c[:]
+    Vxc[:] .= v_x[:] .+ v_c[:]
 
+    return
+end
+
+
+function calc_epsxc_Vxc_VWN(
+    xc_calc::LibxcXCCalculator,
+    Rhoe::AbstractVector{Float64}
+)
+    Npoints = size(Rhoe, 1)
+    epsxc = zeros(Float64, Npoints)
+    Vxc = zeros(Float64, Npoints)
+    calc_epsxc_Vxc_VWN!( xc_calc, Rhoe, epsxc, Vxc )
+    return epsxc, Vxc
 end
 
 
