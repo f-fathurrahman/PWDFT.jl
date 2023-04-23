@@ -217,6 +217,32 @@ include("gamma_only/op_V_loc_gamma.jl")
 include("gamma_only/op_V_Ps_nloc_gamma.jl")
 include("gamma_only/op_H_gamma.jl")
 
+include("PAW_symmetrize.jl")
+export PAW_symmetrize!
+
+#
+# Stuff related to PAW_potential
+#
+include("PAW_atomic_becsum.jl")
+export PAW_atomic_becsum
+
+include("PAW_rho_lm.jl")
+export PAW_rho_lm!
+
+include("radial_hartree.jl")
+include("PAW_h_potential.jl")
+export PAW_h_potential!
+
+include("PAW_lm2rad.jl")
+include("PAW_rad2lm.jl")
+export PAW_lm2rad!, PAW_rad2lm!
+
+include("PAW_xc_potential.jl")
+export PAW_xc_potential!
+
+include("PAW_potential.jl")
+export PAW_potential!
+
 
 include("Poisson_solve.jl")
 export Poisson_solve, Poisson_solve!
