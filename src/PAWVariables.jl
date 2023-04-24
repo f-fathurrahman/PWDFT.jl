@@ -1,11 +1,13 @@
-struct PAWVariables
+mutable struct PAWVariables
     lm_fact::Int64    # To converge E_xc integrate up to LM = lm_fact * lm_max
     lm_fact_x::Int64  # As above, for gradient corrected functionals
     xlm::Int64        # Additional factor to add to have a good grad.corr.
     radial_grad_style::Int64 # = 0 or 1, algorithm to use for d/dr
     spheres::Vector{PAWAtomicSphere}
-    ddd_paw::Array{Float64,3}
+    ddd_paw::Array{Float64,3} # This should be mutable
     total_core_energy::Float64
+    E_paw_cmp::Array{Float64,3}
+    EHxc_paw::Float64
 end
 
 
@@ -69,9 +71,13 @@ function PAWVariables(atoms::Atoms, pspots, nhm::Int64; is_gga=false, Nspin=1)
     end
     println("total_core_energy = ", total_core_energy)
 
+    E_paw_cmp = zeros(Float64, Natoms, 2, 2)
+    EHxc_paw = 0.0
+
     return PAWVariables(
         lm_fact, lm_fact_x, xlm, radial_grad_style,
-        paw_spheres, ddd_paw, total_core_energy
+        paw_spheres, ddd_paw, total_core_energy,
+        E_paw_cmp, EHxc_paw
     )
 
 end

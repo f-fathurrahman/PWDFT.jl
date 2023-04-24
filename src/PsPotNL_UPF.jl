@@ -21,8 +21,9 @@ mutable struct PsPotNL_UPF
     qq_nt::Union{Array{Float64,3},Nothing}
     qq_at::Union{Array{Float64,3},Nothing}
     betaNL::Vector{Matrix{ComplexF64}}
-    are_ultrasoft::Vector{Bool}
+    are_ultrasoft::Vector{Bool} # XXX rename to are_uspp?
     are_paw::Vector{Bool}
+    becsum::Array{Float64,3}
     paw::Union{Nothing,PAWVariables}
 end
 
@@ -176,6 +177,8 @@ function PsPotNL_UPF(
         paw = nothing
     end
 
+    Nbecsum = Int64( nhm * (nhm + 1)/2 )
+    becsum = zeros(Float64, Nbecsum, Natoms, Nspin)
 
     return PsPotNL_UPF(
         lmaxx, lqmax, lmaxkb,
@@ -183,9 +186,8 @@ function PsPotNL_UPF(
         indv, nhtol, nhtolm, ijtoh, indv_ijkb0,
         Dvan, Deeq, qradG, qq_nt, qq_at,
         betaNL,
-        are_ultrasoft,
-        are_paw,
-        paw
+        are_ultrasoft, are_paw,
+        becsum, paw
     )
 
 end

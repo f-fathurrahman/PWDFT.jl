@@ -1,3 +1,5 @@
+# TODO: Combine with calc_rhoe
+
 function calc_rhoe_uspp( Ham::Hamiltonian, psiks::BlochWavefunc )
     Npoints = prod(Ham.pw.Ns)
     Nspin = Ham.electrons.Nspin
@@ -40,11 +42,7 @@ function calc_rhoe_uspp!(
 
     dVol = CellVolume/Npoints # dense
 
-    nhm = Ham.pspotNL.nhm
     Natoms = Ham.atoms.Natoms
-    Nbecsum = Int64( nhm * (nhm + 1)/2 )
-
-    becsum = zeros(Float64, Nbecsum, Natoms, Nspin)
 
     #
     for ispin in 1:Nspin, ik in 1:Nkpt
@@ -79,19 +77,31 @@ function calc_rhoe_uspp!(
     #println("calc_rhoe_uspp: integ RhoeSmooth = ", sum(RhoeSmooth)*dVol)
 
     # Interpolate
+    # XXX: This should not be needed if using_dual_grid is true
     for ispin in 1:Nspin
         @views smooth_to_dense!(pw, RhoeSmooth, Rhoe)
     end
 
     #println("calc_rhoe_uspp: integ Rhoe = ", sum(Rhoe)*dVol)
 
+
     #
-    # Add ultrasoft contrib
+    # Add ultrasoft contrib if needed
+    # Use preallocated becsum because it is also used in PAW_potential
     #
-    if pw.using_dual_grid
+    ok_paw = any(Ham.pspotNL.are_paw)
+    ok_uspp = any(Ham.pspotNL.are_ultrasoft)
+    becsum = Ham.pspotNL.becsum
+    #
+    # This should be done for ok_paw or ok_uspp
+    if ok_uspp || ok_paw
         fill!(becsum, 0.0) # zero out becsum
         for ispin in 1:Nspin, ik in 1:Nkpt
             _add_becsum!(ik, ispin, Ham, psiks, becsum)
+        end
+        # Only symmetrize if using PAW
+        if ok_paw
+            PAW_symmetrize!(Ham, becsum)
         end
         _add_usdens!(Ham, becsum, Rhoe) # using real space
     end
@@ -143,7 +153,9 @@ function _add_usdens!( Ham, becsum, Rhoe )
 
     for isp in 1:Nspecies
 
-        if !Ham.pspots[isp].is_ultrasoft
+        psp = Ham.pspots[isp]
+        need_augmentation = psp.is_ultrasoft || psp.is_paw
+        if !need_augmentation
             continue
         end
 
@@ -242,8 +254,9 @@ function _add_becsum!( ik, ispin, Ham, psiks, becsum )
 
     for isp in 1:Nspecies
 
-        # Skip if this species does not use ultrasoft
-        if !Ham.pspots[isp].is_ultrasoft
+        psp = Ham.pspots[isp]
+        need_augmentation = psp.is_ultrasoft || psp.is_paw
+        if !need_augmentation
             continue
         end
         

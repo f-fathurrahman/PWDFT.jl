@@ -128,7 +128,9 @@ function calc_newDeeq!( Ham )
 
     # Early return if no USPP is used
     # XXX probably this should be stored as variable in pspotNL
-    if all( .!pspotNL.are_ultrasoft )
+    ok_paw = any(Ham.pspotNL.are_paw)
+    ok_uspp = any(Ham.pspotNL.are_ultrasoft)
+    if !ok_uspp || !ok_paw
         return
     end
 
@@ -158,6 +160,23 @@ function calc_newDeeq!( Ham )
                 # Factor of 0.5 to match QE result (to 1/Ry?)
                 # Unit of D is 1/Ha -> 1/(2Ry)
                 Deeq[jh,ih,ia,ispin] = Deeq[ih,jh,ia,ispin]
+            end
+        end
+    end
+    
+    # Add PAW component
+    if ok_paw
+        ddd_paw = Ham.pspotNL.paw.ddd_paw
+        for ia in 1:Natoms
+            isp = atm2species[ia]
+            if !Ham.pspots[isp].is_paw
+                continue
+            end
+            ijh = 0
+            for ispin in 1:Nspin, ih in 1:nh[isp], jh in ih:nh[isp]
+                ijh = ijh + 1
+                Deeq[ih,jh,ia,ispin] += ddd_paw[ijh,ia,ispin]
+                Deeq[jh,ih,ia,ispin] = Deeq[ih,jh,ia,ispin] 
             end
         end
     end

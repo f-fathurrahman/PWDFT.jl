@@ -1,3 +1,13 @@
+function PAW_potential!(Ham::Hamiltonian)
+    return PAW_potential!(
+        Ham.atoms, Ham.pspots, Ham.pspotNL, Ham.xc_calc,
+        Ham.pspotNL.becsum,
+        Ham.pspotNL.paw.ddd_paw,
+        Ham.pspotNL.paw.E_paw_cmp
+    )
+end
+
+
 function PAW_potential!(
     atoms, pspots, pspotNL, xc_calc,
     becsum, ddd_paw, e_cmp

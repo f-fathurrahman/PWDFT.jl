@@ -224,7 +224,7 @@ export PAW_symmetrize!
 # Stuff related to PAW_potential
 #
 include("PAW_atomic_becsum.jl")
-export PAW_atomic_becsum
+export PAW_atomic_becsum, PAW_atomic_becsum!
 
 include("PAW_rho_lm.jl")
 export PAW_rho_lm!
@@ -360,6 +360,10 @@ export read_psiks
 
 include("electrons_scf.jl")
 export electrons_scf!
+export atomic_rho_g
+export update_from_rhoe!
+export op_S, op_S!
+export calc_rhoe_uspp, calc_rhoe_uspp!
 
 
 include("calc_forces_NN.jl")

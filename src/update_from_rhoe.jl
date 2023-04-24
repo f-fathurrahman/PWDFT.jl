@@ -24,7 +24,9 @@ function _rhoeG_from_rhoe(Ham, Rhoe)
 end
 
 
-# Can be used for metaGGA
+# Can be used for metaGGA (if psiks is not nothing)
+# FIXME: Think of better API for this
+# Probably by setting psiks as optional argument
 function update_from_rhoe!(Ham, psiks, Rhoe, RhoeG)
 
     Ham.rhoe[:,:] = Rhoe[:,:] # Need copy?
@@ -50,14 +52,27 @@ function update_from_rhoe!(Ham, psiks, Rhoe, RhoeG)
     end
     # XXX: Also need to interpolate xc_calc.Vtau or kedtau in case of USPP
 
+    # PAW stuffs
+    if any(Ham.pspotNL.are_paw)
+        # becsum is assumed to be calculated elsewhere
+        # Possibly alongside Rhoe calculation
+        EHxc_paw = PAW_potential!( Ham )
+        # EHxc_paw is currently not returned
+        # We set is here
+        Ham.pspotNL.paw.EHxc_paw = EHxc_paw
+    end
+
     # Also update nonlocal potential coefficients here
     calc_newDeeq!( Ham )
+    # PAW-specific stuffs is also updated here
+
 
     return Ehartree, Exc, Evtxc # energies?
 end
 
 
 # Can be used for metaGGA functionals
+# FIXME: allow psiks to be nothing (?)
 function _add_V_xc!(Ham, psiks, Rhoe, RhoeG)
 
     Nspin = Ham.electrons.Nspin

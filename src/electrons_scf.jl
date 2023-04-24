@@ -211,6 +211,11 @@ end
 function _prepare_scf!(Ham, psiks)
     # Initial density
     Rhoe, RhoeG = atomic_rho_g(Ham)
+    # Also initialize becsum in case of PAW
+    if any(Ham.pspotNL.are_paw)
+        PAW_atomic_becsum!(Ham)
+    end
+
     # Update the potentials
     Ehartree, Exc, Evtxc = update_from_rhoe!( Ham, psiks, Rhoe, RhoeG )
     #
