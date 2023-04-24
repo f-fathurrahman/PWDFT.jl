@@ -69,6 +69,9 @@ function electrons_scf!(
     mixer = BroydenMixer(Rhoe, betamix, mixdim=8)
 
     Rhoe_in = zeros(Float64,size(Rhoe))
+    if ok_paw
+        becsum_in = zeros(size(Ham.pspotNL.becsum))
+    end
 
     ethr = 1e-5 # default
 
@@ -91,6 +94,11 @@ function electrons_scf!(
         
         @views Vin[:] .= Vhartree[:] + Vxc[:,1]
         deband_hwf = -sum(Vin .* Rhoe[:,1])*dVol
+        if ok_paw
+            ddd_paw = Ham.pspotNL.paw.ddd_paw
+            becsum = Ham.pspotNL.becsum
+            deband_hwf -= sum(ddd_paw .* becsum)
+        end
         #
         if xc_calc.family == :metaGGA
             # this is not efficient as it recalculates
@@ -100,6 +108,10 @@ function electrons_scf!(
 
         # Copy input rhoe
         @views Rhoe_in[:,:] .= Rhoe[:,:]
+        if ok_paw
+            becsum_in[:,:,:] .= becsum[:,:,:]
+        end
+        # XXX: also KEdens_in in case of metaGGA
 
         #
         # Diagonalization step
@@ -121,15 +133,24 @@ function electrons_scf!(
         #
         Eband = _calc_Eband(wk, Focc, evals)
         Rhoe[:,:] = calc_rhoe_uspp( Ham, psiks )
-        #println("integ output Rhoe = ", sum(Rhoe)*dVol)
+        # In case of PAW becsum is also calculated/updated here
+        println("integ output Rhoe = ", sum(Rhoe)*dVol)
 
         # This is not used later?
         hwf_energy = Eband + deband_hwf + Ehartree + Exc + Ham.energies.NN + mTS
-        # entropy term missing
+        if ok_paw
+            hwf_energy += Ham.pspotNL.paw.EHxc_paw
+        end
 
         # Calculate deband (using new Rhoe)
         @views Vin[:] .= Vhartree[:] + Vxc[:,1]
         deband = -sum(Vin .* Rhoe[:,1])*dVol # TODO: use dot instead?
+        if ok_paw
+            ddd_paw = Ham.pspotNL.paw.ddd_paw
+            becsum = Ham.pspotNL.becsum
+            deband -= sum(ddd_paw .* becsum)
+        end
+
         #
         if xc_calc.family == :metaGGA
             # this is not efficient as it recalculates
@@ -145,6 +166,8 @@ function electrons_scf!(
         #@printf("Before mix: diffRhoe = %e\n", diffRhoe)
         do_mix!(mixer, Rhoe, Rhoe_in, iterSCF)
         #println("integ Rhoe after mix: ", sum(Rhoe)*dVol)
+        #
+        # At the moment, there are no other quantities that are mixed
 
         # Check convergence here? (using diffRhoe)
 
@@ -153,9 +176,17 @@ function electrons_scf!(
         #println("Evtxc = ", Evtxc)
 
         descf = -sum( (Rhoe_in[:,1] .- Rhoe[:,1]).*(Vhartree + Vxc[:,1]) )*dVol
-        # metagga contribution is not included in descf yet !!!
+        # XXX: metagga contribution is not included in descf yet !!!
+        if ok_paw
+            ddd_paw = Ham.pspotNL.paw.ddd_paw
+            becsum = Ham.pspotNL.becsum
+            descf -= sum(ddd_paw .* (becsum_in - becsum))
+        end
 
         Etot = Eband + deband + Ehartree + Exc + Ham.energies.NN + descf + mTS
+        if ok_paw
+            Etot += Ham.pspotNL.paw.EHxc_paw
+        end
     
         #
         diffEtot = abs(Etot - Etot_old)
@@ -181,17 +212,22 @@ function electrons_scf!(
     println("-----------------------")
     println("Energy components in Ry")
     println("-----------------------")
-    @printf("Eband    = %18.10f\n", Eband*2)
-    @printf("deband   = %18.10f\n", deband*2)
-    @printf("descf    = %18.10f\n", descf*2)
+    @printf("Eband    = %18.10f Ry\n", Eband*2)
+    @printf("deband   = %18.10f Ry\n", deband*2)
+    @printf("descf    = %18.10f Ry\n", descf*2)
     @printf("-----------------------------\n")
-    @printf("OneEle   = %18.10f\n", 2*(Eband + deband))
-    @printf("Ehartree = %18.10f\n", 2*Ehartree)
-    @printf("Exc      = %18.10f\n", 2*Exc)
-    @printf("NN       = %18.10f\n", 2*Ham.energies.NN)
-    @printf("mTS      = %18.10f\n", 2*mTS)
+    @printf("OneEle   = %18.10f Ry\n", 2*(Eband + deband))
+    @printf("Ehartree = %18.10f Ry\n", 2*Ehartree)
+    @printf("Exc      = %18.10f Ry\n", 2*Exc)
+    @printf("NN       = %18.10f Ry\n", 2*Ham.energies.NN)
+    @printf("mTS      = %18.10f Ry\n", 2*mTS)
+    if ok_paw
+        @printf("EHxc_paw = %18.10f Ry\n", 2*Ham.pspotNL.paw.EHxc_paw)
+    end
     @printf("-----------------------------\n")
-    @printf("! Total  = %18.10f\n", 2*Etot)
+    @printf("! Total  = %18.10f Ry\n", 2*Etot)
+
+    @printf("Total all electrons = %18.10f\n", 2*(Etot + Ham.pspotNL.paw.total_core_energy))
 
     # TODO
     # Also print the Kohn-Sham orbital energies using similar format
@@ -203,7 +239,7 @@ function electrons_scf!(
     end
 
     # Compare the energy using the usual formula (not using double-counting)
-    if any(Ham.pspotNL.are_paw)
+    if !ok_paw
         # Disabled for PAW case because I don't figure it out yet
         energies = calc_energies(Ham, psiks)
         if use_smearing
