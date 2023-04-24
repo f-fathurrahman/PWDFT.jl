@@ -57,6 +57,7 @@ function update_from_rhoe!(Ham, psiks, Rhoe, RhoeG)
         # becsum is assumed to be calculated elsewhere
         # Possibly alongside Rhoe calculation
         EHxc_paw = PAW_potential!( Ham )
+        println("EHxc_paw (in Ry) = ", 2*EHxc_paw)
         # EHxc_paw is currently not returned
         # We set is here
         Ham.pspotNL.paw.EHxc_paw = EHxc_paw
