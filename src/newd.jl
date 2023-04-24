@@ -47,75 +47,73 @@ function calc_integ_QVeff!( Ham )
 
     for isp in 1:Nspecies
 
-        if Ham.pspots[isp].is_ultrasoft
-            # nij = max number of (ih,jh) pairs per atom type nt
-            nij = round(Int64, nh[isp] * (nh[isp] + 1)/2 )
+        psp = Ham.pspots[isp]
+        need_augmentation = psp.is_ultrasoft || psp.is_paw
+        if !need_augmentation
+            continue
+        end
 
-            Qgm = zeros(ComplexF64, Ng, nij)
-            #println("nij = ", nij)
-            #
-            # Compute and store Q(G) for this atomic species 
-            # (without structure factor)
-            ijh = 0
-            for ih in 1:nh[isp], jh in ih:nh[isp]
-                ijh = ijh + 1
-                #qvan2!( ngm, ih, jh, nt, qmod, qgm(1,ijh), ylmk0 )
-                @views qvan2!( Ham.pspotNL, ih, jh, isp, G2, ylmk0, Qgm[:,ijh] )
-                #println("ijh = ", ijh, " sum Qgm = ", sum(Qgm[:,ijh]))
+        # nij = max number of (ih,jh) pairs per atom type nt
+        nij = round(Int64, nh[isp] * (nh[isp] + 1)/2 )
+
+        Qgm = zeros(ComplexF64, Ng, nij)
+        #println("nij = ", nij)
+        #
+        # Compute and store Q(G) for this atomic species 
+        # (without structure factor)
+        ijh = 0
+        for ih in 1:nh[isp], jh in ih:nh[isp]
+            ijh = ijh + 1
+            #qvan2!( ngm, ih, jh, nt, qmod, qgm(1,ijh), ylmk0 )
+            @views qvan2!( Ham.pspotNL, ih, jh, isp, G2, ylmk0, Qgm[:,ijh] )
+            #println("ijh = ", ijh, " sum Qgm = ", sum(Qgm[:,ijh]))
+        end
+        #
+        # count max number of atoms of type isp
+        nab = sum(atm2species .== isp)
+        #
+        aux = zeros(ComplexF64, Ng, nab)
+        #
+        # Compute and store V(G) times the structure factor e^(-iG*tau)
+        for ispin in 1:Nspin
+            nb = 0
+            for ia in 1:Natoms
+                if atm2species[ia] != isp
+                    continue
+                end
+                nb = nb + 1
+                for ig in 1:Ng
+                    GX = atpos[1,ia]*G[1,ig] + atpos[2,ia]*G[2,ig] + atpos[3,ia]*G[3,ig]
+                    Sf = cos(GX) + im*sin(GX) # conjugate
+                    aux[ig,nb] = VeffG[ig,ispin] * Sf
+                end
+                #println("nb = ", nb, " sum aux VeffG*Sf = ", sum(aux[:,nb]))
             end
             #
-            # count max number of atoms of type isp
-            nab = sum(atm2species .== isp)
-            #
-            aux = zeros(ComplexF64, Ng, nab)
-            #
-            # Compute and store V(G) times the structure factor e^(-iG*tau)
-            for ispin in 1:Nspin
-                nb = 0
-                for ia in 1:Natoms
-                    if atm2species[ia] != isp
-                        continue
-                    end
-                    nb = nb + 1
-                    for ig in 1:Ng
-                        GX = atpos[1,ia]*G[1,ig] + atpos[2,ia]*G[2,ig] + atpos[3,ia]*G[3,ig]
-                        Sf = cos(GX) + im*sin(GX) # conjugate
-                        aux[ig,nb] = VeffG[ig,ispin] * Sf
-                    end
-                    #println("nb = ", nb, " sum aux VeffG*Sf = ", sum(aux[:,nb]))
+            # here we compute the integral Q*V for all atoms of this kind
+            deeaux = real(Qgm' * aux)
+            #CALL DGEMM( 'C', 'N', nij, nab, 2*ngm, fact, qgm, 2*ngm, aux, &
+            #         2*ngm, 0.0_dp, deeaux, nij )
+            nb = 0
+            for ia in 1:Natoms
+                if atm2species[ia] != isp
+                    continue
                 end
-                #
-                # here we compute the integral Q*V for all atoms of this kind
-                deeaux = real(Qgm' * aux)
-                #CALL DGEMM( 'C', 'N', nij, nab, 2*ngm, fact, qgm, 2*ngm, aux, &
-                #         2*ngm, 0.0_dp, deeaux, nij )
-
-                #println("isp = ", isp, " size deeaux = ", size(deeaux))
-        
-                nb = 0
-                for ia in 1:Natoms
-                    if atm2species[ia] != isp
-                        continue
+                nb = nb + 1
+                ijh = 0
+                for ih in 1:nh[isp], jh in ih:nh[isp]
+                    ijh = ijh + 1
+                    Deeq[ih,jh,ia,ispin] = CellVolume * deeaux[ijh,nb] / Npoints
+                    #@printf("%4d %4d %4d %4d %18.10f\n", ih, jh, ia, ispin, Deeq[ih,jh,ia,ispin])
+                    if jh > ih
+                        Deeq[jh,ih,ia,ispin] = Deeq[ih,jh,ia,ispin]
                     end
-                    nb = nb + 1
-                    ijh = 0
-                    for ih in 1:nh[isp], jh in ih:nh[isp]
-                        ijh = ijh + 1
-                        Deeq[ih,jh,ia,ispin] = CellVolume * deeaux[ijh,nb] / Npoints
-                        #@printf("%4d %4d %4d %4d %18.10f\n", ih, jh, ia, ispin, Deeq[ih,jh,ia,ispin])
-                        if jh > ih
-                            Deeq[jh,ih,ia,ispin] = Deeq[ih,jh,ia,ispin]
-                        end
-                    end
-                end # Natoms
+                end
+            end # Natoms
 
-            end # Nspin
-        
-        end # is_ultrasoft
-    
+        end # Nspin
+            
     end # Nspecies
-
-    #println("sum Deeq in calc_integ_QVeff = ", sum(Deeq))
 
     return
 
