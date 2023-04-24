@@ -227,7 +227,9 @@ function electrons_scf!(
     @printf("-----------------------------\n")
     @printf("! Total  = %18.10f Ry\n", 2*Etot)
 
-    @printf("Total all electrons = %18.10f\n", 2*(Etot + Ham.pspotNL.paw.total_core_energy))
+    if ok_paw
+        @printf("Total all electrons = %18.10f\n", 2*(Etot + Ham.pspotNL.paw.total_core_energy))
+    end
 
     # TODO
     # Also print the Kohn-Sham orbital energies using similar format
