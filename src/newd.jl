@@ -130,7 +130,8 @@ function calc_newDeeq!( Ham )
     # XXX probably this should be stored as variable in pspotNL
     ok_paw = any(Ham.pspotNL.are_paw)
     ok_uspp = any(Ham.pspotNL.are_ultrasoft)
-    if !ok_uspp || !ok_paw
+    need_augmentation = ok_uspp || ok_paw
+    if !need_augmentation
         return
     end
 
