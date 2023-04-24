@@ -26,6 +26,13 @@ function electrons_scf!(
     # We don't use Ham.energies to save these terms
     Ehartree, Exc, Evtxc = _prepare_scf!(Ham, psiks)
 
+    ok_paw = any(Ham.pspotNL.are_paw)
+
+    # Reference EHxc_paw here
+    if ok_paw
+        EHxc_paw = Ham.pspotNL.paw.EHxc_paw
+    end
+
     # Ham.energies.NN is only used to save this term
     Ham.energies.NN = calc_E_NN(Ham.atoms)
 
@@ -196,12 +203,15 @@ function electrons_scf!(
     end
 
     # Compare the energy using the usual formula (not using double-counting)
-    energies = calc_energies(Ham, psiks)
-    if use_smearing
-        energies.mTS = mTS
+    if any(Ham.pspotNL.are_paw)
+        # Disabled for PAW case because I don't figure it out yet
+        energies = calc_energies(Ham, psiks)
+        if use_smearing
+            energies.mTS = mTS
+        end
+        println("\nUsing original formula for total energy")
+        println(energies, use_smearing=use_smearing)
     end
-    println("\nUsing original formula for total energy")
-    println(energies, use_smearing=use_smearing)
 
     return
 end
