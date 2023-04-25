@@ -220,6 +220,9 @@ include("gamma_only/op_H_gamma.jl")
 include("PAW_symmetrize.jl")
 export PAW_symmetrize!
 
+include("PAW_symmetrize_ddd.jl")
+export PAW_symmetrize_ddd!
+
 #
 # Stuff related to PAW_potential
 #
