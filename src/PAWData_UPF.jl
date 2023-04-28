@@ -27,6 +27,15 @@ struct PAWData_UPF
     # on BETA functions, non on WFC
     oc::Vector{Float64}
 
+    qqq_eps::Float64
+    # FIXME: Probably it is more appropriate to add this under PsPot_UPF
+    # However, it is not used in cases other than PAW
+
+    # multipole AE-pseudo (i,j,l=0:2*lmax)
+    # Note that original index of l start from 0, we need to offset if by 1
+    augmom::Array{Float64,3}
+    #upf%paw%augmom(1:upf%nbeta,1:upf%nbeta,0:2*upf%lmax)
+
     # augfunction max radius
     raug::Float64
 
@@ -159,6 +168,14 @@ function PAWData_UPF(xroot, r::Vector{Float64}, lmax::Int64, Nproj::Int64)
     lmax_aug = parse(Int64, LightXML.attributes_dict(pp_aug[1])["l_max_aug"])
     println("lmax_aug = ", lmax_aug)
 
+    # 
+    #upf%paw%augmom(1:upf%nbeta,1:upf%nbeta,0:2*upf%lmax)
+    #augmom = zeros(Float64, )
+    Nmultipoles = Nproj*Nproj*(2*lmax+1)
+    tmp_multipoles = zeros(Float64, Nmultipoles)
+    _read_xml_str_vector!(pp_aug[1], "PP_MULTIPOLES", Nmultipoles, tmp_multipoles)
+    augmom = reshape(tmp_multipoles, Nproj, Nproj, 2*lmax+1)
+
     # Prepare paw.pfunc
     pfunc = zeros(Float64, Nr, Nproj, Nproj)
     # NOTE: Nproj should be equal to Nwfc
@@ -181,7 +198,7 @@ function PAWData_UPF(xroot, r::Vector{Float64}, lmax::Int64, Nproj::Int64)
 
     paw_data = PAWData_UPF(
         ae_rho_atc, pfunc, ptfunc,
-        ae_vloc, oc, raug, iraug, lmax_aug, core_energy, augshape
+        ae_vloc, oc, qqq_eps, augmom, raug, iraug, lmax_aug, core_energy, augshape
     )
 
     return paw_data
