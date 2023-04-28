@@ -284,7 +284,7 @@ function PsPot_UPF( upf_file::String )
     #
     need_aug = is_ultrasoft || is_paw
     nqf, nqlc, qqq, q_with_l, qfuncl = 
-    _read_us_aug(need_aug, pp_nonlocal, r, Nproj, proj_l, kkbeta)
+    _read_us_aug(need_aug, pp_nonlocal, r, Nproj, proj_l, kkbeta, is_paw, paw_data)
 
     #
     # Pseudo wave function
@@ -350,7 +350,9 @@ function _read_us_aug(
     r::Array{Float64,1},
     Nproj::Int64,
     proj_l,
-    kkbeta::Int64
+    kkbeta::Int64,
+    is_paw,
+    paw_data
 )
 
     if !need_aug
@@ -481,11 +483,25 @@ function _read_us_aug(
         end
     else
         # Read QIJL
+        # TODO: Check for augmom in paw_data
+        # TODO: Ref: read_upf_new
         for nb in 1:Nproj, mb in nb:Nproj
             ijv = round(Int64, mb*(mb-1)/2) + nb
             l1 = proj_l[nb]
             l2 = proj_l[mb]
             for l in range( abs(l1-l2), stop=(l1+l2), step=2)
+
+                is_null = false 
+                if is_paw
+                    is_null = abs(paw_data.augmom[nb,mb,l+1]) < paw_data.qqq_eps
+                end
+                println("is_null = ", is_null)
+                # Note that augmom is originally indexed from 0
+                if is_null
+                    println("Skip l = ", l)
+                    continue
+                end
+
                 tagname = "PP_QIJL."*string(nb)*"."*string(mb)*"."*string(l)
                 pp_qijl = LightXML.get_elements_by_tagname(pp_aug[1], tagname)
                 #
@@ -508,6 +524,9 @@ function _read_us_aug(
                 # FIXME: convert to Ha?
                 for i in 1:Nr
                     qfuncl[i,comp_idx,l+1] = parse(Float64,spl_str[i])*QFUNC2Ha
+                end
+                if is_paw
+                    qfuncl[paw_data.iraug+1:end,comp_idx,l+1] .= 0.0
                 end
             end
         end
