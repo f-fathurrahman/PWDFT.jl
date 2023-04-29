@@ -58,9 +58,12 @@ function update_from_rhoe!(Ham, psiks, Rhoe, RhoeG)
         # Possibly alongside Rhoe calculation
         EHxc_paw = PAW_potential!( Ham )
         println("EHxc_paw (in Ry) = ", 2*EHxc_paw)
+        println("sum becsum = ", sum(Ham.pspotNL.becsum))
         # EHxc_paw is currently not returned
         # We set is here
         Ham.pspotNL.paw.EHxc_paw = EHxc_paw
+        #
+        PAW_symmetrize_ddd!( Ham )
     end
 
     # Also update nonlocal potential coefficients here
@@ -110,6 +113,7 @@ function _add_V_xc!(Ham, psiks, Rhoe, RhoeG)
         # Using core-correction
         #
         if Ham.xcfunc == "VWN"
+            println("Using core correction")
             epsxc[:], Vxc[:,1] = calc_epsxc_Vxc_VWN( Ham.xc_calc, Rhoe[:,1] + Ham.rhoe_core )
             Exc = sum(epsxc .* (Rhoe[:,1] + Ham.rhoe_core))*dVol
         else
