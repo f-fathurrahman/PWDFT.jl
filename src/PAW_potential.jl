@@ -133,5 +133,8 @@ function PAW_potential!(
         end # AE, PS
     end # loop over all atoms
 
+    # FIXME:
+    ddd_paw[:] *= 4.0
+
     return energy_tot
 end
