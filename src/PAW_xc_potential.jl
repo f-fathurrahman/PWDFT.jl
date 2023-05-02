@@ -36,6 +36,9 @@ function PAW_xc_potential!(
 
     for ix in 1:nx
 
+        #println()
+        #println("PAW_xc_potential: ix = ", ix)
+
         # LDA (and LSDA) part (no gradient correction)
         # convert _lm density to real density along ix
         PAW_lm2rad!( ia, ix, atoms, pspots, pspotNL, rho_lm, rho_rad )
@@ -52,11 +55,15 @@ function PAW_xc_potential!(
             end
         end
 
+        #println("sum rho_loc = ", sum(rho_loc))
+        #println("sum rho_core =  ", sum(rho_core))
+
         #
         # Integrate to obtain the energy
         #
         if Nspin == 1
             @views arho[:,1] .= rho_loc[:,1] .+ rho_core[:]
+            #println("sum arho = ", sum(arho))
             @views calc_epsxc_Vxc_VWN!( xc_calc, arho[:,1], e_rad[:,1], v_rad[:,ix,1] )
             e_rad .= e_rad .* ( rho_rad[:,1] .+ rho_core .* r2 )
         else
@@ -70,9 +77,14 @@ function PAW_xc_potential!(
             e_rad .= e_rad .* ( rho_rad[:,1] .+ rho_rad[:,2] .+ rho_core .* r2 )
         end
     
+        #println("sum e_rad = ", sum(e_rad))
+        #println("sum v_rad[:,ix,1] = ", sum(v_rad[:,ix,1]))
+
         # Integrate to obtain the energy
         wx = pspotNL.paw.spheres[isp].ww[ix]
-        energy += wx*PWDFT.integ_simpson( Nrmesh, e_rad, pspots[isp].rab )
+        ss = wx*PWDFT.integ_simpson( Nrmesh, e_rad, pspots[isp].rab )
+        #println("integrated energy from ix = ", ss)
+        energy += ss
   
     end
 
