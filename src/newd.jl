@@ -23,7 +23,7 @@ function calc_integ_QVeff!( Ham )
         for ip in 1:Npoints
             ctmp[ip] = Veff[ip,ispin] # Veff already contains Ps_loc
         end
-        #println("sum ctmp = ", sum(ctmp))
+        println("integ VQeff: sum Veff = ", sum(ctmp))
         R_to_G!(Ham.pw, ctmp)
         #ctmp /= sqrt(Npoints) # XXX: scale
         for ig in 1:Ng
@@ -147,8 +147,8 @@ function calc_newDeeq!( Ham )
     Deeq = pspotNL.Deeq
 
     # Add Dvan
-    #println("sum Deeq after calc_integ_QVeff: ", sum(Deeq))
-    #println("sum Dvan = ", sum(Dvan))
+    println("sum Deeq after calc_integ_QVeff: ", sum(Deeq))
+    println("sum Dvan = ", sum(Dvan))
     #println("Some Deeq")
     for ia in 1:Natoms
         isp = atm2species[ia]
@@ -163,8 +163,11 @@ function calc_newDeeq!( Ham )
         end
     end
     
+    println("sum Deeq before adding PAW contrib if any: ", sum(Deeq))
+
     # Add PAW component
     if ok_paw
+        println("Adding ddd_paw to Deeq")
         ddd_paw = Ham.pspotNL.paw.ddd_paw
         for ia in 1:Natoms
             isp = atm2species[ia]
@@ -174,13 +177,13 @@ function calc_newDeeq!( Ham )
             ijh = 0
             for ispin in 1:Nspin, ih in 1:nh[isp], jh in ih:nh[isp]
                 ijh = ijh + 1
-                Deeq[ih,jh,ia,ispin] += ddd_paw[ijh,ia,ispin]
+                Deeq[ih,jh,ia,ispin] += ddd_paw[ijh,ia,ispin]*4.0 # This factor of 4?
                 Deeq[jh,ih,ia,ispin] = Deeq[ih,jh,ia,ispin] 
             end
         end
     end
 
-    #println("sum Deeq = ", sum(Deeq))
+    println("sum Deeq before after PAW contrib if any: ", sum(Deeq))
 
     return
 
