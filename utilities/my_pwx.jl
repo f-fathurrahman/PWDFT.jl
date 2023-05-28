@@ -7,8 +7,10 @@ Random.seed!(1234)
 
 using PWDFT
 
-include("PWSCFInput.jl")
-include("init_Ham_from_pwinput.jl")
+const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
+
+include(joinpath(DIR_PWDFT, "utilities", "PWSCFInput.jl"))
+include(joinpath(DIR_PWDFT, "utilities", "init_Ham_from_pwinput.jl"))
 
 function my_pwx(; filename=nothing)
     Ham, pwinput = init_Ham_from_pwinput(filename=filename)
