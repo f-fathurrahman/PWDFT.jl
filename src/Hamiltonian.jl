@@ -164,7 +164,7 @@ function Hamiltonian(
     end
     V_of_0 += real(Vg[1]) # using PWSCF convention
     V_Ps_loc = real(G_to_R(pw, Vg))
-    V_Ps_loc *= Npoints # Rescale using PWSCF convetion
+    V_Ps_loc *= Npoints # Rescale using PWSCF convention
 
     # other potential terms are set to zero
     V_Hartree = zeros( Float64, Npoints )
