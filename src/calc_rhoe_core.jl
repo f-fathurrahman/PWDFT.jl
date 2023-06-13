@@ -20,7 +20,6 @@ function calc_rhoe_core!(
     rhoecgl = zeros(Float64, Ngl)
     rhoecG = zeros(ComplexF64, Npoints)
 
-    neg_rhoec = 0.0
     for isp in 1:Nspecies
         psp = pspots[isp]
         # Skip this pspot if nlcc is not included
@@ -28,27 +27,27 @@ function calc_rhoe_core!(
             continue
         end
         _calc_rhoecgl!(psp, G2_shells, rhoecgl)
+        #println("sum of rhoecgl = ", sum(rhoecgl)/CellVolume)
         for ig in 1:Ng
             ip = idx_g2r[ig]
             igl = idx_g2shells[ig]
-            rhoecG[ip] = strf[ig,isp] * rhoecgl[igl]
-        end
-        #
-        #rhoe_core[:] = rhoe_core[:] + real(G_to_R(pw, rhoecG)) * Npoints / CellVolume
-        G_to_R!(pw, rhoecG)
-        for ip in 1:Npoints
-            rhoe_core[ip,1] += real(rhoecG[ip])*Npoints/CellVolume
-        end
-        # Check for negative rhoe
-        for ip in 1:Npoints
-            if rhoe_core[ip,1] < 0.0
-                neg_rhoec = neg_rhoec + rhoe_core[ip,1]
-            end
+            # accumulate
+            rhoecG[ip] += strf[ig,isp] * rhoecgl[igl] / CellVolume
         end
     end
-    #println("\ncalc_rhoe_core:")
-    #println("integ rhoec = ", sum(rhoe_core)*CellVolume/Npoints)
-    #println("neg_rhoec   = ", neg_rhoec*CellVolume/Npoints)
+
+    G_to_R!(pw, rhoecG)
+    for ip in 1:Npoints
+        rhoe_core[ip,1] = real(rhoecG[ip]) * Npoints
+    end
+
+    rhoneg = 0.0
+    for ip in 1:Npoints
+        rhoneg += min(0.0, rhoe_core[ip])
+        rhoe_core[ip] = max(0.0, rhoe_core[ip])
+    end
+    println("Check negative rhoe_core (mean) = ", rhoneg/Npoints)
+    println("integ rhoe_core = ", sum(rhoe_core)*CellVolume/Npoints)
     return
 end
 
@@ -60,13 +59,25 @@ function _calc_rhoecgl!(
 )
     r = psp.r
     rab = psp.rab
-    Nr = psp.Nr
     rho_atc = psp.rho_atc
+
+    Nr_full = psp.Nr
+    Nr = Nr_full
+    RCUT = 10.0
+    for i in 1:Nr_full
+        if r[i] > RCUT
+            Nr = i
+            break
+        end 
+    end
+    # Force Nr to be odd number
+    Nr = 2*floor(Int64, (Nr + 1)/2) - 1
+    println("Nr = ", Nr)
 
     Ngl = length(G2_shells)
     aux = zeros(Float64, Nr)
 
-    pref = 4*pi
+    pref = 4π
 
     # G=0 term
     if G2_shells[1] < 1e-8
