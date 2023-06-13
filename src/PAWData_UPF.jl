@@ -165,7 +165,14 @@ function PAWData_UPF(xroot, r::Vector{Float64}, lmax::Int64, Nproj::Int64)
     qqq_eps = parse(Float64, LightXML.attributes_dict(pp_aug[1])["augmentation_epsilon"])
     println("qqq_eps = ", qqq_eps)
 
-    lmax_aug = parse(Int64, LightXML.attributes_dict(pp_aug[1])["l_max_aug"])
+    att_dict = LightXML.attributes_dict(pp_aug[1])
+    if "l_max_aug" in keys(att_dict)
+        lmax_aug = parse(Int64, att_dict["l_max_aug"])
+    elseif "lmax_aug" in keys(att_dict)
+        lmax_aug = parse(Int64, att_dict["lmax_aug"])
+    else
+        error("Cannot read lmax_aug")
+    end
     println("lmax_aug = ", lmax_aug)
 
     # 
@@ -190,7 +197,7 @@ function PAWData_UPF(xroot, r::Vector{Float64}, lmax::Int64, Nproj::Int64)
     # Pseudo wavefunctions (not only the ones for oc > 0)
     # All-electron wavefunctions
     ptfunc = zeros(Float64, Nr, Nproj, Nproj)
-    for nb in 1:Nproj, mb in 1:nb
+    for nb in 1:Nproj, mb in 1:Nproj
         ptfunc[1:Nr,nb,mb] .= pswfc[1:Nr,nb] .* pswfc[1:Nr,mb]
         ptfunc[(iraug+1):Nr,nb,mb] .= 0.0
         ptfunc[1:Nr,mb,nb] .= ptfunc[1:Nr,nb,mb]
