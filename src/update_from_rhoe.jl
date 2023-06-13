@@ -57,8 +57,9 @@ function update_from_rhoe!(Ham, psiks, Rhoe, RhoeG)
         # becsum is assumed to be calculated elsewhere
         # Possibly alongside Rhoe calculation
         EHxc_paw = PAW_potential!( Ham )
-        println("EHxc_paw (in Ry) = ", 2*EHxc_paw)
-        println("sum becsum = ", sum(Ham.pspotNL.becsum))
+        #println("EHxc_paw = ", EHxc_paw)
+        #println("sum ddd_paw = ", sum(Ham.pspotNL.paw.ddd_paw))
+        #println("sum becsum = ", sum(Ham.pspotNL.becsum))
         # EHxc_paw is currently not returned
         # We set is here
         Ham.pspotNL.paw.EHxc_paw = EHxc_paw
@@ -89,6 +90,8 @@ function _add_V_xc!(Ham, psiks, Rhoe, RhoeG)
 
     dVol = Ham.pw.CellVolume / Npoints
 
+    ρ = zeros(Float64, Npoints) # FIXME only allocate when using core-correction?
+
     # XC potential
     if Ham.rhoe_core == nothing
         #
@@ -109,13 +112,16 @@ function _add_V_xc!(Ham, psiks, Rhoe, RhoeG)
         end
         Exc = sum(epsxc .* Rhoe[:,1])*dVol
     else
+
+        @views ρ[:] .= Rhoe[:,1] + Ham.rhoe_core[:]
+        #println("Using core correction")
+
         #
         # Using core-correction
         #
         if Ham.xcfunc == "VWN"
-            println("Using core correction")
-            epsxc[:], Vxc[:,1] = calc_epsxc_Vxc_VWN( Ham.xc_calc, Rhoe[:,1] + Ham.rhoe_core )
-            Exc = sum(epsxc .* (Rhoe[:,1] + Ham.rhoe_core))*dVol
+            @views calc_epsxc_Vxc_VWN!( Ham.xc_calc, ρ, epsxc[:,1], Vxc[:,1] )
+            Exc = sum(epsxc .* ρ)*dVol
         else
             println("Other than VWN, core correction is yet not supported")
             error()
