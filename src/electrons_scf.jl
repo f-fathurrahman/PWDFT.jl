@@ -134,7 +134,7 @@ function electrons_scf!(
         Eband = _calc_Eband(wk, Focc, evals)
         Rhoe[:,:] = calc_rhoe_uspp( Ham, psiks )
         # In case of PAW becsum is also calculated/updated here
-        println("integ output Rhoe = ", sum(Rhoe)*dVol)
+        #println("integ output Rhoe = ", sum(Rhoe)*dVol)
 
         # This is not used later?
         hwf_energy = Eband + deband_hwf + Ehartree + Exc + Ham.energies.NN + mTS

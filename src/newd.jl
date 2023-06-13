@@ -153,8 +153,8 @@ function calc_newDeeq!( Ham )
     Deeq = pspotNL.Deeq
 
     # Add Dvan
-    println("sum Deeq after calc_integ_QVeff: ", sum(Deeq))
-    println("sum Dvan = ", sum(Dvan))
+    #println("sum Deeq after calc_integ_QVeff: ", sum(Deeq))
+    #println("sum Dvan = ", sum(Dvan))
     #println("Some Deeq")
     for ia in 1:Natoms
         isp = atm2species[ia]
@@ -169,11 +169,11 @@ function calc_newDeeq!( Ham )
         end
     end
     
-    println("sum Deeq after USPP contrib (before PAW): ", sum(Deeq))
+    #println("sum Deeq after USPP contrib (before PAW): ", sum(Deeq))
 
     # Add PAW component
     if ok_paw
-        println("Adding ddd_paw to Deeq")
+        #println("Adding ddd_paw to Deeq")
         ddd_paw = Ham.pspotNL.paw.ddd_paw
         for ia in 1:Natoms
             isp = atm2species[ia]
@@ -189,7 +189,7 @@ function calc_newDeeq!( Ham )
         end
     end
 
-    println("sum Deeq before after PAW contrib if any: ", sum(Deeq))
+    #println("sum Deeq before after PAW contrib if any: ", sum(Deeq))
 
     return
 
