@@ -11,27 +11,6 @@ function PAW_symmetrize!(
     becsum
 )
 
-    #REAL(DP), INTENT(INOUT) :: becsum(nhm*(nhm+1)/2,nat,nspin)
-    #!! cross band occupations
-    #!
-    #! ... local variables
-    #!
-    #REAL(DP) :: becsym(nhm*(nhm+1)/2,nat,nspin) ! symmetrized becsum
-    #REAL(DP) :: pref, usym, segno
-    #REAL(DP) :: mb(3)
-    #!
-    #INTEGER :: ia,mykey,ia_s,ia_e 
-    #!                       ! atoms counters and indexes
-    #INTEGER :: is, nt       ! counters on spin, atom-type
-    #INTEGER :: ma           ! atom symmetric to na
-    #INTEGER :: ih,jh, ijh   ! counters for augmentation channels
-    #INTEGER :: lm_i, lm_j, &! angular momentums of non-symmetrized becsum
-    #           l_i, l_j, m_i, m_j
-    #INTEGER :: m_o, m_u     ! counters for sums on m
-    #INTEGER :: oh, uh, ouh  ! auxiliary indexes corresponding to m_o and m_u
-    #INTEGER :: isym         ! counter for symmetry operation
-    #INTEGER :: ipol, kpol
-
     Nsyms = sym_info.Nsyms
     if Nsyms == 1
         return
@@ -70,14 +49,13 @@ function PAW_symmetrize!(
 
     irt = sym_info.irt
 
-    becsym = zeros(size(becsum))
+    becsym = zeros(Float64, size(becsum))
     usym = 1.0/Nsyms
 
     for ispin in 1:Nspin, ia in 1:Natoms
         #
         isp = atm2species[ia]
         # No need to symmetrize non-PAW atoms
-        # IF ( .NOT. upf(nt)%tpawp ) CYCLE
         if !pspots[isp].is_paw
             continue
         end
