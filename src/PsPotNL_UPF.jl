@@ -60,8 +60,7 @@ function PsPotNL_UPF(
        NbetaNL = NbetaNL + nh[isp]
     end
 
-    ap, lpx, lpl = _calc_clebsch_gordan(lmaxkb + 1)
-
+    ap, lpx, lpl = _calc_clebsch_gordan(lmaxkb)
 
     # calculate the maximum number of beta functions
     nhm = maximum(nh)
@@ -154,7 +153,7 @@ function PsPotNL_UPF(
     # integral of augmentation charges times Veff)
     # Depends on spin
     Deeq = zeros(Float64, nhm, nhm, Natoms, Nspin)
-    # Set to Dvan if no ultrasoft
+    # Set to Dvan if no ultrasoft (need this?)
     #if all(.!are_ultrasoft)
         for ia in 1:Natoms
             isp = atm2species[ia]
@@ -385,7 +384,7 @@ function _calc_clebsch_gordan( lmaxkb::Int64 )
     lli = lmaxkb + 1
 
     # Those are parameters (HARDCODED)
-    lmaxx  = 3         # max non local angular momentum (l=0 to lmaxx)
+    lmaxx = 3         # max non local angular momentum (l=0 to lmaxx)
     lqmax = 2*lmaxx + 1  # max number of angular momenta of Q
 
     # maximum number of combined angular momentum
@@ -446,7 +445,7 @@ function _calc_clebsch_gordan( lmaxkb::Int64 )
 
 end
 
-function _compute_ap(l,li,lj,llx,ylm,mly)
+function _compute_ap(l, li, lj, llx, ylm, mly)
     res = 0.0
     for i in 1:llx
         res += mly[l,i]*ylm[i,li]*ylm[i,lj]
@@ -471,7 +470,7 @@ function _calc_qradG(
         end
     end
 
-    qnorm = 0.0 # XXX HARDCODED, no k-points norm of (q + k) ?
+    #qnorm = 0.0 # XXX HARDCODED, no k-points norm of (q + k) ?
     dq = 0.01 # XXX HARDCODED
     cell_factor = 1.0 # hardcoded
     nqxq = floor(Int64, sqrt(2*ecutrho)/dq + 4) # factor of 2 in 2*ecutrho (convert to Ry)
@@ -536,8 +535,10 @@ function _calc_qradG(
                 end # igl
             end # l
         end
-        qradG[isp][:,:,:] = 4*qradG[isp][:,:,:]*prefr
+        #qradG[isp][:,:,:] = 4*qradG[isp][:,:,:]*prefr
         # Factor of 4 to fix the unit of Deeq and op_S
+
+        qradG[isp][:,:,:] = qradG[isp][:,:,:]*prefr
     end
     return qradG
 end
