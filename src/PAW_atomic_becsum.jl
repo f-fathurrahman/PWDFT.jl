@@ -66,7 +66,7 @@ function PAW_atomic_becsum!(
                 if Nspin == 1
                     becsum[ijh,ia,1] = ocnb / (2*nhtol[ih,isp] + 1)
                 #
-                elseif Nspin == 2
+                else # if Nspin == 2
                     becsum[ijh,ia,1] = 0.5*(1.0 + μ)*ocnb / (2*nhtol[ih,isp] + 1)
                     becsum[ijh,ia,2] = 0.5*(1.0 - μ)*ocnb / (2*nhtol[ih,isp] + 1)
                 end
