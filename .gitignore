@@ -44,3 +44,4 @@ sandbox_*
 deps/deps.jl
 
 Manifest.toml
+.vscode/*
