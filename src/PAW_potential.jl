@@ -9,7 +9,10 @@ end
 
 
 function PAW_potential!(
-    atoms, pspots, pspotNL, xc_calc,
+    atoms::Atoms,
+    pspots::Vector{PsPot_UPF},
+    pspotNL::PsPotNL_UPF,
+    xc_calc,
     becsum, ddd_paw, e_cmp
 )
 
@@ -104,11 +107,14 @@ function PAW_potential!(
 
             savedv_lm[:,:,:] .+= v_lm[:,:,:]
 
+            #
+            # Calculate ddd_paw
+            #
             for ispin in 1:Nspin
                 nmb = 0
                 # loop on all pfunc for this kind of pseudo
                 for nb in 1:nh[isp], mb in nb:nh[isp]
-                    nmb = nmb + 1 # nmb = 1, nh*(nh+1)/2
+                    nmb = nmb + 1
                     #
                     # compute the density from a single pfunc
                     becfake[nmb,ia,ispin] = 1.0
@@ -134,7 +140,7 @@ function PAW_potential!(
     end # loop over all atoms
 
     # FIXME:
-    ddd_paw[:] *= 4.0
+    #ddd_paw[:] *= 4.0
 
     return energy_tot
 end
