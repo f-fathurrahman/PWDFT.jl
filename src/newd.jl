@@ -23,12 +23,13 @@ function calc_integ_QVeff!( Ham )
         for ip in 1:Npoints
             ctmp[ip] = Veff[ip,ispin] # Veff already contains Ps_loc
         end
-        println("integ VQeff: sum Veff = ", sum(ctmp))
+        #println("integ VQeff: sum Veff = ", sum(ctmp))
         R_to_G!(Ham.pw, ctmp)
         #ctmp /= sqrt(Npoints) # XXX: scale
         for ig in 1:Ng
             ip = idx_g2r[ig]
-            VeffG[ig,ispin] = ctmp[ip]
+            VeffG[ig,ispin] = ctmp[ip]/Npoints
+            # (1/Npoints) is needed for QE's convention
         end
         #println("sum VeffG = ", sum(VeffG))
     end
@@ -66,7 +67,8 @@ function calc_integ_QVeff!( Ham )
             ijh = ijh + 1
             #qvan2!( ngm, ih, jh, nt, qmod, qgm(1,ijh), ylmk0 )
             @views qvan2!( Ham.pspotNL, ih, jh, isp, G2, ylmk0, Qgm[:,ijh] )
-            #println("ijh = ", ijh, " sum Qgm = ", sum(Qgm[:,ijh]))
+            #sQ = sum(Qgm[:,ijh])
+            #@printf("ijh = %4d sum Qgm = (%18.10f,%18.10f)\n", ijh, real(sQ), imag(sQ))
         end
         #
         # count max number of atoms of type isp
@@ -92,8 +94,10 @@ function calc_integ_QVeff!( Ham )
             #
             # here we compute the integral Q*V for all atoms of this kind
             deeaux = real(Qgm' * aux)
+            #println("size deeaux = ", size(deeaux))
             #CALL DGEMM( 'C', 'N', nij, nab, 2*ngm, fact, qgm, 2*ngm, aux, &
             #         2*ngm, 0.0_dp, deeaux, nij )
+            #println("sum deeaux = ", sum(deeaux))
             nb = 0
             for ia in 1:Natoms
                 if atm2species[ia] != isp
@@ -103,7 +107,7 @@ function calc_integ_QVeff!( Ham )
                 ijh = 0
                 for ih in 1:nh[isp], jh in ih:nh[isp]
                     ijh = ijh + 1
-                    Deeq[ih,jh,ia,ispin] = CellVolume * deeaux[ijh,nb] / Npoints
+                    Deeq[ih,jh,ia,ispin] = CellVolume * deeaux[ijh,nb]
                     #@printf("%4d %4d %4d %4d %18.10f\n", ih, jh, ia, ispin, Deeq[ih,jh,ia,ispin])
                     if jh > ih
                         Deeq[jh,ih,ia,ispin] = Deeq[ih,jh,ia,ispin]
@@ -114,6 +118,8 @@ function calc_integ_QVeff!( Ham )
         end # Nspin
             
     end # Nspecies
+
+    #println("In calc_integ_VQeff: sum Deeq: ", sum(Deeq))
 
     return
 
@@ -163,7 +169,7 @@ function calc_newDeeq!( Ham )
         end
     end
     
-    println("sum Deeq before adding PAW contrib if any: ", sum(Deeq))
+    println("sum Deeq after USPP contrib (before PAW): ", sum(Deeq))
 
     # Add PAW component
     if ok_paw
@@ -177,7 +183,7 @@ function calc_newDeeq!( Ham )
             ijh = 0
             for ispin in 1:Nspin, ih in 1:nh[isp], jh in ih:nh[isp]
                 ijh = ijh + 1
-                Deeq[ih,jh,ia,ispin] += ddd_paw[ijh,ia,ispin]*4.0 # This factor of 4?
+                Deeq[ih,jh,ia,ispin] += ddd_paw[ijh,ia,ispin]
                 Deeq[jh,ih,ia,ispin] = Deeq[ih,jh,ia,ispin] 
             end
         end
