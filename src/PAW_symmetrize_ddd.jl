@@ -46,8 +46,6 @@ function PAW_symmetrize_ddd!(
     irt = sym_info.irt
     dddsym = zeros(Float64, size(ddd))
 
-    println("size ddd = ", size(ddd))
-
     usym = 1.0 / Nsyms
     
     for ispin in 1:Nspin, ia in 1:Natoms
