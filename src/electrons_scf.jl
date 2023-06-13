@@ -68,9 +68,9 @@ function electrons_scf!(
     # Mix directly in R-space
     mixer = BroydenMixer(Rhoe, betamix, mixdim=8)
 
-    Rhoe_in = zeros(Float64,size(Rhoe))
+    Rhoe_in = zeros(Float64, size(Rhoe))
     if ok_paw
-        becsum_in = zeros(size(Ham.pspotNL.becsum))
+        becsum_in = zeros(Float64, size(Ham.pspotNL.becsum))
     end
 
     ethr = 1e-5 # default
@@ -250,6 +250,13 @@ function electrons_scf!(
         println("\nUsing original formula for total energy")
         println(energies, use_smearing=use_smearing)
     end
+    
+    @printf("\n")
+    @printf("----------------------------\n")
+    @printf("Final Kohn-Sham eigenvalues:\n")
+    @printf("----------------------------\n")
+    @printf("\n")
+    print_ebands(Ham.electrons, Ham.pw.gvecw.kpoints, unit="eV")
 
     return
 end
