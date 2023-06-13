@@ -218,7 +218,7 @@ function PsPot_UPF( upf_file::String )
         pp_beta_str = replace(pp_beta_str, "\n" => " ")
         spl_str = split(pp_beta_str, keepempty=false)
         for i in 1:Nr
-            proj_func[i,iprj] = parse(Float64,spl_str[i])*0.5 # Convert to Hartree
+            proj_func[i,iprj] = parse(Float64,spl_str[i]) #*0.5 # Convert to Hartree
         end
     end
 
@@ -253,7 +253,7 @@ function PsPot_UPF( upf_file::String )
     for i in 1:Nproj*Nproj
         Dion_temp[i] = parse(Float64,spl_str[i])
     end
-    Dion = reshape(Dion_temp,(Nproj,Nproj))*2  # convert to Hartree
+    Dion = reshape(Dion_temp,(Nproj,Nproj))*0.5 #*2  # convert to Hartree
 
     # For compatibility with PsPot_GTH
     Nproj_l = zeros(Int64,4)
@@ -495,7 +495,7 @@ function _read_us_aug(
                 if is_paw
                     is_null = abs(paw_data.augmom[nb,mb,l+1]) < paw_data.qqq_eps
                 end
-                println("is_null = ", is_null)
+                #println("is_null = ", is_null)
                 # Note that augmom is originally indexed from 0
                 if is_null
                     println("Skip l = ", l)
@@ -601,19 +601,31 @@ end
 # 
 function eval_Vloc_G!(
     psp::PsPot_UPF,
-    G2_shells::Array{Float64,1},
-    Vloc_G::Array{Float64,1}
+    G2_shells::Vector{Float64},
+    Vloc_G::AbstractVector{Float64}
 )
 
     r = psp.r
+    Nr_full = psp.Nr
+    Nr = Nr_full
+
+    RCUT = 10.0
+    for i in 1:Nr_full
+        if r[i] > RCUT
+            Nr = i
+            break
+        end 
+    end
+    # Force Nr to be odd number
+    Nr = 2*floor(Int64, (Nr + 1)/2) - 1
+    println("Nr = ", Nr)
+
     rab = psp.rab
-    Nr = psp.Nr
     Vloc_at = psp.V_local
     zval = psp.zval
-
     Ngl = length(G2_shells)
 
-    #Vloc_G = zeros(Float64, Ngl)
+    fill!(Vloc_G, 0.0)
     aux = zeros(Float64, Nr)
     aux1 = zeros(Float64, Nr)
 
@@ -622,7 +634,7 @@ function eval_Vloc_G!(
         for ir in 1:Nr
             aux[ir] = r[ir] * ( r[ir] * Vloc_at[ir] + zval )
         end
-        Vloc_G[1] = 4*pi*integ_simpson(Nr, aux, rab)
+        Vloc_G[1] = 4π*integ_simpson(Nr, aux, rab)
         igl0 = 2
     else
         igl0 = 1
@@ -631,7 +643,7 @@ function eval_Vloc_G!(
     # here the G != 0 terms, we first compute the part of the integrand 
     # function independent of |G| in real space
     for ir in 1:Nr
-       aux1[ir] = r[ir] * Vloc_at[ir] + zval * erf( r[ir] )
+       aux1[ir] = r[ir] * Vloc_at[ir] + zval * erf(r[ir])
     end
 
     for igl in igl0:Ngl
@@ -640,7 +652,7 @@ function eval_Vloc_G!(
             aux[ir] = aux1[ir] * sin(Gx*r[ir])/Gx
         end
         Vgl = integ_simpson( Nr, aux, rab )
-        Vloc_G[igl] = 4*pi*(Vgl - zval * exp(-0.25*G2_shells[igl])/G2_shells[igl])
+        Vloc_G[igl] = 4π*(Vgl - zval * exp(-0.25*G2_shells[igl])/G2_shells[igl])
     end
     return
 end
