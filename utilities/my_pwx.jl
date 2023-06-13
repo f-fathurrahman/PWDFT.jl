@@ -2,6 +2,8 @@ using Printf
 using OffsetArrays
 using LinearAlgebra
 
+LinearAlgebra.BLAS.set_num_threads(1)
+
 using Random
 Random.seed!(1234)
 
