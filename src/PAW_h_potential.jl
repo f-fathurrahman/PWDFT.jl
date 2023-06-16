@@ -45,6 +45,11 @@ function PAW_h_potential!(
     r = pspots[isp].r
     dx = pspots[isp].dx
 
+    #println("\nEnter PAW_h_potential:")
+    #println("l2 = ", l2)
+    #println("Nrmesh = ", size(r,1))
+    #println("dx = ", dx)
+
     Nrmesh = pspots[isp].Nr
     aux = zeros(Float64, Nrmesh)
     nspin_lsda = size(rho_lm, 3)
@@ -57,7 +62,9 @@ function PAW_h_potential!(
         for k in 1:Nrmesh
             aux[k] = pref * sum(rho_lm[k,lm,1:nspin_lsda])
         end
+        #println("lm = ", lm, " sum aux = ", sum(aux))
         @views radial_hartree!( l, 2*l + 2, r, dx, aux, v_lm[:,lm] )
+        #println("lm = ", lm, " sum v_lm[:,lm] = ", sum(v_lm[:,lm]))
     end
     #
     # compute energy (we compute here by default):

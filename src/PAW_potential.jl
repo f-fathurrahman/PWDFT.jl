@@ -60,6 +60,8 @@ function PAW_potential!(
     # Begin loop over all atoms
     for ia in 1:Natoms
 
+        #println("\nLoop PAW_potential: ia = ", ia)
+
         isp = atm2species[ia]
         # Skip this atoms if it is not using PAW
         if !pspots[isp].is_paw
@@ -91,19 +93,28 @@ function PAW_potential!(
             # sgn: sign for energy summation
 
             PAW_rho_lm!(AE, ia, atoms, pspots, pspotNL, becsum, rho_lm)
+            #println("AE = ", AE)
+            #println("sum rho_lm = ", sum(rho_lm))
 
             # Hartree term
+            #println("\nCalling PAW_h_potential")
             @views energy = PAW_h_potential!( ia, atoms, pspots, rho_lm, v_lm[:,:,1] )
+            #println("After calling PAW_h_potential: energy = ", energy)
             energy_tot += sgn*energy
             e_cmp[ia,1,i_what] = sgn*energy # Hartree, all-electron
             for ispin in 1:Nspin # ... v_H has to be copied to all spin components
                 @views savedv_lm[:,:,ispin] = v_lm[:,:,1]
             end
+            #println("sum v_lm after PAW_h_potential = ", sum(v_lm[:,:,1]))
 
             # XC term
+            #println("\nCalling PAW_xc_potential")
             @views energy = PAW_xc_potential!( AE, ia, atoms, pspots, pspotNL, xc_calc, rho_lm, v_lm )
+            #println("After calling PAW_xc_potential: energy = ", energy)
             energy_tot += sgn*energy
             e_cmp[ia,2,i_what] = sgn*energy # XC, all-electron
+
+            #println("sum v_lm after PAW_xc_potential = ", sum(v_lm[:,:,1]))
 
             savedv_lm[:,:,:] .+= v_lm[:,:,:]
 
@@ -128,6 +139,7 @@ function PAW_potential!(
                             rho_lm[ir,lm,ispin] *= savedv_lm[ir,lm,ispin]
                         end
                         # Integrate (XXX: why using kkbeta?)
+                        #println("Nrmesh = ", Nrmesh, " kkbeta = ", kkbeta)
                         res = PWDFT.integ_simpson( kkbeta, rho_lm[:,lm,ispin], pspots[isp].rab )
                         ddd_paw[nmb,ia,ispin] += sgn*res
                     end
@@ -138,9 +150,6 @@ function PAW_potential!(
 
         end # AE, PS
     end # loop over all atoms
-
-    # FIXME:
-    #ddd_paw[:] *= 4.0
 
     return energy_tot
 end
