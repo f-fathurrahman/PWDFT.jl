@@ -126,22 +126,27 @@ function PsPot_UPF( upf_file::String )
 
     # Ugh... some UPF does not have these variables
     # Example: ONCV pseudopotentials
+    rmesh_dict = LightXML.attributes_dict(pp_mesh[1])
     dx = 0.0
-    xmin = 0.0
-    rmax = 0.0
-    zmesh = 0.0
-    try
-        dx = parse(Float64, LightXML.attributes_dict(pp_mesh[1])["dx"])
-        xmin = parse(Float64, LightXML.attributes_dict(pp_mesh[1])["xmin"])
-        rmax = parse(Float64, LightXML.attributes_dict(pp_mesh[1])["rmax"])
-        zmesh = parse(Float64, LightXML.attributes_dict(pp_mesh[1])["zmesh"])
-    catch exception
-        #println("Error reading radial grid parameters")
-        dx = 0.0
-        xmin = 0.0
-        rmax = 0.0
-        zmesh = 0.0
+    if haskey(rmesh_dict, "dx")
+        dx = parse(Float64, rmesh_dict["dx"])
     end
+
+    xmin = 0.0
+    if haskey(rmesh_dict, "xmin")
+        xmin = parse(Float64, rmesh_dict["xmin"])
+    end
+
+    rmax = 0.0
+    if haskey(rmesh_dict, "rmax")
+        rmax = parse(Float64, rmesh_dict["rmax"])
+    end
+
+    zmesh = 0.0
+    if haskey(rmesh_dict, "zmesh")
+        zmesh = parse(Float64, rmesh_dict["zmesh"])
+    end
+
     # These are used in PAW cases
     # I assume that these variables are available in the PAW pseudotentials
     # TODO: Probably only read these in case of PAW pseudopotential
