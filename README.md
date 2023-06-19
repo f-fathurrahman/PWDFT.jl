@@ -22,7 +22,27 @@ structure package such as Quantum ESPRESSO, ABINIT, VASP, etc.
 - GTH pseudopotentials (included in the repository)
 - LDA-VWN and GGA-PBE functionals (via `Libxc.jl`)
 
-## Requirements
+## Isolated Installation (using environment, recommended)
+
+Clone the repository to your computer or download the zip file and extract it.
+Start Julia and navigate to the downloaded or extracted PWDFT.jl directory. This
+directory should contain `Project.toml` file. Then activate the project
+```julia
+using Pkg
+Pkg.activate(".")
+Pkg.instantiate()
+```
+This process will install the required packages.
+To run the examples move to the example directory (for example
+using shell mode or `cd` function)
+and simply include the `run.jl` file.
+```julia
+cd("examples/Si_fcc")
+include("run.jl")
+```
+
+
+## Requirements and Installation (OLD)
 
 - [Julia](https://julialang.org/downloads) version >= 0.7,
   with the following packages installed:
@@ -43,8 +63,6 @@ Pkg.add("LightXML")
 
 These packages should be automatically installed `PWDFT.jl` is installed as
 local package (see below).
-
-## Installation
 
 Currently, this package is not yet registered. So, `Pkg.add("PWDFT")` will not work (yet).
 
