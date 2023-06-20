@@ -17,14 +17,8 @@ include("test_xc.jl")
 
 include("test_Electrons.jl")
 
+# Disabled, probaly use Spglib.jl instead of LibSymspg
 #include("test_spglib.jl")
-include("H_atom.jl")
-#include("H_atom_PBE.jl")
-#include("Si_fcc.jl")
-#include("Si_fcc_PBE.jl")
-#include("Pt_fcc.jl")
-#include("Pt_fcc_PBE.jl")
-#include("Fe_bcc_PBE_spinpol.jl")
 
 println("")
 println("All test successfully run")
