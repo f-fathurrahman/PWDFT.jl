@@ -1,0 +1,1 @@
+rm -v *.mem *.cov
