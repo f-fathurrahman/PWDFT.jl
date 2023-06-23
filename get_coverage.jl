@@ -1,3 +1,4 @@
+#!/usr/bin/env julia
 # From: https://github.com/JuliaCI/Coverage.jl
 
 using Coverage
