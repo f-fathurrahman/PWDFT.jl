@@ -14,6 +14,7 @@ include("test_atoms.jl")
 include("test_Hamiltonian.jl")
 
 include("test_xc.jl")
+include("test_xc_internal.jl")
 
 include("test_Electrons.jl")
 
