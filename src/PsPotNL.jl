@@ -2,13 +2,15 @@ struct PsPotNL
     NbetaNL::Int64
     prj2beta::Array{Int64,4}
     betaNL::Vector{Matrix{ComplexF64}}
+    are_ultrasoft::Vector{Bool}
+    are_paw::Vector{Bool}
 end
 
 function PsPotNL()
     # return dummy PsPotNL
     betaNL = Vector{Matrix{ComplexF64}}(undef,1)
     betaNL[1] = zeros(ComplexF64,1,1)
-    return PsPotNL(0, zeros(Int64,1,1,1,1), betaNL )
+    return PsPotNL(0, zeros(Int64,1,1,1,1), betaNL, [false], [false] )
 end
 
 function PsPotNL( atoms::Atoms, pw::PWGrid, pspots::Vector{PsPot_GTH}; check_norm=false )
@@ -17,6 +19,8 @@ function PsPotNL( atoms::Atoms, pw::PWGrid, pspots::Vector{PsPot_GTH}; check_nor
     atm2species = atoms.atm2species
     atpos = atoms.positions
     kpoints = pw.gvecw.kpoints
+    are_ultrasoft = zeros(Bool, atoms.Nspecies)
+    are_paw = zeros(Bool, atoms.Nspecies)
 
     NbetaNL, prj2beta = _init_prj2beta(Natoms, atm2species, pspots)
 
@@ -25,7 +29,7 @@ function PsPotNL( atoms::Atoms, pw::PWGrid, pspots::Vector{PsPot_GTH}; check_nor
         # return dummy PsPotNL
         betaNL = Array{Array{ComplexF64,2},1}(undef,1)
         betaNL[1] = zeros(ComplexF64,1,1)
-        return PsPotNL(0, zeros(Int64,1,1,1,1), betaNL )
+        return PsPotNL(0, zeros(Int64,1,1,1,1), betaNL, are_ultrasoft, are_paw )
     end
 
     Nkpt = kpoints.Nkpt
@@ -68,7 +72,7 @@ function PsPotNL( atoms::Atoms, pw::PWGrid, pspots::Vector{PsPot_GTH}; check_nor
         check_betaNL_norm( pw, betaNL, kpoints )
     end
 
-    return PsPotNL( NbetaNL, prj2beta, betaNL )
+    return PsPotNL( NbetaNL, prj2beta, betaNL, are_ultrasoft, are_paw )
 
 end
 
