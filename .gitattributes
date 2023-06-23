@@ -1,2 +1,3 @@
 *.c linguist-vendored
 LOG_* linguist-vendored
+*.sh linguist-vendored
