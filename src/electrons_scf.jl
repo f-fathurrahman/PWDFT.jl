@@ -5,7 +5,6 @@ include("smooth_to_dense.jl")
 include("update_from_rhoe.jl")
 include("newd.jl")
 include("op_S.jl")
-include("calc_rhoe_uspp.jl")
 include("ortho_with_S.jl")
 include("diag_davidson_qe_v2.jl")
 
@@ -132,7 +131,7 @@ function electrons_scf!(
         # Calculate electron density and band energy
         #
         Eband = _calc_Eband(wk, Focc, evals)
-        Rhoe[:,:] = calc_rhoe_uspp( Ham, psiks )
+        Rhoe[:,:] = calc_rhoe( Ham, psiks )
         # In case of PAW becsum is also calculated/updated here
         #println("integ output Rhoe = ", sum(Rhoe)*dVol)
 

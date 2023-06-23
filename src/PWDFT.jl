@@ -366,7 +366,6 @@ export electrons_scf!
 export atomic_rho_g
 export update_from_rhoe!
 export op_S, op_S!
-export calc_rhoe_uspp, calc_rhoe_uspp!
 
 
 include("calc_forces_NN.jl")
