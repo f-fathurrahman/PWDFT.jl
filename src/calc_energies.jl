@@ -5,9 +5,9 @@ Compute and return non-local pseudopotential energy for a given Hamiltonian `Ham
 electron density) and BlochWavefunc `psiks`.
 """
 function calc_E_Ps_nloc(
-    Ham::Hamiltonian{Txc,PsPot_GTH},
+    Ham::Hamiltonian{PsPot_GTH},
     psiks::BlochWavefunc
-) where Txc <: AbstractXCCalculator
+)
 
     Nstates = Ham.electrons.Nstates
     Focc = Ham.electrons.Focc
@@ -58,9 +58,9 @@ end
 
 
 function calc_E_Ps_nloc(
-    Ham::Hamiltonian{Txc,PsPot_UPF},
+    Ham::Hamiltonian{PsPot_UPF},
     psiks::BlochWavefunc
-) where Txc <: AbstractXCCalculator
+)
 
     Nstates = Ham.electrons.Nstates
     Focc = Ham.electrons.Focc

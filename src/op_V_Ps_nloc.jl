@@ -37,10 +37,10 @@ function op_V_Ps_nloc!(
 end
 
 function op_V_Ps_nloc!(
-    Ham::Hamiltonian{Txc,PsPot_GTH},
+    Ham::Hamiltonian{PsPot_GTH},
     psi::AbstractArray{ComplexF64},
     Hpsi::AbstractArray{ComplexF64}
-) where Txc <: AbstractXCCalculator
+)
     #
     ik = Ham.ik
     # Take `Nstates` to be the size of psi and not from `Ham.electrons.Nstates`.
@@ -80,10 +80,10 @@ end
 
 # For UPF pspot
 function op_V_Ps_nloc!(
-    Ham::Hamiltonian{Txc,PsPot_UPF},
+    Ham::Hamiltonian{PsPot_UPF},
     psi::AbstractArray{ComplexF64},
     Hpsi::AbstractArray{ComplexF64}
-) where Txc <: AbstractXCCalculator
+)
     
     ik = Ham.ik
     Nstates = size(psi, 2)

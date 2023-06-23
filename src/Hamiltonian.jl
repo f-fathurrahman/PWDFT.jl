@@ -1,4 +1,4 @@
-mutable struct Hamiltonian{Txc<:AbstractXCCalculator,Tpsp<:AbstractPsPot}
+mutable struct Hamiltonian{Tpsp<:AbstractPsPot}
     pw::PWGrid
     potentials::Potentials
     energies::Energies
@@ -11,8 +11,7 @@ mutable struct Hamiltonian{Txc<:AbstractXCCalculator,Tpsp<:AbstractPsPot}
     pspots::Vector{Tpsp}
     pspotNL::Union{PsPotNL,PsPotNL_UPF} # TODO: rename or add alias: PsPotNL to PsPotNL_GTH
     xcfunc::String
-    xc_calc::Txc
-    #xc_calc::Union{LibxcXCCalculator,XCCalculator}
+    xc_calc::Union{LibxcXCCalculator,XCCalculator}
     ik::Int64   # current kpoint index
     ispin::Int64 # current spin index
 end

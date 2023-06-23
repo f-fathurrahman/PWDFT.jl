@@ -1,7 +1,7 @@
 function atomic_rho_g(
-    Ham::Hamiltonian{Txc,PsPot_UPF};
+    Ham::Hamiltonian{PsPot_UPF};
     starting_magnetization::Union{Nothing,Float64}=nothing
-) where Txc <: AbstractXCCalculator
+)
 
     atoms = Ham.atoms
     pw = Ham.pw

@@ -1,7 +1,7 @@
 function op_S(
-    Ham::Hamiltonian{Txc,PsPot_UPF},
+    Ham::Hamiltonian{PsPot_UPF},
     psi::AbstractArray{ComplexF64}
-) where Txc <: AbstractXCCalculator
+)
 
     Spsi = zeros(ComplexF64, size(psi))
     op_S!(Ham, psi, Spsi)
@@ -10,10 +10,10 @@ end
 
 
 function op_S!(
-    Ham::Hamiltonian{Txc,PsPot_UPF},
+    Ham::Hamiltonian{PsPot_UPF},
     psi::AbstractArray{ComplexF64},
     Spsi::AbstractArray{ComplexF64}
-) where Txc <: AbstractXCCalculator
+)
 
     # Check Vnl_KB construction
     ik = Ham.ik
