@@ -7,9 +7,7 @@ function is_using_extension_upf(filename::String)
 end
 
 
-# interp table need to be initialized later, so we declare it as mutable
-# Probably using spline is better?
-mutable struct PsPot_UPF <: AbstractPsPot
+struct PsPot_UPF <: AbstractPsPot
     pspfile::String
     atsymb::String
     zval::Float64
@@ -34,8 +32,7 @@ mutable struct PsPot_UPF <: AbstractPsPot
     kkbeta::Int64
     proj_func::Array{Float64,2}
     Dion::Array{Float64,2}
-    prj_interp_table::Array{Float64,2}
-    # From PsPot_GTH
+    # From PsPot_GTH (may be remove this)
     h::Array{Float64,3}   # l,1:3,1:3
     lmax::Int64           # l = 0, 1, 2, 3 (s, p, d, f)
     Nproj_l::Array{Int64,1}  # originally 0:3
@@ -326,14 +323,11 @@ function PsPot_UPF( upf_file::String )
 
     LightXML.free(xdoc)
 
-    prj_interp_table = Array{Float64,2}(undef,1,1) # XXX to be initialized later
-
-
 
     return PsPot_UPF(upf_file, atsymb, zval,
         is_nlcc, is_ultrasoft, is_paw,
         Nr, r, rab, dx, xmin, rmax, zmesh,
-        V_local, Nproj, proj_l, rcut_l, kkbeta, proj_func, Dion, prj_interp_table,
+        V_local, Nproj, proj_l, rcut_l, kkbeta, proj_func, Dion,
         h, lmax, Nproj_l,
         lmax_rho,
         rho_atc,
@@ -663,40 +657,8 @@ function eval_Vloc_G!(
 end
 
 
-function _build_prj_interp_table!( psp::PsPot_UPF, pw::PWGrid )
 
-    ecutwfc = pw.ecutwfc
-    CellVolume = pw.CellVolume
-
-    cell_factor = 1.0 # XXX HARDCODED
-    dq = 0.01 # XXX HARDCODED
-
-    ndm = psp.kkbeta
-    Nproj = psp.Nproj
-
-    nqx = floor( Int64, (sqrt(2*ecutwfc)/dq + 4)*cell_factor )
-
-    psp.prj_interp_table = zeros(Float64,nqx,Nproj)
-
-    aux = zeros(Float64, ndm)
-    pref = 4*pi/sqrt(CellVolume)
-
-    for ibeta in 1:Nproj
-        l = psp.proj_l[ibeta]
-        for iq in 1:nqx
-            qi = (iq - 1) * dq
-            for ir in 1:psp.kkbeta
-                jlqr = sphericalbesselj(l, qi*psp.r[ir])
-                aux[ir] = psp.proj_func[ir,ibeta] * psp.r[ir] * jlqr
-            end
-            vqint = integ_simpson( psp.kkbeta, aux, psp.rab )
-            psp.prj_interp_table[iq, ibeta] = vqint * pref
-        end
-    end
-
-    return
-end
-
+#=
 function eval_proj_G(psp::PsPot_UPF, iprjl::Int64, Gm::Float64)
     #
     dq = 0.01 # HARDCODED
@@ -717,7 +679,7 @@ function eval_proj_G(psp::PsPot_UPF, iprjl::Int64, Gm::Float64)
          tab[i3,iprjl] * px * ux * vx / 6.0
     return Vq
 end
-
+=#
 
 import Base: show
 function show( io::IO, psp::PsPot_UPF; header=true )

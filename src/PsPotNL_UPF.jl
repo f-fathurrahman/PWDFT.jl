@@ -7,6 +7,7 @@ mutable struct PsPotNL_UPF
     nh::Vector{Int64}
     nhm::Int64
     NbetaNL::Int64  # it is originally nkb
+    prj_interp_tables::Vector{Matrix{Float64}}
     ap::Array{Float64,3}
     lpx::Array{Int64,2}
     lpl::Array{Int64,3}
@@ -58,6 +59,17 @@ function PsPotNL_UPF(
     for ia in 1:Natoms
        isp = atm2species[ia]
        NbetaNL = NbetaNL + nh[isp]
+    end
+
+    # Check for UPF GTH_num pseudopotentials
+    #@assert NbetaNL > 0
+    # Can still run if NbetaNL == 0
+    # Various arrays may be zeros due to NbetaNL == 0
+
+    # Nonlocal projector interpolation tables for each species
+    prj_interp_tables = Vector{Matrix{Float64}}(undef,Nspecies)
+    for isp in 1:Nspecies
+        prj_interp_tables[isp] = _build_prj_interp_table(pspots[isp], pw)
     end
 
     ap, lpx, lpl = _calc_clebsch_gordan(lmaxkb)
@@ -142,7 +154,7 @@ function PsPotNL_UPF(
     for ik in 1:Nkpt
         betaNL[ik] = zeros(ComplexF64, pw.gvecw.Ngw[ik], NbetaNL)
         _init_Vnl_KB!(
-            ik, atoms, pw, pspots,
+            ik, atoms, pw, pspots, prj_interp_tables,
             lmaxkb, nh, nhm, nhtol, nhtolm, indv,
             betaNL[ik]
         )
@@ -181,7 +193,8 @@ function PsPotNL_UPF(
 
     return PsPotNL_UPF(
         lmaxx, lqmax, lmaxkb,
-        nh, nhm, NbetaNL, ap, lpx, lpl,
+        nh, nhm, NbetaNL, prj_interp_tables,
+        ap, lpx, lpl,
         indv, nhtol, nhtolm, ijtoh, indv_ijkb0,
         Dvan, Deeq, qradG, qq_nt, qq_at,
         betaNL,
@@ -192,6 +205,42 @@ function PsPotNL_UPF(
 end
 
 
+function _build_prj_interp_table( psp::PsPot_UPF, pw::PWGrid )
+
+    ecutwfc = pw.ecutwfc
+    CellVolume = pw.CellVolume
+
+    cell_factor = 1.0 # XXX HARDCODED
+    dq = 0.01 # XXX HARDCODED
+
+    ndm = psp.kkbeta
+    Nproj = psp.Nproj
+
+    nqx = floor( Int64, (sqrt(2*ecutwfc)/dq + 4)*cell_factor )
+
+    prj_interp_table = zeros(Float64, nqx, Nproj)
+
+    aux = zeros(Float64, ndm)
+    pref = 4*pi/sqrt(CellVolume)
+
+    for ibeta in 1:Nproj
+        l = psp.proj_l[ibeta]
+        for iq in 1:nqx
+            qi = (iq - 1) * dq
+            for ir in 1:psp.kkbeta
+                jlqr = sphericalbesselj(l, qi*psp.r[ir])
+                aux[ir] = psp.proj_func[ir,ibeta] * psp.r[ir] * jlqr
+            end
+            vqint = integ_simpson( psp.kkbeta, aux, psp.rab )
+            prj_interp_table[iq, ibeta] = vqint * pref
+        end
+    end
+
+    return prj_interp_table
+end
+
+
+# XXX: Need this?
 function _init_Vnl_KB!(
     ik::Int64,
     atoms::Atoms,
@@ -201,7 +250,7 @@ function _init_Vnl_KB!(
     Vnl_KB::Array{ComplexF64,2}
 )
     _init_Vnl_KB!(
-        ik, atoms, pw, pspots,
+        ik, atoms, pw, pspots, pspotNL.prj_interp_tables,
         pspotNL.lmaxkb, pspotNL.nh, pspotNL.nhm,
         pspotNL.nhtol, pspotNL.nhtolm, pspotNL.indv,
         Vnl_KB
@@ -217,6 +266,7 @@ function _init_Vnl_KB!(
     atoms::Atoms,
     pw::PWGrid,
     pspots::Vector{PsPot_UPF},
+    prj_interp_tables,
     lmaxkb, nh, nhm, nhtol, nhtolm, indv,
     Vnl_KB::Array{ComplexF64,2}
 )
@@ -263,7 +313,7 @@ function _init_Vnl_KB!(
     for isp in 1:Nspecies
         #
         psp = pspots[isp]
-        tab = psp.prj_interp_table
+        tab = prj_interp_tables[isp]
         #
         # calculate beta in G-space using an interpolation table:
         # f_l(q)=\int _0 ^\infty dr r^2 f_l(r) j_l(q.r)

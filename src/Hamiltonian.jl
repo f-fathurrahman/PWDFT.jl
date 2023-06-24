@@ -133,8 +133,6 @@ function Hamiltonian(
             #
             println("\nUsing UPF\n")
             pspots[isp] = PsPot_UPF( pspfiles[isp] )
-            # build the interpolation table needed for nonlocal projectors
-            _build_prj_interp_table!( pspots[isp], pw )
             #
             if pspots[isp].is_nlcc
                 is_psp_using_nlcc[isp] = true
