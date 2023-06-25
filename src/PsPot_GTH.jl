@@ -16,6 +16,7 @@ struct PsPot_GTH <: AbstractPsPot
     lmax::Int64           # l = 0, 1, 2, 3 (s, p, d, f)
     Nproj_l::Array{Int64,1}  # originally 0:3
     rcut_NL::Array{Float64,1}  # originally 0:3, needed for real space evaluation
+    is_nlcc::Bool
 end
 
 # Dummy PsPot_GTH
@@ -30,7 +31,8 @@ function PsPot_GTH()
     lmax = -1
     Nproj_l = zeros(Int64,4)
     rcut_NL = zeros(Float64,4)
-    return PsPot_GTH(pspfile, atsymb, zval, rlocal, rc, c, h, lmax, Nproj_l, rcut_NL)
+    is_nlcc = false
+    return PsPot_GTH(pspfile, atsymb, zval, rlocal, rc, c, h, lmax, Nproj_l, rcut_NL, is_nlcc)
 end
 
 
@@ -110,7 +112,8 @@ function PsPot_GTH( filename::String )
         end
     end
 
-    return PsPot_GTH(filename, atsymb, zval, rlocal, rc, c, h, lmax, Nproj_l, rcut_NL)
+    is_nlcc = false
+    return PsPot_GTH(filename, atsymb, zval, rlocal, rc, c, h, lmax, Nproj_l, rcut_NL, is_nlcc)
 
 end
 

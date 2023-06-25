@@ -182,7 +182,7 @@ include("calc_rhoe_core.jl")
 export calc_rhoe_core!
 
 include("Hamiltonian.jl")
-export Hamiltonian, update!
+export Hamiltonian, HamiltonianOptions, update!
 
 include("gamma_only/HamiltonianGamma.jl")
 export HamiltonianGamma
