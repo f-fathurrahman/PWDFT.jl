@@ -617,7 +617,7 @@ function eval_Vloc_G!(
     end
     # Force Nr to be odd number
     Nr = 2*floor(Int64, (Nr + 1)/2) - 1
-    println("Nr = ", Nr)
+    #println("Nr = ", Nr)
 
     rab = psp.rab
     Vloc_at = psp.V_local

@@ -72,7 +72,7 @@ function _calc_rhoecgl!(
     end
     # Force Nr to be odd number
     Nr = 2*floor(Int64, (Nr + 1)/2) - 1
-    println("Nr = ", Nr)
+    #println("Nr = ", Nr)
 
     Ngl = length(G2_shells)
     aux = zeros(Float64, Nr)
