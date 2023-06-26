@@ -177,7 +177,7 @@ function _add_usdens!( Ham, becsum, Rhoe )
                 continue
             end
             nb = nb + 1
-            tbecsum[:,nb,:] = becsum[1:nij,ia,1:Nspin]
+            @views tbecsum[:,nb,:] = becsum[1:nij,ia,1:Nspin]
             for ig in 1:Ng
                 GX = atpos[1,ia]*G[1,ig] + atpos[2,ia]*G[2,ig] + atpos[3,ia]*G[3,ig]
                 Skk[ig,nb] = cos(GX) - im*sin(GX)
@@ -187,7 +187,7 @@ function _add_usdens!( Ham, becsum, Rhoe )
 
         for ispin in 1:Nspin
             # sum over atoms
-            aux2 = Skk * tbecsum[:,:,ispin]'
+            @views aux2 = Skk * tbecsum[:,:,ispin]'
             # sum over lm indices of Q_{lm}
             ijh = 0
             for ih in 1:nh[isp], jh in ih:nh[isp]
@@ -212,8 +212,8 @@ function _add_usdens!( Ham, becsum, Rhoe )
     end
     # Use the dense grid
     G_to_R!(Ham.pw, ctmp)
-    ctmp[:] *= Npoints # rescale
-    Rhoe[:,1] += real(ctmp)
+    @views ctmp[:] *= Npoints # rescale
+    @views Rhoe[:,1] += real(ctmp)
 
     return
 end
@@ -262,10 +262,13 @@ function _add_becsum!( ik, ispin, Ham, psiks, becsum )
             continue
         end
         
+        # Preallocate some arrays
         # These are used for GEMM.
-        # They can be removed
+        # Can be removed (?)
         auxk1 = zeros(ComplexF64, Nstates, nh[isp])
         auxk2 = zeros(ComplexF64, Nstates, nh[isp])
+        #aux_gk = zeros(Float64, nh[isp], nh[isp]) # preallocate this?
+
         #
         # In becp=<vkb_i|psi_j> terms corresponding to atom ia of type isp
         # run from index i=indv_ijkb0[ia]+1 to i=indv_ijkb0[ia] + nh[isp]
@@ -287,9 +290,6 @@ function _add_becsum!( ik, ispin, Ham, psiks, becsum )
             #
             # only the real part is computed
             #
-            #CALL DGEMM ( 'C', 'N', nh(np), nh(np), 2*this_bgrp_nbnd, &
-            #     1.0_dp, auxk1, 2*this_bgrp_nbnd, auxk2, 2*this_bgrp_nbnd, &
-            #     0.0_dp, aux_gk, nh(np) )
             aux_gk = real(auxk1' * auxk2)
 
             # TODO: calculated aux_gk directly without auxk1 and auxk2
