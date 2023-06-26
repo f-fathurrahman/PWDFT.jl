@@ -138,11 +138,15 @@ function Hamiltonian(
 
 
     if options.extra_states > -1
-        electrons = Electrons( atoms, pspots, Nspin=options.Nspin, Nkpt=kpoints.Nkpt,
-            Nstates_empty=extra_states )
+        electrons = Electrons( atoms, pspots,
+            Nspin=options.Nspin, Nkpt=kpoints.Nkpt,
+            Nstates_empty=options.extra_states )
+    #
     elseif options.Nstates > -1
-        electrons = Electrons( atoms, pspots, Nspin=options.Nspin, Nkpt=kpoints.Nkpt,
+        electrons = Electrons( atoms, pspots,
+            Nspin=options.Nspin, Nkpt=kpoints.Nkpt,
             Nstates=options.Nstates )
+    #
     elseif (options.Nstates == -1) && (options.extra_states == -1)
         # Default value for Nstates and Nstates_empty
         # Nstates will be calculated automatically
