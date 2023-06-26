@@ -1,7 +1,8 @@
 function test_atoms()
 
     atoms = init_atoms_xyz(
-        joinpath( DIR_PWDFT, "structures/CuSO4.xyz")
+        joinpath( DIR_PWDFT, "structures/CuSO4.xyz"),
+        verbose=true
     )
     atoms.LatVecs = gen_lattice_cubic(10.0)
 
@@ -10,7 +11,8 @@ function test_atoms()
         1
 
         H  0.0  0.0  0.0
-        """
+        """,
+        verbose=true
     )
     atoms.LatVecs = gen_lattice_cubic(10.0)
 
