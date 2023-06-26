@@ -92,7 +92,7 @@ function electrons_scf!(
     for iterSCF in 1:NiterMax
         
         @views Vin[:] .= Vhartree[:] + Vxc[:,1]
-        deband_hwf = -sum(Vin .* Rhoe[:,1])*dVol
+        @views deband_hwf = -sum(Vin .* Rhoe[:,1])*dVol
         if ok_paw
             ddd_paw = Ham.pspotNL.paw.ddd_paw
             becsum = Ham.pspotNL.becsum
@@ -131,7 +131,8 @@ function electrons_scf!(
         # Calculate electron density and band energy
         #
         Eband = _calc_Eband(wk, Focc, evals)
-        Rhoe[:,:] = calc_rhoe( Ham, psiks )
+        #Rhoe[:,:] = calc_rhoe( Ham, psiks )
+        calc_rhoe!( Ham, psiks, Rhoe )
         # In case of PAW becsum is also calculated/updated here
         #println("integ output Rhoe = ", sum(Rhoe)*dVol)
 
@@ -143,7 +144,7 @@ function electrons_scf!(
 
         # Calculate deband (using new Rhoe)
         @views Vin[:] .= Vhartree[:] + Vxc[:,1]
-        deband = -sum(Vin .* Rhoe[:,1])*dVol # TODO: use dot instead?
+        @views deband = -sum(Vin .* Rhoe[:,1])*dVol # TODO: use dot instead?
         if ok_paw
             ddd_paw = Ham.pspotNL.paw.ddd_paw
             becsum = Ham.pspotNL.becsum
@@ -154,7 +155,7 @@ function electrons_scf!(
         if xc_calc.family == :metaGGA
             # this is not efficient as it recalculates
             calc_KEdens!(Ham, psiks, KEdens)
-            deband -= sum(xc_calc.Vtau .* KEdens[:,1])*dVol
+            @views deband -= sum(xc_calc.Vtau .* KEdens[:,1])*dVol
         end
 
         #
@@ -174,7 +175,7 @@ function electrons_scf!(
         Ehartree, Exc, Evtxc = update_from_rhoe!(Ham, psiks, Rhoe)
         #println("Evtxc = ", Evtxc)
 
-        descf = -sum( (Rhoe_in[:,1] .- Rhoe[:,1]).*(Vhartree + Vxc[:,1]) )*dVol
+        @views descf = -sum( (Rhoe_in[:,1] .- Rhoe[:,1]).*(Vhartree + Vxc[:,1]) )*dVol
         # XXX: metagga contribution is not included in descf yet !!!
         if ok_paw
             ddd_paw = Ham.pspotNL.paw.ddd_paw
