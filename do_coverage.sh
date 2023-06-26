@@ -1,2 +1,2 @@
 #!/bin/bash
-julia --code-coverage --inline=no test/runtests.jl
+julia --code-coverage=user --inline=no test/runtests.jl
