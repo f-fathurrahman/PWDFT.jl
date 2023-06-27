@@ -19,7 +19,7 @@ function PAW_lm2rad!(
 
     fill!(F_rad, 0.0)
     for ispin in 1:Nspin, lm in 1:l2
-        F_rad[:,ispin] .+= sphere.ylm[ix,lm]*F_lm[:,lm,ispin]
+        @views F_rad[:,ispin] .+= sphere.ylm[ix,lm]*F_lm[:,lm,ispin]
     end
     return
 end

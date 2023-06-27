@@ -65,7 +65,7 @@ function PAW_xc_potential!(
             @views arho[:,1] .= rho_loc[:,1] .+ rho_core[:]
             #println("sum arho = ", sum(arho))
             @views calc_epsxc_Vxc_VWN!( xc_calc, arho[:,1], e_rad[:,1], v_rad[:,ix,1] )
-            e_rad .= e_rad .* ( rho_rad[:,1] .+ rho_core .* r2 )
+            @views e_rad .= e_rad .* ( rho_rad[:,1] .+ rho_core .* r2 )
         else
             # This is not yet working
             println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
@@ -73,8 +73,8 @@ function PAW_xc_potential!(
             println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             @views arho[:,1] .= rho_loc[:,1] .+ rho_loc[:,2] .+ rho_core[:]
             @views arho[:,2] .= rho_loc[:,1] .- rho_loc[:,2]
-            calc_epsxc_Vxc_VWN!( xc_calc, arho, e_rad[:,:], v_rad[:,ix,:] )
-            e_rad .= e_rad .* ( rho_rad[:,1] .+ rho_rad[:,2] .+ rho_core .* r2 )
+            @views calc_epsxc_Vxc_VWN!( xc_calc, arho, e_rad[:,:], v_rad[:,ix,:] )
+            @views e_rad .= e_rad .* ( rho_rad[:,1] .+ rho_rad[:,2] .+ rho_core .* r2 )
         end
     
         #println("sum e_rad = ", sum(e_rad))

@@ -3,33 +3,7 @@ function PAW_h_potential!(
     atoms::Atoms, pspots,
     rho_lm,
     v_lm
-)
-    #=
-    !---------------------------------------------------------------------------------
-    !! Computes H  potential from rho, used by PAW_h_energy and PAW_ddot.
-    !
-    USE constants,              ONLY : fpi, e2
-    USE radial_grids,           ONLY : hartree
-    USE uspp_param,             ONLY : upf
-    USE noncollin_module,       ONLY : nspin_lsda
-    USE ions_base,              ONLY : ityp
-    USE lsda_mod,               ONLY : nspin
-    USE atom,                   ONLY : g => rgrid
-    !
-    TYPE(paw_info), INTENT(IN) :: i !! atom's minimal info
-    REAL(DP), INTENT(IN)  :: rho_lm(i%m,i%l**2,nspin) !! charge density as lm components already summed on spin
-    REAL(DP), INTENT(OUT) :: v_lm(i%m,i%l**2) !! potential as lm components
-    !
-    ! ... local variables
-    !
-    REAL(DP) :: aux(i%m) ! workspace
-    REAL(DP) :: pref     ! workspace
-    !
-    INTEGER  :: lm,l     ! counter on composite angmom lm = l**2 +m
-    INTEGER  :: k        ! counter on radial grid (only for energy) 
-    REAL(DP) :: e        ! workspace
-    =#
-    
+)    
     #
     # this loop computes the hartree potential using the following formula:
     #               l is the first argument in hartree subroutine

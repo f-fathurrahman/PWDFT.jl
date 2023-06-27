@@ -116,7 +116,7 @@ function PAW_potential!(
 
             #println("sum v_lm after PAW_xc_potential = ", sum(v_lm[:,:,1]))
 
-            savedv_lm[:,:,:] .+= v_lm[:,:,:]
+            @views savedv_lm[:,:,:] .+= v_lm[:,:,:]
 
             #
             # Calculate ddd_paw
@@ -140,7 +140,7 @@ function PAW_potential!(
                         end
                         # Integrate (XXX: why using kkbeta?)
                         #println("Nrmesh = ", Nrmesh, " kkbeta = ", kkbeta)
-                        res = PWDFT.integ_simpson( kkbeta, rho_lm[:,lm,ispin], pspots[isp].rab )
+                        @views res = PWDFT.integ_simpson( kkbeta, rho_lm[:,lm,ispin], pspots[isp].rab )
                         ddd_paw[nmb,ia,ispin] += sgn*res
                     end
                     # restore becfake to zero

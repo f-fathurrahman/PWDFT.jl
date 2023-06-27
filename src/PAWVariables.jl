@@ -48,8 +48,8 @@ function PAWVariables(atoms::Atoms, pspots, nhm::Int64; is_gga=false, Nspin=1)
             end
         end
 
-        println("lmax_safe = ", lmax_safe)
-        println("lmax_add  = ", lmax_add)
+        #println("lmax_safe = ", lmax_safe)
+        #println("lmax_add  = ", lmax_add)
 
         paw_spheres[isp] = PAWAtomicSphere(lmax_safe, lmax_add)
 
@@ -69,7 +69,7 @@ function PAWVariables(atoms::Atoms, pspots, nhm::Int64; is_gga=false, Nspin=1)
             total_core_energy += pspots[isp].paw_data.core_energy
         end
     end
-    println("total_core_energy = ", total_core_energy)
+    #println("total_core_energy = ", total_core_energy)
 
     E_paw_cmp = zeros(Float64, Natoms, 2, 2)
     EHxc_paw = 0.0
