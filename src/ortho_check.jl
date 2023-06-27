@@ -25,13 +25,13 @@ function ortho_check( Ham::Hamiltonian, psi::Array{ComplexF64,2}; dVol=1.0 )
         Spsi = psi
     end
     @printf("\nNorm check:\n")
-    for ist = 1:Nstates
+    for ist in 1:Nstates
         c = dot( psi[:,ist], Spsi[:,ist] ) * dVol
         @printf("State: #%5d: (%18.10f,%18.10f)\n", ist, c.re, c.im)
     end
     @printf("\nOrtho check w.r.t state #1:\n")
-    for ist = 1:Nstates
-        c = dot( psi[:,ist], Spsi[:,2] ) * dVol
+    for ist in 1:Nstates
+        c = dot( psi[:,ist], Spsi[:,1] ) * dVol
         @printf("State: #%5d: (%18.10f,%18.10f)\n", ist, c.re, c.im)
     end
     @printf("\n")
