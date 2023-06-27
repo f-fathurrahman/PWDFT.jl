@@ -9,4 +9,6 @@ const DIR_PSP_GTH_LDA = joinpath(DIR_PWDFT, "pseudopotentials", "pade_gth")
 
 @assert length(ARGS) == 1
 
+include("create_objects.jl")
+
 include(ARGS[1])
