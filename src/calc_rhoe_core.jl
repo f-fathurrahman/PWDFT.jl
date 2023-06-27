@@ -2,7 +2,8 @@ function calc_rhoe_core!(
     atoms::Atoms,
     pw::PWGrid,
     pspots::Vector{PsPot_UPF},
-    rhoe_core
+    rhoe_core;
+    ensure_positive_definite=true
 )
     # XXX: rhoe_core is assumed to have shape (Npoints,1)
 
@@ -41,13 +42,18 @@ function calc_rhoe_core!(
         rhoe_core[ip,1] = real(rhoecG[ip]) * Npoints
     end
 
-    rhoneg = 0.0
-    for ip in 1:Npoints
-        rhoneg += min(0.0, rhoe_core[ip])
-        rhoe_core[ip] = max(0.0, rhoe_core[ip])
+    if ensure_positive_definite
+        #rhoneg = 0.0
+        for ip in 1:Npoints
+            #rhoneg += min(0.0, rhoe_core[ip])
+            rhoe_core[ip] = max(0.0, rhoe_core[ip])
+        end
     end
-    println("Check negative rhoe_core (mean) = ", rhoneg/Npoints)
-    println("integ rhoe_core = ", sum(rhoe_core)*CellVolume/Npoints)
+    
+    # This can be done outside calc_rhoe_core
+    #println("integ rhoe_core = ", sum(rhoe_core)*CellVolume/Npoints)
+    #println("Check negative rhoe_core (mean) = ", rhoneg/Npoints)
+    
     return
 end
 
