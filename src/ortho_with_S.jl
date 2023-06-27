@@ -1,3 +1,5 @@
+# TODO: already included in ortho_sqrt!
+
 function ortho_sqrt_with_S!( Ham::Hamiltonian, psi::Array{ComplexF64,2} )
     O = psi' * op_S(Ham, psi)
     Udagger = inv(sqrt(O))

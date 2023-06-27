@@ -60,12 +60,6 @@ export print_matrix
 include("ortho_gram_schmidt.jl")
 export ortho_gram_schmidt, ortho_gram_schmidt!
 
-include("ortho_sqrt.jl")
-export ortho_sqrt, ortho_sqrt!
-
-include("ortho_check.jl")
-export ortho_check
-
 include("Ylm_real.jl")
 export Ylm_real
 
@@ -197,6 +191,12 @@ export BlochWavefuncGamma,
 
 include("gamma_only/unfold_BlochWavefuncGamma.jl")
 export unfold_BlochWavefuncGamma
+
+include("ortho_sqrt.jl")
+export ortho_sqrt, ortho_sqrt!
+
+include("ortho_check.jl")
+export ortho_check
 
 # We need Hamiltonian to be declared here (?)
 include("MGGA_SCAN.jl")
