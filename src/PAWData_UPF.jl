@@ -89,9 +89,7 @@ function PAWData_UPF(xroot, r::Vector{Float64}, lmax::Int64, Nproj::Int64)
     #
     pp_full_wfc = LightXML.get_elements_by_tagname(xroot, "PP_FULL_WFC")
     Nwfc = parse(Int64, LightXML.attributes_dict(pp_full_wfc[1])["number_of_wfc"])
-    println("Nwfc = ", Nwfc)
     # XXX Compare Nwfc with number of projectors ?
-    println("Nproj = ", Nproj)
 
     aewfc = zeros(Float64, Nr, Nwfc)
     pswfc = zeros(Float64, Nr, Nwfc) # different from chi
@@ -115,30 +113,26 @@ function PAWData_UPF(xroot, r::Vector{Float64}, lmax::Int64, Nproj::Int64)
         println("Cannot read PP_PAW: core_energy")
         println("core_energy is set to 0")
     end
-    println("core_energy = ", core_energy)
 
     pp_occ = LightXML.get_elements_by_tagname(pp_paw[1], "PP_OCCUPATIONS")
     #Nocc = parse(Int64, LightXML.attributes_dict(pp_occ[1])["size"])
     Nocc = Nwfc
     # ld1.x in QE-6.6 does not output size attribute in PP_OCCUPATIONS
-    println("Nocc = ", Nocc)
+
     # Nocc should be the same as Nwf?
     # This is paw.oc
     paw_pp_occ = zeros(Float64, Nocc)
     _read_xml_str_vector!(pp_paw[1], "PP_OCCUPATIONS", Nocc, paw_pp_occ)
-    println("paw_pp_occ = ", paw_pp_occ)
     oc = paw_pp_occ
 
     # This will be paw.ae_rho_atc
     pp_ae_nlcc = zeros(Float64, Nr)
     _read_xml_str_vector!(pp_paw[1], "PP_AE_NLCC", Nr, pp_ae_nlcc)
-    println("Done reading pp_ae_nlcc")
     ae_rho_atc = pp_ae_nlcc
 
     # paw.ae_vloc
     pp_ae_vloc = zeros(Float64, Nr)
     _read_xml_str_vector!(pp_paw[1], "PP_AE_VLOC", Nr, pp_ae_vloc)
-    println("Done reading pp_ae_vloc")
     ae_vloc = pp_ae_vloc
 
     # Other parameters from PP_AUGMENTATION
@@ -148,7 +142,6 @@ function PAWData_UPF(xroot, r::Vector{Float64}, lmax::Int64, Nproj::Int64)
     # These attributes should be present in case of PAW
     #
     augshape = LightXML.attributes_dict(pp_aug[1])["shape"]
-    println("augshape = ", augshape)
 
     raug = parse(Float64, LightXML.attributes_dict(pp_aug[1])["cutoff_r"])
     iraug = parse(Int64, LightXML.attributes_dict(pp_aug[1])["cutoff_r_index"])
@@ -160,10 +153,8 @@ function PAWData_UPF(xroot, r::Vector{Float64}, lmax::Int64, Nproj::Int64)
         println("raug from r = ", r[iraug])
     end
     # NOTE: raug is probably not used, iraug will be used instead. 
-    println("raug = ", raug, " iraug = ", iraug)
 
     qqq_eps = parse(Float64, LightXML.attributes_dict(pp_aug[1])["augmentation_epsilon"])
-    println("qqq_eps = ", qqq_eps)
 
     att_dict = LightXML.attributes_dict(pp_aug[1])
     if "l_max_aug" in keys(att_dict)
@@ -173,7 +164,6 @@ function PAWData_UPF(xroot, r::Vector{Float64}, lmax::Int64, Nproj::Int64)
     else
         error("Cannot read lmax_aug")
     end
-    println("lmax_aug = ", lmax_aug)
 
     # 
     #upf%paw%augmom(1:upf%nbeta,1:upf%nbeta,0:2*upf%lmax)
