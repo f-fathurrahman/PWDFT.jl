@@ -40,8 +40,10 @@ function rand_BlochWavefunc( Ham::Hamiltonian )
     end
 
     # Overlap is needed
-    Nkpt = pw.gvecw.kpoints.Nkpt
-    Ngw = pw.gvecw.Ngw
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+    Ngw = Ham.pw.gvecw.Ngw
+    Nspin = Ham.electrons.Nspin
+    Nstates = Ham.electrons.Nstates
     Nkspin = Nspin*Nkpt
     psiks = BlochWavefunc(undef,Nkspin)
     for ispin in 1:Nspin, ik in 1:Nkpt

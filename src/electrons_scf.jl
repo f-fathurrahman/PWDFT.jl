@@ -273,19 +273,7 @@ function _prepare_scf!(Ham, psiks)
 
     # Update the potentials
     Ehartree, Exc, Evtxc = update_from_rhoe!( Ham, psiks, Rhoe, RhoeG )
-    #
-    # Reorthonormalize with S
-    # FIXME: need to be included in rand_Blochwavefunc)
-    # FIXME: We don't yet provide a function to do this
-    #
-    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
-    Nspin = Ham.electrons.Nspin
-    for ispin in 1:Nspin, ik in 1:Nkpt
-        Ham.ispin = ispin
-        Ham.ik = ik
-        ikspin = ik + (ispin - 1)*Nkpt
-        ortho_sqrt_with_S!(Ham, psiks[ikspin])
-    end
+
     return Ehartree, Exc, Evtxc
 end
 
