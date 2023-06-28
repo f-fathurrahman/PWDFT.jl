@@ -27,19 +27,19 @@ function test_Ni_q18_fcc()
     Nspecies = atoms.Nspecies
     
     pspots = Vector{PsPot_GTH}(undef,Nspecies)
-    pspfiles = [joinpath(DIR_PSP_GTH_LDA, "Ni-q18.gth")]
+    pspfiles = [joinpath(DIR_PSP, "pade_gth", "Ni-q18.gth")]
     for isp in 1:Nspecies
         pspots[isp] = PsPot_GTH(pspfiles[isp])
         println(pspots[isp])
     end
 
-    electrons = Electrons( atoms, pspots, Nkpt=14, Nstates_empty=1 )
+    electrons = Electrons( atoms, pspots, Nkpt=2, Nstates_empty=1 )
     println(electrons)
 
-    electrons = Electrons( atoms, pspots, Nkpt=14, Nstates_empty=1, Nspin=2 )
+    electrons = Electrons( atoms, pspots, Nkpt=2, Nstates_empty=1, Nspin=2 )
     println(electrons)
 
-    electrons = Electrons( atoms, pspots, Nkpt=14, Nstates=13 )
+    electrons = Electrons( atoms, pspots, Nkpt=2, Nstates=13 )
     println(electrons)
 
     return nothing
