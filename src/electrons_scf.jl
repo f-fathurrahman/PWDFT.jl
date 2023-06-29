@@ -25,7 +25,7 @@ function electrons_scf!(
     # Prepare for SCF
     # Also calculate some energy terms
     # We don't use Ham.energies to save these terms
-    if startingrhoe == :gaussian
+    if (startingrhoe == :gaussian) && !restart
         Ehartree, Exc, Evtxc = _prepare_scf!(Ham, psiks)
     elseif (startingrhoe == :none) || restart
         Ehartree = Ham.energies.Hartree
