@@ -7,7 +7,7 @@ function test_Hamiltonian_v1()
 
         H  0.0  0.0  0.0
         """, LatVecs=gen_lattice_sc(16.0) ),
-        [joinpath(DIR_PWDFT, "pseudopotentials/pade_gth/H-q1.gth")],
+        [joinpath(DIR_PSP, "pade_gth", "H-q1.gth")],
         15.0
     )
 
@@ -40,7 +40,7 @@ function test_Hamiltonian_v3()
         """, in_bohr=true, LatVecs=gen_lattice_fcc(10.2631))
 
     # Initialize Hamiltonian
-    pspfiles = [joinpath(DIR_PWDFT, "pseudopotentials", "GBRV_LDA", "si_lda_v1.uspp.F.UPF")]
+    pspfiles = [joinpath(DIR_PSP, "GBRV_LDA", "si_lda_v1.uspp.F.UPF")]
     ecutwfc = 20.0 # or 40 Ry
     ecutrho = 100.0 # or 200 Ry
     dual = ecutrho/ecutwfc
@@ -60,7 +60,7 @@ function test_Hamiltonian_v4()
         """, in_bohr=true, LatVecs=gen_lattice_fcc(10.2631))
 
     # Initialize Hamiltonian
-    pspfiles = [joinpath(DIR_PWDFT, "pseudopotentials", "PSLIB_US_PAW_LDA", "Si.pz-n-kjpaw_psl.1.0.0.UPF")]
+    pspfiles = [joinpath(DIR_PSP, "PSLIB_US_PAW_LDA", "Si.pz-n-kjpaw_psl.1.0.0.UPF")]
     # FIXME: PSLIB_US_PAW_LDA is not included in the repo
     ecutwfc = 20.0 # or 40 Ry
     ecutrho = 100.0 # or 200 Ry
