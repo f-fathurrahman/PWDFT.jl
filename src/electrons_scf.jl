@@ -18,12 +18,20 @@ function electrons_scf!(
     ethr_evals_last=1e-13,
     use_smearing=false,
     kT::Float64=1e-3,
+    startingrhoe::Symbol=:gaussian,
+    restart::Bool=false
 )
 
     # Prepare for SCF
     # Also calculate some energy terms
     # We don't use Ham.energies to save these terms
-    Ehartree, Exc, Evtxc = _prepare_scf!(Ham, psiks)
+    if startingrhoe == :gaussian
+        Ehartree, Exc, Evtxc = _prepare_scf!(Ham, psiks)
+    elseif (startingrhoe == :none) || restart
+        Ehartree = Ham.energies.Hartree
+        Exc = Ham.energies.XC
+        Evtxc = 0.0 # Not really used in total energy (?)
+    end
 
     ok_paw = any(Ham.pspotNL.are_paw)
 
