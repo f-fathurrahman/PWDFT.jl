@@ -86,9 +86,6 @@ end
 #
 function rand_wfc( Ham::Hamiltonian )
 
-    # USPP and PAW cases are not yet tested
-    @assert !Ham.need_overlap
-
     Nstates = Ham.electrons.Nstates
     idx_gw2g = Ham.pw.gvecw.idx_gw2g
     G = Ham.pw.gvec.G
@@ -115,12 +112,13 @@ function rand_wfc( Ham::Hamiltonian )
         end
         Ham.ispin = ispin
         Ham.ik = ik
-        ortho_sqrt(psiks[ikspin])
+        ortho_sqrt!(Ham, psiks[ikspin])
+        # psiks now should be orthonormal w.r.t to op_S, if applicable
         Hr = Hermitian(psiks[ikspin]' * op_H(Ham, psiks[ikspin]))
         evals, evecs = eigen(Hr)
-        
+
         # Need to set this?
-        #Ham.electrons.ebands[:,ik] = evals
+        Ham.electrons.ebands[:,ik] = evals
 
         psiks[ikspin] *= evecs # rotate
     end
