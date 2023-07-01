@@ -125,9 +125,9 @@ function KS_solve_Emin_PCG!(
     end
 
 
-    for iter = 1:NiterMax
+    for iter in 1:NiterMax
 
-        for ispin = 1:Nspin, ik = 1:Nkpt
+        for ispin in 1:Nspin, ik in 1:Nkpt
 
             Ham.ik = ik
             Ham.ispin = ispin
@@ -171,7 +171,7 @@ function KS_solve_Emin_PCG!(
 
         update!(Ham, psic, Rhoe)
 
-        for ispin = 1:Nspin, ik = 1:Nkpt
+        for ispin in 1:Nspin, ik in 1:Nkpt
             Ham.ik = ik
             Ham.ispin = ispin
             i = ik + (ispin - 1)*Nkpt
@@ -236,7 +236,7 @@ function KS_solve_Emin_PCG!(
 
     # Calculate eigenvalues
     evecs = zeros(ComplexF64,Nstates,Nstates)
-    for ispin = 1:Nspin, ik = 1:Nkpt
+    for ispin in 1:Nspin, ik in 1:Nkpt
         Ham.ik = ik
         Ham.ispin = ispin
         i = ik + (ispin - 1)*Nkpt
