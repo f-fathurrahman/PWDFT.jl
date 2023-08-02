@@ -45,6 +45,10 @@ function PAW_potential!(
     #rho_lm = zeros(Float64, Nrmesh_max, l2, Nspin)
 
     # Preallocate work arrays (for each species)
+    # This is needed to minimize arrays allocation; Nrmesh is generally
+    # different for different species
+    # XXX: Alternative: use Nrmesh_max
+
     v_lm_s = Vector{Array{Float64,3}}(undef,atoms.Nspecies)
     savedv_lm_s = Vector{Array{Float64,3}}(undef,atoms.Nspecies)
     rho_lm_s = Vector{Array{Float64,3}}(undef,atoms.Nspecies)

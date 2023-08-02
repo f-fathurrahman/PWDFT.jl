@@ -1,10 +1,12 @@
 function update_from_rhoe!(Ham, psiks::BlochWavefunc, Rhoe)
-    # RhoeG is not given we need to calculate it
+    # RhoeG is not given, we need to calculate it first
     RhoeG = _rhoeG_from_rhoe(Ham, Rhoe)
     #
     return update_from_rhoe!(Ham, psiks, Rhoe, RhoeG)
 end
 
+# Calculate reciprocal space representation of Rhoe
+# This simply calls R_to_G!
 function _rhoeG_from_rhoe(Ham, Rhoe)
     Nspin = size(Rhoe,2)
     Npoints = size(Rhoe,1)
