@@ -686,4 +686,5 @@ function show( io::IO, psp::PsPot_UPF; header=true )
     println("\nUPF Info")
     @printf(io, "File = %s\n", psp.pspfile)
     @printf(io, "zval = %f\n", psp.zval)
+    println(io, "is_nlcc = ", psp.is_nlcc)
 end

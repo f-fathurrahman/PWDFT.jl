@@ -92,8 +92,6 @@ function _add_V_xc!(Ham, psiks, Rhoe, RhoeG)
 
     dVol = Ham.pw.CellVolume / Npoints
 
-    ρ = zeros(Float64, Npoints) # FIXME only allocate when using core-correction?
-
     # XC potential
     if Ham.rhoe_core == nothing
         #
@@ -115,23 +113,30 @@ function _add_V_xc!(Ham, psiks, Rhoe, RhoeG)
         Exc = sum(epsxc .* Rhoe[:,1])*dVol
     else
 
+        ρ = zeros(Float64, Npoints)
         @views ρ[:] .= Rhoe[:,1] + Ham.rhoe_core[:]
-        #println("Using core correction")
 
         #
         # Using core-correction
         #
         if Ham.xcfunc == "VWN"
             @views calc_epsxc_Vxc_VWN!( Ham.xc_calc, ρ, epsxc[:,1], Vxc[:,1] )
-            Exc = sum(epsxc .* ρ)*dVol
+        elseif Ham.xcfunc == "PBE"
+            @views calc_epsxc_Vxc_PBE!( Ham, ρ, epsxc, Vxc[:,1] )
         else
-            println("Other than VWN, core correction is yet not supported")
+            println("Core correction is yet not supported in SCAN")
             error()
         end
+        Exc = sum(epsxc .* ρ)*dVol
     end
 
     # Also calculate Evtxc
     Evtxc = sum(Vxc[:,1] .* Rhoe)*dVol # Evtxc does not include rhoe_core
+    # term in GGA is not accounted here (ref gradcorr.f90)
+    #
+    # vtxcgc = vtxcgc - SUM( dh(:) * rhoaux(:,is) )
+    #
+    # Anyway, Evtxc is not used in our calculation
 
     # XXX: Evtxc is vtxc in QE, it seems that is is not used for total energy calculation
 

@@ -8,8 +8,9 @@ function show( io::IO, Ham::Hamiltonian; header=true )
         @printf("\n")
     end
     @printf(io, "size (MiB) = %18.5f\n", Base.summarysize(Ham)/1024/1024)
-    #println(io, "")
-    #println(io, "xcfunc       = ", Ham.xcfunc)
+    println(io, "")
+    println(io, "xcfunc       = ", Ham.xcfunc)
+    # FIXME: this is only for Libxc
     #println(io, "xc_calc.x_id = ", Ham.xc_calc.x_id)
     #println(io, "xc_calc.c_id = ", Ham.xc_calc.c_id)
     println(io, "")

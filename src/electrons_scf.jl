@@ -236,7 +236,7 @@ function electrons_scf!(
     @printf("! Total  = %18.10f Ry\n", 2*Etot)
 
     if ok_paw
-        @printf("Total all electrons = %18.10f\n", 2*(Etot + Ham.pspotNL.paw.total_core_energy))
+        @printf("Total all electrons = %18.10f Ry\n", 2*(Etot + Ham.pspotNL.paw.total_core_energy))
     end
 
     # TODO
@@ -270,7 +270,7 @@ function electrons_scf!(
 end
 
 
-# Initialize Rhoe, potentials, reorthogonalize psiks with S
+# Initialize Rhoe, potentials
 function _prepare_scf!(Ham, psiks)
     # Initial density
     Rhoe, RhoeG = atomic_rho_g(Ham)
