@@ -25,10 +25,12 @@ function init_Ham_from_pwinput(; filename::Union{Nothing,String}=nothing)
     xcfunc = "VWN" # default in PWDFT.jl
     if uppercase(pwinput.input_dft) == "SCAN"
         xcfunc = "SCAN"
-    elseif uppercase(pwinput.input_dft) == "PBE"
+    elseif uppercase(pwinput.input_dft) in ["PBE", "GGA_X_PBE+GGA_C_PBE"]
         xcfunc = "PBE"
     end
     # Note that other cases will be defaulted to VWN
+    # XXX probably need to process input_dft string
+    println("Using xcfunc = ", xcfunc)
 
     Ns = (pwinput.nr1, pwinput.nr2, pwinput.nr3)
     meshk = pwinput.meshk
