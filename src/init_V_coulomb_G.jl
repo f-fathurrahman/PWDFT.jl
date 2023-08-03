@@ -7,8 +7,8 @@ atoms should also be provided.
 """
 function init_V_coulomb_G( pw::PWGrid, strf::Array{ComplexF64,2}, Znucls::Array{Float64,1} )
 
-    Nsp1 = size(strf)[2]
-    Nsp2 = size(Znucls)[1]
+    Nsp1 = size(strf, 2)
+    Nsp2 = size(Znucls, 1)
 
     # Check for consistency between given no. pseudopots and no. of species
     # present in atoms.
@@ -26,16 +26,16 @@ function init_V_coulomb_G( pw::PWGrid, strf::Array{ComplexF64,2}, Znucls::Array{
     Vg = zeros(ComplexF64, Npoints)
     V  = zeros(Float64, Npoints)
     #
-    for isp = 1:Nspecies
-        prefactor = -4*pi*Znucls[isp]/CellVolume
+    for isp in 1:Nspecies
+        prefactor = -4π * Znucls[isp]/CellVolume
         # Note that Vg[1] (for GVector zero) is always zero 0.0
         # To be sure let's put is here anyway.
         Vg[1] = 0.0 + im*0.0
-        for ig = 2:Ng
+        for ig in 2:Ng
             ip = idx_g2r[ig]
             Vg[ip] = prefactor/G2[ig]*strf[ig,isp]
         end
-        V[:] = V[:] + real( G_to_R(pw, Vg) ) * Npoints
+        @views V[:] .= V[:] .+ real( G_to_R(pw, Vg) ) * Npoints
     end
     return V
 end
