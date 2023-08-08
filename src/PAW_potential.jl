@@ -16,11 +16,6 @@ function PAW_potential!(
     becsum, ddd_paw, e_cmp
 )
 
-    # ddd_paw: descreening coefficients (AE - PS)
-    # REAL(DP), INTENT(IN) :: becsum(nhm*(nhm+1)/2,nat,nspin) !! cross band occupations
-    # REAL(DP), INTENT(OUT) :: d(nhm*(nhm+1)/2,nat,nspin) !! descreening coefficients (AE - PS)
-    # REAL(DP), INTENT(OUT), OPTIONAL :: e_cmp(nat,2,2) !! components of the energy
-
     becfake = zeros(Float64, size(becsum))
     fill!(ddd_paw, 0.0)
     fill!(e_cmp, 0.0)
