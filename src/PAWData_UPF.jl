@@ -154,7 +154,12 @@ function PAWData_UPF(xroot, r::Vector{Float64}, lmax::Int64, Nproj::Int64)
     end
     # NOTE: raug is probably not used, iraug will be used instead. 
 
-    qqq_eps = parse(Float64, LightXML.attributes_dict(pp_aug[1])["augmentation_epsilon"])
+    # Handle case for which d is used instead of e for float
+    # Example: ATOMPAW generated UPF (I found only for augmentation_epsilon data, other
+    # data seems OK)
+    str1 = LightXML.attributes_dict(pp_aug[1])["augmentation_epsilon"]
+    str1 = replace(str1, "d" => "e")
+    qqq_eps = parse(Float64, str1)
 
     att_dict = LightXML.attributes_dict(pp_aug[1])
     if "l_max_aug" in keys(att_dict)
