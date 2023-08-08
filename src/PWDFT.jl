@@ -69,6 +69,9 @@ export Ylm_complex
 include("Ylm_real_qe.jl")
 export Ylm_real_qe!
 
+include("dYlm_real_qe.jl")
+export dYlm_real_qe!
+
 include("fft_support.jl")
 export good_fft_order
 

@@ -129,53 +129,44 @@ function PAWAtomicSphere(l::Int64, ls::Int64; need_gradient::Bool=false)
     # to initialize the gradient of ylm, as we are working in spherical
     # coordinates the formula involves \hat{theta} and \hat{phi}
   
-    dylmt = nothing
-    dylmp = nothing
-    cotg_th = nothing
+    
+    if need_gradient
+        dylmt = zeros(Float64, nx, lm_max)
+        dylmp = zeros(Float64, nx, lm_max)
+        aux = zeros(Float64, nx, lm_max)
+        cotg_th = zeros(Float64, nx)
+        vph = zeros(Float64, 3)
+        vth = zeros(Float64, 3)
+        #
+        # Compute derivative along x, y and z => gradient, then compute the
+        # scalar products with \hat{theta} and \hat{phi} and store them in
+        # dylmt and dylmp respectively.
+        
+        for ipol in 1:3
+            # XXX: Need to zero out aux?
+            dYlm_real_qe!( lmax, r, aux, ipol )
+            for lm in 1:lm_max, i in 1:nx
+                vph[1] = -sin(aph[i])
+                vph[2] = cos(aph[i]) # vph[3] is zero
+                # this is the explicit form, but the cross product trick (below) is much faster:
+                # vth = (/COS(aph(i))*COS(ath(i)), SIN(aph(i))*COS(ath(i)), -SIN(ath(i))/)
+                vth[1] = vph[2]*r[3,i] - vph[3]*r[2,i]
+                vth[2] = vph[3]*r[1,i] - vph[1]*r[3,i]
+                vth[3] = vph[1]*r[2,i] - vph[2]*r[1,i]
+                dylmt[i,lm] += aux[i,lm]*vth[ipol] # accumulate
+                # CHECK: the 1/SIN(th) factor should be correct, but deals wrong result, why?
+                dylmp[i,lm] += aux[i,lm]*vph[ipol] #/sin(ath[i])
+            end
+        end
+        for i in 1:nx
+            cotg_th[i] = cos(ath[i])/sin(ath[i])
+        end        
+    else
+        dylmt = nothing
+        dylmp = nothing
+        cotg_th = nothing
+    end
 
-#=
-    gradient: IF (dft_is_gradient()) THEN
-    ALLOCATE( rad%dylmt(rad%nx,rad%lm_max), &
-              rad%dylmp(rad%nx,rad%lm_max), &
-              aux(rad%nx,rad%lm_max) )
-    ALLOCATE( rad%cotg_th(rad%nx) )
-    !
-    rad%dylmt(:,:) = 0._DP
-    rad%dylmp(:,:) = 0._DP
-    !
-    ! Compute derivative along x, y and z => gradient, then compute the
-    ! scalar products with \hat{theta} and \hat{phi} and store them in
-    ! dylmt and dylmp respectively.
-    !
-    DO ipol = 1, 3 !x,y,z
-      !
-      CALL dylmr2( rad%lm_max, rad%nx, r,r2, aux, ipol )
-      !
-      DO lm = 1, rad%lm_max
-        DO i = 1, rad%nx
-          vph = (/-SIN(aph(i)), COS(aph(i)), 0._DP/)
-          ! this is the explicit form, but the cross product trick (below) is much faster:
-          ! vth = (/COS(aph(i))*COS(ath(i)), SIN(aph(i))*COS(ath(i)), -SIN(ath(i))/)
-          vth = (/vph(2)*r(3,i)-vph(3)*r(2,i),&
-                  vph(3)*r(1,i)-vph(1)*r(3,i),&
-                  vph(1)*r(2,i)-vph(2)*r(1,i)/)
-          rad%dylmt(i,lm) = rad%dylmt(i,lm) + aux(i,lm)*vth(ipol)
-          ! CHECK: the 1/SIN(th) factor should be correct, but deals wrong result, why?
-          rad%dylmp(i,lm) = rad%dylmp(i,lm) + aux(i,lm)*vph(ipol) !/SIN(ath(i))
-        ENDDO
-      ENDDO
-      !
-    ENDDO
-    !
-    DO i = 1, rad%nx
-       rad%cotg_th(i) = COS(ath(i))/SIN(ath(i))
-    ENDDO
-    !
-    DEALLOCATE( aux )
-    !
-  ENDIF gradient
-  =#
-  
     return PAWAtomicSphere(
         lmax, ladd, lm_max,
         nx, ww, ylm, wwylm, dylmt, dylmp,

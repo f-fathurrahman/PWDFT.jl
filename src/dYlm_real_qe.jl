@@ -5,31 +5,20 @@ function dYlm_real_qe!(
     ipol::Int64
 )
 
+    # dYlm is the output
+    # ipol is direction, input (x=1,y=1,z=1)
+
     ngy = size(R, 2)
     nylm = size(dYlm, 2)
+
+    fill!(dYlm, 0.0) # zero out the input
 
     # nylm, ngy, g, gg, dylm, ipol)
     # compute ∂ Y_lm(G) / ∂ (G)_ipol
     # using simple numerical derivation (SdG)
     # The spherical harmonics are calculated in ylmr2
 
-    #! input: number of spherical harmonics
-    #! input: the number of g vectors to compute
-    #! input: desired polarization
-    #real(DP) :: g (3, ngy), gg (ngy), dylm (ngy, nylm)
-    # input: the coordinates of g vectors
-    # input: the moduli of g vectors
-    # output: the spherical harmonics derivatives
-    #
-    #    and here the local variables
-    #
-    #integer :: ig, lm
-    #! counter on g vectors
-    #! counter on l,m component
-
     Δ = 1e-6
-    #real(DP), parameter :: delta = 1.d-6
-    #real(DP), allocatable :: dg (:), dgi (:), gx (:,:), ggx (:), ylmaux (:,:)
     # dg is the finite increment for numerical derivation:
     # dg = delta |G| = delta * sqrt(gg)
     # dgi= 1 /(delta * sqrt(gg))
@@ -41,8 +30,6 @@ function dYlm_real_qe!(
     dg = zeros(Float64, ngy)
     dgi = zeros(Float64, ngy)
     ylmaux = zeros(Float64, ngy, nylm)
-
-    #allocate ( gx(3,ngy), ggx(ngy), dg(ngy), dgi(ngy), ylmaux(ngy,nylm) )
 
     for ig in 1:ngy
         gg = R[1,ig]^2 + R[2,ig]^2 + R[3,ig]^2
@@ -60,23 +47,21 @@ function dYlm_real_qe!(
     for ig in 1:ngy
         gx[ipol, ig] = R[ipol,ig] + dg[ig]
     end
-
     Ylm_real_qe!(lmax, gx, dYlm)
-    #call ylmr2 (nylm, ngy, gx, ggx, dylm)
 
     for ig in 1:ngy
         gx[ipol,ig] = R[ipol,ig] - dg[ig]
     end
-
     Ylm_real_qe!(lmax, gx, ylmaux)
-    #call ylmr2 (nylm, ngy, gx, ggx, ylmaux)
 
+    # Compute the difference
     dYlm[:,:] .= dYlm[:,:] .- ylmaux[:,:]
     #call daxpy(ngy * nylm, - 1.d0, ylmaux, 1, dylm, 1)
 
+    # Using centered difference, multiply dy factor (1/(2*dg))
     for lm in 1:nylm
         for ig in 1:ngy
-            dylm[ig,lm] *= 0.5 * dgi[ig]
+            dYlm[ig,lm] *= 0.5 * dgi[ig]
         end
     end
 
