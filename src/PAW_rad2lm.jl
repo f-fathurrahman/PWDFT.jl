@@ -8,6 +8,12 @@ function PAW_rad2lm!(
     # \[ F_{lm}(r) = \int d \Omega\ F(r,\text{th},\text{ph})\ Y_{lm}(\text{th},
     # \text{ph}) \]
 
+    # Nspin is information is read from F_rad, no need to pass the value
+    # F_lm is the output
+    # F_rad is the input
+
+    # in QE PAW_rad2lm3 is required if F_lm and F_rad as additional dimension with size 3 (x,y,z)
+
     Nspin = size(F_rad, 3)
     Nrmesh = size(F_rad, 1)
     isp = atoms.atm2species[ia]
