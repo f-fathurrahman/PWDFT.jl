@@ -71,7 +71,9 @@ function PAW_potential!(
         l2 = (pspots[isp].lmax_rho + 1)^2
         kkbeta = pspots[isp].kkbeta
 
-        # We might need to call GC manually to free these arrays
+        # We might need to call GC manually to free these arrays (if
+        # they are allocated inside the loop).
+        # For the moment we allocate per-species arrays
         v_lm = v_lm_s[isp]
         savedv_lm = savedv_lm_s[isp]
         rho_lm = rho_lm_s[isp]
@@ -91,6 +93,7 @@ function PAW_potential!(
             end
             # sgn: sign for energy summation
 
+            # Compute rho_lm from becsum
             PAW_rho_lm!(AE, ia, atoms, pspots, pspotNL, becsum, rho_lm)
             #println("AE = ", AE)
             #println("sum rho_lm = ", sum(rho_lm))

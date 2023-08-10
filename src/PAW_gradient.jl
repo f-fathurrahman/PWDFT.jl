@@ -3,31 +3,25 @@ function PAW_gradient!(
     atoms, pspots, pspotNL,
     rho_lm, rho_rad, rho_core, grho_rad2, grho_rad
 )
+    # Build gradient of radial charge distribution from its spherical harmonics expansion
 
 #=
-    !! Build gradient of radial charge distribution from its spherical harmonics expansion
-    !
-    USE constants,              ONLY : fpi
-    USE noncollin_module,       ONLY : nspin_gga
-    USE lsda_mod,               ONLY : nspin
-    USE atom,                   ONLY : g => rgrid
-    !
     INTEGER, INTENT(IN)  :: ix
     !! line of the dylm2 matrix to use actually it is  one of the nx spherical
     !! integration directions
-    TYPE(paw_info), INTENT(IN) :: i
-    !! atom's minimal info
-    REAL(DP), INTENT(IN) :: rho_lm(i%m,i%l**2,nspin_gga)
-    !! Y_lm expansion of rho
-    REAL(DP), INTENT(IN) :: rho_rad(i%m,nspin_gga)
-    !! radial density along direction ix
-    REAL(DP), INTENT(IN) :: rho_core(i%m)
-    !! core density
-    REAL(DP), INTENT(OUT) :: grho_rad2(i%m,nspin_gga)
-    !! |grad(rho)|^2 on rad. grid
-    REAL(DP), OPTIONAL,INTENT(OUT):: grho_rad(i%m,3,nspin_gga)
-    !! vector gradient (only for gcxc)
+    
+    - rho_lm(i%m,i%l**2,nspin_gga) !! Y_lm expansion of rho
+    - rho_rad(i%m,nspin_gga) !! radial density along direction ix
+    - rho_core(i%m) !! core density
+    REAL(DP), INTENT(OUT) :: grho_rad2(i%m,nspin_gga) !! |grad(rho)|^2 on rad. grid
+    REAL(DP), OPTIONAL,INTENT(OUT):: grho_rad(i%m,3,nspin_gga) !! vector gradient (only for gcxc)
 =#
+
+    atm2species = atoms.atm2species
+    isp = atm2species[ia]
+    Nrmesh = pspots[isp].Nr
+
+    Nspin = size(rho_lm, 3)
 
     # r, theta and phi components ---^
     #
@@ -42,7 +36,7 @@ function PAW_gradient!(
     for ispin in 1:Nspin
         # build real charge density
         @views aux[1:Nrmesh] .= rho_rad[1:Nrmesh,ispin] ./ r2[1:Nrmesh] .+ rho_core[1:Nrmesh]*fact
-        radial_gradient_AE( aux, aux2, r, Nrmesh, radial_grad_style )
+        radial_gradient_AE( r, aux, aux2 ) # aux2 is the output
         # compute the square
         @views grho_rad2[:,ispin] .= aux2[:].^2
         # store in vector gradient, if present:
@@ -64,7 +58,7 @@ function PAW_gradient!(
         #  a. 1/r**2 from the derivative in spherical coordinates
         #  b. (1/r**2)**2 from rho_lm being multiplied by r**2 
         #     (as the derivative is orthogonal to r you can multiply after deriving)
-        @views grho_rad2[1:Nrmesh,ispin] .+= ( aux[1:Nrmesh]^2 + aux2[1:Nrmesh]^2) / (r2.^3)
+        @views grho_rad2[1:Nrmesh,ispin] .+= ( aux[1:Nrmesh]^2 .+ aux2[1:Nrmesh]^2) / r[:].^6
         # Store vector components:
         @views grho_rad[1:Nrmesh,2,ispin] .= aux[1:Nrmesh]  ./ r[:].^3 # phi 
         @views grho_rad[1:Nrmesh,3,ispin] .= aux2[1:Nrmesh] ./ r[:].^3  # theta

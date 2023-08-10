@@ -13,13 +13,6 @@ function PAW_gcxc_potential( # i, rho_lm, rho_core, v_lm, energy )
     # lmax_rho (the maximum in the density of charge) matter when computing \int v*rho.
 
 #=
-    USE lsda_mod,               ONLY : nspin
-    USE noncollin_module,       ONLY : noncolin, nspin_mag, nspin_gga
-    USE atom,                   ONLY : g => rgrid
-    USE constants,              ONLY : sqrtpi, fpi,pi,e2
-    USE funct,                  ONLY : igcc_is_lyp
-    USE xc_gga,                 ONLY : xc_gcx
-    USE mp,                     ONLY : mp_sum
     !
     TYPE(paw_info), INTENT(IN) :: i
     !! atom's minimal info
