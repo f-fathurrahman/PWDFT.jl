@@ -251,19 +251,21 @@ function PAW_gcxc_potential( # i, rho_lm, rho_core, v_lm, energy )
     PAW_rad2lm3( ia, h_rad, h_lm, lm_max_add, nspin_gga )
     #
     # Compute div(H)
-    PAW_divergence( ia, h_lm, div_h, lm_max_add, i%l )
+    PAW_divergence!( ia, h_lm, div_h, lm_max_add, i%l )
     #                       input max lm --^  output max lm-^
     
 
     # Finally sum it back into v_xc
     for ispin in 1:Nspin
         for lm in 1:lm_max
-            vout_lm[1:Nr,lm,ispin] .+= ( gc_lm[1:Nr,lm,ispin] .- div_h[1:Nr,lm,ispin] )
+            @views vout_lm[1:Nrmesh,lm,ispin] .+= ( gc_lm[1:Nrmesh,lm,ispin] .- div_h[1:Nrmesh,lm,ispin] )
         end
     end
 
     # Noncollinear stuffs (with Nspin=4) are skipped
 
-    v_lm[:,:,1:Nspin] = v_lm[:,:,1:Nspin] + vout_lm[:,:,1:Nspin]
+    v_lm[:,:,1:Nspin] .+= vout_lm[:,:,1:Nspin]
+
+    return
 
 end
