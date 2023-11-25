@@ -140,13 +140,14 @@ function PAW_gcxc_potential( # i, rho_lm, rho_core, v_lm, energy )
         #CALL xc_gcx( i%m, 1, arho, gradx, sx, sc, v1x, v2x, v1c, v2c )
         # CALL GGA subroutine here
         
+        # radial stuffs
         for k in 1:Nrmesh
             e_rad[k] = (sx[k] + sc[k]) * r2[k]
             gc_rad[k,ix,1]  = ( v1x[k,1] + v1c[k,1] )  # * g(i%t)%rm2(k)
             h_rad[k,1:3,ix,1] = ( v2x[k,1] + v2c[k,1] )*grad[k,1:3,1]*r2[k]
         end
         
-        # integrate energy
+        # integrate to obtain the energy
         energy += integ_simpson(Nrmesh, e_rad, rab)*spheres[isp].ww[ix]
 
     end

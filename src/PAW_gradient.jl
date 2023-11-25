@@ -20,6 +20,8 @@ function PAW_gradient!(
     atm2species = atoms.atm2species
     isp = atm2species[ia]
     Nrmesh = pspots[isp].Nr
+    r = pspots[isp].r
+    r2 = r.^2
 
     Nspin = size(rho_lm, 3)
 
@@ -36,13 +38,23 @@ function PAW_gradient!(
     for ispin in 1:Nspin
         # build real charge density
         @views aux[1:Nrmesh] .= rho_rad[1:Nrmesh,ispin] ./ r2[1:Nrmesh] .+ rho_core[1:Nrmesh]*fact
-        radial_gradient_AE( r, aux, aux2 ) # aux2 is the output
+        radial_gradient_AE!( r, aux, aux2 ) # aux2 is the output
         # compute the square
         @views grho_rad2[:,ispin] .= aux2[:].^2
         # store in vector gradient, if present:
-        @views grho_rad[:,1,is] .= aux2[:]
+        @views grho_rad[:,1,ispin] .= aux2[:]
     end
  
+    dylmp = pspotNL.paw.spheres[isp].dylmp
+    dylmt = pspotNL.paw.spheres[isp].dylmt
+    #lm_max = pspotNL.paw.spheres[isp].lm_max # NOT THIS !!!
+    lm_max = (pspots[isp].lmax_rho + 1)^2
+
+    println("lm_max in PAW_gradient = ", lm_max)
+    println("size dylmt = ", size(dylmt))
+    println("size dylmp = ", size(dylmp))
+
+
     for ispin in 1:Nspin
         fill!(aux, 0.0)
         fill!(aux2, 0.0)
@@ -54,14 +66,17 @@ function PAW_gradient!(
             # 6. [ \sum_{lm} rho(r) (dY_{lm}/dtheta)  ]**2
             aux2[1:Nrmesh] .= aux2[1:Nrmesh] .+ dylmt[ix,lm] * rho_lm[1:Nrmesh,lm,ispin]
         end
-        # Square and sum up these 2 components, the (1/r**2)**3 factor come from:
-        #  a. 1/r**2 from the derivative in spherical coordinates
-        #  b. (1/r**2)**2 from rho_lm being multiplied by r**2 
-        #     (as the derivative is orthogonal to r you can multiply after deriving)
-        @views grho_rad2[1:Nrmesh,ispin] .+= ( aux[1:Nrmesh]^2 .+ aux2[1:Nrmesh]^2) / r[:].^6
-        # Store vector components:
-        @views grho_rad[1:Nrmesh,2,ispin] .= aux[1:Nrmesh]  ./ r[:].^3 # phi 
-        @views grho_rad[1:Nrmesh,3,ispin] .= aux2[1:Nrmesh] ./ r[:].^3  # theta
+        for ir in 1:Nrmesh
+            # Square and sum up these 2 components, the (1/r**2)**3 factor come from:
+            #  a. 1/r**2 from the derivative in spherical coordinates
+            #  b. (1/r**2)**2 from rho_lm being multiplied by r**2 
+            #     (as the derivative is orthogonal to r you can multiply after deriving)
+            #
+            grho_rad2[ir,ispin] += ( aux[ir]^2 + aux2[ir]^2 ) / r[ir]^6
+            # Store vector components:
+            grho_rad[ir,2,ispin] = aux[ir] / r[ir]^3 # phi 
+            grho_rad[ir,3,ispin] = aux2[ir] / r[ir]^3  # theta
+        end
     end
 
     return

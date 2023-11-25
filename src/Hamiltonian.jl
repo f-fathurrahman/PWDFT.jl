@@ -165,7 +165,8 @@ function Hamiltonian(
         are_using_upf[isp] = PWDFT.is_using_extension_upf(pspfile)
     end
     if all(are_using_upf)
-        pspotNL = PsPotNL_UPF(atoms, pw, pspots)
+        is_gga = (options.xcfunc == "PBE") # XXX FIX THIS !!!!
+        pspotNL = PsPotNL_UPF(atoms, pw, pspots, is_gga=is_gga)
     elseif all(.!are_using_upf)
         pspotNL = PsPotNL( atoms, pw, pspots, check_norm=false )
     else

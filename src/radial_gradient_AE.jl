@@ -18,8 +18,8 @@ function radial_gradient_AE!(r, f, gf)
     # This formula is used in the all-electron case.
     #
     for i in 2:(Nr-1)
-        num1 = ( r[i+1] - r[i] )^2 * ( f[i-1] - f[i] ) - ( r[i-1] - r[i] )^2 * ( f[i+1] - f[i] )
-        denum1 = ( r[i+1] - r[i] ) * ( r[i-1] - r[i] ) * ( r[i+1] - r[i-1] )
+        num = ( r[i+1] - r[i] )^2 * ( f[i-1] - f[i] ) - ( r[i-1] - r[i] )^2 * ( f[i+1] - f[i] )
+        denum = ( r[i+1] - r[i] ) * ( r[i-1] - r[i] ) * ( r[i+1] - r[i-1] )
         gf[i] = num/denum 
     end
     gf[Nr] = 0.0

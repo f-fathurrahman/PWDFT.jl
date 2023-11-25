@@ -33,6 +33,7 @@ function PsPotNL_UPF(
     atoms::Atoms,
     pw::PWGrid,
     pspots::Vector{PsPot_UPF};
+    is_gga=false,
     Nspin=1
 )
 
@@ -183,7 +184,7 @@ function PsPotNL_UPF(
     end
     # FIXME: We do not consider mixing PAW and USPP
     if all(are_paw)
-        paw = PAWVariables(atoms, pspots, nhm, is_gga=false, Nspin=Nspin)
+        paw = PAWVariables(atoms, pspots, nhm, is_gga=is_gga, Nspin=Nspin)
     else
         paw = nothing
     end
