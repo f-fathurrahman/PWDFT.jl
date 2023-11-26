@@ -181,7 +181,10 @@ function PsPot_UPF( upf_file::String )
             rho_atc[i] = parse(Float64,spl_str[i])
         end
     else
-        rho_atc = zeros(Float64,1)
+        rho_atc = zeros(Float64,Nr) # change from 1 to Nr
+        # Somewhat wasteful but this will be used in PAW calculation regardless
+        # of using NLCC or not. I think it is convenient to use array of similar size
+        # with zeros instead of using dummy array of different size.
     end
 
     #
