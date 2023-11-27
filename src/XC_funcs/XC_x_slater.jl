@@ -1,5 +1,10 @@
 function XC_x_slater( Rhoe::Float64 )
 
+    SMALL = 1e-13
+    if Rhoe <= SMALL
+        return 0.0, 0.0
+    end
+
     third = 1.0/3.0
     pi34 = 0.6203504908994  # pi34=(3/4pi)^(1/3)
     rs = pi34/Rhoe^third

@@ -1,5 +1,10 @@
 function XC_c_pw( Rhoe )
 
+    SMALL = 1e-13
+    if Rhoe <= SMALL
+        return 0.0, 0.0
+    end
+
     third = 1.0/3.0
     pi34 = 0.6203504908994
     rs = pi34/Rhoe^third
