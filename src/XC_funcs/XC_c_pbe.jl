@@ -2,8 +2,13 @@
 # iflag=1: J.P.Perdew, K.Burke, M.Ernzerhof, PRL 77, 3865 (1996).
 function XC_c_pbe( rho, grho )
 
-    SMALL = 1e-13
-    if rho <= SMALL
+    # From xc_gga_drivers.f90
+    SMALL1 = 1e-6 # rho_threshold
+    SMALL2 = 1e-10 # grho_threshold
+    if rho <= SMALL1
+        return 0.0, 0.0, 0.0
+    end
+    if grho <= SMALL2
         return 0.0, 0.0, 0.0
     end
 
