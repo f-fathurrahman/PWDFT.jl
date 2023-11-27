@@ -255,6 +255,9 @@ export PAW_potential!
 include("PAW_gradient.jl")
 export PAW_gradient!
 
+include("PAW_divergence.jl")
+export PAW_divergence!
+
 include("Poisson_solve.jl")
 export Poisson_solve, Poisson_solve!
 
