@@ -31,6 +31,11 @@ function PAW_gradient!(
     aux = zeros(Float64, Nrmesh)
     aux2 = zeros(Float64, Nrmesh)
 
+    #println("size rho_rad = ", size(rho_rad))
+    #println("size aux = ", size(aux))
+    #println("size r2 = ", size(r2))
+    #println("size rho_core = ", size(rho_core))
+
     # 1. build real charge density = rho/r**2 + rho_core
     # 2. compute the partial derivative of rho_rad
     fact = 1.0/Nspin
