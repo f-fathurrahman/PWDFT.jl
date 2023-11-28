@@ -22,7 +22,7 @@ function PAW_rad2lm!(
     for ispin in 1:Nspin, lm in 1:lmax_loc^2
         @views F_lm[:,lm,ispin] .= 0.0
         for ix in 1:sphere.nx, j in 1:Nrmesh
-             F_lm[j,lm,ispin] += F_rad[j,ix,ispin] * sphere.wwylm[ix,lm]
+            F_lm[j,lm,ispin] += F_rad[j,ix,ispin] * sphere.wwylm[ix,lm]
         end
     end
 

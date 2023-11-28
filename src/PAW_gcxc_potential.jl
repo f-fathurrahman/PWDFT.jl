@@ -84,9 +84,6 @@ function PAW_gcxc_potential( # i, rho_lm, rho_core, v_lm, energy )
     lm_max = (spheres[isp].lmax + 1)^2
     gc_rad = zeros(Float64, Nrmesh, nx, Nspin) # GC correction to V (radial samples)
     gc_lm = zeros(Float64, Nrmesh, lm_max, Nspin) # GC correction to V (Y_lm expansion)
-    h_rad_x = zeros(Float64, Nrmesh, nx, Nspin) # hamiltonian (vector field)
-    h_rad_y = zeros(Float64, Nrmesh, nx, Nspin) # hamiltonian (vector field)
-    h_rad_z = zeros(Float64, Nrmesh, nx, Nspin) # hamiltonian (vector field)
 
     lm_max_add = (spheres[isp].lmax + 1 + spheres[isp].ladd)^2
     h_lm = zeros(Float64, Nr, lm_max_add, Nspin)
@@ -151,81 +148,14 @@ function PAW_gcxc_potential( # i, rho_lm, rho_core, v_lm, energy )
         energy += integ_simpson(Nrmesh, e_rad, rab)*spheres[isp].ww[ix]
 
     end
-        
-    # DEALLOCATE( arho, grad2_v ) 
-    # DEALLOCATE( gradx )
 
-#=
+    # Spin-polarized is not yet supported
 
-    ELSEIF ( nspin_mag == 2 .OR. nspin_mag == 4 ) THEN
-        !
-        ALLOCATE( gradx(3,i%m,2) )
-        ALLOCATE( r_vec(i%m,2) )
-        ALLOCATE( v2cud(i%m) )
-        !
-        !   this is the \sigma-GGA case
-        !
-        DO ix = ix_s, ix_e
-           !
-           CALL PAW_lm2rad( i, ix, rhoout_lm, rho_rad, nspin_gga )
-           CALL PAW_gradient( i, ix, rhoout_lm, rho_rad, rho_core,grad2, grad )
-           !
-           DO k = 1, i%m
-               !
-               ! Prepare the necessary quantities
-               ! rho_core is considered half spin up and half spin down:
-               co2 = rho_core(k)/2
-               ! than I build the real charge dividing by r**2
-               r_vec(k,1) = rho_rad(k,1)*g(i%t)%rm2(k) + co2
-               r_vec(k,2) = rho_rad(k,2)*g(i%t)%rm2(k) + co2
-               !
-               !
-               gradx(:,k,1) = grad(k,:,1)
-               gradx(:,k,2) = grad(k,:,2)
-           ENDDO
-           !
-           CALL xc_gcx( i%m, 2, r_vec, gradx, sx, sc, v1x, v2x, v1c, v2c, v2cud )
-           !
-           DO k = 1, i%m
-              !
-              IF ( PRESENT(energy) ) e_rad(k) = e2*(sx(k)+sc(k))*g(i%t)%r2(k)
-              !
-              ! first term of the gradient correction : D(rho*Exc)/D(rho)
-              gc_rad(k,ix,1)  = (v1x(k,1)+v1c(k,1)) !*g(i%t)%rm2(k)
-              gc_rad(k,ix,2)  = (v1x(k,2)+v1c(k,2)) !*g(i%t)%rm2(k)
-              !
-              ! h contains D(rho*Exc)/D(|grad rho|) * (grad rho) / |grad rho|
-              ! h_rad(k,:,ix,1) =( (v2xup_vec(k)+v2c)*grad(k,:,1)+v2c*grad(k,:,2) )*g(i%t)%r2(k)
-              ! h_rad(k,:,ix,2) =( (v2xdw_vec(k)+v2c)*grad(k,:,2)+v2c*grad(k,:,1) )*g(i%t)%r2(k)
-              h_rad(k,:,ix,1) =( (v2x(k,1)+v2c(k,1))*grad(k,:,1) + &
-                                  v2cud(k)*grad(k,:,2) )*g(i%t)%r2(k)
-              h_rad(k,:,ix,2) =( (v2x(k,2)+v2c(k,2))*grad(k,:,2) + &
-                                  v2cud(k)*grad(k,:,1) )*g(i%t)%r2(k)
-              !
-           ENDDO
-           !
-           ! integrate energy (if required)
-           ! NOTE: this integration is duplicated for every spin, FIXME!
-           IF (PRESENT(energy)) THEN
-               CALL simpson( i%m, e_rad, g(i%t)%rab, e )
-               egcxc_of_tid(mytid) = egcxc_of_tid(mytid) + e * rad(i%t)%ww(ix)
-           ENDIF
-           !
-        ENDDO ! ix
-        !
-        DEALLOCATE( gradx )
-        DEALLOCATE( r_vec )
-        DEALLOCATE( v2cud )
-        !
-    ELSE spin
-    !
-    ENDIF spin
-    !
-=#
+    # convert the first part of the GC correction back to spherical harmonics    
+    lmax_loc = Ham.pspots[isp].lmax_rho + 1
+    PAW_rad2lm!( ia, atoms, pspotNL, lmax_loc, gc_rad, gc_lm)
+    
 
-
-    # convert the first part of the GC correction back to spherical harmonics
-    PAW_rad2lm!( ia, gc_rad, gc_lm, i%l, nspin_gga )
     #
     # Note that the expansion into spherical harmonics of the derivative 
     # with respect to theta of the spherical harmonics, is very slow to

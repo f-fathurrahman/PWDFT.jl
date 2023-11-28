@@ -55,9 +55,9 @@ function PAW_gradient!(
     #lm_max = pspotNL.paw.spheres[isp].lm_max # NOT THIS !!!
     lm_max = (pspots[isp].lmax_rho + 1)^2
 
-    println("lm_max in PAW_gradient = ", lm_max)
-    println("size dylmt = ", size(dylmt))
-    println("size dylmp = ", size(dylmp))
+    #println("lm_max in PAW_gradient = ", lm_max)
+    #println("size dylmt = ", size(dylmt))
+    #println("size dylmp = ", size(dylmp))
 
 
     for ispin in 1:Nspin
