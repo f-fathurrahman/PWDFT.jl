@@ -65,20 +65,7 @@ function PAW_xc_potential!(
             @views arho[:,1] .= rho_loc[:,1] .+ rho_core[:]
             # rho_loc excludes the 1/r^2 factor
             #println("sum arho = ", sum(arho))
-            #
-            if xc_calc.family == :LDA
-                @views calc_epsxc_Vxc_VWN!( xc_calc, arho[:,1], e_rad[:,1], v_rad[:,ix,1] )
-            else
-                # This should be GGA case
-                # Call the LDA part of GGA: in case of PBE it is X_SLATER and C_PW
-                for ir in 1:Nrmesh
-                    eex, vvx = XC_x_slater( arho[ir,1] )
-                    eec, vvc = XC_c_pw( arho[ir,1] )
-                    e_rad[ir,1] += (eex + eec)
-                    v_rad[ir,ix,1] += (vvx + vvc)
-                end
-                #error("Should not go here")
-            end
+            @views calc_epsxc_Vxc_VWN!( xc_calc, arho[:,1], e_rad[:,1], v_rad[:,ix,1] )
             @views e_rad .= e_rad .* ( rho_rad[:,1] .+ rho_core .* r2 )
         else
             # This is not yet working
