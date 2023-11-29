@@ -241,7 +241,7 @@ export PAW_h_potential!
 
 include("PAW_lm2rad.jl")
 include("PAW_rad2lm.jl")
-export PAW_lm2rad!, PAW_rad2lm!
+export PAW_lm2rad!, PAW_rad2lm!, PAW_rad2lm3!
 
 include("radial_gradient_AE.jl")
 export radial_gradient_AE!
