@@ -1,6 +1,6 @@
 function XC_x_slater( Rhoe::Float64 )
 
-    SMALL = 1e-13
+    SMALL = 1e-10
     if Rhoe <= SMALL
         return 0.0, 0.0
     end

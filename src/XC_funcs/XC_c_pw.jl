@@ -1,6 +1,6 @@
 function XC_c_pw( Rhoe )
 
-    SMALL = 1e-13
+    SMALL = 1e-10
     if Rhoe <= SMALL
         return 0.0, 0.0
     end
