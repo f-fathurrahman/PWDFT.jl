@@ -188,18 +188,28 @@ function Hamiltonian(
         rhoe_symmetrizer = RhoeSymmetrizer() # dummy rhoe_symmetrizer
     end
 
+    # FIXME xc_calc constructor is not yet able to determine or check whether
+    # given x_id or x_id is compatible with default or given is_gga or is_metagga
+    # We force it here.
     if options.use_xc_internal
-        xc_calc = XCCalculator()
+        if options.xcfunc == "SCAN" # This is broken
+            xc_calc = XCCalculator(is_metagga=true) # id?
+        elseif options.xcfunc == "PBE"
+            xc_calc = XCCalculator(is_gga=true, x_id=101, c_id=130) # PBE
+        else
+            xc_calc = XCCalculator() # will use VWN
+        end
     else
         # Using Libxc is the default
         if options.xcfunc == "SCAN"
             xc_calc = LibxcXCCalculator(is_metagga=true, Npoints=Npoints, Nspin=options.Nspin)
         elseif options.xcfunc == "PBE"
-            xc_calc = LibxcXCCalculator(x_id=101, c_id=130)
+            xc_calc = LibxcXCCalculator(is_gga=true, x_id=101, c_id=130)
         else
             xc_calc = LibxcXCCalculator()
         end
     end
+
 
     need_overlap = any(pspotNL.are_ultrasoft) || any(pspotNL.are_paw)
 

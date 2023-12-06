@@ -3,7 +3,18 @@ end
 
 # Use internal XC
 struct XCCalculator <: AbstractXCCalculator
+    x_id::Int64
+    c_id::Int64
+    family::Symbol
+    need_gradient::Bool # of electron density
 end
+# Use the same fields as LibxcXCCalculator
+
+function XCCalculator(; x_id=1, c_id=7, is_gga=false, is_metagga=false)
+    return XCCalculator(x_id, c_id, is_gga=is_gga, is_metagga=is_metagga)
+end
+
+
 
 # Use Libxc
 struct LibxcXCCalculator <: AbstractXCCalculator
@@ -16,6 +27,9 @@ struct LibxcXCCalculator <: AbstractXCCalculator
     Vlapl::Union{Nothing,Array{Float64,2}}  # this might be better to reside in Potentials
     Vtau::Union{Nothing,Array{Float64,2}}
 end
+# FIXME: Vlapl and Vtau are not used?
+# Vlapla and Vtau are used work arrays. Need to declare LibxcCalculator as mutable?
+
 
 """
 For now, is_gga and is_metagga need to be set manually

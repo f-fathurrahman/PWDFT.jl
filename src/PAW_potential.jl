@@ -107,16 +107,22 @@ function PAW_potential!(
             for ispin in 1:Nspin # ... v_H has to be copied to all spin components
                 @views savedv_lm[:,:,ispin] = v_lm[:,:,1]
             end
-            #println("sum v_lm after PAW_h_potential = ", sum(v_lm[:,:,1]))
 
             # XC term
             #println("\nCalling PAW_xc_potential")
-            @views energy = PAW_xc_potential!( AE, ia, atoms, pspots, pspotNL, xc_calc, rho_lm, v_lm )
-            #println("After calling PAW_xc_potential: energy = ", energy)
+            if xc_calc.family == :GGA
+                energy = PAW_xc_potential_GGA!( AE, ia, atoms, pspots, pspotNL, xc_calc, rho_lm, v_lm )
+            else
+                # Default is LDA
+                energy = PAW_xc_potential( AE, ia, atoms, pspots, pspotNL, xc_calc, rho_lm, v_lm )
+            end
+            # FIXME: should rename PAW_xc_potential! to PAW_xc_potential_LDA!
+            # FIXME: metaGGA is not yet supported
+
             energy_tot += sgn*energy
             e_cmp[ia,2,i_what] = sgn*energy # XC, all-electron
-
-            #println("sum v_lm after PAW_xc_potential = ", sum(v_lm[:,:,1]))
+            # PAW_xc_func! is alias to either PAW_xc_potential! or PAW_xc_potential_GGA!
+            # switch between LDA and GGA are made above
 
             @views savedv_lm[:,:,:] .+= v_lm[:,:,:]
 
