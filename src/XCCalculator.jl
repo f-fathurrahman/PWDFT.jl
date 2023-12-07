@@ -27,8 +27,11 @@ struct LibxcXCCalculator <: AbstractXCCalculator
     Vlapl::Union{Nothing,Array{Float64,2}}  # this might be better to reside in Potentials
     Vtau::Union{Nothing,Array{Float64,2}}
 end
-# FIXME: Vlapl and Vtau are not used?
-# Vlapla and Vtau are used work arrays. Need to declare LibxcCalculator as mutable?
+# NOTES:
+# Vlapl and Vtau are used in op_Vtau
+# Vlapl and Vtau are used work arrays. Need to declare LibxcCalculator as mutable?
+# `xc_calc.Vtau = rand(N)` will not work
+# `xc_calc.Vtau[:] .= rand(N)` will work even though LibxcXCCalculator is immutable
 
 
 """
