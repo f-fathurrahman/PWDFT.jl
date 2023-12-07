@@ -203,6 +203,7 @@ function Hamiltonian(
         # Using Libxc is the default
         if options.xcfunc == "SCAN"
             xc_calc = LibxcXCCalculator(is_metagga=true, Npoints=Npoints, Nspin=options.Nspin)
+            # x_id and c_id are set to be 263 and 267 (SCAN), respectively
         elseif options.xcfunc == "PBE"
             xc_calc = LibxcXCCalculator(is_gga=true, x_id=101, c_id=130)
         else
