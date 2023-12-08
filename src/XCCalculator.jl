@@ -13,7 +13,7 @@ end
 function XCCalculator(; x_id=1, c_id=7, is_gga=false, is_metagga=false)
     return XCCalculator(x_id, c_id, is_gga=is_gga, is_metagga=is_metagga)
 end
-
+# XXX: use short name instead of x_id or c_id ?
 
 
 # Use Libxc
