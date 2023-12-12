@@ -142,12 +142,15 @@ function PAW_xc_potential_GGA!(
         # gradient correction to the potential)
         for ir in 1:Nrmesh
             e_rad[ir] = sxc[ir] * r2[ir] * arho[ir]
-            gc_rad[ir,ix,1]  = v1xc[ir,1]
+            gc_rad[ir,ix,1] = v1xc[ir,1]
             @views h_rad[ir,1:3,ix,1] = v2xc[ir,1]*grad[ir,1:3,1]*r2[ir]
         end
     
         # integrate to obtain the energy
         energy += integ_simpson(Nrmesh, e_rad, pspots[isp].rab)*spheres[isp].ww[ix]
+
+        #ee = integ_simpson(Nrmesh, e_rad, pspots[isp].rab)*spheres[isp].ww[ix]
+        #println("energy for current ix = ", ix, " ", ee)
 
     end
 
@@ -158,7 +161,7 @@ function PAW_xc_potential_GGA!(
 
     # trick to get faster convergence w.r.t to θ
     for ix in 1:nx
-        @views h_rad[:,3,ix,1] = h_rad[:,3,ix,1]/ spheres[isp].sin_th[ix]
+        @views h_rad[:,3,ix,1] = h_rad[:,3,ix,1] / spheres[isp].sin_th[ix]
     end
 
     # We need the gradient of H to calculate the last part of the exchange
@@ -179,6 +182,8 @@ function PAW_xc_potential_GGA!(
         h_lm, div_h, lmax_loc_add, lmax_loc
     )
 
+    #println("sum abs v_lm before in PAW_xc_potential_GGA: ", sum(abs.(v_lm)))
+
     # Finally sum it back into v_xc
     # Factor 2 of div_h because we are using Libxc convention
     for ispin in 1:Nspin
@@ -186,6 +191,11 @@ function PAW_xc_potential_GGA!(
             @views v_lm[1:Nrmesh,lm,ispin] .+= gc_lm[1:Nrmesh,lm,ispin] .- 2*div_h[1:Nrmesh,lm,ispin]
         end
     end
+
+    #println("energy in PAW_xc_potential_GGA: ", energy)
+    
+    #println("size v_lm = ", size(v_lm))
+    #println("sum abs v_lm after in PAW_xc_potential_GGA: ", sum(abs.(v_lm)))
 
     # Energy is scalar, it is returned
     return energy
