@@ -6,7 +6,7 @@ mutable struct BroydenMixer
 end
 
 
-function BroydenMixer(Rhoe::Matrix{Float64}, betamix; mixdim=8)
+function BroydenMixer(Rhoe::Array{Float64}, betamix; mixdim=8)
     df = zeros(Float64, length(Rhoe), mixdim)
     dv = zeros(Float64, length(Rhoe), mixdim)
     return BroydenMixer(betamix, mixdim, df, dv)

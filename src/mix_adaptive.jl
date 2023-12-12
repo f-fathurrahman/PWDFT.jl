@@ -1,3 +1,32 @@
+struct AdaptiveLinearMixer
+    beta0::Float64
+    betamax::Float64
+    beta::Vector{Float64}
+    f::Vector{Float64}
+end
+
+function AdaptiveLinearMixer(Rhoe::Array{Float64}, beta0; betamax=0.8)
+    return AdaptiveLinearMixer(
+        beta0,
+        betamax,
+        beta0*ones(Float64, length(Rhoe)),
+        zeros(Float64, length(Rhoe))
+    )
+end
+
+function do_mix!(
+    mixer::AdaptiveLinearMixer,
+    deltain, deltaout_,
+    iterSCF::Int64
+)
+    # mixed quantity is deltain
+    mix_adaptive!( deltain, deltaout_,
+        mixer.beta0, mixer.beta, mixer.f, betamax=mixer.betamax
+    )
+    return
+end
+
+
 function mix_adaptive!( mu, nu, beta0::Float64, beta, f; betamax=0.8 )
 
     Npts = length(mu)
