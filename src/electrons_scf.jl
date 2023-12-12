@@ -71,13 +71,15 @@ function electrons_scf!(
     Nelectrons = Ham.electrons.Nelectrons
 
     evals = Ham.electrons.ebands
-        
+
     # Mix directly in R-space
     mixer = BroydenMixer(Rhoe, betamix, mixdim=8)
+    #mixer = AdaptiveLinearMixer(Rhoe, 0.1, betamax=0.5) # not working
 
     Rhoe_in = zeros(Float64, size(Rhoe))
     if ok_paw
         becsum_in = zeros(Float64, size(Ham.pspotNL.becsum))
+        mixer_becsum = BroydenMixer(Ham.pspotNL.becsum, betamix, mixdim=8)
     end
 
     ethr = 1e-5 # default
@@ -116,7 +118,7 @@ function electrons_scf!(
         # Copy input rhoe
         @views Rhoe_in[:,:] .= Rhoe[:,:]
         if ok_paw
-            becsum_in[:,:,:] .= becsum[:,:,:]
+            becsum_in[:,:,:] .= Ham.pspotNL.becsum[:,:,:]
         end
         # XXX: also KEdens_in in case of metaGGA
 
@@ -142,7 +144,7 @@ function electrons_scf!(
         #Rhoe[:,:] = calc_rhoe( Ham, psiks )
         calc_rhoe!( Ham, psiks, Rhoe )
         # In case of PAW becsum is also calculated/updated here
-        #println("integ output Rhoe = ", sum(Rhoe)*dVol)
+        println("integ output Rhoe = ", sum(Rhoe)*dVol)
 
         # This is not used later?
         hwf_energy = Eband + deband_hwf + Ehartree + Exc + Ham.energies.NN + mTS
@@ -172,10 +174,30 @@ function electrons_scf!(
         #diffRhoe = norm(Rhoe - Rhoe_in)
         diffRhoe = dot(Rhoe - Rhoe_in, Rhoe - Rhoe_in)
         #@printf("Before mix: diffRhoe = %e\n", diffRhoe)
-        do_mix!(mixer, Rhoe, Rhoe_in, iterSCF)
-        #println("integ Rhoe after mix: ", sum(Rhoe)*dVol)
+        
+        #do_mix!(mixer, Rhoe, Rhoe_in, iterSCF)
+
+        println("Using simple linear mixing:")
+        ##Rhoe[:] .= betamix*Rhoe_in[:] .+ (1 - betamix)*Rhoe[:]
+        Rhoe[:] .= (1 - betamix)*Rhoe_in[:] .+ betamix*Rhoe[:]
+
+        # also mix becsum
+        if ok_paw
+            #println("sum becsum before mixing: ", sum(Ham.pspotNL.becsum))
+            #println("sum becsum_in before mixing: ", sum(becsum_in))
+            
+            println("Using becsum mixing")
+            #do_mix!(mixer_becsum, Ham.pspotNL.becsum, becsum_in, iterSCF)
+            #Ham.pspotNL.becsum[:] .= betamix*becsum_in[:] .+ (1 - betamix)*Ham.pspotNL.becsum[:]
+            Ham.pspotNL.becsum[:] .= (1 - betamix)*becsum_in[:] .+ betamix*Ham.pspotNL.becsum[:]
+            
+            #println("sum becsum after mixing: ", sum(Ham.pspotNL.becsum))
+            #println("sum becsum_in after mixing: ", sum(becsum_in))
+            println("diff becsum = ", sum(abs.(becsum_in .- Ham.pspotNL.becsum)))
+        end
+
+        println("integ Rhoe after mix: ", sum(Rhoe)*dVol)
         #
-        # At the moment, there are no other quantities that are mixed
 
         # Check convergence here? (using diffRhoe)
 
