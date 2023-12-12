@@ -27,7 +27,6 @@ function PAW_divergence!(
 
     div_F_rad = zeros(Float64, Nrmesh, nx, Nspin) # div(F) on radial grid
     aux = zeros(Float64, Nrmesh)
-    aux2 = zeros(Float64, Nrmesh)
 
     #
     # This is the divergence in spherical coordinates:
@@ -60,7 +59,7 @@ function PAW_divergence!(
     for ispin in 1:Nspin
         for ix in 1:nx
             fill!(aux, 0.0)
-            # this derivative has a spherical component too!
+            # this derivative has a spherical component too! (lm=1 is included)
             for lm in 1:lmaxq_in^2
                 @views aux[1:Nrmesh] .+= F_lm[1:Nrmesh,3,lm,ispin] * (dylmt[ix,lm]*sin_th[ix] + 2.0*ylm[ix,lm]*cos_th[ix])
             end
@@ -75,7 +74,7 @@ function PAW_divergence!(
     # 1/r**2 is common to all the three components.
     for ispin in 1:Nspin
         for lm in 1:lmaxq_out^2
-            @views div_F_lm[1:Nrmesh,lm,ispin] .= div_F_lm[1:Nrmesh,lm,ispin] ./ r[1:Nrmesh].^2
+            @views div_F_lm[1:Nrmesh,lm,ispin] .= div_F_lm[1:Nrmesh,lm,ispin] ./ r[1:Nrmesh].^3
         end
     end
     #
@@ -87,7 +86,7 @@ function PAW_divergence!(
             @views radial_gradient_AE!( r, F_lm[1:Nrmesh,1,lm,ispin], aux )
             # Sum it in the divergence: it is already in the right Y_lm form
             @views aux[1:Nrmesh] .= aux[1:Nrmesh] ./ r[1:Nrmesh].^2
-            @views div_F_lm[1:Nrmesh,lm,ispin] .= div_F_lm[1:Nrmesh,lm,ispin] .+ aux[1:Nrmesh]
+            @views div_F_lm[1:Nrmesh,lm,ispin] .+= aux[1:Nrmesh]
         end
     end
 
