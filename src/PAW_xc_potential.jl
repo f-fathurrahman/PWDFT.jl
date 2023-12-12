@@ -94,11 +94,6 @@ function PAW_xc_potential!(
     lmax_loc = pspots[isp].lmax_rho + 1
     PAW_rad2lm!( ia, atoms, pspotNL, lmax_loc, v_rad, v_lm )
 
-    #
-    # Add gradient correction, if necessary
-    #
-    # Not yet implemented
-
     return energy
 
 end
