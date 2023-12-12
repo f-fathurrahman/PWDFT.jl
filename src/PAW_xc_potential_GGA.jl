@@ -121,25 +121,25 @@ function PAW_xc_potential_GGA!(
     energy = 0.0 # This should be accumulated for all ix
     spheres = pspotNL.paw.spheres
 
-    println("ia = ", ia, " AE = ", AE)
-    println("sum rho_core = ", sum(rho_core))
-    println("sum rho_lm = ", sum(rho_lm))
+    #println("ia = ", ia, " AE = ", AE)
+    #println("sum rho_core = ", sum(rho_core))
+    #println("sum rho_lm = ", sum(rho_lm))
 
     for ix in 1:nx
 
-        println("Begin ix = ", ix)
+        #println("Begin ix = ", ix)
 
         PAW_lm2rad!(ia, ix, atoms, pspots, pspotNL, rho_lm, rho_rad)
-        println("sum rho_rad = ", sum(rho_rad))
+        #println("sum rho_rad = ", sum(rho_rad))
         
         PAW_gradient!(ia, ix, atoms, pspots, pspotNL,
             rho_lm, rho_rad, rho_core,
             grad2, grad
         )
 
-        @printf("%5d grad r    : %18.10e\n", ix, sum(grad[:,1,:]))
-        @printf("%5d grad phi  : %18.10e\n", ix, sum(grad[:,2,:]))
-        @printf("%5d grad theta: %18.10e\n", ix, sum(grad[:,3,:]))
+        #@printf("%5d grad r    : %18.10e\n", ix, sum(grad[:,1,:]))
+        #@printf("%5d grad phi  : %18.10e\n", ix, sum(grad[:,2,:]))
+        #@printf("%5d grad theta: %18.10e\n", ix, sum(grad[:,3,:]))
 
         for ir in 1:Nrmesh
             arho[ir,1] = abs(rho_rad[ir,1]/r2[ir] + rho_core[ir])
@@ -161,34 +161,41 @@ function PAW_xc_potential_GGA!(
         # integrate to obtain the energy
         energy += integ_simpson(Nrmesh, e_rad, pspots[isp].rab)*spheres[isp].ww[ix]
 
-        ee = integ_simpson(Nrmesh, e_rad, pspots[isp].rab)*spheres[isp].ww[ix]
-        println("energy for current ix = ", ix, " ", ee)
+        #ee = integ_simpson(Nrmesh, e_rad, pspots[isp].rab)*spheres[isp].ww[ix]
+        #println("energy for current ix = ", ix, " ", ee)
 
     end
 
-    println("sum gc_rad = ", sum(gc_rad))
-    println("sum h_rad = ", sum(h_rad))
+    #println("sum gc_rad = ", sum(gc_rad))
+    #println("sum h_rad = ", sum(h_rad))
 
     lmax_loc = pspots[isp].lmax_rho + 1
     gc_lm = zeros(Float64, Nrmesh, l2, Nspin)
     # convert the first part of the GC correction back to spherical harmonics
     PAW_rad2lm!( ia, atoms, pspotNL, lmax_loc, gc_rad, gc_lm)
+    #println("sum gc_lm = ", sum(gc_lm))
 
     # trick to get faster convergence w.r.t to θ
     for ix in 1:nx
         @views h_rad[:,3,ix,1] = h_rad[:,3,ix,1] / spheres[isp].sin_th[ix]
     end
+    #println("sum h_rad after divided by sin_th = ", sum(h_rad))
 
     # We need the gradient of H to calculate the last part of the exchange
     # and correlation potential. First we have to convert H to its Y_lm expansion
     #PAW_rad2lm!( i, h_rad, h_lm, i%l+rad(i%t)%ladd, nspin_gga )
     lmax_loc_add = lmax_loc + spheres[isp].ladd
     h_lm = zeros(Float64, Nrmesh, 3, lmax_loc_add^2, Nspin)
+
+    #println("lmax_loc = ", lmax_loc)
+    #println("ladd = ", spheres[isp].ladd)
+    #println("lmax_loc_add = ", lmax_loc_add)
     
     #@views PAW_rad2lm!( ia, atoms, pspotNL, lmax_loc_add, h_rad[:,1,:,:], h_lm[:,1,:,:])
     #@views PAW_rad2lm!( ia, atoms, pspotNL, lmax_loc_add, h_rad[:,2,:,:], h_lm[:,2,:,:])
     #@views PAW_rad2lm!( ia, atoms, pspotNL, lmax_loc_add, h_rad[:,3,:,:], h_lm[:,3,:,:])
     PAW_rad2lm3!(ia, atoms, pspotNL, lmax_loc_add, h_rad, h_lm)
+    #println("sum h_lm = ", sum(h_lm))
 
     # Calculate the divergence: ∇ ⋅ h_rad = div_h
     div_h = zeros(Float64, Nrmesh, lmax_loc^2, Nspin)
@@ -196,6 +203,7 @@ function PAW_xc_potential_GGA!(
         ia, atoms, pspots, pspotNL,
         h_lm, div_h, lmax_loc_add, lmax_loc
     )
+    #println("sum div_h = ", sum(div_h))
 
     #println("sum abs v_lm before in PAW_xc_potential_GGA: ", sum(abs.(v_lm)))
 
@@ -203,7 +211,7 @@ function PAW_xc_potential_GGA!(
     # Factor 2 of div_h because we are using Libxc convention
     for ispin in 1:Nspin
         for lm in 1:l2
-            @views v_lm[1:Nrmesh,lm,ispin] .+= gc_lm[1:Nrmesh,lm,ispin] .- 2*div_h[1:Nrmesh,lm,ispin]
+            @views v_lm[1:Nrmesh,lm,ispin] .= gc_lm[1:Nrmesh,lm,ispin] .- 2*div_h[1:Nrmesh,lm,ispin]
         end
     end
 
