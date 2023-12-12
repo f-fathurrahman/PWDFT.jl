@@ -121,13 +121,25 @@ function PAW_xc_potential_GGA!(
     energy = 0.0 # This should be accumulated for all ix
     spheres = pspotNL.paw.spheres
 
+    println("ia = ", ia, " AE = ", AE)
+    println("sum rho_core = ", sum(rho_core))
+    println("sum rho_lm = ", sum(rho_lm))
+
     for ix in 1:nx
 
+        println("Begin ix = ", ix)
+
         PAW_lm2rad!(ia, ix, atoms, pspots, pspotNL, rho_lm, rho_rad)
+        println("sum rho_rad = ", sum(rho_rad))
+        
         PAW_gradient!(ia, ix, atoms, pspots, pspotNL,
             rho_lm, rho_rad, rho_core,
             grad2, grad
         )
+
+        @printf("%5d grad r    : %18.10e\n", ix, sum(grad[:,1,:]))
+        @printf("%5d grad phi  : %18.10e\n", ix, sum(grad[:,2,:]))
+        @printf("%5d grad theta: %18.10e\n", ix, sum(grad[:,3,:]))
 
         for ir in 1:Nrmesh
             arho[ir,1] = abs(rho_rad[ir,1]/r2[ir] + rho_core[ir])
@@ -149,10 +161,13 @@ function PAW_xc_potential_GGA!(
         # integrate to obtain the energy
         energy += integ_simpson(Nrmesh, e_rad, pspots[isp].rab)*spheres[isp].ww[ix]
 
-        #ee = integ_simpson(Nrmesh, e_rad, pspots[isp].rab)*spheres[isp].ww[ix]
-        #println("energy for current ix = ", ix, " ", ee)
+        ee = integ_simpson(Nrmesh, e_rad, pspots[isp].rab)*spheres[isp].ww[ix]
+        println("energy for current ix = ", ix, " ", ee)
 
     end
+
+    println("sum gc_rad = ", sum(gc_rad))
+    println("sum h_rad = ", sum(h_rad))
 
     lmax_loc = pspots[isp].lmax_rho + 1
     gc_lm = zeros(Float64, Nrmesh, l2, Nspin)

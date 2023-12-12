@@ -24,6 +24,7 @@ function PAW_gradient!(
     r2 = r.^2
 
     Nspin = size(rho_lm, 3)
+    println("Nspin = ", Nspin)
 
     # r, theta and phi components ---^
     #
