@@ -55,7 +55,7 @@ function dYlm_real_qe!(
     Ylm_real_qe!(lmax, gx, ylmaux)
 
     # Compute the difference
-    dYlm[:,:] .= dYlm[:,:] .- ylmaux[:,:]
+    @views dYlm[:,:] .= dYlm[:,:] .- ylmaux[:,:]
     #call daxpy(ngy * nylm, - 1.d0, ylmaux, 1, dylm, 1)
 
     # Using centered difference, multiply dy factor (1/(2*dg))
