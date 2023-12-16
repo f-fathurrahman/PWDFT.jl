@@ -144,7 +144,6 @@ function electrons_scf!(
         #Rhoe[:,:] = calc_rhoe( Ham, psiks )
         calc_rhoe!( Ham, psiks, Rhoe )
         # In case of PAW becsum is also calculated/updated here
-        println("integ output Rhoe = ", sum(Rhoe)*dVol)
 
         # This is not used later?
         hwf_energy = Eband + deband_hwf + Ehartree + Exc + Ham.energies.NN + mTS
@@ -173,31 +172,8 @@ function electrons_scf!(
         #
         #diffRhoe = norm(Rhoe - Rhoe_in)
         diffRhoe = dot(Rhoe - Rhoe_in, Rhoe - Rhoe_in)
-        #@printf("Before mix: diffRhoe = %e\n", diffRhoe)
         
         do_mix!(mixer, Rhoe, Rhoe_in, iterSCF)
-
-        #println("Using simple linear mixing:")
-        ##Rhoe[:] .= betamix*Rhoe_in[:] .+ (1 - betamix)*Rhoe[:]
-        #Rhoe[:] .= (1 - betamix)*Rhoe_in[:] .+ betamix*Rhoe[:]
-
-        # also mix becsum
-        if ok_paw
-            #println("sum becsum before mixing: ", sum(Ham.pspotNL.becsum))
-            #println("sum becsum_in before mixing: ", sum(becsum_in))
-            
-            #println("Using becsum mixing")
-            #do_mix!(mixer_becsum, Ham.pspotNL.becsum, becsum_in, iterSCF)
-            #Ham.pspotNL.becsum[:] .= betamix*becsum_in[:] .+ (1 - betamix)*Ham.pspotNL.becsum[:]
-            #Ham.pspotNL.becsum[:] .= (1 - betamix)*becsum_in[:] .+ betamix*Ham.pspotNL.becsum[:]
-            
-            #println("sum becsum after mixing: ", sum(Ham.pspotNL.becsum))
-            #println("sum becsum_in after mixing: ", sum(becsum_in))
-            println("diff becsum = ", sum(abs.(becsum_in .- Ham.pspotNL.becsum)))
-        end
-
-        println("integ Rhoe after mix: ", sum(Rhoe)*dVol)
-        #
 
         # Check convergence here? (using diffRhoe)
 
@@ -271,15 +247,12 @@ function electrons_scf!(
     end
 
     # Compare the energy using the usual formula (not using double-counting)
-    if !ok_paw
-        # Disabled for PAW case because I don't figure it out yet
-        energies = calc_energies(Ham, psiks)
-        if use_smearing
-            energies.mTS = mTS
-        end
-        println("\nUsing original formula for total energy")
-        println(energies, use_smearing=use_smearing)
+    energies = calc_energies(Ham, psiks)
+    if use_smearing
+        energies.mTS = mTS
     end
+    println("\nUsing original formula for total energy")
+    println(energies, use_smearing=use_smearing, is_paw=ok_paw)
     
     @printf("\n")
     @printf("----------------------------\n")
