@@ -2,9 +2,9 @@
 # XSF spec: http://www.xcrysden.org/doc/XSF.html
 
 
-function write_xsf( filenam::String, atoms::Atoms )
+function write_xsf( filenam::String, atoms::Atoms; molecule=false )
     write_xsf( filenam, atoms.LatVecs/ANG2BOHR, atoms.positions/ANG2BOHR;
-               atsymbs=atoms.atsymbs )
+               atsymbs=atoms.atsymbs, molecule=molecule )
 end
 
 
