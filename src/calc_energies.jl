@@ -241,6 +241,11 @@ function calc_energies( Ham::Hamiltonian, psiks::BlochWavefunc )
     energies.Hartree = E_Hartree
     energies.XC      = E_xc
     energies.NN      = Ham.energies.NN
+    
+    ok_paw = any(Ham.pspotNL.are_paw)
+    if ok_paw
+        energies.EHxc_paw = Ham.pspotNL.paw.EHxc_paw
+    end
 
     return energies
 end

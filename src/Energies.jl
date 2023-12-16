@@ -11,13 +11,15 @@ mutable struct Energies
     XC::Float64
     NN::Float64
     mTS::Float64
+    EHxc_paw::Float64
+    # EHxc_paw is a copy of EHxc_paw in PAWVariables
 end
 
 """
 Creates an instance of `Energies` with value of zeros for all fields.
 """
 function Energies()
-    return Energies(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+    return Energies(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
 end
 
 import Base: sum
@@ -28,7 +30,7 @@ Get total energy by summing all of its components.
 function sum( energies::Energies )
     # irrespective of whether we are using smearing or not
     return energies.Kinetic + energies.Ps_loc + energies.Ps_nloc +
-           energies.Hartree + energies.XC + energies.NN + energies.mTS
+           energies.Hartree + energies.XC + energies.NN + energies.mTS + energies.EHxc_paw
 end
 
 
@@ -42,6 +44,7 @@ function copy( e1::Energies )
         e1.XC     , 
         e1.NN     , 
         e1.mTS    , 
+        e1.EHxc_paw
     )
 end
 
@@ -55,7 +58,8 @@ function +( e1::Energies, e2::Energies )
         e1.Hartree + e2.Hartree,
         e1.XC      + e2.XC,
         e1.NN      + e2.NN,
-        e1.mTS     + e2.mTS
+        e1.mTS     + e2.mTS,
+        e1.EHxc_paw + e2.EHxc_paw
     )
 end
 
@@ -68,7 +72,8 @@ function -( e1::Energies, e2::Energies )
         e1.Hartree - e2.Hartree,
         e1.XC      - e2.XC,
         e1.NN      - e2.NN,
-        e1.mTS     - e2.mTS
+        e1.mTS     - e2.mTS,
+        e1.EHxc_paw - e2.EHxc_paw
     )
 end
 
