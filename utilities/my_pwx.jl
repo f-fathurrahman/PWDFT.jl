@@ -1,6 +1,7 @@
 using Printf
 using OffsetArrays
 using LinearAlgebra
+import Serialization
 
 LinearAlgebra.BLAS.set_num_threads(1)
 
@@ -20,8 +21,7 @@ function my_pwx(; filename=nothing)
     write_xsf("ATOMS_from_pwinput.xsf", Ham.atoms)
     println(Ham)
 
-    # XXX: This should take into account the overlap operator
-    # XXX: Currently this is handled in _prepare_scf (called electrons_scf)
+    # This will take into account whether the overlap operator is needed or not
     psiks = rand_BlochWavefunc(Ham)
 
     use_smearing = false
@@ -32,6 +32,9 @@ function my_pwx(; filename=nothing)
     end
 
     electrons_scf!(Ham, psiks, NiterMax=100, use_smearing=use_smearing, kT=kT, betamix=0.1)
+
+    Serialization.serialize("Hamiltonian.dat", Ham)
+    Serialization.serialize("psiks.dat", psiks)
 
 #=
     # Not yet working for smearing
