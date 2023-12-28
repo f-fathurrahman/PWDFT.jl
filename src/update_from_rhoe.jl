@@ -34,7 +34,10 @@ function update_from_rhoe!(Ham, psiks, Rhoe, RhoeG)
     Ham.rhoe[:,:] = Rhoe[:,:] # Need copy?
 
     # Save old potential
+    # This will be used to calculate SCF correction to the forces
     Ham.potentials.TotalOld[:,:] .= Ham.potentials.Total[:,:]
+    # XXX: We might only need to save this at the end of a
+    # converged SCF calculation, or, calculate it as needed
 
     # Reset total effective potential to zero
     fill!(Ham.potentials.Total, 0.0)
@@ -93,6 +96,7 @@ function _add_V_xc!(Ham, psiks, Rhoe, RhoeG)
     dVol = Ham.pw.CellVolume / Npoints
 
     # XC potential
+    # XXX: This can be simplified now that Ham.rhoe_core can be zeroes
     if Ham.rhoe_core == nothing
         #
         # No core-correction
@@ -138,7 +142,7 @@ function _add_V_xc!(Ham, psiks, Rhoe, RhoeG)
     #
     # Anyway, Evtxc is not used in our calculation
 
-    # XXX: Evtxc is vtxc in QE, it seems that is is not used for total energy calculation
+    # XXX: Evtxc is vtxc in QE, it seems that it is not used for total energy calculation
 
     Ham.potentials.Total[:,1] += Vxc[:,1] # Update
 
