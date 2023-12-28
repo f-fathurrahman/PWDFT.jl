@@ -5,7 +5,7 @@ using Printf
 using PWDFT
 
 const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
-const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "PSLIB_US_PAW_LDA")
+const DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials")
 const DIR_STRUCTURES = joinpath(DIR_PWDFT, "structures")
 
 import InteractiveUtils
@@ -22,7 +22,7 @@ function main( ; method="SCF" )
                    LatVecs = gen_lattice_sc(16.0) )
 
     # Initialize Hamiltonian
-    pspfiles = [joinpath(DIR_PSP, "H.pz-kjpaw_psl.1.0.0.UPF")]
+    pspfiles = [joinpath(DIR_PSP, "PSLIB_US_PAW_LDA", "H.pz-kjpaw_psl.1.0.0.UPF")]
     ecutwfc = 20.0 # or 40 Ry
     ecutrho = 100.0 # or 200 Ry
     dual = ecutrho/ecutwfc
