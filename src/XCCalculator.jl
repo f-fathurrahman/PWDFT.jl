@@ -10,10 +10,20 @@ struct XCCalculator <: AbstractXCCalculator
 end
 # Use the same fields as LibxcXCCalculator
 
+# XXX: This is a mess
+# XXX: Probably use short name instead of x_id or c_id ?
 function XCCalculator(; x_id=1, c_id=7, is_gga=false, is_metagga=false)
-    return XCCalculator(x_id, c_id, is_gga=is_gga, is_metagga=is_metagga)
+    if is_gga && !is_metagga
+        # PBE
+        # FIXME: Currently, we use hardcoded x_id and c_id
+        return XCCalculator(101, 130, :GGA, true)
+    elseif !is_gga & !is_metagga
+        # LDA VWN
+        return XCCalculator(1, 7, :LDA, false)
+    else
+        error("Not supported kwargs combination")
+    end
 end
-# XXX: use short name instead of x_id or c_id ?
 
 
 # Use Libxc
