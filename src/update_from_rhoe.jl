@@ -31,13 +31,23 @@ end
 # Probably by setting psiks as optional argument
 function update_from_rhoe!(Ham, psiks, Rhoe, RhoeG)
 
+    Nspin = Ham.electrons.Nspin
+    Npoints = size(Ham.rhoe, 1)
+
     Ham.rhoe[:,:] = Rhoe[:,:] # Need copy?
 
     # Save old potential
     # This will be used to calculate SCF correction to the forces
-    Ham.potentials.TotalOld[:,:] .= Ham.potentials.Total[:,:]
+    #Ham.potentials.TotalOld[:,:] .= Ham.potentials.Total[:,:]
     # XXX: We might only need to save this at the end of a
     # converged SCF calculation, or, calculate it as needed
+
+    # Save old potential (only Hartree and XC)
+    for ispin in 1:Nspin, ip in 1:Npoints
+        Ham.potentials.TotalOld[ip,ispin] = Ham.potentials.XC[ip,ispin] + Ham.potentials.Hartree[ip]
+    end
+    # This might be useful to potential mixing, too.
+
 
     # Reset total effective potential to zero
     fill!(Ham.potentials.Total, 0.0)
@@ -47,7 +57,6 @@ function update_from_rhoe!(Ham, psiks, Rhoe, RhoeG)
     Ehartree = _add_V_Hartree!( Ham, Rhoe, RhoeG )
 
     # Add V_Ps_loc contribution
-    Nspin = Ham.electrons.Nspin
     for ispin in 1:Nspin
         Ham.potentials.Total[:,ispin] .+= Ham.potentials.Ps_loc[:]
     end
