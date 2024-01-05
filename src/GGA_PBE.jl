@@ -5,14 +5,12 @@ using Libxc
 
 
 function calc_epsxc_Vxc_PBE!(
-    Ham,
+    xc_calc, pw,
     Rhoe::AbstractVector{Float64},
     epsxc::AbstractVector{Float64},
     Vxc::AbstractVector{Float64}
 )
 
-    pw = Ham.pw
-    xc_calc = Ham.xc_calc
     # TODO: Use x_id and c_id from xc_calc
 
     Npoints = size(Rhoe, 1)

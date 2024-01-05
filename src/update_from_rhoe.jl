@@ -105,7 +105,7 @@ function _add_V_xc!(Ham, psiks, Rhoe, RhoeG)
     dVol = Ham.pw.CellVolume / Npoints
 
     # XC potential
-    # XXX: This can be simplified now that Ham.rhoe_core can be zeroes
+    # XXX: This can be simplified now that Ham.rhoe_core can be zeros
     if Ham.rhoe_core == nothing
         #
         # No core-correction
@@ -117,7 +117,7 @@ function _add_V_xc!(Ham, psiks, Rhoe, RhoeG)
         
         elseif Ham.xcfunc == "PBE"
         
-            @views calc_epsxc_Vxc_PBE!( Ham, Rhoe[:,1], epsxc, Vxc[:,1] )
+            @views calc_epsxc_Vxc_PBE!( Ham.xc_calc, Ham.pw, Rhoe[:,1], epsxc, Vxc[:,1] )
         
         else
             # VWN
@@ -135,10 +135,10 @@ function _add_V_xc!(Ham, psiks, Rhoe, RhoeG)
         if Ham.xcfunc == "VWN"
             @views calc_epsxc_Vxc_VWN!( Ham.xc_calc, ρ, epsxc[:,1], Vxc[:,1] )
         elseif Ham.xcfunc == "PBE"
-            @views calc_epsxc_Vxc_PBE!( Ham, ρ, epsxc, Vxc[:,1] )
+            @views calc_epsxc_Vxc_PBE!( Ham.xc_calc, Ham.pw, ρ, epsxc, Vxc[:,1] )
         else
-            println("Core correction is yet not supported in SCAN")
-            error()
+            # This is SCAN
+            error("Core correction is yet not supported in SCAN")
         end
         Exc = sum(epsxc .* ρ)*dVol
     end
