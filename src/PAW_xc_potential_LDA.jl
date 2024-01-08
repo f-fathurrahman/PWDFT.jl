@@ -1,7 +1,7 @@
 # Use the density produced by sum_rad_rho to compute xc potential
 # and energy, as xc functional is not diagonal on angular momentum
 # numerical integration is performed.
-function PAW_xc_potential!(
+function PAW_xc_potential_LDA!(
     AE::Bool, ia,
     atoms, pspots, pspotNL,
     xc_calc,
