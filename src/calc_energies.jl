@@ -223,6 +223,12 @@ Each `psiks` is assumed to be already orthonormalized elsewhere.
 `Ham.energies.NN` should be calculated outside this function if needed.
 """
 function calc_energies( Ham::Hamiltonian, psiks::BlochWavefunc )
+    calc_energies!(Ham, psiks) # call the in-place version
+    return Ham.energies
+end
+
+# This is the in-place version
+function calc_energies!( Ham::Hamiltonian, psiks::BlochWavefunc )
     
     E_kin = calc_E_kin( Ham, psiks )
 
@@ -234,19 +240,17 @@ function calc_energies( Ham::Hamiltonian, psiks::BlochWavefunc )
         E_Ps_nloc = 0.0
     end
 
-    energies = Energies()
-    energies.Kinetic = E_kin
-    energies.Ps_loc  = E_Ps_loc
-    energies.Ps_nloc = E_Ps_nloc
-    energies.Hartree = E_Hartree
-    energies.XC      = E_xc
-    energies.NN      = Ham.energies.NN
-    
+    Ham.energies.Kinetic = E_kin
+    Ham.energies.Ps_loc  = E_Ps_loc
+    Ham.energies.Ps_nloc = E_Ps_nloc
+    Ham.energies.Hartree = E_Hartree
+    Ham.energies.XC      = E_xc
+    Ham.energies.NN      = Ham.energies.NN
+
     ok_paw = any(Ham.pspotNL.are_paw)
     if ok_paw
-        energies.EHxc_paw = Ham.pspotNL.paw.EHxc_paw
+        Ham.energies.EHxc_paw = Ham.pspotNL.paw.EHxc_paw
     end
 
-    return energies
+    return
 end
-

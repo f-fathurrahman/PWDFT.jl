@@ -247,12 +247,12 @@ function electrons_scf!(
     end
 
     # Compare the energy using the usual formula (not using double-counting)
-    energies = calc_energies(Ham, psiks)
+    calc_energies!(Ham, psiks)
     if use_smearing
-        energies.mTS = mTS
+        Ham.energies.mTS = mTS
     end
     println("\nUsing original formula for total energy")
-    println(energies, use_smearing=use_smearing, is_paw=ok_paw)
+    println(Ham.energies, use_smearing=use_smearing, is_paw=ok_paw)
     
     @printf("\n")
     @printf("----------------------------\n")

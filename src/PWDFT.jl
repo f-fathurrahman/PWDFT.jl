@@ -276,7 +276,7 @@ include("Kprec.jl")
 export Kprec, Kprec!, Kprec_inplace!
 
 include("calc_energies.jl")
-export calc_energies,
+export calc_energies, calc_energies!,
        calc_E_kin,
        calc_E_local,
        calc_E_Ps_nloc
