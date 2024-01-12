@@ -47,13 +47,13 @@ function update_from_rhoe!(Ham, psiks, Rhoe, RhoeG)
         Ham.potentials.TotalOld[ip,ispin] = Ham.potentials.XC[ip,ispin] + Ham.potentials.Hartree[ip]
     end
     # This might be useful to potential mixing, too.
-
+    # XXX: Rename TotalOld to HxcPrev ?
 
     # Reset total effective potential to zero
     fill!(Ham.potentials.Total, 0.0)
 
     # FIXME: also set Ham.potentials.XC and Ham.potentials.Hartree
-    Exc, Evtxc = _add_V_xc!( Ham, psiks, Rhoe, RhoeG )
+    Exc = _add_V_xc!( Ham, psiks, Rhoe, RhoeG )
     Ehartree = _add_V_Hartree!( Ham, Rhoe, RhoeG )
 
     # Add V_Ps_loc contribution
@@ -86,7 +86,7 @@ function update_from_rhoe!(Ham, psiks, Rhoe, RhoeG)
     # PAW-specific stuffs is also updated here
 
 
-    return Ehartree, Exc, Evtxc # energies?
+    return Ehartree, Exc
 end
 
 
@@ -144,7 +144,7 @@ function _add_V_xc!(Ham, psiks, Rhoe, RhoeG)
     end
 
     # Also calculate Evtxc
-    Evtxc = sum(Vxc[:,1] .* Rhoe)*dVol # Evtxc does not include rhoe_core
+    #Evtxc = sum(Vxc[:,1] .* Rhoe)*dVol # Evtxc does not include rhoe_core
     # term in GGA is not accounted here (ref gradcorr.f90)
     #
     # vtxcgc = vtxcgc - SUM( dh(:) * rhoaux(:,is) )
@@ -152,10 +152,11 @@ function _add_V_xc!(Ham, psiks, Rhoe, RhoeG)
     # Anyway, Evtxc is not used in our calculation
 
     # XXX: Evtxc is vtxc in QE, it seems that it is not used for total energy calculation
+    # Evtxc will be used for stress calculation
 
     Ham.potentials.Total[:,1] += Vxc[:,1] # Update
 
-    return Exc, Evtxc
+    return Exc
 end
 
 

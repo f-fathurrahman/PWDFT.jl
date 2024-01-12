@@ -26,11 +26,10 @@ function electrons_scf!(
     # Also calculate some energy terms
     # We don't use Ham.energies to save these terms
     if (startingrhoe == :gaussian) && !restart
-        Ehartree, Exc, Evtxc = _prepare_scf!(Ham, psiks)
+        Ehartree, Exc = _prepare_scf!(Ham, psiks)
     elseif (startingrhoe == :none) || restart
         Ehartree = Ham.energies.Hartree
         Exc = Ham.energies.XC
-        Evtxc = 0.0 # Not really used in total energy (?)
     end
 
     ok_paw = any(Ham.pspotNL.are_paw)
@@ -178,8 +177,7 @@ function electrons_scf!(
         # Check convergence here? (using diffRhoe)
 
         #
-        Ehartree, Exc, Evtxc = update_from_rhoe!(Ham, psiks, Rhoe)
-        #println("Evtxc = ", Evtxc)
+        Ehartree, Exc = update_from_rhoe!(Ham, psiks, Rhoe)
 
         @views descf = -sum( (Rhoe_in[:,1] .- Rhoe[:,1]).*(Vhartree + Vxc[:,1]) )*dVol
         # XXX: metagga contribution is not included in descf yet !!!
@@ -275,9 +273,9 @@ function _prepare_scf!(Ham, psiks)
     end
 
     # Update the potentials
-    Ehartree, Exc, Evtxc = update_from_rhoe!( Ham, psiks, Rhoe, RhoeG )
+    Ehartree, Exc = update_from_rhoe!( Ham, psiks, Rhoe, RhoeG )
 
-    return Ehartree, Exc, Evtxc
+    return Ehartree, Exc
 end
 
 
