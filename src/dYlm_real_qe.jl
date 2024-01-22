@@ -1,3 +1,5 @@
+# XXX: following original QE subroutine, ipol is positioned after dYlm array
+# XXX: might be better to put dYlm last because it is the output (overwritten)
 function dYlm_real_qe!(
     lmax::Int64,
     R::Matrix{Float64},
