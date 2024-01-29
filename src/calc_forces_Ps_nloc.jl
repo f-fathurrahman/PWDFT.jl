@@ -5,7 +5,7 @@ function calc_forces_Ps_nloc( Ham, psiks )
 end
 
 function calc_forces_Ps_nloc!(
-    Ham::Hamiltonian,
+    Ham::Hamiltonian{PsPot_GTH},
     psiks::BlochWavefunc,
     F_Ps_nloc::Array{Float64,2}
 )
