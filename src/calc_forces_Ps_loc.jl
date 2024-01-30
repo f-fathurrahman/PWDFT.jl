@@ -9,8 +9,9 @@ function calc_forces_Ps_loc!( Ham::Hamiltonian, F_Ps_loc::Array{Float64,2} )
     return
 end
 
+# FIXME: Check for PsPot_UPF and PsPot_GTH
 function calc_forces_Ps_loc!(
-    atoms::Atoms, pw::PWGrid, pspots::Array{PsPot_GTH,1},
+    atoms::Atoms, pw::PWGrid, pspots,
     Rhoe::Array{Float64,2},
     F_Ps_loc::Array{Float64,2}
 )
