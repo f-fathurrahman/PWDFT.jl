@@ -383,12 +383,21 @@ export op_S, op_S!
 
 
 include("calc_forces_NN.jl")
-include("calc_forces_Ps_loc.jl")
-include("calc_forces_Ps_nloc.jl")
-include("calc_forces.jl")
 export calc_forces_NN, calc_forces_NN!
+
+include("calc_forces_Ps_loc.jl")
 export calc_forces_Ps_loc, calc_forces_Ps_loc!
+
+include("calc_forces_Ps_nloc.jl")
 export calc_forces_Ps_nloc, calc_forces_Ps_nloc!
+
+include("calc_forces_scf_corr.jl")
+export calc_forces_scf_corr!
+
+include("calc_forces_nlcc.jl")
+export calc_forces_nlcc!
+
+include("calc_forces.jl")
 export calc_forces
 
 include("gamma_only/calc_forces_NN_gamma.jl")
