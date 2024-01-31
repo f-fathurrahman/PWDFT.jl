@@ -98,6 +98,12 @@ function electrons_scf!(
         KEdens_in = zeros(Float64, Npoints, Nspin)  # ????
     end
 
+
+    # Print header
+    @printf("----------------------------------------------------------\n")
+    @printf("     iterSCF           E              ΔE           Δρ\n")
+    @printf("----------------------------------------------------------\n")
+
     for iterSCF in 1:NiterMax
         
         @views Vin[:] .= Vhartree[:] + Vxc[:,1]
@@ -194,7 +200,7 @@ function electrons_scf!(
     
         #
         diffEtot = abs(Etot - Etot_old)
-        @printf("SCF: %5d %18.10f %10.5e %10.5e\n", iterSCF, Etot, diffEtot, diffRhoe)
+        @printf("SCF: %5d  %18.10f  %12.5e  %12.5e\n", iterSCF, Etot, diffEtot, diffRhoe)
         if diffEtot <= etot_conv_thr
             Nconv = Nconv + 1
         else
