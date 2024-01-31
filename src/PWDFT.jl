@@ -41,7 +41,7 @@ export gen_lattice_fcc, gen_lattice_bcc, gen_lattice_trigonal, gen_lattice_trigo
        gen_lattice_sc, gen_lattice_rhombohedral
 
 include("SymmetryInfo.jl")
-export SymmetryInfo
+export SymmetryInfo, symmetrize_vector!
 
 include("KPoints.jl")
 export KPoints,
@@ -393,10 +393,10 @@ include("calc_forces_Ps_nloc.jl")
 export calc_forces_Ps_nloc, calc_forces_Ps_nloc!
 
 include("calc_forces_scf_corr.jl")
-export calc_forces_scf_corr!
+export calc_forces_scf_corr!, calc_forces_scf_corr
 
 include("calc_forces_nlcc.jl")
-export calc_forces_nlcc!
+export calc_forces_nlcc!, calc_forces_nlcc
 
 include("calc_forces.jl")
 export calc_forces

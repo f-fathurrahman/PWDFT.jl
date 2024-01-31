@@ -15,6 +15,19 @@ const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
 include(joinpath(DIR_PWDFT, "utilities", "PWSCFInput.jl"))
 include(joinpath(DIR_PWDFT, "utilities", "init_Ham_from_pwinput.jl"))
 
+# A helper function to print forces
+function _print_forces(atoms::Atoms, F, title_str)
+    Natoms = atoms.Natoms
+    atsymbs = atoms.atsymbs
+    println()
+    println(title_str)
+    for ia in 1:Natoms
+        @printf("%s %18.10f %18.10f %18.10f\n", atsymbs[ia], F[1,ia], F[2,ia], F[3,ia])
+    end
+    return
+end
+
+
 function my_pwx(; filename=nothing)
     Ham, pwinput = init_Ham_from_pwinput(filename=filename)
 
@@ -33,17 +46,29 @@ function my_pwx(; filename=nothing)
 
     electrons_scf!(Ham, psiks, NiterMax=100, use_smearing=use_smearing, kT=kT, betamix=0.1)
 
-    Natoms = Ham.atoms.Natoms
-    atsymbs = Ham.atoms.atsymbs
-    forces = calc_forces(Ham, psiks)
-    forces[:] .*= 2.0 # convert to Ry/bohr
-    println("Atomic forces: (in Ry/bohr)")
-    for ia in 1:Natoms
-        @printf("%s %18.10f %18.10f %18.10f\n", atsymbs[ia],
-                forces[1,ia], forces[2,ia], forces[3,ia] )
-    end
+    # Calculate forces: we want to display them by different contributions
+    # in Ry/bohr to facilitate easier comparison with QE
+    #
+    # Factor of 2 to convert to Ry/bohr
+    F_NN = 2*calc_forces_NN( Ham.pw, Ham.atoms )
+    F_Ps_loc = 2*calc_forces_Ps_loc( Ham )
+    F_Ps_nloc = 2*calc_forces_Ps_nloc( Ham, psiks )
+    symmetrize_vector!( Ham.pw.LatVecs, Ham.sym_info, F_Ps_nloc )
+    #
+    F_nlcc = 2*calc_forces_nlcc(Ham)
+    F_scf_corr = 2*calc_forces_scf_corr(Ham)
+    #
+    F_tot = F_NN + F_Ps_loc + F_Ps_nloc + F_nlcc + F_scf_corr
 
+    _print_forces(Ham.atoms, F_tot, "Atomic forces (in Ry/bohr)")
+    _print_forces(Ham.atoms, F_Ps_nloc, "Nonlocal pspot contribution to forces (in Ry/bohr)")
+    _print_forces(Ham.atoms, F_NN, "Ionic contribution to forces (in Ry/bohr)")
+    _print_forces(Ham.atoms, F_Ps_loc, "Local contribution to forces (in Ry/bohr)")
+    _print_forces(Ham.atoms, F_nlcc, "Core correction contribution to forces (in Ry/bohr)")
+    _print_forces(Ham.atoms, F_scf_corr, "SCF correction to forces (in Ry/bohr)")
 
+    println()
+    println("Hamiltonan and psiks will be serialized to file")
     Serialization.serialize("Hamiltonian.dat", Ham)
     Serialization.serialize("psiks.dat", psiks)
 
