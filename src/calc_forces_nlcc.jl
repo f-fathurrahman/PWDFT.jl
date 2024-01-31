@@ -1,3 +1,9 @@
+function calc_forces_nlcc( Ham::Hamiltonian{PsPot_UPF} )
+    F_nlcc = zeros(Float64, 3, Ham.atoms.Natoms)
+    calc_forces_nlcc!(Ham, F_nlcc)
+    return F_nlcc
+end
+
 # Calculates the NLCC contribution to the force
 function calc_forces_nlcc!( Ham::Hamiltonian{PsPot_UPF}, F_nlcc )
     calc_forces_nlcc!(
@@ -8,6 +14,13 @@ function calc_forces_nlcc!( Ham::Hamiltonian{PsPot_UPF}, F_nlcc )
     return
 end
 
+
+# For PsPot_GTH, the contributions are zeros. We do not yet
+# support nonlinear core corrections in PsPot_GTH
+function calc_forces_nlcc!( Ham::Hamiltonian{PsPot_GTH}, F_nlcc )
+    fill!(F_nlcc, 0.0)
+    return
+end
 
 function calc_forces_nlcc!(
     atoms::Atoms,
@@ -43,10 +56,10 @@ function calc_forces_nlcc!(
     #
     # Calculate exchange-correlation potential
     #
-    Nspin = 1 # FIXME: need to be deduced from size of rhoe_core
+    Nspin = size(rhoe_core, 2)
+    @assert Nspin == 1
     Vxc = zeros(Float64, Npoints, Nspin)
     epsxc = zeros(Float64, Npoints, Nspin) # not used
-    println("sum rhoe_core = ", sum(rhoe_core))
     ρ = zeros(Float64, Npoints)
     @views ρ[:] .= Rhoe[:,1] + rhoe_core[:,1]
     if xcfunc == "VWN"
@@ -61,20 +74,11 @@ function calc_forces_nlcc!(
     for ir in 1:Npoints
         ctmp[ir] = Vxc[ir,1]
     end
-    println("sum ctmp before forward FFT: ", sum(ctmp))
 
-    # This will will segfault, FFT plan is not initialized because we read Ham
-    # from Julia serialization
+    # Bring to G-space
     R_to_G!(pw, ctmp)
-    #
-    # We use resort to the usual way
-    #planfw = plan_fft!( zeros(ComplexF64,pw.Ns) ) # using default plan
-    #ff = reshape(ctmp, pw.Ns)
-    #planfw*ff
     @views ctmp[:] /= Npoints # rescale
     # Now, ctmp is Vxc(G)
-
-    println("sum ctmp after forward FFT: ", sum(ctmp))
 
     fill!(F_nlcc, 0.0)
     rhoecgl = zeros(Float64, Ngl)
@@ -89,9 +93,8 @@ function calc_forces_nlcc!(
             continue
         end
         #
-        PWDFT._calc_rhoecgl!(psp, G2_shells, rhoecgl)
-        println("sum rhoecgl/pw.CellVolume = ", sum(rhoecgl)/pw.CellVolume)
-        # rhoecgl does not include 1/CellVolume factor
+        _calc_rhoecgl!(psp, G2_shells, rhoecgl)
+        # Reminder: rhoecgl does not include 1/CellVolume factor
         #        
         for ia in 1:Natoms
             if atm2species[ia] != isp

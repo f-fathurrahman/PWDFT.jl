@@ -1,3 +1,15 @@
+function calc_forces_scf_corr( Ham::Hamiltonian )
+    F_scf_corr = zeros(Float64, 3, Ham.atoms.Natoms)
+    calc_forces_scf_corr!(Ham, F_scf_corr)
+    return F_scf_corr
+end
+
+# Set to zeros in case of PsPot_GTH
+function calc_forces_scf_corr!( Ham::Hamiltonian{PsPot_GTH}, F_scf_corr )
+    fill!(F_scf_corr, 0.0)
+    return
+end
+
 function calc_forces_scf_corr!( Ham::Hamiltonian{PsPot_UPF}, F_scf_corr )
     calc_forces_scf_corr!(
         Ham.atoms, Ham.pw, Ham.pspots, Ham.potentials, F_scf_corr
@@ -6,7 +18,9 @@ function calc_forces_scf_corr!( Ham::Hamiltonian{PsPot_UPF}, F_scf_corr )
 end
 
 
-
+# XXX: This currently only defined for PsPot_UPF because PsPot_GTH does not
+# XXX: provide rhoatom information.
+# XXX: This term should be small for converged SCF.
 function calc_forces_scf_corr!(
     atoms::Atoms,
     pw::PWGrid,
@@ -14,8 +28,6 @@ function calc_forces_scf_corr!(
     potentials::Potentials,
     F_scf_corr::Matrix{Float64}
 )
-
-    println("\nBegin calculating F_scf_corr")
 
     # Calculate difference in potential
     VtotOld = potentials.TotalOld # actually Hartree and XC
@@ -36,31 +48,16 @@ function calc_forces_scf_corr!(
 
     Nspin = size(VtotOld,2)
     Npoints = size(VtotOld,1)
-    
-    println("Ng = ", Ng)
-    println("Npoints = ", Npoints)
-    println("pw.Ns = ", pw.Ns)
-
-    println("sum abs VHartree = ", sum(abs.(potentials.Hartree)))
-    println("sum XC = ", sum(potentials.XC))
 
     # Calculate difference between new and old potential
     ctmp = zeros(ComplexF64, Npoints)
     for ispin in 1:Nspin, ip in 1:Npoints
         ctmp[ip] += ( potentials.Hartree[ip] + potentials.XC[ip,ispin] - VtotOld[ip,ispin] )
     end
-
     # FIXME: probably need to calculate this only just after convergence is reached
-    println("sum ctmp before fwfft = ", sum(ctmp))
 
     R_to_G!(pw, ctmp)
-    #ff = reshape(ctmp, pw.Ns)
-    ## Use FFT again
-    #planfw = plan_fft!( zeros(ComplexF64,pw.Ns) ) # using default plan
-    #planfw*ff
     @views ctmp[:] /= Npoints # rescale
-
-    println("sum ctmp after forward FFT = ", sum(ctmp))
 
     rhocgnt = zeros(Float64, Ngl)
     fill!(F_scf_corr, 0.0)
@@ -70,18 +67,16 @@ function calc_forces_scf_corr!(
         aux = zeros(Float64, psp.Nr)
         # G != 0 terms
         for igl in 2:Ngl
-            gx = sqrt(G2_shells[igl])
+            Gm = sqrt(G2_shells[igl])
             for ir in 1:psp.Nr
                 if psp.r[ir] < eps8
                    aux[ir] = psp.rhoatom[ir]
                 else
-                   aux[ir] = psp.rhoatom[ir]*sin(gx*psp.r[ir])/(psp.r[ir]*gx)
+                   aux[ir] = psp.rhoatom[ir]*sin(Gm*psp.r[ir])/(psp.r[ir]*Gm)
                 end
             end
-            rhocgnt[igl] = PWDFT.integ_simpson( psp.Nr, aux, psp.rab )
+            rhocgnt[igl] = nteg_simpson( psp.Nr, aux, psp.rab )
         end
-        #
-        println("sum rhocgnt = ", sum(rhocgnt))
         #
         # sum over atoms
         for ia in 1:Natoms
