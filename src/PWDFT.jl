@@ -388,6 +388,7 @@ export calc_forces_NN, calc_forces_NN!
 include("calc_forces_Ps_loc.jl")
 export calc_forces_Ps_loc, calc_forces_Ps_loc!
 
+include("calc_Deff.jl") # required for force and stress
 include("calc_forces_Ps_nloc.jl")
 export calc_forces_Ps_nloc, calc_forces_Ps_nloc!
 

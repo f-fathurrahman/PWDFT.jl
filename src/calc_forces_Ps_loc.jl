@@ -46,9 +46,7 @@ function calc_forces_Ps_loc!(
     Vgl = zeros(Float64, Ngl, Nspecies)
     for isp in 1:Nspecies
         psp = pspots[isp]
-        for igl in 1:Ngl
-            Vgl[igl,isp] = eval_Vloc_G( psp, G2_shells[igl] )
-        end
+        @views eval_Vloc_G!(psp, G2_shells, Vgl[:,isp])
     end
     # We don't need factor of CellVolume.
     # It will be cancelled by multiplication in the expression for F_Ps_loc

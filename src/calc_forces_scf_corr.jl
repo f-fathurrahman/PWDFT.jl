@@ -75,7 +75,7 @@ function calc_forces_scf_corr!(
                    aux[ir] = psp.rhoatom[ir]*sin(Gm*psp.r[ir])/(psp.r[ir]*Gm)
                 end
             end
-            rhocgnt[igl] = nteg_simpson( psp.Nr, aux, psp.rab )
+            rhocgnt[igl] = integ_simpson( psp.Nr, aux, psp.rab )
         end
         #
         # sum over atoms

@@ -33,6 +33,17 @@ function my_pwx(; filename=nothing)
 
     electrons_scf!(Ham, psiks, NiterMax=100, use_smearing=use_smearing, kT=kT, betamix=0.1)
 
+    Natoms = Ham.atoms.Natoms
+    atsymbs = Ham.atoms.atsymbs
+    forces = calc_forces(Ham, psiks)
+    forces[:] .*= 2.0 # convert to Ry/bohr
+    println("Atomic forces: (in Ry/bohr)")
+    for ia in 1:Natoms
+        @printf("%s %18.10f %18.10f %18.10f\n", atsymbs[ia],
+                forces[1,ia], forces[2,ia], forces[3,ia] )
+    end
+
+
     Serialization.serialize("Hamiltonian.dat", Ham)
     Serialization.serialize("psiks.dat", psiks)
 

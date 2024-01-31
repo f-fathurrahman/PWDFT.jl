@@ -11,5 +11,8 @@ function calc_forces(
     symmetrize_vector!( Ham.pw.LatVecs, Ham.sym_info, F_Ps_nloc )
     # early return in handled in symmetrize_vector!
     
-    return F_NN + F_Ps_loc + F_Ps_nloc
+    F_nlcc = calc_forces_nlcc(Ham)
+    F_scf_corr = calc_forces_scf_corr(Ham)
+
+    return F_NN + F_Ps_loc + F_Ps_nloc + F_nlcc + F_scf_corr
 end
