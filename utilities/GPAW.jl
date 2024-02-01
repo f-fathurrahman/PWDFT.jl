@@ -1,3 +1,6 @@
+# TODO: Not yet checked against current version of GPAW
+# This was tested against GPAW version released around 2020.
+
 """
 Write a GPAW input script (Python code) from a given `Hamiltonian` instance.
 
@@ -165,30 +168,30 @@ function read_gpaw_etotal( filename::String )
             l = readline(f) # skip
             #            
             l = readline(f)
-            Kinetic = parse( Float64, split(l, keepempty=false)[end] )/(2*Ry2eV)
+            Kinetic = parse( Float64, split(l, keepempty=false)[end] )/Ha2eV
             #
             l = readline(f)
-            Potential = parse( Float64, split(l, keepempty=false)[end] )/(2*Ry2eV)
+            Potential = parse( Float64, split(l, keepempty=false)[end] )/Ha2eV
             #
             l = readline(f)
-            External = parse( Float64, split(l, keepempty=false)[end] )/(2*Ry2eV)
+            External = parse( Float64, split(l, keepempty=false)[end] )/Ha2eV
             #
             l = readline(f)
-            XC = parse( Float64, split(l, keepempty=false)[end] )/(2*Ry2eV)
+            XC = parse( Float64, split(l, keepempty=false)[end] )/Ha2eV
             #
             l = readline(f)
-            Entropy = parse( Float64, split(l, keepempty=false)[end] )/(2*Ry2eV)
+            Entropy = parse( Float64, split(l, keepempty=false)[end] )/Ha2eV
             #
             l = readline(f)
-            Local = parse( Float64, split(l, keepempty=false)[end] )/(2*Ry2eV)
+            Local = parse( Float64, split(l, keepempty=false)[end] )/Ha2eV
             #
             l = readline(f)
             #
             l = readline(f)
-            Free_energy = parse( Float64, split(l, keepempty=false)[end] )/(2*Ry2eV)
+            Free_energy = parse( Float64, split(l, keepempty=false)[end] )/Ha2eV
             #
             l = readline(f)
-            Extrapolated = parse( Float64, split(l, keepempty=false)[end] )/(2*Ry2eV)
+            Extrapolated = parse( Float64, split(l, keepempty=false)[end] )/Ha2eV
             #
             break
         end
