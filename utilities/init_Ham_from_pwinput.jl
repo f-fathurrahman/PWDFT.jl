@@ -1,9 +1,15 @@
 function init_Ham_from_pwinput(; filename::Union{Nothing,String}=nothing)
 
+    # Read filename from the command line argument
     if filename == nothing
         println("ARGS = ", ARGS)
-        @assert length(ARGS) == 1
-        pwinput = PWSCFInput(ARGS[1])
+        if length(ARGS) == 0
+            println("No argument is given. Using PWINPUT as default filename.")
+            @assert Base.Filesystem.isfile("PWINPUT")
+            pwinput = PWSCFInput("PWINPUT")
+        else
+            pwinput = PWSCFInput(ARGS[1])
+        end
     else
         pwinput = PWSCFInput(filename)
     end
