@@ -418,4 +418,15 @@ include("my_pwx/PWSCFInput.jl")
 include("my_pwx/init_Ham_from_pwinput.jl")
 include("my_pwx/my_pwx.jl")
 
+
+# Experiment with PrecompileTools
+#using PrecompileTools
+#@setup_workload begin
+#    # This will be run?
+#    my_pwx()
+#    my_pwx(filename="PWINPUT")
+#end
+
+
+
 end
