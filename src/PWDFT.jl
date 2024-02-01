@@ -6,6 +6,7 @@ using Random
 using FFTW
 using LightXML
 using OffsetArrays
+import Serialization
 
 # constants
 #
@@ -410,5 +411,11 @@ include("gamma_only/calc_forces_gamma.jl")
 # Some utilities
 include("get_default_psp.jl")
 export get_default_PsPot_GTH
+
+
+# my_pwx: a simple clone of QuantumEspresso's pw.x
+include("my_pwx/PWSCFInput.jl")
+include("my_pwx/init_Ham_from_pwinput.jl")
+include("my_pwx/my_pwx.jl")
 
 end
