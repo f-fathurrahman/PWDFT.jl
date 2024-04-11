@@ -145,6 +145,19 @@ include("LDA_VWN.jl")
 export calc_epsxc_VWN, calc_Vxc_VWN
 export calc_epsxc_Vxc_VWN, calc_epsxc_Vxc_VWN!
 
+# x_id and c_id of xc_calc are used now
+# so these functions are quite general (for LDA)
+const calc_epsxc_Vxc_LDA = calc_epsxc_Vxc_VWN
+const calc_epsxc_Vxc_LDA! = calc_epsxc_Vxc_VWN!
+const calc_Vxc_LDA = calc_Vxc_VWN
+const calc_Vxc_LDA! = calc_Vxc_VWN!
+const calc_epsxc_LDA = calc_epsxc_VWN
+const calc_epsxc_LDA! = calc_epsxc_VWN!
+# also export these names
+export calc_epsxc_Vxc_LDA, calc_epsxc_Vxc_LDA!
+export calc_Vxc_LDA, calc_Vxc_LDA!
+export calc_epsxc_LDA, calc_epsxc_LDA!
+
 include("GGA_PBE.jl")
 export calc_epsxc_PBE, calc_Vxc_PBE
 
