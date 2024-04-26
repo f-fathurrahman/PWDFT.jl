@@ -157,6 +157,7 @@ const calc_epsxc_LDA! = calc_epsxc_VWN!
 export calc_epsxc_Vxc_LDA, calc_epsxc_Vxc_LDA!
 export calc_Vxc_LDA, calc_Vxc_LDA!
 export calc_epsxc_LDA, calc_epsxc_LDA!
+# FIXME: Remove *_VWN functions and use *_LDA instead
 
 include("GGA_PBE.jl")
 export calc_epsxc_PBE, calc_Vxc_PBE
