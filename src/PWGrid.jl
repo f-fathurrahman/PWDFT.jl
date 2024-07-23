@@ -8,6 +8,7 @@ struct GVectors
     idx_g2r::Array{Int64,1}
     G2_shells::Array{Float64,1}
     idx_g2shells::Array{Int64,1}
+    idx_g2miller::Vector{Tuple{Int64,Int64,Int64}} #::Array{Int64,2}
 end
 
 """
@@ -72,6 +73,7 @@ function PWGrid(
 
     ecutrho = dual*ecutwfc
     RecVecs = 2*pi*inv(Matrix(LatVecs'))
+    # XXX RecVecs are stored by rows
     CellVolume = abs(det(LatVecs))
     #
     LatVecsLen = Array{Float64}(undef,3)
@@ -209,6 +211,7 @@ function init_gvec( Ns, RecVecs, ecutrho )
     G  = Array{Float64}(undef,3,Ng)
     G2 = Array{Float64}(undef,Ng)
     idx_g2r = Array{Int64}(undef,Ng)
+    idx_g2miller = Vector{Tuple{Int64,Int64,Int64}}(undef,Ng) # Array{Int64,2}(undef,3,Ng)
 
     ig = 0
     ip = 0
@@ -219,6 +222,7 @@ function init_gvec( Ns, RecVecs, ecutrho )
         gi = mm_to_nn( i, Ns[1] )
         gj = mm_to_nn( j, Ns[2] )
         gk = mm_to_nn( k, Ns[3] )
+        # XXX RecVecs are stored by rows
         G_temp[1] = RecVecs[1,1]*gi + RecVecs[1,2]*gj + RecVecs[1,3]*gk
         G_temp[2] = RecVecs[2,1]*gi + RecVecs[2,2]*gj + RecVecs[2,3]*gk
         G_temp[3] = RecVecs[3,1]*gi + RecVecs[3,2]*gj + RecVecs[3,3]*gk
@@ -228,6 +232,7 @@ function init_gvec( Ns, RecVecs, ecutrho )
             G[:,ig] = G_temp[:]
             G2[ig] = G2_temp
             idx_g2r[ig] = ip
+            idx_g2miller[ig] = (gi, gj, gk)
         end
     end
     end
@@ -238,10 +243,11 @@ function init_gvec( Ns, RecVecs, ecutrho )
     G = G[:,idx_sorted]
     G2 = G2[idx_sorted]
     idx_g2r = idx_g2r[idx_sorted]
+    idx_g2miller = idx_g2miller[idx_sorted]
 
     G2_shells, idx_g2shells = init_Gshells( G2 )
 
-    return GVectors( Ng, G, G2, idx_g2r, G2_shells, idx_g2shells )
+    return GVectors( Ng, G, G2, idx_g2r, G2_shells, idx_g2shells, idx_g2miller )
 
 end
 
