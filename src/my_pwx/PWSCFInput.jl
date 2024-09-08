@@ -446,9 +446,8 @@ function PWSCFInput( filename::String )
             error()
         end
     else
-        println("WARNING: --------------------")
-        println("WARNING: Please check LatVecs")
-        println("WARNING: --------------------")
+        @info("\nPlease check if the following LatVecs makes sense:\n")
+        @info(LatVecs)
     end
 
     if in_fraction
