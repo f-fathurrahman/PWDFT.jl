@@ -40,3 +40,9 @@ function print( io::IO, energies::Energies; use_smearing=false, is_paw=false )
 end
 print( energies::Energies; use_smearing=false, is_paw=false ) = print( stdout,
     energies, use_smearing=use_smearing, is_paw=is_paw )
+
+# Needed for some functions
+# Why need to define this? 
+import Base: println
+println( energies::Energies; use_smearing=false, is_paw=false ) = print( stdout,
+    energies, use_smearing=use_smearing, is_paw=is_paw )
