@@ -44,12 +44,16 @@ include("run.jl")
 
 ## Requirements and Installation (OLD)
 
-- [Julia](https://julialang.org/downloads) version >= 0.7,
+<details>
+
+- [Julia](https://julialang.org/downloads) (latest stable version is recommended),
   with the following packages installed:
   - `FFTW`
   - `SpecialFunctions`
   - `Libxc` (a wrapper to [Libxc](https://gitlab.com/libxc/libxc))
   - `LightXML` (for parsing UPF file)
+  - `OffsetArrays` (currently used for some convenient
+    indexing involving angular momentum index $l$)
 
 These packages are registered so they can be installed by using Julia's package manager.
 
@@ -59,6 +63,7 @@ Pkg.add("FFTW")
 Pkg.add("SpecialFunctions")
 Pkg.add("Libxc")
 Pkg.add("LightXML")
+Pkg.add("OffsetArrays")
 ```
 
 These packages should be automatically installed `PWDFT.jl` is installed as
@@ -128,6 +133,8 @@ The above command will calculate total energy of hydrogen atom by SCF method.
 
 The script will calculate total energy per unit cell of silicon crystal using
 self-consistent field iteration and direct energy minimization.
+</details>
+
 
 
 ## Units
