@@ -10,8 +10,13 @@ function _print_forces(atoms::Atoms, F, title_str)
     return
 end
 
-
-function my_pwx(; filename=nothing)
+"""
+This function roughly emulates pw.x binary in Quantum Espresso.
+It reads pw.x input file given in keyword argument `filename`.
+If no argument is given the default filename is `PWINPUT` which should be
+present in the current directory.
+"""
+function my_pwx(; filename=nothing, do_export_data=false)
     Ham, pwinput = init_Ham_from_pwinput(filename=filename)
 
     write_xsf("ATOMS_from_pwinput.xsf", Ham.atoms)
@@ -50,11 +55,16 @@ function my_pwx(; filename=nothing)
     _print_forces(Ham.atoms, F_nlcc, "Core correction contribution to forces (in Ry/bohr)")
     _print_forces(Ham.atoms, F_scf_corr, "SCF correction to forces (in Ry/bohr)")
 
-    println()
-    println("Hamiltonian and psiks will be serialized to files.")
-    println("Hamiltonian.dat and psiks.dat are written.")
-    Serialization.serialize("Hamiltonian.dat", Ham)
-    Serialization.serialize("psiks.dat", psiks)
+    if do_export_data
+        Serialization.serialize("Hamiltonian.dat", Ham)
+        Serialization.serialize("psiks.dat", psiks)
+        @info("")
+        @info("Hamiltonian and psiks are serialized to files:")
+        @info("Hamiltonian.dat and psiks.dat")
+        @info("")
+        @info("!!! Beware that FFTW plans are C-pointers.")
+        @info("!!! You should not use them from serialized Hamiltonian")
+    end
 
 #=
     # Not yet working for smearing
