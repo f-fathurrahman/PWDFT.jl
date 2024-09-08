@@ -219,7 +219,7 @@ function PWSCFInput( filename::String )
         #
         # Read cell parameters
         #
-        # FIXME: They are assumed to be given in bohr !!!!
+        # FIXME: They are assumed to be given in bohr or angstrom!!!!
         if occursin("CELL_PARAMETERS", l)
             is_parse_cell = true
             if occursin("angstrom", l)
