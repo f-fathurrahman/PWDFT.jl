@@ -132,8 +132,8 @@ function update!( Ham::HamiltonianGamma, Rhoe::Array{Float64,2} )
 end
 
 
-import Base: show
-function show( io::IO, Ham::HamiltonianGamma; header=true )
+import Base: print
+function print( io::IO, Ham::HamiltonianGamma; header=true )
     if header
         @printf("\n")
         @printf("                           --------------------------\n")
@@ -146,11 +146,11 @@ function show( io::IO, Ham::HamiltonianGamma; header=true )
     println(io, "xcfunc     = ", Ham.xcfunc)
     println(io, "xc_calc    = ", Ham.xc_calc)
     println(io, "")
-    show(io, Ham.atoms)
-    #show(io, Ham.pw)
-    show(io, Ham.electrons)
+    print(io, Ham.atoms)
+    #print(io, Ham.pw)
+    print(io, Ham.electrons)
     for isp = 1:Ham.atoms.Nspecies
-        show(io, Ham.pspots[isp])
+        print(io, Ham.pspots[isp])
     end
 end
-show( Ham::HamiltonianGamma; header=true ) = show( stdout, Ham, header=header )
+print( Ham::HamiltonianGamma; header=true ) = print( stdout, Ham, header=header )

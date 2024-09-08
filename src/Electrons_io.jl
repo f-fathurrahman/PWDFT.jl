@@ -1,4 +1,4 @@
-import Base: show
+import Base: print
 
 """
 Display some information about an instance of `Electrons`.
@@ -6,7 +6,7 @@ Occupation numbers are by default will only displayed for
 several states only, except when `all_states=true`.
 All occupation numbers will be displayed for all kpoints.
 """
-function show( io::IO, electrons::Electrons; header=true, all_states=false )
+function print( io::IO, electrons::Electrons; header=true, all_states=false )
 
     Nspin = electrons.Nspin
     Focc = electrons.Focc
@@ -82,7 +82,7 @@ function show( io::IO, electrons::Electrons; header=true, all_states=false )
         end
     end
 end
-show( electrons::Electrons; header=true, all_states=false ) = show( stdout, electrons, header=header, all_states=all_states )
+print( electrons::Electrons; header=true, all_states=false ) = print( stdout, electrons, header=header, all_states=all_states )
 
 
 function print_ebands( io::IO, electrons::Electrons, kpoints::KPoints; unit="hartree" )

@@ -698,8 +698,8 @@ function eval_proj_G(psp::PsPot_UPF, iprjl::Int64, Gm::Float64)
 end
 =#
 
-import Base: show
-function show( io::IO, psp::PsPot_UPF; header=true )
+import Base: print
+function print( io::IO, psp::PsPot_UPF; header=true )
     println("\nUPF Info")
     @printf(io, "File = %s\n", psp.pspfile)
     @printf(io, "zval = %f\n", psp.zval)

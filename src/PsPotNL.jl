@@ -253,8 +253,8 @@ function calc_betaNL_psi(
     return betaNL_psi
 end
 
-import Base: show
-function show( io::IO, pspotNL::PsPotNL )
+import Base: print
+function print( io::IO, pspotNL::PsPotNL )
     
     println("--------")
     println("PsPotNL:")

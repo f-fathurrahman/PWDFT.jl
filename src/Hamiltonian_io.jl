@@ -1,5 +1,5 @@
-import Base: show
-function show( io::IO, Ham::Hamiltonian; header=true )
+import Base: print
+function print( io::IO, Ham::Hamiltonian; header=true )
     if header
         @printf("\n")
         @printf("                                  -----------\n")
@@ -14,12 +14,12 @@ function show( io::IO, Ham::Hamiltonian; header=true )
     #println(io, "xc_calc.x_id = ", Ham.xc_calc.x_id)
     #println(io, "xc_calc.c_id = ", Ham.xc_calc.c_id)
     println(io, "")
-    show(io, Ham.atoms)
-    show(io, Ham.pw)
-    show(io, Ham.pw.gvecw.kpoints)
-    show(io, Ham.electrons)
+    print(io, Ham.atoms)
+    print(io, Ham.pw)
+    print(io, Ham.pw.gvecw.kpoints)
+    print(io, Ham.electrons)
     for isp = 1:Ham.atoms.Nspecies
-        show(io, Ham.pspots[isp])
+        print(io, Ham.pspots[isp])
     end
 end
-show( Ham::Hamiltonian; header=true ) = show( stdout, Ham, header=header )
+print( Ham::Hamiltonian; header=true ) = print( stdout, Ham, header=header )

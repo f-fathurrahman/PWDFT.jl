@@ -1,5 +1,5 @@
-import Base: show
-function show( io::IO, energies::Energies; use_smearing=false, is_paw=false )
+import Base: print
+function print( io::IO, energies::Energies; use_smearing=false, is_paw=false )
 
     @printf(io, "Kinetic    energy: %18.10f\n", energies.Kinetic )
     @printf(io, "Ps_loc     energy: %18.10f\n", energies.Ps_loc )
@@ -38,9 +38,5 @@ function show( io::IO, energies::Energies; use_smearing=false, is_paw=false )
     # core energy for PAW case is not yet accounted for
 
 end
-show( energies::Energies; use_smearing=false, is_paw=false ) = show( stdout,
-    energies, use_smearing=use_smearing, is_paw=is_paw )
-
-import Base: println
-println( energies::Energies; use_smearing=false, is_paw=false ) = show(
+print( energies::Energies; use_smearing=false, is_paw=false ) = print( stdout,
     energies, use_smearing=use_smearing, is_paw=is_paw )

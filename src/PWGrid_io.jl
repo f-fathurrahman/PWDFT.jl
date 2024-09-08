@@ -1,13 +1,13 @@
 
 # Overloaded show's
 
-import Base: show
+import Base: print
 
 """
 Display some information about `pw::PWGrid`. This function calls
 `println(gvec::GVectors)` and `println(gvecw::GVectorsW)`.
 """
-function show( io::IO, pw::PWGrid; header=true )
+function print( io::IO, pw::PWGrid; header=true )
     if header
         @printf("\n")
         @printf("                                     ------\n")
@@ -37,21 +37,21 @@ function show( io::IO, pw::PWGrid; header=true )
         @printf(io, "Sampling points smooth = (%5d,%5d,%5d)\n", pw.Nss[1], pw.Nss[2], pw.Nss[3])
     end
     #
-    show( io, pw.gvec )
+    print( io, pw.gvec )
     if pw.using_dual_grid
         println("\nUsing dual grid")
-        show( io, pw.gvecs )
-        show( io, pw.gvecs, pw.gvecw )
+        print( io, pw.gvecs )
+        print( io, pw.gvecs, pw.gvecw )
     else
-        show( io, pw.gvec, pw.gvecw )
+        print( io, pw.gvec, pw.gvecw )
     end
 end
-show( pw::PWGrid; header=true ) = show( stdout, pw, header=header )
+print( pw::PWGrid; header=true ) = print( stdout, pw, header=header )
 
 """
 Display some information about `gvec::GVectors`.
 """
-function show( io::IO, gvec::GVectors )
+function print( io::IO, gvec::GVectors )
     Ng = gvec.Ng
     G = gvec.G
     G2 = gvec.G2
@@ -73,13 +73,13 @@ function show( io::IO, gvec::GVectors )
     @printf(io, "\n")
     @printf(io, "Max G2 = %18.10f\n", maximum(G2))
 end
-show( gvec::GVectors ) = show( stdout, gvec )
+print( gvec::GVectors ) = print( stdout, gvec )
 
 
 """
 Display some information about `gvecw::GVectorsW`.
 """
-function show( io::IO, gvec::GVectors, gvecw::GVectorsW )
+function print( io::IO, gvec::GVectors, gvecw::GVectorsW )
     G = gvec.G
     G2 = gvec.G2
 
@@ -109,5 +109,5 @@ function show( io::IO, gvec::GVectors, gvecw::GVectorsW )
         #@printf(io, "gvecw.Ngw[ik] = %8d (should be the same as Ngw above)\n", gvecw.Ngw[ik])
     end
 end
-show( gvec::GVectors, gvecw::GVectorsW ) = show( stdout, gvec, gvecw )
+print( gvec::GVectors, gvecw::GVectorsW ) = print( stdout, gvec, gvecw )
 

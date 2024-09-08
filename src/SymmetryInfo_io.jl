@@ -1,5 +1,5 @@
-import Base: show
-function show( io::IO, sym_info::SymmetryInfo )
+import Base: print
+function print( io::IO, sym_info::SymmetryInfo )
     
     @printf(io, "Nsyms = %d\n", sym_info.Nsyms)
     @printf(io, "Nrots = %d\n", sym_info.Nrots)
@@ -18,4 +18,4 @@ function show( io::IO, sym_info::SymmetryInfo )
     end
 end
 
-show( sym_info::SymmetryInfo ) = show( stdout, sym_info )
+print( sym_info::SymmetryInfo ) = print( stdout, sym_info )

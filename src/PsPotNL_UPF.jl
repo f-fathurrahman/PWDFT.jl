@@ -606,8 +606,8 @@ function calc_betaNL_psi(
 end
 
 
-import Base: show
-function show( io::IO, pspotNL::PsPotNL_UPF )
+import Base: print
+function print( io::IO, pspotNL::PsPotNL_UPF )
     
     println("------------")
     println("PsPotNL_UPF:")

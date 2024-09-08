@@ -1,9 +1,9 @@
-import Base: show
+import Base: print
 
 """
 Display some information about an instance of `KPoints`.
 """
-function show( io::IO, kpoints::KPoints; header=true )
+function print( io::IO, kpoints::KPoints; header=true )
 
     if header
         @printf(io, "\n")
@@ -47,4 +47,4 @@ function show( io::IO, kpoints::KPoints; header=true )
     @printf(io, "\n")
     @printf(io, "sum wk = %f\n", sum(kpoints.wk))
 end
-show( kpoints::KPoints; header=true ) = show( stdout, kpoints, header=header )
+print( kpoints::KPoints; header=true ) = print( stdout, kpoints, header=header )

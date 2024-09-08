@@ -1,6 +1,6 @@
 # Overload println for Atoms
-import Base: show
-function show( io::IO, a::Atoms; header=true )
+import Base: print
+function print( io::IO, a::Atoms; header=true )
     if header
         @printf(io, "\n")
         @printf(io, "                                     -----\n")
@@ -40,4 +40,4 @@ function show( io::IO, a::Atoms; header=true )
     end
 
 end
-show( a::Atoms; header=true ) = show( stdout, a, header=header )
+print( a::Atoms; header=true ) = print( stdout, a, header=header )

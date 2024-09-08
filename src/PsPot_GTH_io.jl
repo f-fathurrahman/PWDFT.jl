@@ -1,6 +1,6 @@
 # Display information about GTH pseudopotential
-import Base: show
-function show( io::IO, psp::PsPot_GTH; header=true )
+import Base: print
+function print( io::IO, psp::PsPot_GTH; header=true )
 
     ANGMOM = ["s", "p", "d", "f"]
 
@@ -47,7 +47,7 @@ function show( io::IO, psp::PsPot_GTH; header=true )
     end
 
 end
-show( psp::PsPot_GTH; header=true ) = show( stdout, psp; header=header )
+print( psp::PsPot_GTH; header=true ) = print( stdout, psp; header=header )
 
 
 """
