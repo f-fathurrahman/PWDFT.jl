@@ -1,6 +1,4 @@
 
-# Overloaded show's
-
 import Base: print
 
 """
@@ -47,6 +45,12 @@ function print( io::IO, pw::PWGrid; header=true )
     end
 end
 print( pw::PWGrid; header=true ) = print( stdout, pw, header=header )
+
+import Base: println
+println(io::IO, pw::PWGrid; header=true) = print(io, pw, header=header)
+println(pw::PWGrid; header=true) = print(stdout, pw, header=header)
+
+
 
 """
 Display some information about `gvec::GVectors`.

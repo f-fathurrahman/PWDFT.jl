@@ -1,5 +1,8 @@
+
 import Base: print
 function print( io::IO, energies::Energies; use_smearing=false, is_paw=false )
+    # XXX rename is_paw to use_paw?
+
 
     @printf(io, "Kinetic    energy: %18.10f\n", energies.Kinetic )
     @printf(io, "Ps_loc     energy: %18.10f\n", energies.Ps_loc )
@@ -37,12 +40,16 @@ function print( io::IO, energies::Energies; use_smearing=false, is_paw=false )
 
     # core energy for PAW case is not yet accounted for
 
+    return
+
 end
 print( energies::Energies; use_smearing=false, is_paw=false ) = print( stdout,
     energies, use_smearing=use_smearing, is_paw=is_paw )
 
 # Needed for some functions
-# Why need to define this? 
 import Base: println
+println( io::IO, energies::Energies; use_smearing=false, is_paw=false ) = print( io,
+    energies, use_smearing=use_smearing, is_paw=is_paw )
+
 println( energies::Energies; use_smearing=false, is_paw=false ) = print( stdout,
     energies, use_smearing=use_smearing, is_paw=is_paw )

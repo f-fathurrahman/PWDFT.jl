@@ -41,3 +41,7 @@ function print( io::IO, a::Atoms; header=true )
 
 end
 print( a::Atoms; header=true ) = print( stdout, a, header=header )
+
+import Base: println
+println(io::IO, a::Atoms; header=true) = print(io, a, header=header)
+println(a::Atoms; header=true) = print(stdout, a, header=header)
