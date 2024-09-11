@@ -43,10 +43,7 @@ function calc_stress_nlcc!(
     for ir in 1:Npoints
         ctmp[ir] = Vxc[ir,1]
     end
-    #
-    planfw = plan_fft!( zeros(ComplexF64,pw.Ns) ) # using default plan
-    ff = reshape(ctmp, pw.Ns)
-    planfw*ff
+    R_to_G!(pw, ctmp)
     @views ctmp[:] /= Npoints # rescale
     # Now, ctmp is Vxc(G)
 

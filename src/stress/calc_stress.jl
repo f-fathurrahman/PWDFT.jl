@@ -30,6 +30,8 @@ function calc_stress!(Ham, psiks, stress)
     symmetrize_matrix!(Ham.pw.LatVecs, Ham.sym_info, stress_Ps_nloc)
     stress .+= stress_Ps_nloc
     
+    symmetrize_matrix!(Ham.pw.LatVecs, Ham.sym_info, stress)
+
     return
 end
 

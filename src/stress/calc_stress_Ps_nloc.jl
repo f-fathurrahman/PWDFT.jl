@@ -279,12 +279,9 @@ function _add_stress_uspp!(atoms, pw::PWGrid, pspots, pspotNL, potentials, stres
     # Fourier transform of the total effective potential
     Vg = zeros(ComplexF64, Ng, Nspin)
     aux = zeros(ComplexF64, Npoints)
-    planfw = plan_fft!( zeros(ComplexF64,pw.Ns) ) # using default plan
     for ispin in 1:Nspin
         aux[:] .= potentials.Total[:,ispin]
-        #R_to_G!(pw, aux) # This cannot be used because FFT plan is not read from serialization data
-        ff = reshape(aux, pw.Ns)
-        planfw*ff
+        R_to_G!(pw, aux)
         @views aux[:] /= Npoints # rescale
         #
         for ig in 1:Ng
