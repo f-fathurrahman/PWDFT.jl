@@ -22,6 +22,8 @@ function my_pwx(; filename=nothing, do_export_data=false)
     write_xsf("ATOMS_from_pwinput.xsf", Ham.atoms)
     println(Ham)
 
+    export_to_script(pwinput, filename="script_"*filename*".jl")
+
     # This will take into account whether the overlap operator is needed or not
     psiks = rand_BlochWavefunc(Ham)
 
