@@ -7,17 +7,17 @@ function calc_stress_Ps_nloc!(
     idx_gw2g = pw.gvecw.idx_gw2g
     Ngw = pw.gvecw.Ngw
     Ngwx = maximum(Ngw)
-    kfac = ones(Float64, Ngwx) # assume qcutz=0
+    kfac = ones(Float64, Ngwx) # assume qcutz=0 # not used?
     Gk = zeros(Float64, Ngwx, 3)
     Gk_length_inv = zeros(Float64, Ngwx)
     #
     k = pw.gvecw.kpoints.k
     Nkpt = pw.gvecw.kpoints.Nkpt
-    wk = pw.gvecw.kpoints.wk
+    wk = pw.gvecw.kpoints.wk # not used?
     #
-    Nstates = electrons.Nstates
+    Nstates = electrons.Nstates # not used?
     Nspin = electrons.Nspin
-    Focc = electrons.Focc
+    Focc = electrons.Focc # not used?
 
     fill!(stress_Ps_nloc, 0.0)
     for ispin in 1:Nspin, ik in 1:Nkpt
@@ -46,18 +46,14 @@ function calc_stress_Ps_nloc!(
 
     end
 
-
     # Add USPP contribution
     _add_stress_uspp!(atoms, pw, pspots, pspotNL, potentials, stress_Ps_nloc)
-
-
 
     for l in 1:3, m in 1:(l-1)
         stress_Ps_nloc[m,l] = stress_Ps_nloc[l,m]
     end
     # Scale by -1/pw.CellVolume
     stress_Ps_nloc[:,:] .*= (-1/pw.CellVolume)
-
 
     return
 end
@@ -80,7 +76,7 @@ function _stress_Ps_nloc_k!(
     nh = pspotNL.nh
     nhm = pspotNL.nhm
     Deeq = pspotNL.Deeq
-    indv_ijkb0 = pspotNL.indv_ijkb0
+    indv_ijkb0 = pspotNL.indv_ijkb0 # not used
     NbetaNL = pspotNL.NbetaNL
 
     Nkpt = pw.gvecw.kpoints.Nkpt
@@ -94,7 +90,7 @@ function _stress_Ps_nloc_k!(
 
     fac = 2*wk[ik] # XXX: this is different from QE, it does not depend on ist
     # XXX Probably Focc also should be accounted for (also some normalization by Nstates)
-    println("fac = ", fac)
+    #println("fac = ", fac)
 
     Deff = zeros(Float64, nhm, nhm, Natoms)
 
@@ -104,8 +100,6 @@ function _stress_Ps_nloc_k!(
             continue
         end
         _calc_Deff!( ispin, atoms, pspotNL, ebands[ist,ikspin], Deff )
-        @printf("ist = %5d eband = %18.10f, fac = %18.10f\n", ist, ebands[ist,ikspin], fac)
-        #println("sum Deff = ", sum(Deff))
         #
         ijkb0 = 0
         for isp in 1:Nspecies, ia in 1:Natoms
@@ -119,8 +113,6 @@ function _stress_Ps_nloc_k!(
             for ih in 1:nh[isp]
                 ikb = ijkb0 + ih
                 evps += fac * Deff[ih,ih,ia] * abs(betaNL_psi[ikb,ist])^2
-                #@printf("%5d %5d %18.10f\n", ia, ih, Deff[ih,ih,ia])
-                #@printf("Current value of evps = %18.10f\n", evps)
                 #
                 if psp.is_ultrasoft || (psp.Nproj > 1)
                     # only in the US case there is a contribution for jh != ih
@@ -129,15 +121,12 @@ function _stress_Ps_nloc_k!(
                         jkb = ijkb0 + jh
                         bibj = real( conj(betaNL_psi[ikb,ist]) * betaNL_psi[jkb,ist] )
                         evps += Deff[ih,jh,ia] * fac * bibj * 2
-                        #@printf("Nondiagonal: current value of evps = %18.10f, Deff = %18.10f\n", evps, Deff[ih,jh,ia])
                     end
                 end
             end
             ijkb0 += nh[isp]
         end
     end # Nstates
-    #    
-    println("evps = ", evps)
     #
     for l in 1:3
         stress_Ps_nloc[l,l] -= evps
@@ -149,7 +138,6 @@ function _stress_Ps_nloc_k!(
     dvkb = zeros(ComplexF64, Ngwk, NbetaNL)
   
     _gen_us_dj!(ik, atoms, pw, pspots, pspotNL, dvkb)
-    @printf("ik, sum dvkb Bessel = %5d [%18.10f %18.10f]\n", ik, real(sum(dvkb)), imag(sum(dvkb)))
 
     work2 = zeros(ComplexF64, Ngwk)
     work1 = zeros(ComplexF64, Ngwk)
@@ -200,12 +188,6 @@ function _stress_Ps_nloc_k!(
         end
     end # ist
 
-    println("\nstress_Ps_nloc after deriv Bessel contrib (in Ry/bohr^3) = ")
-    for i in 1:3
-        @printf("%18.10f %18.10f %18.10f\n", 2*stress_Ps_nloc[i,1], 2*stress_Ps_nloc[i,2], 2*stress_Ps_nloc[i,3])
-    end
-
-
     #
     # non diagonal contribution - derivative of the spherical harmonics
     # (no contribution from l=0)
@@ -216,9 +198,9 @@ function _stress_Ps_nloc_k!(
     end
 
     xyz = zeros(Float64, 3, 3)
-    xyz[1,:] = [1.0, 0.0, 0.0]
-    xyz[2,:] = [0.0, 1.0, 0.0]
-    xyz[3,:] = [0.0, 0.0, 1.0]
+    xyz[1,1] = 1.0
+    xyz[2,2] = 1.0
+    xyz[3,3] = 1.0
     # also can use Matrix(I(3))
 
     for ipol in 1:3
@@ -265,13 +247,8 @@ function _stress_Ps_nloc_k!(
             end
         end # ist
     end # ipol
-    println("\nstress_Ps_nloc after deriv YLm contrib (in Ry/bohr^3) = ")
-    for i in 1:3
-        @printf("%18.10f %18.10f %18.10f\n", 2*stress_Ps_nloc[i,1], 2*stress_Ps_nloc[i,2], 2*stress_Ps_nloc[i,3])
-    end
     #
     return
-
 end
 
 

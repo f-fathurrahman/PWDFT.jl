@@ -42,7 +42,7 @@ export gen_lattice_fcc, gen_lattice_bcc, gen_lattice_trigonal, gen_lattice_trigo
        gen_lattice_sc, gen_lattice_rhombohedral
 
 include("SymmetryInfo.jl")
-export SymmetryInfo, symmetrize_vector!
+export SymmetryInfo, symmetrize_vector!, symmetrize_matrix!
 
 include("KPoints.jl")
 export KPoints,
@@ -420,6 +420,21 @@ include("gamma_only/calc_forces_NN_gamma.jl")
 include("gamma_only/calc_forces_Ps_loc_gamma.jl")
 include("gamma_only/calc_forces_Ps_nloc_gamma.jl")
 include("gamma_only/calc_forces_gamma.jl")
+
+
+# Stress calculations
+include("stress/calc_stress_hartree.jl")
+include("stress/eval_dVloc_G.jl")
+include("stress/calc_stress_Ps_loc.jl")
+include("stress/calc_stress_xc.jl")
+include("stress/calc_stress_nlcc.jl")
+include("stress/calc_stress_kinetic.jl")
+include("stress/gen_us_dj.jl")
+include("stress/gen_us_dy.jl")
+include("stress/dqvan2.jl")
+include("stress/calc_stress_Ps_nloc.jl")
+include("stress/calc_stress.jl")
+export calc_stress, calc_stress!
 
 
 # Some utilities

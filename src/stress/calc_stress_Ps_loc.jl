@@ -42,7 +42,6 @@ function calc_stress_Ps_loc!( atoms, pw, pspots, Rhoe, stress_Ps_loc )
         end
     end
     # skip 2d
-    println("evloc = ", evloc)
 
     dVgl = zeros(Float64, Ngl)
     for isp in 1:Nspecies

@@ -50,7 +50,6 @@ function calc_stress_nlcc!(
     @views ctmp[:] /= Npoints # rescale
     # Now, ctmp is Vxc(G)
 
-
     fill!(stress_nlcc, 0.0)
     rhoecgl = zeros(Float64, Ngl)
     drhoecgl = rhoecgl # use rhoecgl memory

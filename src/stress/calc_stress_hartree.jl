@@ -28,8 +28,6 @@ function calc_stress_hartree!(pw, Rhoe, E_hartree, stress_hartree)
     #
     # stress_hartree[:,:] *= 4π # gamma only
     stress_hartree[:,:] *= 2π
-    #
-    println("E_hartree = ", E_hartree)
     for l in 1:3
         stress_hartree[l,l] -= E_hartree / pw.CellVolume
     end
@@ -38,11 +36,6 @@ function calc_stress_hartree!(pw, Rhoe, E_hartree, stress_hartree)
         stress_hartree[m,l] = stress_hartree[l,m]
     end
     #
-    println("Before multiplied by -1")
-    display(stress_hartree); println()
     stress_hartree[:,:] *= -1
-    println("After multiplied by -1")
-    display(stress_hartree); println()
-    #
     return
 end
