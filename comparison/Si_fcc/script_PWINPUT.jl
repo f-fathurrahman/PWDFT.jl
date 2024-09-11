@@ -10,14 +10,15 @@ xcfunc = "VWN"
 use_smearing = false
 kT = 0.0
 
-Etot_pwscf =  -89.18998303*0.5
-F_pwscf = zeros(Float64, 3, atoms.Natoms)
-F_pwscf[:,1] .= [0.11389374, -0.14106932, -0.14106932]
-F_pwscf[:,2] .= [-0.11389374, 0.14106932, 0.14106932]
-F_pwscf[:,:] *= 0.5
+Etot_pwscf =  -89.18998303*0.5 # from Ry to Ha
+
+forces_pwscf = zeros(Float64, 3, atoms.Natoms)
+forces_pwscf[:,1] .= [0.11389374, -0.14106932, -0.14106932]
+forces_pwscf[:,2] .= [-0.11389374, 0.14106932, 0.14106932]
+forces_pwscf[:,:] *= 0.5 # from Ry to Ha
 
 stress_pwscf = zeros(Float64, 3, 3)
 stress_pwscf[1,:] .= [0.000593151, -0.000643861, -0.000643861]
 stress_pwscf[2,:] .= [-0.000643861, 0.000305365, 0.00051235]
 stress_pwscf[3,:] .= [-0.000643861, 0.00051235, 0.000305365]
-stress_pwscf[:,:] *= 0.5
+stress_pwscf[:,:] *= 0.5  # from Ry to Ha

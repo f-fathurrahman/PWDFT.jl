@@ -14,3 +14,5 @@ psiks = rand_BlochWavefunc(Ham);
 
 electrons_scf!(Ham, psiks, NiterMax=100, use_smearing=use_smearing, kT=kT, betamix=0.1);
 
+forces = calc_forces(Ham, psiks)
+stress = calc_stress(Ham, psiks)
