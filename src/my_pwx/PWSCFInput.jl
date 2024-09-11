@@ -89,7 +89,13 @@ function PWSCFInput( filename::String )
     while !eof(f)
         
         l = readline(f)
-        
+
+        # skip comments
+        if length(l) > 0
+            if first(strip(l)) == '!' continue end
+            if first(strip(l)) == '#' continue end
+        end
+
         # FIXME: This is not robust
         if occursin("  A =", l)
             ll = split(l, "=")
