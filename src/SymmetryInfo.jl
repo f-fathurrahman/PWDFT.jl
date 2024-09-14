@@ -859,22 +859,21 @@ function symmetrize_matrix!( LatVecs_, sym_info::SymmetryInfo, M )
     alat = norm(LatVecs_[:,1])
     LatVecs = LatVecs_[:,:]/alat
     RecVecs = inv(Matrix(LatVecs'))
-    @info LatVecs * RecVecs'
 
     # bring matrix to crystal axis
     # CALL cart_to_crys( matr )
-    @info "Original M"
-    display(M)
+    #@info "Original M"
+    #display(M)
 
     fill!(work, 0.0)
     for i in 1:3, j in 1:3, k in 1:3, l in 1:3
         work[i,j] += M[k,l] * LatVecs[k,i] * LatVecs[l,j]
     end
     M[:,:] .= work[:,:]
-
     # XXX: Check this!
-    @info "M"
-    display(M)
+
+    #@info "M"
+    #display(M)
 
     s = convert(Array{Float64,3}, sym_info.s)
     # symmetrize in crystal axis
@@ -893,8 +892,8 @@ function symmetrize_matrix!( LatVecs_, sym_info::SymmetryInfo, M )
     end
     M[:,:] .= work[:,:]
 
-    @info "After M = "
-    display(M)
+    #@info "After M = "
+    #display(M)
 
     return
 end

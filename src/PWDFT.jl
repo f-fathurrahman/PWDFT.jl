@@ -433,6 +433,8 @@ include("stress/gen_us_dj.jl")
 include("stress/gen_us_dy.jl")
 include("stress/dqvan2.jl")
 include("stress/calc_stress_Ps_nloc.jl")
+include("stress/gen_neighbor_shells.jl")
+include("stress/calc_stress_NN.jl")
 include("stress/calc_stress.jl")
 export calc_stress, calc_stress!
 
