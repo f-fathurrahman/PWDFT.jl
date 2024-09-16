@@ -5,7 +5,7 @@ function _print_forces(atoms::Atoms, F, title_str)
     println()
     println(title_str)
     for ia in 1:Natoms
-        @printf("%s %18.10f %18.10f %18.10f\n", atsymbs[ia], F[1,ia], F[2,ia], F[3,ia])
+        @printf("%2s %18.10f %18.10f %18.10f\n", atsymbs[ia], F[1,ia], F[2,ia], F[3,ia])
     end
     return
 end
@@ -22,7 +22,11 @@ function my_pwx(; filename=nothing, do_export_data=false)
     write_xsf("ATOMS_from_pwinput.xsf", Ham.atoms)
     println(Ham)
 
-    export_to_script(pwinput, filename="script_"*filename*".jl")
+    if isnothing(filename)
+        export_to_script(pwinput)
+    else
+        export_to_script(pwinput, filename="script_"*filename*".jl")
+    end
 
     # This will take into account whether the overlap operator is needed or not
     psiks = rand_BlochWavefunc(Ham)

@@ -1,5 +1,7 @@
 function init_Ham_from_pwinput(; filename::Union{Nothing,String}=nothing)
 
+    # XXX simply assign filename=ARGS[1] is length(ARGS) >= 1
+
     # Read filename from the command line argument
     if filename == nothing
         println("ARGS = ", ARGS)
