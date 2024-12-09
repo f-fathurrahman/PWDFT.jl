@@ -1,5 +1,3 @@
-using Libxc
-
 function calc_KEdens!(
     Ham::Hamiltonian,
     psiks::BlochWavefunc,

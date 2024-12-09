@@ -1,4 +1,4 @@
-using Libxc
+using Libxc_jll
 
 
 # This is a hack for testing various difference between Libxc implementation
@@ -7,7 +7,7 @@ using Libxc
 #const LIBXC5 = "/home/efefer/mysoftwares/libxc-5.0.0/lib/libxc.so.9"
 #const LIBXC5 = "/home/efefer/mysoftwares/libxc-4.3.4dyn/lib/libxc.so.5"
 #const LIBXC5 = "/usr/lib/x86_64-linux-gnu/libxc.so.5"
-const LIBXC5 = Libxc.libxc
+const LIBXC5 = Libxc_jll.libxc
 
 
 # From Libxc.jl v0.1.3

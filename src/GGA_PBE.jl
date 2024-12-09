@@ -1,5 +1,3 @@
-using Libxc
-
 # TODO: cumulate spin 1,2 as one function or dispatch by julia's type system
 
 # FIXME: These functions calculate gradient of Rhoe on the fly
