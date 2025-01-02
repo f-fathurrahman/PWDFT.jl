@@ -29,7 +29,7 @@ end
 # Can be used for metaGGA (if psiks is not nothing)
 # FIXME: Think of better API for this
 # Probably by setting psiks as optional argument
-function update_from_rhoe!(Ham, psiks, Rhoe, RhoeG)
+function update_from_rhoe!(Ham, psiks, Rhoe, RhoeG_and_magnG)
 
     Nspin = Ham.electrons.Nspin
     Npoints = size(Ham.rhoe, 1)
@@ -53,8 +53,8 @@ function update_from_rhoe!(Ham, psiks, Rhoe, RhoeG)
     fill!(Ham.potentials.Total, 0.0)
 
     # FIXME: also set Ham.potentials.XC and Ham.potentials.Hartree
-    Exc = _add_V_xc!( Ham, psiks, Rhoe, RhoeG )
-    Ehartree = _add_V_Hartree!( Ham, Rhoe, RhoeG )
+    Exc = _add_V_xc!( Ham, psiks, Rhoe, RhoeG_and_magnG )
+    Ehartree = _add_V_Hartree!( Ham, Rhoe, RhoeG_and_magnG )
 
     # Add V_Ps_loc contribution
     for ispin in 1:Nspin
@@ -92,7 +92,7 @@ end
 
 # Can be used for metaGGA functionals
 # FIXME: allow psiks to be nothing (?)
-function _add_V_xc!(Ham, psiks, Rhoe, RhoeG)
+function _add_V_xc!(Ham, psiks, Rhoe, RhoeG_and_magnG)
 
     Nspin = Ham.electrons.Nspin
 
@@ -178,7 +178,7 @@ end
 
 
 # Note that RhoeG is already in FFT grid
-function _add_V_Hartree!(Ham, Rhoe, RhoeG_)
+function _add_V_Hartree!(Ham, Rhoe, RhoeG_and_magnG)
 
     pw = Ham.pw
     gvec = pw.gvec
@@ -188,22 +188,17 @@ function _add_V_Hartree!(Ham, Rhoe, RhoeG_)
     idx_g2r = gvec.idx_g2r
     Npoints = prod(pw.Ns) # dense
 
-    VhG = zeros(ComplexF64, Npoints)
-    Nspin = Ham.electrons.Nspin
-    RhoeG = zeros(ComplexF64, Npoints)
-    #if Nspin == 2
-    #    RhoeG[:] = RhoeG_[:,1] + RhoeG_[:,2]
-    #else
-        RhoeG[:] = RhoeG_[:,1] # why?
-    #end
-    # FIXME: use sum or reduce?
+    # get total RhoeG
+    @views ρG = RhoeG_and_magnG[:,1]
 
+    VhG = zeros(ComplexF64, Npoints)
+    
     Ehartree = 0.0
     # skip ig = 1, it is set to zero
     for ig in 2:Ng
         ip = idx_g2r[ig]
-        Ehartree = Ehartree + 2π*( real(RhoeG[ip])^2 + imag(RhoeG[ip])^2 )/G2[ig]
-        VhG[ip] = 4π * RhoeG[ip]/G2[ig]
+        Ehartree = Ehartree + 2π*( real(ρG[ip])^2 + imag(ρG[ip])^2 )/G2[ig]
+        VhG[ip] = 4π * ρG[ip]/G2[ig]
     end
 
     Ehartree *= Ham.pw.CellVolume
