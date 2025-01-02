@@ -49,7 +49,7 @@ function calc_rhoe_core!(
             rhoe_core[ip] = max(0.0, rhoe_core[ip])
         end
     end
-    
+
     # This can be done outside calc_rhoe_core
     #println("integ rhoe_core = ", sum(rhoe_core)*CellVolume/Npoints)
     #println("Check negative rhoe_core (mean) = ", rhoneg/Npoints)

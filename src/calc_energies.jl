@@ -156,16 +156,21 @@ function calc_E_local( Ham::Hamiltonian, psiks::BlochWavefunc )
         epsxc = calc_epsxc_PBE( Ham.xc_calc, Ham.pw, Ham.rhoe )
         # FIXME: NLCC is not yet handled
     else
-        if Ham.rhoe_core == nothing
+        if isnothing(Ham.rhoe_core)
             epsxc = calc_epsxc_VWN( Ham.xc_calc, Ham.rhoe )
         else
-            epsxc = calc_epsxc_VWN( Ham.xc_calc, Ham.rhoe + Ham.rhoe_core )
+            Ham.rhoe[:,1] .+= Ham.rhoe_core*0.5
+            Ham.rhoe[:,2] .+= Ham.rhoe_core*0.5
+            epsxc = calc_epsxc_VWN( Ham.xc_calc, Ham.rhoe )
+            Ham.rhoe[:,1] .-= Ham.rhoe_core*0.5
+            Ham.rhoe[:,2] .-= Ham.rhoe_core*0.5
         end
     end
-    #
-    if Ham.rhoe_core == nothing
+    # 
+    if isnothing(Ham.rhoe_core)
         E_xc = dot( epsxc, Rhoe_tot ) * dVol
     else
+        # FIXME: check this? Also OK for spinpol?
         E_xc = dot( epsxc, Rhoe_tot + Ham.rhoe_core ) * dVol
     end
 

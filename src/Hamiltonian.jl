@@ -481,10 +481,15 @@ function update!(Ham::Hamiltonian, psiks::BlochWavefunc, rhoe::Array{Float64,2})
         # FIXME: NLCC is not yet handled
     else 
         # VWN is the default
-        if Ham.rhoe_core == nothing
+        if isnothing(Ham.rhoe_core)
             Ham.potentials.XC = calc_Vxc_VWN( Ham.xc_calc, rhoe )
         else
-            Ham.potentials.XC = calc_Vxc_VWN( Ham.xc_calc, rhoe + Ham.rhoe_core )
+            # FIXME
+            Ham.rhoe[:,1] .+= Ham.rhoe_core*0.5
+            Ham.rhoe[:,2] .+= Ham.rhoe_core*0.5
+            Ham.potentials.XC = calc_Vxc_VWN( Ham.xc_calc, rhoe )
+            Ham.rhoe[:,1] .-= Ham.rhoe_core*0.5
+            Ham.rhoe[:,2] .-= Ham.rhoe_core*0.5
         end
     end
     Npoints = prod(Ham.pw.Ns)
