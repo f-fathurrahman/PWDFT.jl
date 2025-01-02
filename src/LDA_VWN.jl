@@ -22,7 +22,8 @@ function calc_epsxc_Vxc_VWN!(
     Npoints = size(Rhoe, 1)
 
     if Nspin == 1
-        calc_epsxc_Vxc_VWN!(xc_calc, Rhoe[:,1], epsxc, Vxc[:,1])
+        # Don't forget @views because Vxc will be modified
+        @views calc_epsxc_Vxc_VWN!(xc_calc, Rhoe[:,1], epsxc, Vxc[:,1])
         return
     end
 
