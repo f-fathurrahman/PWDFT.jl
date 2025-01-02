@@ -59,6 +59,8 @@ Limitation:
 - Atomic mass is set to 1.0
 - Pseudopotentials are written in the same directory as input file.
   (no `prefix_psp`)
+
+XXX: This is only tested for PsPot_GTH
 """
 function write_pwscf( Ham; filename="PWINPUT",
                       prefix_dir="./",
@@ -142,7 +144,11 @@ function write_pwscf( Ham; filename="PWINPUT",
     for isp = 1:Nspecies
         ss = SpeciesSymbols[isp]
         # XXX make sure that zval is Int
-        pspfile = ss*"-q"*string(Ham.pspfiles[isp].zval)*".gth"
+        if typeof(Ham.pspots[isp]) == PsPot_GTH
+            pspfile = ss*"-q"*string(Ham.pspots[isp].zval)*".gth"
+        else
+            pspfile = ss*"_FIXME_.upf"
+        end
         @printf(f, "%5s 1.0 %s\n", ss, pspfile)
     end
     @printf(f, "\n")
@@ -191,8 +197,10 @@ function write_pwscf( Ham; filename="PWINPUT",
 
     close(f)
 
-    for psp in Ham.pspots
-        write_psp_pwscf(psp, prefix=prefix_dir)
+    if eltype(Ham.pspots) == PsPot_GTH
+        for psp in Ham.pspots
+            write_psp_pwscf(psp, prefix=prefix_dir)
+        end
     end
 
     return
