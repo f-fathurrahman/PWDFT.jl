@@ -1,6 +1,6 @@
 function atomic_rho_g(
     Ham::Hamiltonian{PsPot_UPF};
-    starting_magnetization::Union{Nothing,Float64}=nothing
+    starting_magnetization::Union{Nothing,Vector{Float64}}=nothing
 )
 
     atoms = Ham.atoms
@@ -37,8 +37,9 @@ function atomic_rho_g(
     rhocg = zeros(ComplexF64, Npoints, Nspin)
 
     # No starting magnetization is give, set them to a default value
-    if (Nspin == 2) && starting_magnetization==nothing
+    if (Nspin == 2) && isnothing(starting_magnetization)
         starting_magnetization = 0.1*ones(Nspecies)
+        @info "Using default starting magnetization = $(starting_magnetization)"
     end
 
     for isp in 1:Nspecies

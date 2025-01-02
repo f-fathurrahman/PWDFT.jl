@@ -48,34 +48,27 @@ function electrons_scf!(
     Npoints = prod(Ham.pw.Ns)
     CellVolume = Ham.pw.CellVolume
     dVol = CellVolume/Npoints
-    Nstates = Ham.electrons.Nstates
+    Nstates = Ham.electrons.Nstates # not used?
+    Nspin = Ham.electrons.Nspin
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+    Vhartree = Ham.potentials.Hartree
+    Vxc = Ham.potentials.XC
+    Focc = Ham.electrons.Focc
+    wk = Ham.pw.gvecw.kpoints.wk
+    Nelectrons = Ham.electrons.Nelectrons
+    evals = Ham.electrons.ebands
 
     Rhoe = Ham.rhoe
     println("Initial integ Rhoe = ", sum(Rhoe)*dVol)
 
     diffRhoe = 0.0
 
-    @printf("\n")
-    @printf("SCF iteration starts (with density mixing), betamix = %f\n", betamix)
-    @printf("\n")
-
-    Vin = zeros(Float64, Npoints)
-    Nspin = Ham.electrons.Nspin
-    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
-
-    Vhartree = Ham.potentials.Hartree
-    Vxc = Ham.potentials.XC
-    Focc = Ham.electrons.Focc
-    wk = Ham.pw.gvecw.kpoints.wk
-    Nelectrons = Ham.electrons.Nelectrons
-
-    evals = Ham.electrons.ebands
-
     # Mix directly in R-space
     mixer = BroydenMixer(Rhoe, betamix, mixdim=8)
     #mixer = AdaptiveLinearMixer(Rhoe, 0.1, betamax=0.5) # not working
 
-    Rhoe_in = zeros(Float64, size(Rhoe))
+    Vin = zeros(Float64, Npoints, Nspin)
+    Rhoe_in = zeros(Float64, Npoints, Nspin)
     if ok_paw
         becsum_in = zeros(Float64, size(Ham.pspotNL.becsum))
         mixer_becsum = BroydenMixer(Ham.pspotNL.becsum, betamix, mixdim=8)
@@ -98,6 +91,9 @@ function electrons_scf!(
         KEdens_in = zeros(Float64, Npoints, Nspin)  # ????
     end
 
+    @printf("\n")
+    @printf("SCF iteration starts (with density mixing), betamix = %f\n", betamix)
+    @printf("\n")
 
     # Print header
     @printf("----------------------------------------------------------\n")
@@ -106,8 +102,8 @@ function electrons_scf!(
 
     for iterSCF in 1:NiterMax
         
-        @views Vin[:] .= Vhartree[:] + Vxc[:,1]
-        @views deband_hwf = -sum(Vin .* Rhoe[:,1])*dVol
+        Vin .= Vhartree .+ Vxc
+        deband_hwf = -sum(Vin .* Rhoe)*dVol
         if ok_paw
             ddd_paw = Ham.pspotNL.paw.ddd_paw
             becsum = Ham.pspotNL.becsum
@@ -146,9 +142,13 @@ function electrons_scf!(
         # Calculate electron density and band energy
         #
         Eband = _calc_Eband(wk, Focc, evals)
-        #Rhoe[:,:] = calc_rhoe( Ham, psiks )
         calc_rhoe!( Ham, psiks, Rhoe )
         # In case of PAW becsum is also calculated/updated here
+
+        println("integ Rhoe = ", sum(Rhoe)*dVol)
+        if Nspin == 2
+            println("Integ magn = ", sum(Rhoe[:,1]-Rhoe[:,2])*dVol)
+        end
 
         # This is not used later?
         hwf_energy = Eband + deband_hwf + Ehartree + Exc + Ham.energies.NN + mTS
@@ -157,8 +157,8 @@ function electrons_scf!(
         end
 
         # Calculate deband (using new Rhoe)
-        @views Vin[:] .= Vhartree[:] + Vxc[:,1]
-        @views deband = -sum(Vin .* Rhoe[:,1])*dVol # TODO: use dot instead?
+        Vin .= Vhartree .+ Vxc
+        deband = -sum(Vin .* Rhoe)*dVol # TODO: use dot instead?
         if ok_paw
             ddd_paw = Ham.pspotNL.paw.ddd_paw
             becsum = Ham.pspotNL.becsum
@@ -169,6 +169,7 @@ function electrons_scf!(
         if xc_calc.family == :metaGGA
             # this is not efficient as it recalculates
             calc_KEdens!(Ham, psiks, KEdens)
+            @assert Nspin == 1
             @views deband -= sum(xc_calc.Vtau .* KEdens[:,1])*dVol
         end
 
@@ -177,15 +178,19 @@ function electrons_scf!(
         #
         #diffRhoe = norm(Rhoe - Rhoe_in)
         diffRhoe = dot(Rhoe - Rhoe_in, Rhoe - Rhoe_in)
-        
+        @info "diffRhoe before mix = $(diffRhoe)"
+
         do_mix!(mixer, Rhoe, Rhoe_in, iterSCF)
+
+        diffRhoe = dot(Rhoe - Rhoe_in, Rhoe - Rhoe_in)
+        @info "diffRhoe after mix = $(diffRhoe)"
 
         # Check convergence here? (using diffRhoe)
 
         #
         Ehartree, Exc = update_from_rhoe!(Ham, psiks, Rhoe)
 
-        @views descf = -sum( (Rhoe_in[:,1] .- Rhoe[:,1]).*(Vhartree + Vxc[:,1]) )*dVol
+        descf = -sum( (Rhoe_in .- Rhoe).*(Vhartree .+ Vxc) )*dVol
         # XXX: metagga contribution is not included in descf yet !!!
         if ok_paw
             ddd_paw = Ham.pspotNL.paw.ddd_paw

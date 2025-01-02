@@ -9,6 +9,7 @@ struct PWSCFInput
     pspfiles::Vector{String}
     meshk::Tuple{Int64,Int64,Int64}
     nbnd::Int64
+    nspin::Int64
     occupations::String
     smearing::String
     degauss::Float64
@@ -67,6 +68,7 @@ function PWSCFInput( filename::String )
 
     nbnd = -1 # invalid value
 
+    nspin = 1
     occupations = ""
     smearing = ""
     degauss = 0.0
@@ -139,6 +141,14 @@ function PWSCFInput( filename::String )
             continue
         end
 
+        # Read number of spin components
+        if occursin("nspin =", l)
+            ll = split(l, "=", keepempty=false)
+            nspin = parse(Int64, ll[end])
+            println("Read nspin = ", nspin)
+            @assert nspin <= 2
+            continue
+        end
 
         # Read ecutwfc
         if occursin("ecutwfc =", l)
@@ -480,7 +490,7 @@ function PWSCFInput( filename::String )
     return PWSCFInput(
         atoms, 0.5*ecutwfc, 0.5*ecutrho, pspfiles,
         (meshk1, meshk2, meshk3),
-        nbnd, occupations, smearing, degauss, input_dft,
+        nbnd, nspin, occupations, smearing, degauss, input_dft,
         nr1, nr2, nr3
     )
 end

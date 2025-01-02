@@ -95,8 +95,6 @@ end
 function _add_V_xc!(Ham, psiks, Rhoe, RhoeG)
 
     Nspin = Ham.electrons.Nspin
-    
-    @assert Nspin == 1
 
     Npoints = size(Rhoe, 1)
     epsxc = zeros(Float64, Npoints)
@@ -106,41 +104,60 @@ function _add_V_xc!(Ham, psiks, Rhoe, RhoeG)
 
     # XC potential
     # XXX: This can be simplified now that Ham.rhoe_core can be zeros
-    if Ham.rhoe_core == nothing
+    if isnothing(Ham.rhoe_core)
         #
         # No core-correction
         #
         if Ham.xcfunc == "SCAN"
-
+            
+            @assert Nspin == 1
             @views calc_epsxc_Vxc_SCAN!( Ham, psiks, Rhoe[:,1], epsxc, Vxc[:,1] )
             # Note that we are using the inplace version of calc_epsxc_Vxc_SCAN
         
         elseif Ham.xcfunc == "PBE"
-        
+
+            @assert Nspin == 1
             @views calc_epsxc_Vxc_PBE!( Ham.xc_calc, Ham.pw, Rhoe[:,1], epsxc, Vxc[:,1] )
         
         else
             # VWN
-            epsxc[:], Vxc[:,1] = calc_epsxc_Vxc_VWN( Ham.xc_calc, Rhoe[:,1] )
+            calc_epsxc_Vxc_VWN!( Ham.xc_calc, Rhoe, epsxc, Vxc )
         end
-        Exc = sum(epsxc .* Rhoe[:,1])*dVol
+        Exc = sum(epsxc .* Rhoe)*dVol # is this working for spinpol?
+    
     else
-
-        ρ = zeros(Float64, Npoints)
-        @views ρ[:] .= Rhoe[:,1] + Ham.rhoe_core[:]
 
         #
         # Using core-correction
         #
+
+        if Nspin == 2
+            Rhoe[:,1] .+= Ham.rhoe_core*0.5
+            Rhoe[:,2] .+= Ham.rhoe_core*0.5
+        else
+            Rhoe[:,1] .+= Ham.rhoe_core
+        end
+
+
         if Ham.xcfunc == "VWN"
-            @views calc_epsxc_Vxc_VWN!( Ham.xc_calc, ρ, epsxc[:,1], Vxc[:,1] )
+            calc_epsxc_Vxc_VWN!( Ham.xc_calc, Rhoe, epsxc, Vxc )
         elseif Ham.xcfunc == "PBE"
-            @views calc_epsxc_Vxc_PBE!( Ham.xc_calc, Ham.pw, ρ, epsxc, Vxc[:,1] )
+            # check if this is working
+            calc_epsxc_Vxc_PBE!( Ham.xc_calc, Ham.pw, Rhoe, epsxc, Vxc )
         else
             # This is SCAN
             error("Core correction is yet not supported in SCAN")
         end
-        Exc = sum(epsxc .* ρ)*dVol
+        Exc = sum(epsxc .* Rhoe)*dVol
+
+        # Recover
+        if Nspin == 2
+            Rhoe[:,1] .-= Ham.rhoe_core*0.5
+            Rhoe[:,2] .-= Ham.rhoe_core*0.5
+        else
+            Rhoe[:,1] .-= Ham.rhoe_core
+        end
+
     end
 
     # Also calculate Evtxc
@@ -154,14 +171,14 @@ function _add_V_xc!(Ham, psiks, Rhoe, RhoeG)
     # XXX: Evtxc is vtxc in QE, it seems that it is not used for total energy calculation
     # Evtxc will be used for stress calculation
 
-    Ham.potentials.Total[:,1] += Vxc[:,1] # Update
+    Ham.potentials.Total .+= Vxc # Update
 
     return Exc
 end
 
 
 # Note that RhoeG is already in FFT grid
-function _add_V_Hartree!(Ham, Rhoe, RhoeG)
+function _add_V_Hartree!(Ham, Rhoe, RhoeG_)
 
     pw = Ham.pw
     gvec = pw.gvec
@@ -172,6 +189,15 @@ function _add_V_Hartree!(Ham, Rhoe, RhoeG)
     Npoints = prod(pw.Ns) # dense
 
     VhG = zeros(ComplexF64, Npoints)
+    Nspin = Ham.electrons.Nspin
+    RhoeG = zeros(ComplexF64, Npoints)
+    #if Nspin == 2
+    #    RhoeG[:] = RhoeG_[:,1] + RhoeG_[:,2]
+    #else
+        RhoeG[:] = RhoeG_[:,1] # why?
+    #end
+    # FIXME: use sum or reduce?
+
     Ehartree = 0.0
     # skip ig = 1, it is set to zero
     for ig in 2:Ng
@@ -185,7 +211,7 @@ function _add_V_Hartree!(Ham, Rhoe, RhoeG)
     G_to_R!(pw, VhG)
     VhG[:] *= Npoints # XXX: scale by Npoints
     Ham.potentials.Hartree[:] = real(VhG) # update
-    Ham.potentials.Total[:,1] += real(VhG)
+    Ham.potentials.Total .+= real(VhG)
 
     return Ehartree
 end

@@ -3,7 +3,7 @@ function init_Ham_from_pwinput(; filename::Union{Nothing,String}=nothing)
     # XXX simply assign filename=ARGS[1] is length(ARGS) >= 1
 
     # Read filename from the command line argument
-    if filename == nothing
+    if isnothing(filename)
         println("ARGS = ", ARGS)
         if length(ARGS) == 0
             println("No argument is given. Using PWINPUT as default filename.")
@@ -36,13 +36,16 @@ function init_Ham_from_pwinput(; filename::Union{Nothing,String}=nothing)
     println("Using xcfunc = ", xcfunc)
 
     Ns = (pwinput.nr1, pwinput.nr2, pwinput.nr3)
+    Nspin = pwinput.nspin
     meshk = pwinput.meshk
     if pwinput.nbnd != -1
         Ham = Hamiltonian(atoms, pspfiles, ecutwfc,
-            meshk=[meshk[1], meshk[2], meshk[3]], dual=dual, Nstates=pwinput.nbnd, xcfunc=xcfunc, Ns_=Ns)
+            meshk=[meshk[1], meshk[2], meshk[3]], dual=dual, Nstates=pwinput.nbnd, xcfunc=xcfunc, Ns_=Ns,
+            Nspin=Nspin)
     else
         Ham = Hamiltonian(atoms, pspfiles, ecutwfc,
-            meshk=[meshk[1], meshk[2], meshk[3]], dual=dual, xcfunc=xcfunc, Ns_=Ns)
+            meshk=[meshk[1], meshk[2], meshk[3]], dual=dual, xcfunc=xcfunc, Ns_=Ns,
+            Nspin=Nspin)
     end
 
     return Ham, pwinput
