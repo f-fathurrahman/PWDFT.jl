@@ -159,11 +159,21 @@ function calc_E_local( Ham::Hamiltonian, psiks::BlochWavefunc )
         if isnothing(Ham.rhoe_core)
             epsxc = calc_epsxc_VWN( Ham.xc_calc, Ham.rhoe )
         else
-            Ham.rhoe[:,1] .+= Ham.rhoe_core*0.5
-            Ham.rhoe[:,2] .+= Ham.rhoe_core*0.5
+            if Nspin == 2
+                Ham.rhoe[:,1] .+= Ham.rhoe_core*0.5
+                Ham.rhoe[:,2] .+= Ham.rhoe_core*0.5
+            else # should be Nspin == 1
+                Ham.rhoe[:,1] .+= Ham.rhoe_core
+            end
+            #
             epsxc = calc_epsxc_VWN( Ham.xc_calc, Ham.rhoe )
-            Ham.rhoe[:,1] .-= Ham.rhoe_core*0.5
-            Ham.rhoe[:,2] .-= Ham.rhoe_core*0.5
+            #
+            if Nspin == 2
+                Ham.rhoe[:,1] .-= Ham.rhoe_core*0.5
+                Ham.rhoe[:,2] .-= Ham.rhoe_core*0.5
+            else # should be Nspin == 1
+                Ham.rhoe[:,1] .-= Ham.rhoe_core
+            end
         end
     end
     # 
