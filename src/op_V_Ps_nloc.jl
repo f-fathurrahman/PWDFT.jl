@@ -86,6 +86,7 @@ function op_V_Ps_nloc!(
 )
     
     ik = Ham.ik
+    ispin = Ham.ispin
     Nstates = size(psi, 2)
 
     Nspecies = Ham.atoms.Nspecies
@@ -93,7 +94,7 @@ function op_V_Ps_nloc!(
     atm2species = Ham.atoms.atm2species
 
     NbetaNL = Ham.pspotNL.NbetaNL
-    Deeq = Ham.pspotNL.Deeq
+    @views Deeq = Ham.pspotNL.Deeq[:,:,:,ispin]
     nh = Ham.pspotNL.nh
     indv_ijkb0 = Ham.pspotNL.indv_ijkb0
     betaNL_k = Ham.pspotNL.betaNL[ik]

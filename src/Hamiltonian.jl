@@ -166,7 +166,7 @@ function Hamiltonian(
     end
     if all(are_using_upf)
         is_gga = (options.xcfunc == "PBE") # XXX FIX THIS !!!!
-        pspotNL = PsPotNL_UPF(atoms, pw, pspots, is_gga=is_gga)
+        pspotNL = PsPotNL_UPF(atoms, pw, pspots, is_gga=is_gga, Nspin=options.Nspin)
     elseif all(.!are_using_upf)
         pspotNL = PsPotNL( atoms, pw, pspots, check_norm=false )
     else
