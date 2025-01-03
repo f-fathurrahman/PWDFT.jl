@@ -13,15 +13,15 @@ function _rhoeG_from_rhoe(Ham, Rhoe)
     RhoeG = zeros(ComplexF64, Npoints, Nspin)
     ctmp = zeros(ComplexF64, Npoints)
     for ispin in 1:Nspin
-        ctmp[:] = Rhoe[:,1]
+        ctmp[:] .= Rhoe[:,ispin]
         #
         R_to_G!(Ham.pw, ctmp) # FIXME: add method
-        RhoeG[:,1] = ctmp[:]/Npoints
-        # Need to be careful about the normalization
-        # Check the charge in G-space
-        charge = RhoeG[1,1]*Ham.pw.CellVolume
-        # println("Check charge from RhoeG: ", charge)    
+        RhoeG[:,ispin] = ctmp[:]/Npoints
     end
+    # Need to be careful about the normalization
+    # Check the charge in G-space
+    #charge = RhoeG[1,1]*Ham.pw.CellVolume
+    # println("Check charge from RhoeG: ", charge)    
     return RhoeG
 end
 
@@ -29,12 +29,10 @@ end
 # Can be used for metaGGA (if psiks is not nothing)
 # FIXME: Think of better API for this
 # Probably by setting psiks as optional argument
-function update_from_rhoe!(Ham, psiks, Rhoe, RhoeG_and_magnG)
+function update_from_rhoe!(Ham, psiks, Rhoe, RhoeG)
 
     Nspin = Ham.electrons.Nspin
-    Npoints = size(Ham.rhoe, 1)
-
-    Ham.rhoe[:,:] = Rhoe[:,:] # Need copy?
+    Npoints = size(Rhoe, 1)
 
     # Save old potential
     # This will be used to calculate SCF correction to the forces
@@ -52,9 +50,10 @@ function update_from_rhoe!(Ham, psiks, Rhoe, RhoeG_and_magnG)
     # Reset total effective potential to zero
     fill!(Ham.potentials.Total, 0.0)
 
-    # FIXME: also set Ham.potentials.XC and Ham.potentials.Hartree
-    Exc = _add_V_xc!( Ham, psiks, Rhoe, RhoeG_and_magnG )
-    Ehartree = _add_V_Hartree!( Ham, Rhoe, RhoeG_and_magnG )
+    # Update Ham.potentials.XC and Ham.potentials.Hartree
+    # and also compute Exc and Ehartree
+    Exc = _add_V_xc!( Ham, psiks, Rhoe )
+    Ehartree = _add_V_Hartree!( Ham, RhoeG )
 
     # Add V_Ps_loc contribution
     for ispin in 1:Nspin
@@ -92,13 +91,13 @@ end
 
 # Can be used for metaGGA functionals
 # FIXME: allow psiks to be nothing (?)
-function _add_V_xc!(Ham, psiks, Rhoe, RhoeG_and_magnG)
+function _add_V_xc!(Ham, psiks, Rhoe)
 
     Nspin = Ham.electrons.Nspin
 
     Npoints = size(Rhoe, 1)
     epsxc = zeros(Float64, Npoints)
-    Vxc = Ham.potentials.XC
+    Vxc = Ham.potentials.XC # This will be written
 
     dVol = Ham.pw.CellVolume / Npoints
 
@@ -137,7 +136,6 @@ function _add_V_xc!(Ham, psiks, Rhoe, RhoeG_and_magnG)
         else
             Rhoe[:,1] .+= Ham.rhoe_core
         end
-
 
         if Ham.xcfunc == "VWN"
             calc_epsxc_Vxc_VWN!( Ham.xc_calc, Rhoe, epsxc, Vxc )
@@ -178,7 +176,7 @@ end
 
 
 # Note that RhoeG is already in FFT grid
-function _add_V_Hartree!(Ham, Rhoe, RhoeG_and_magnG)
+function _add_V_Hartree!(Ham, RhoeG)
 
     pw = Ham.pw
     gvec = pw.gvec
@@ -187,26 +185,32 @@ function _add_V_Hartree!(Ham, Rhoe, RhoeG_and_magnG)
     Ng = gvec.Ng
     idx_g2r = gvec.idx_g2r
     Npoints = prod(pw.Ns) # dense
-
+    Nspin = size(RhoeG, 2)
     # get total RhoeG
-    @views ρG = RhoeG_and_magnG[:,1]
-
+    if Nspin == 2
+        ρG = RhoeG[:,1] + RhoeG[:,2]
+    else
+        ρG = RhoeG[:,1]
+    end
     VhG = zeros(ComplexF64, Npoints)
     
     Ehartree = 0.0
     # skip ig = 1, it is set to zero
     for ig in 2:Ng
         ip = idx_g2r[ig]
-        Ehartree = Ehartree + 2π*( real(ρG[ip])^2 + imag(ρG[ip])^2 )/G2[ig]
+        # compute Ehartree
+        Ehartree += 2π*( real(ρG[ip])^2 + imag(ρG[ip])^2 )/G2[ig]
+        # and Hartree potential in G-space
         VhG[ip] = 4π * ρG[ip]/G2[ig]
     end
 
-    Ehartree *= Ham.pw.CellVolume
-
+    # Transform Hartree potential to R-space
     G_to_R!(pw, VhG)
     VhG[:] *= Npoints # XXX: scale by Npoints
     Ham.potentials.Hartree[:] = real(VhG) # update
     Ham.potentials.Total .+= real(VhG)
 
+    # Hartree energy will be returned
+    Ehartree *= Ham.pw.CellVolume
     return Ehartree
 end
