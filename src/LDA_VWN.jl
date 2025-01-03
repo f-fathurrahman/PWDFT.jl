@@ -39,24 +39,21 @@ function calc_epsxc_Vxc_VWN!(
     eps_x = zeros(Float64, Npoints)
     eps_c = zeros(Float64, Npoints)
 
-    V_x = zeros( Float64, 2*Npoints )
-    V_c = zeros( Float64, 2*Npoints )
+    V_x = zeros(Float64, 2*Npoints)
+    V_c = zeros(Float64, 2*Npoints)
 
     ptr = Libxc_xc_func_alloc()
     # exchange part
     Libxc_xc_func_init(ptr, xc_calc.x_id, Nspin)
     Libxc_xc_func_set_dens_threshold(ptr, 1e-10)
-    Libxc_xc_lda_exc!(ptr, Npoints, Rhoe_tmp, eps_x)
     Libxc_xc_lda_exc_vxc!(ptr, Npoints, Rhoe_tmp, eps_x, V_x)
     Libxc_xc_func_end(ptr)
-
     #
     # correlation part
     Libxc_xc_func_init(ptr, xc_calc.c_id, Nspin)
     Libxc_xc_func_set_dens_threshold(ptr, 1e-10)
     Libxc_xc_lda_exc_vxc!(ptr, Npoints, Rhoe_tmp, eps_c, V_c)
     Libxc_xc_func_end(ptr)
-
     #
     Libxc_xc_func_free(ptr)
 
