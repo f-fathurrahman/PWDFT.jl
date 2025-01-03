@@ -39,6 +39,7 @@ function my_pwx(; filename=nothing, do_export_data=false)
     end
 
     electrons_scf!(Ham, psiks, NiterMax=100, use_smearing=use_smearing, kT=kT, betamix=0.1)
+    #KS_solve_SCF!(Ham, psiks, use_smearing=use_smearing, kT=kT, betamix=0.1)
 
     # Calculate forces: we want to display them by different contributions
     # in Ry/bohr to facilitate easier comparison with QE
