@@ -19,7 +19,8 @@ function electrons_scf!(
     use_smearing=false,
     kT::Float64=1e-3,
     startingrhoe::Symbol=:gaussian,
-    restart::Bool=false
+    restart::Bool=false,
+    print_final_ebands::Bool=false
 )
 
     # Prepare for SCF
@@ -59,7 +60,6 @@ function electrons_scf!(
     evals = Ham.electrons.ebands
 
     Rhoe = Ham.rhoe
-    println("Initial integ Rhoe = ", sum(Rhoe)*dVol)
 
     diffRhoe = 0.0
 
@@ -94,6 +94,14 @@ function electrons_scf!(
     @printf("\n")
     @printf("SCF iteration starts (with density mixing), betamix = %f\n", betamix)
     @printf("\n")
+
+    # additional info for spinpol calculation
+    if Nspin == 2
+        @printf("Initial integ Rhoe up  = %18.10f\n", sum(Rhoe[:,1])*dVol)
+        @printf("Initial integ Rhoe dn  = %18.10f\n", sum(Rhoe[:,2])*dVol)
+        @printf("Initial integ magn_den = %18.10f\n", sum(Rhoe[:,1] - Rhoe[:,2])*dVol)
+        println("")
+    end
 
     # Print header
     @printf("----------------------------------------------------------\n")
@@ -148,10 +156,10 @@ function electrons_scf!(
         calc_rhoe!( Ham, psiks, Rhoe )
         # In case of PAW becsum is also calculated/updated here
 
-        println("integ Rhoe = ", sum(Rhoe)*dVol)
-        if Nspin == 2
-            println("Integ magn = ", sum(Rhoe[:,1]-Rhoe[:,2])*dVol)
-        end
+        #println("integ Rhoe = ", sum(Rhoe)*dVol)
+        #if Nspin == 2
+        #    println("Integ magn = ", sum(Rhoe[:,1]-Rhoe[:,2])*dVol)
+        #end
 
         # This is not used later?
         hwf_energy = Eband + deband_hwf + Ehartree + Exc + Ham.energies.NN + mTS
@@ -181,12 +189,12 @@ function electrons_scf!(
         #
         #diffRhoe = norm(Rhoe - Rhoe_in)
         diffRhoe = dot(Rhoe - Rhoe_in, Rhoe - Rhoe_in)
-        @info "diffRhoe before mix = $(diffRhoe)"
+        #@info "diffRhoe before mix = $(diffRhoe)"
 
         do_mix!(mixer, Rhoe, Rhoe_in, iterSCF)
 
-        diffRhoe = dot(Rhoe - Rhoe_in, Rhoe - Rhoe_in)
-        @info "diffRhoe after mix = $(diffRhoe)"
+        #diffRhoe = dot(Rhoe - Rhoe_in, Rhoe - Rhoe_in)
+        #@info "diffRhoe after mix = $(diffRhoe)"
 
         # Check convergence here? (using diffRhoe)
 
@@ -266,12 +274,14 @@ function electrons_scf!(
     println("\nUsing original formula for total energy")
     println(Ham.energies, use_smearing=use_smearing, is_paw=ok_paw)
     
-    @printf("\n")
-    @printf("----------------------------\n")
-    @printf("Final Kohn-Sham eigenvalues:\n")
-    @printf("----------------------------\n")
-    @printf("\n")
-    print_ebands(Ham.electrons, Ham.pw.gvecw.kpoints, unit="eV")
+    if print_final_ebands
+        @printf("\n")
+        @printf("----------------------------\n")
+        @printf("Final Kohn-Sham eigenvalues:\n")
+        @printf("----------------------------\n")
+        @printf("\n")
+        print_ebands(Ham.electrons, Ham.pw.gvecw.kpoints, unit="eV")
+    end
 
     return
 end
