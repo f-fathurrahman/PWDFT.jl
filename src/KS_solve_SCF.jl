@@ -100,7 +100,8 @@ function KS_solve_SCF!(
         if Nspin == 1
             Rhoe[:,1] = guess_rhoe( Ham )
         else
-            Rhoe = guess_rhoe_atomic( Ham, starting_magnetization=starting_magnetization )
+            #Rhoe = guess_rhoe_atomic( Ham, starting_magnetization=starting_magnetization )
+            Rhoe, _ = atomic_rho_g(Ham, starting_magnetization=starting_magnetization)
         end
     elseif startingrhoe == :none
         # Use previously calculated density stored in Ham.rhoe
@@ -111,7 +112,7 @@ function KS_solve_SCF!(
     end
 
     if Nspin == 2
-        magn_den = zeros(Npoints)
+        magn_den = zeros(Float64, Npoints)
         for ip in 1:Npoints
             magn_den[ip] = Rhoe[ip,1] - Rhoe[ip,2]
         end
@@ -120,7 +121,7 @@ function KS_solve_SCF!(
     if Nspin == 2 && verbose
         @printf("Initial integ Rhoe up  = %18.10f\n", sum(Rhoe[:,1])*dVol)
         @printf("Initial integ Rhoe dn  = %18.10f\n", sum(Rhoe[:,2])*dVol)
-        @printf("Initial integ magn_den = %18.10f\n", sum(magn_den)*dVol)
+        @printf("Initial integ magn_den = %18.10f\n", sum(Rhoe[:,1] - Rhoe[:,2])*dVol)
         println("")
     end
 
@@ -130,9 +131,9 @@ function KS_solve_SCF!(
 
     Rhoe_new = zeros(Float64,Npoints,Nspin)
 
-    diffRhoe = zeros(Nspin)
+    diffRhoe = zeros(Float64, Nspin)
 
-    evals = zeros(Float64,Nstates,Nkspin)
+    evals = zeros(Float64, Nstates, Nkspin)
 
     ethr = 0.1
     
