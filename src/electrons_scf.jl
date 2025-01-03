@@ -102,6 +102,7 @@ function electrons_scf!(
 
     for iterSCF in 1:NiterMax
         
+        # Save input/old potential
         Vin .= Vhartree .+ Vxc
         deband_hwf = -sum(Vin .* Rhoe)*dVol
         if ok_paw
@@ -117,7 +118,8 @@ function electrons_scf!(
         end
 
         # Copy input rhoe
-        @views Rhoe_in[:,:] .= Rhoe[:,:]
+        @views Rhoe_in[:,:] .= Rhoe[:,:] # need views here?
+        # also becsum if using PAW
         if ok_paw
             becsum_in[:,:,:] .= Ham.pspotNL.becsum[:,:,:]
         end
@@ -132,6 +134,7 @@ function electrons_scf!(
         #println("Davidson diagonalization with ethr = ", ethr)
         evals[:,:] .= diag_davidson_qe!( Ham, psiks, tol=ethr )
 
+        # Update occupation numbers from computed eigenvalues
         if use_smearing
             Focc[:,:], E_fermi = calc_Focc( Nelectrons, wk, kT, evals, Nspin )
             mTS = calc_entropy( wk, kT, evals, E_fermi, Nspin )
@@ -167,7 +170,7 @@ function electrons_scf!(
 
         #
         if xc_calc.family == :metaGGA
-            # this is not efficient as it recalculates
+            #XXX this is not efficient as it recalculates
             calc_KEdens!(Ham, psiks, KEdens)
             @assert Nspin == 1
             @views deband -= sum(xc_calc.Vtau .* KEdens[:,1])*dVol
@@ -277,14 +280,17 @@ end
 # Initialize Rhoe, potentials
 function _prepare_scf!(Ham, psiks)
     # Initial density
-    Rhoe, RhoeG_and_magnG = atomic_rho_g(Ham)
+    Rhoe, _ = atomic_rho_g(Ham)
     # Also initialize becsum in case of PAW
     if any(Ham.pspotNL.are_paw)
         PAW_atomic_becsum!(Ham)
     end
 
+    # Set rhoe
+    Ham.rhoe[:,:] = Rhoe[:,:]
+
     # Update the potentials
-    Ehartree, Exc = update_from_rhoe!( Ham, psiks, Rhoe, RhoeG_and_magnG )
+    Ehartree, Exc = update_from_rhoe!( Ham, psiks, Rhoe )
 
     return Ehartree, Exc
 end
@@ -299,7 +305,7 @@ function _calc_Eband(wk, Focc, evals)
     for ispin in 1:Nspin, ik in 1:Nkpt
         ikspin = ik + (ispin - 1)*Nkpt
         for ist in 1:Nstates
-            Eband = Eband + wk[ik]*Focc[ist,ikspin]*evals[ist,ikspin]
+            Eband += wk[ik]*Focc[ist,ikspin]*evals[ist,ikspin]
         end
     end
     return Eband
