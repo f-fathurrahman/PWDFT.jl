@@ -485,11 +485,19 @@ function update!(Ham::Hamiltonian, psiks::BlochWavefunc, rhoe::Array{Float64,2})
             Ham.potentials.XC = calc_Vxc_VWN( Ham.xc_calc, rhoe )
         else
             # FIXME
-            Ham.rhoe[:,1] .+= Ham.rhoe_core*0.5
-            Ham.rhoe[:,2] .+= Ham.rhoe_core*0.5
+            if Nspin == 2
+                Ham.rhoe[:,1] .+= Ham.rhoe_core*0.5
+                Ham.rhoe[:,2] .+= Ham.rhoe_core*0.5
+            else
+                Ham.rhoe[:,1] .+= Ham.rhoe_core
+            end
             Ham.potentials.XC = calc_Vxc_VWN( Ham.xc_calc, rhoe )
-            Ham.rhoe[:,1] .-= Ham.rhoe_core*0.5
-            Ham.rhoe[:,2] .-= Ham.rhoe_core*0.5
+            if Nspin == 2
+                Ham.rhoe[:,1] .-= Ham.rhoe_core*0.5
+                Ham.rhoe[:,2] .-= Ham.rhoe_core*0.5
+            else
+                Ham.rhoe[:,1] .-= Ham.rhoe_core
+            end
         end
     end
     Npoints = prod(Ham.pw.Ns)
