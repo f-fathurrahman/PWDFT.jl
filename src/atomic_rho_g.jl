@@ -17,9 +17,6 @@ function atomic_rho_g(
     Nspin = Ham.electrons.Nspin
     Ngl = length(Ham.pw.gvec.G2_shells)
 
-    xmin = -7.0
-    amesh = 0.0125
-    rmax = 100.0
     eps8 = 1e-8
     strf = calc_strfact( atoms, pw )
 
@@ -98,7 +95,6 @@ function atomic_rho_g(
     println(" Renormalized to ", Nelectrons)
     rhocg .*= Nelectrons/charge
 
-    Rhoe = zeros(Npoints,Nspin)
     Rhoe_tot = real(G_to_R(pw,rhocg[:,1]))*Npoints
 
     # Convert to Rhoe_up and Rhoe_dn    
@@ -106,6 +102,7 @@ function atomic_rho_g(
     # magn = Rhoe_up - Rhoe_dn
     # 2*Rhoe_up = Rhoe_tot + magn
     # 2*Rhoe_dn = Rhoe_tot - magn
+    Rhoe = zeros(Float64, Npoints, Nspin) # perspin
     if Nspin == 2
         magn = real(G_to_R(pw,rhocg[:,2]))*Npoints
         Rhoe[:,1] = 0.5*(Rhoe_tot + magn)
