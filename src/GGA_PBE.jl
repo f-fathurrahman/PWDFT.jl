@@ -68,6 +68,21 @@ function calc_epsxc_Vxc_PBE!(
 end
 
 
+function calc_epsxc_Vxc_PBE!(
+    xc_calc, pw,
+    Rhoe::Array{Float64,2},
+    epsxc::Vector{Float64},
+    Vxc::Array{Float64,2}
+)
+    Nspin = size(Rhoe, 2)
+    if Nspin == 1
+        @views calc_epsxc_Vxc_PBE!( xc_calc, pw, Rhoe[:,1], epsxc, Vxc[:,1] )
+        return
+    end
+    @assert Nspin == 1
+    return
+end
+
 
 function calc_epsxc_PBE( xc_calc::LibxcXCCalculator, pw, Rhoe::Array{Float64,1} )
 
