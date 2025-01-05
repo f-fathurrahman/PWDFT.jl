@@ -170,9 +170,9 @@ end
 function Libxc_xc_gga_exc!(
     p::Ptr{XCFuncType},
     np::Int,
-    rho::Array{Float64,1},
-    sigma::Array{Float64,1},
-    zk::Array{Float64,1}
+    rho::AbstractVector{Float64},
+    sigma::AbstractVector{Float64},
+    zk::AbstractVector{Float64}
 )
     ccall(
         (:xc_gga_exc, LIBXC5), Cvoid,
@@ -202,10 +202,10 @@ end
 function Libxc_xc_gga_vxc!(
     p::Ptr{XCFuncType},
     np::Int,
-    rho::Array{Float64,1},
-    sigma::Array{Float64,1},
-    vrho::Array{Float64,1},
-    vsigma::Array{Float64,1}
+    rho::AbstractVector{Float64},
+    sigma::AbstractVector{Float64},
+    vrho::AbstractVector{Float64},
+    vsigma::AbstractVector{Float64}
 )
     ccall(
         (:xc_gga_vxc, LIBXC5), Cvoid,
@@ -219,11 +219,11 @@ end
 function Libxc_xc_mgga_exc!(
     p::Ptr{XCFuncType},
     np::Int,
-    rho::Array{Float64,1},
-    sigma::Array{Float64,1},
-    lapl::Array{Float64,1},
-    tau::Array{Float64,1},
-    exc::Array{Float64,1}
+    rho::AbstractVector{Float64},
+    sigma::AbstractVector{Float64},
+    lapl::AbstractVector{Float64},
+    tau::AbstractVector{Float64},
+    exc::AbstractVector{Float64}
 )
     ccall(
         (:xc_mgga_exc, LIBXC5), Cvoid,
