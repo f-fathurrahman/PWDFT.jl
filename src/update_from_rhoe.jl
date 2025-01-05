@@ -61,7 +61,9 @@ function update_from_rhoe!(Ham, psiks, Rhoe, RhoeG)
     end
 
     if Ham.pw.using_dual_grid
-        dense_to_smooth!( Ham.pw, Ham.potentials.Total, Ham.potentials.TotalSmooth )
+        for ispin in 1:Nspin
+            @views dense_to_smooth!( Ham.pw, Ham.potentials.Total[:,ispin], Ham.potentials.TotalSmooth[:,ispin] )
+        end
     end
     # XXX: Also need to interpolate xc_calc.Vtau or kedtau in case of USPP
 

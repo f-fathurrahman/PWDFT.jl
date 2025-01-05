@@ -72,14 +72,18 @@ function calc_rhoe!(
         end
     end # ik, ispin
 
+    #println("calc_rhoe_uspp: integ RhoeSmooth up = ", sum(RhoeSmooth[:,1])*dVol)
+    #println("calc_rhoe_uspp: integ RhoeSmooth dn = ", sum(RhoeSmooth[:,2])*dVol)
     #println("calc_rhoe_uspp: integ RhoeSmooth = ", sum(RhoeSmooth)*dVol)
 
     # Interpolate
     # XXX: This should not be needed if using_dual_grid is true
     for ispin in 1:Nspin
-        @views smooth_to_dense!(pw, RhoeSmooth, Rhoe)
+        @views smooth_to_dense!(pw, RhoeSmooth[:,ispin], Rhoe[:,ispin])
     end
 
+    #println("calc_rhoe_uspp: integ Rhoe up = ", sum(Rhoe[:,1])*dVol)
+    #println("calc_rhoe_uspp: integ Rhoe dn = ", sum(Rhoe[:,2])*dVol)
     #println("calc_rhoe_uspp: integ Rhoe = ", sum(Rhoe)*dVol)
 
 
@@ -105,10 +109,9 @@ function calc_rhoe!(
         end
         #println("calc_rhoe_uspp: sum becsum after symmetrize = ", sum(becsum))
         _add_usdens!(Ham, becsum, Rhoe) # using real space
-
     end
 
-    #println("calc_rhoe_uspp: integ Rhoe after adding becsum = ", sum(Rhoe)*dVol)
+    println("calc_rhoe_uspp: integ Rhoe after adding becsum = ", sum(Rhoe)*dVol)
 
     # renormalize
     #if renormalize
@@ -201,20 +204,23 @@ function _add_usdens!( Ham, becsum, Rhoe )
         end
     end
 
+
     Npoints = prod(Ham.pw.Ns)
     CellVolume = Ham.pw.CellVolume
     dVol = CellVolume/Npoints
 
     ctmp = zeros(ComplexF64, Npoints)
-    for ig in 1:Ng
-        ip = idx_g2r[ig]
-        ctmp[ip] = aux[ig,1]
+    for ispin in 1:Nspin
+        fill!(ctmp, 0.0) # need this?
+        for ig in 1:Ng
+            ip = idx_g2r[ig]
+            ctmp[ip] = aux[ig,ispin]
+        end
+        # Use the dense grid
+        G_to_R!(Ham.pw, ctmp)
+        @views ctmp[:] *= Npoints # rescale
+        @views Rhoe[:,ispin] += real(ctmp)
     end
-    # Use the dense grid
-    G_to_R!(Ham.pw, ctmp)
-    @views ctmp[:] *= Npoints # rescale
-    @views Rhoe[:,1] += real(ctmp)
-
     return
 end
 
@@ -238,7 +244,7 @@ function _add_becsum!( ik, ispin, Ham, psiks, becsum )
 
     Nspin = Ham.electrons.Nspin
     Focc = Ham.electrons.Focc
-    
+
     nhm = Ham.pspotNL.nhm
     nh = Ham.pspotNL.nh
     indv_ijkb0 = Ham.pspotNL.indv_ijkb0
