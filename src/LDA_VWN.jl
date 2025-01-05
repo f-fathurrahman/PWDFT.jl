@@ -123,7 +123,7 @@ end
 function calc_epsxc_VWN!(
     xc_calc::LibxcXCCalculator,
     Rhoe::AbstractVector{Float64},
-    epsxc::AbstractVector{Float64}
+    epsxc::Vector{Float64}
 )
 
     Npoints = size(Rhoe)[1]
@@ -154,9 +154,9 @@ end
 
 function calc_epsxc_VWN(
     xc_calc::LibxcXCCalculator,
-    Rhoe::AbstractVector{Float64}
+    Rhoe
 )
-    epsxc = zeros(Float64, size(Rhoe))
+    epsxc = zeros(Float64, size(Rhoe)) # always Vector{Float64}
     calc_epsxc_VWN!(xc_calc, Rhoe, epsxc)
     return epsxc
 end
@@ -167,20 +167,22 @@ end
 Calculate XC energy per particle using VWN functional.
 This function works for both spin-polarized and spin-unpolarized system.
 """
-function calc_epsxc_VWN(
+function calc_epsxc_VWN!(
     xc_calc::LibxcXCCalculator,
-    Rhoe::Array{Float64,2}
+    Rhoe::Array{Float64,2},
+    epsxc::Vector{Float64}
 )
 
-    Nspin = size(Rhoe)[2]
-    Npoints = size(Rhoe)[1]
-
+    Nspin = size(Rhoe, 2)
     if Nspin == 1
-        return calc_epsxc_VWN( xc_calc, Rhoe[:,1] )
+        calc_epsxc_VWN!( xc_calc, Rhoe[:,1], epsxc )
+        return
     end
 
+    Npoints = size(Rhoe, 1)
+
     # Do the transpose manually
-    Rhoe_tmp = zeros(2*Npoints)
+    Rhoe_tmp = zeros(Float64, 2*Npoints)
     ipp = 0
     for ip in 1:2:2*Npoints
         ipp = ipp + 1
@@ -188,9 +190,8 @@ function calc_epsxc_VWN(
         Rhoe_tmp[ip+1] = Rhoe[ipp,2]
     end
 
-
-    eps_x = zeros(Float64,Npoints)
-    eps_c = zeros(Float64,Npoints)
+    eps_x = zeros(Float64, Npoints)
+    eps_c = zeros(Float64, Npoints)
 
     ptr = Libxc_xc_func_alloc()
     # exchange part
@@ -198,7 +199,6 @@ function calc_epsxc_VWN(
     Libxc_xc_func_set_dens_threshold(ptr, 1e-10)
     Libxc_xc_lda_exc!(ptr, Npoints, Rhoe_tmp, eps_x)
     Libxc_xc_func_end(ptr)
-
     #
     # correlation part
     Libxc_xc_func_init(ptr, xc_calc.c_id, Nspin)
@@ -209,7 +209,7 @@ function calc_epsxc_VWN(
     #
     Libxc_xc_func_free(ptr)
 
-    return eps_x + eps_c
+    epsxc[:] .= eps_x[:] .+ eps_c[:]
 end
 
 

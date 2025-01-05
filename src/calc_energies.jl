@@ -141,49 +141,49 @@ function calc_E_local( Ham::Hamiltonian, psiks::BlochWavefunc )
     Nspin = Ham.electrons.Nspin
     potentials = Ham.potentials
 
-    Rhoe_tot = zeros(Float64,Npoints)
+    Rhoe = Ham.rhoe # alias
+    Rhoe_tot = zeros(Float64, Npoints)
     for ispin in 1:Nspin, ip in 1:Npoints
-        Rhoe_tot[ip] = Rhoe_tot[ip] + Ham.rhoe[ip,ispin]
+        Rhoe_tot[ip] += Rhoe[ip,ispin]
     end
+    # XXX: use reduce?
 
     E_Hartree = 0.5*dot( potentials.Hartree, Rhoe_tot ) * dVol
     E_Ps_loc = dot( potentials.Ps_loc, Rhoe_tot ) * dVol
 
-    if Ham.xcfunc == "SCAN"
-        # FIXME: no spinpol yet
-        epsxc = calc_epsxc_SCAN( Ham, psiks, Rhoe_tot )
-    elseif Ham.xcfunc == "PBE"
-        epsxc = calc_epsxc_PBE( Ham.xc_calc, Ham.pw, Ham.rhoe )
-        # FIXME: NLCC is not yet handled
-    else
-        if isnothing(Ham.rhoe_core)
-            epsxc = calc_epsxc_VWN( Ham.xc_calc, Ham.rhoe )
-        else
-            if Nspin == 2
-                Ham.rhoe[:,1] .+= Ham.rhoe_core*0.5
-                Ham.rhoe[:,2] .+= Ham.rhoe_core*0.5
-            else # should be Nspin == 1
-                Ham.rhoe[:,1] .+= Ham.rhoe_core
-            end
-            #
-            epsxc = calc_epsxc_VWN( Ham.xc_calc, Ham.rhoe )
-            #
-            if Nspin == 2
-                Ham.rhoe[:,1] .-= Ham.rhoe_core*0.5
-                Ham.rhoe[:,2] .-= Ham.rhoe_core*0.5
-            else # should be Nspin == 1
-                Ham.rhoe[:,1] .-= Ham.rhoe_core
-            end
+    if !isnothing(Ham.rhoe_core)
+        if Nspin == 2
+            Rhoe[:,1] .+= Ham.rhoe_core*0.5
+            Rhoe[:,2] .+= Ham.rhoe_core*0.5
+        else # should be Nspin == 1
+            Rhoe[:,1] .+= Ham.rhoe_core
         end
     end
-    # 
-    if isnothing(Ham.rhoe_core)
-        E_xc = dot( epsxc, Rhoe_tot ) * dVol
+    #
+    epsxc = zeros(Float64, Npoints)
+    #
+    if Ham.xcfunc == "SCAN"
+        # FIXME: no spinpol yet
+        calc_epsxc_SCAN!( Ham, psiks, Rhoe, epsxc )
+        #
+    elseif Ham.xcfunc == "PBE"
+        #
+        calc_epsxc_PBE!( Ham.xc_calc, Ham.pw, Rhoe, epsxc )
+        #
     else
-        # FIXME: check this? Also OK for spinpol?
-        E_xc = dot( epsxc, Rhoe_tot + Ham.rhoe_core ) * dVol
+        calc_epsxc_VWN!( Ham.xc_calc, Rhoe, epsxc )
     end
-
+    # Compute the energy
+    E_xc = sum( epsxc .* Rhoe ) * dVol
+    # Restore
+    if !isnothing(Ham.rhoe_core)
+        if Nspin == 2
+            Rhoe[:,1] .-= Ham.rhoe_core*0.5
+            Rhoe[:,2] .-= Ham.rhoe_core*0.5
+        else # should be Nspin == 1
+            Rhoe[:,1] .-= Ham.rhoe_core
+        end
+    end
     return E_Ps_loc, E_Hartree, E_xc
 end
 

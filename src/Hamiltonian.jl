@@ -424,32 +424,32 @@ function update!( Ham::Hamiltonian, psiks::BlochWavefunc, Rhoe::Vector{Float64} 
     pw = Ham.pw
     xc_calc = Ham.xc_calc
     V_Hartree = Ham.potentials.Hartree
-    V_XC = Ham.potentials.XC
+    V_xc = Ham.potentials.XC
     V_Total = Ham.potentials.Total
     V_Ps_loc = Ham.potentials.Ps_loc
 
     Poisson_solve!(pw, Rhoe, V_Hartree)
 
+    if !isnothing(Ham.rhoe_core)
+        Rhoe[:] .+= Ham.rhoe_core
+    end
     if Ham.xcfunc == "SCAN"
-        Vxc_tmp = zeros(size(rhoe,1)) # FIXME: use V_XC directly
-        calc_Vxc_SCAN!( Ham, psiks, Rhoe, Vxc_tmp )
-        V_XC[:,1] .= Vxc_tmp[:]
+        @views calc_Vxc_SCAN!( Ham, psiks, Rhoe, V_xc[:,1] )
     #
     elseif Ham.xcfunc == "PBE"
-        V_XC[:,1] = calc_Vxc_PBE( xc_calc, pw, Rhoe )
+        @views calc_Vxc_PBE!( xc_calc, pw, Rhoe, V_xc[:,1] )
     #
     else
-        # VWN is the default
-        if isnothing(Ham.rhoe_core)
-            @views calc_Vxc_VWN!( xc_calc, Rhoe, V_XC[:,1] )
-        else
-            @views calc_Vxc_VWN!( xc_calc, Rhoe + Ham.rhoe_core, V_XC[:,1] )
-        end
+        @views calc_Vxc_VWN!( xc_calc, Rhoe, V_xc[:,1] )
     end
-    
+    # Restore Rhoe
+    if !isnothing(Ham.rhoe_core)
+        Rhoe[:] .-= Ham.rhoe_core
+    end
+    #
     Npoints = size(Rhoe, 1)
     for ip in 1:Npoints
-        V_Total[ip,1] = V_Ps_loc[ip] + V_Hartree[ip] + V_XC[ip,1]  
+        V_Total[ip,1] = V_Ps_loc[ip] + V_Hartree[ip] + V_xc[ip,1]  
     end
     return
 end
@@ -467,15 +467,21 @@ end
 
 Update Ham.rhoe and calculate Hartree and XC potentials for given `rhoe` in real space.
 """
-function update!(Ham::Hamiltonian, psiks::BlochWavefunc, Rhoe::Array{Float64,2})
+function update!(
+    Ham::Hamiltonian,
+    psiks::BlochWavefunc,
+    Rhoe::Array{Float64,2}
+)
     #
     Nspin = size(Rhoe, 2)
     Npoints = size(Rhoe, 1)
     if Nspin == 1
         update!(Ham, psiks, Rhoe[:,1])
+        # No need for views, Rhoe is not updated
         return
     end
     # From this point on Nspin == 2
+    @assert Nspin == 2
 
     # Some shortcuts
     V_H = Ham.potentials.Hartree
@@ -487,22 +493,28 @@ function update!(Ham::Hamiltonian, psiks::BlochWavefunc, Rhoe::Array{Float64,2})
     #
     Rhoe_total = Rhoe[:,1] + Rhoe[:,2] # Nspin is 2
     V_H[:] .= real( G_to_R( Ham.pw, Poisson_solve(Ham.pw, Rhoe_total) ) )
+    # Use this instead?
+    # Poisson_solve!(pw, Rhoe, V_Hartree)
+    #
+    # Add core density
+    if !isnothing(Ham.rhoe_core)
+        # Nspin == 2
+        Rhoe[:,1] .+= Ham.rhoe_core*0.5
+        Rhoe[:,2] .+= Ham.rhoe_core*0.5
+    end
     #
     # FIXME: spinpol MetaGGA is not yet implemented
     if Ham.xcfunc == "PBE"
-        V_xc[:,:] .= calc_Vxc_PBE( Ham.xc_calc, Ham.pw, Rhoe )
-        # FIXME: NLCC is not yet handled
+        calc_Vxc_PBE!( Ham.xc_calc, Ham.pw, Rhoe, V_xc )
     else 
         # VWN is the default
-        if isnothing(Ham.rhoe_core)
-            calc_Vxc_VWN!( Ham.xc_calc, Rhoe, V_xc )
-        else
-            Rhoe[:,1] .+= Ham.rhoe_core*0.5
-            Rhoe[:,2] .+= Ham.rhoe_core*0.5
-            calc_Vxc_VWN!( Ham.xc_calc, Rhoe, V_xc )
-            Rhoe[:,1] .-= Ham.rhoe_core*0.5
-            Rhoe[:,2] .-= Ham.rhoe_core*0.5
-        end
+        calc_Vxc_VWN!( Ham.xc_calc, Rhoe, V_xc )
+    end
+    # Restore, because we don't modify the argument Rhoe
+    if !isnothing(Ham.rhoe_core)
+        # Nspin == 2
+        Rhoe[:,1] .-= Ham.rhoe_core*0.5
+        Rhoe[:,2] .-= Ham.rhoe_core*0.5
     end
     #
     # Set total potential
