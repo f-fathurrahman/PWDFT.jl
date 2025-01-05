@@ -25,7 +25,11 @@ function PAW_divergence!(
     cos_th = pspotNL.paw.spheres[isp].cos_th
     nx = pspotNL.paw.spheres[isp].nx
 
-    div_F_rad = zeros(Float64, Nrmesh, nx, Nspin) # div(F) on radial grid
+    #div_F_rad = zeros(Float64, Nrmesh, nx, Nspin) # div(F) on radial grid
+    div_F_rad = Vector{Matrix{Float64}}(undef, nx)
+    for ix in 1:nx
+        div_F_rad[ix] = zeros(Float64, Nrmesh, Nspin)
+    end
     aux = zeros(Float64, Nrmesh)
 
     #
@@ -50,7 +54,7 @@ function PAW_divergence!(
                 @views aux[1:Nrmesh] .+= dylmp[ix,lm] .* F_lm[1:Nrmesh,2,lm,ispin]
                 # as for PAW_gradient this is already present in dylmp --^
             end
-            @views div_F_rad[1:Nrmesh,ix,ispin] .= aux[1:Nrmesh]
+            @views div_F_rad[ix][1:Nrmesh,ispin] .= aux[1:Nrmesh]
         end
     end
     #
@@ -63,7 +67,7 @@ function PAW_divergence!(
             for lm in 1:lmaxq_in^2
                 @views aux[1:Nrmesh] .+= F_lm[1:Nrmesh,3,lm,ispin] * (dylmt[ix,lm]*sin_th[ix] + 2.0*ylm[ix,lm]*cos_th[ix])
             end
-            @views div_F_rad[1:Nrmesh,ix,ispin] .+= aux[1:Nrmesh] # accumulate
+            @views div_F_rad[ix][1:Nrmesh,ispin] .+= aux[1:Nrmesh] # accumulate
         end
     end
     #

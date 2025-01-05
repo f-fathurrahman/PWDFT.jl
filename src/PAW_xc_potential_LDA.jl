@@ -24,11 +24,15 @@ function PAW_xc_potential_LDA!(
     rho_loc = zeros(Float64, Nrmesh, Nspin)
 
     # radial potential (to be integrated)
-    v_rad = zeros(Float64, Nrmesh, nx, Nspin)
+    #v_rad = zeros(Float64, Nrmesh, nx, Nspin)
+    v_rad = Vector{Matrix{Float64}}(undef, nx)
+    for ix in 1:nx
+        v_rad[ix] = zeros(Float64, Nrmesh, Nspin)
+    end
 
     #
     rho_rad = zeros(Float64, Nrmesh, Nspin) 
-    arho = zeros(Float64, Nrmesh, 2) # XXX: Nspin = 2
+    arho = zeros(Float64, Nrmesh, Nspin) # XXX: Nspin = 2
     # it is also 2 in case of noncollinear spin (?)
     
     energy = 0.0
@@ -65,17 +69,18 @@ function PAW_xc_potential_LDA!(
             @views arho[:,1] .= rho_loc[:,1] .+ rho_core[:]
             # rho_loc excludes the 1/r^2 factor
             #println("sum arho = ", sum(arho))
-            @views calc_epsxc_Vxc_VWN!( xc_calc, arho[:,1], e_rad[:,1], v_rad[:,ix,1] )
+            @views calc_epsxc_Vxc_VWN!( xc_calc, arho[:,1], e_rad[:,1], v_rad[ix][:,1] )
             @views e_rad .= e_rad .* ( rho_rad[:,1] .+ rho_core .* r2 )
         else
             # This is not yet working
-            println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-            println("WARNING: This is not yet tested")
-            println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-            @views arho[:,1] .= rho_loc[:,1] .+ rho_loc[:,2] .+ rho_core[:]
-            @views arho[:,2] .= rho_loc[:,1] .- rho_loc[:,2]
-            @views calc_epsxc_Vxc_VWN!( xc_calc, arho, e_rad[:,:], v_rad[:,ix,:] )
-            @views e_rad .= e_rad .* ( rho_rad[:,1] .+ rho_rad[:,2] .+ rho_core .* r2 )
+            #println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            #println("WARNING: This is not yet tested")
+            #println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            @views arho[:,1] .= rho_loc[:,1] .+ rho_core/2
+            @views arho[:,2] .= rho_loc[:,2] .+ rho_core/2
+            @views calc_epsxc_Vxc_VWN!( xc_calc, arho, e_rad, v_rad[ix] )
+            #@views e_rad .= e_rad .* ( rho_rad[:,1] .+ rho_rad[:,2] .+ rho_core .* r2 )
+            @views e_rad .= e_rad .* (arho[:,1] .+ arho[:,2]) .* r2
         end
     
         #println("sum e_rad = ", sum(e_rad))

@@ -180,11 +180,13 @@ function calc_newDeeq!( Ham )
             if !Ham.pspots[isp].is_paw
                 continue
             end
-            ijh = 0
-            for ispin in 1:Nspin, ih in 1:nh[isp], jh in ih:nh[isp]
-                ijh = ijh + 1
-                Deeq[ih,jh,ia,ispin] += ddd_paw[ijh,ia,ispin]
-                Deeq[jh,ih,ia,ispin] = Deeq[ih,jh,ia,ispin] 
+            for ispin in 1:Nspin
+                ijh = 0
+                for ih in 1:nh[isp], jh in ih:nh[isp]
+                    ijh = ijh + 1
+                    Deeq[ih,jh,ia,ispin] += ddd_paw[ijh,ia,ispin]
+                    Deeq[jh,ih,ia,ispin] = Deeq[ih,jh,ia,ispin] 
+                end
             end
         end
     end

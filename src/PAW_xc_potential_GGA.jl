@@ -115,8 +115,14 @@ function PAW_xc_potential_GGA!(
     # for energy, it will be summed over for all nx
     e_rad = zeros(Float64, Nrmesh)
     # for potential, will be processed later, depend on nx
-    gc_rad = zeros(Float64, Nrmesh, nx, Nspin)
-    h_rad = zeros(Float64, Nrmesh, 3, nx, Nspin)
+    #gc_rad = zeros(Float64, Nrmesh, nx, Nspin)
+    #h_rad = zeros(Float64, Nrmesh, 3, nx, Nspin)
+    gc_rad = Vector{Matrix{Float64}}(undef, nx)
+    h_rad = Vector{Array{Float64,3}}(undef, nx)
+    for ix in 1:nx
+        gc_rad[ix] = zeros(Float64, Nrmesh, Nspin)
+        h_rad[ix] = zeros(Float64, Nrmesh, 3, Nspin)
+    end
 
     energy = 0.0 # This should be accumulated for all ix
     spheres = pspotNL.paw.spheres
@@ -154,8 +160,9 @@ function PAW_xc_potential_GGA!(
         # gradient correction to the potential)
         for ir in 1:Nrmesh
             e_rad[ir] = sxc[ir] * r2[ir] * arho[ir]
-            gc_rad[ir,ix,1] = v1xc[ir,1]
-            @views h_rad[ir,1:3,ix,1] = v2xc[ir,1]*grad[ir,1:3,1]*r2[ir]
+            gc_rad[ix][ir,1] = v1xc[ir,1]
+            @views h_rad[ix][ir,1:3,1] = v2xc[ir,1]*grad[ir,1:3,1]*r2[ir]
+            # Nspin == 1
         end
     
         # integrate to obtain the energy
@@ -177,8 +184,10 @@ function PAW_xc_potential_GGA!(
 
     # trick to get faster convergence w.r.t to θ
     for ix in 1:nx
-        @views h_rad[:,3,ix,1] = h_rad[:,3,ix,1] / spheres[isp].sin_th[ix]
+        @views h_rad[ix][:,3,1] = h_rad[ix][:,3,1] / spheres[isp].sin_th[ix]
+        # Nspin = 1
     end
+    # 
     #println("sum h_rad after divided by sin_th = ", sum(h_rad))
 
     # We need the gradient of H to calculate the last part of the exchange

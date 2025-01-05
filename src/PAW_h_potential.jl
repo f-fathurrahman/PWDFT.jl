@@ -27,6 +27,7 @@ function PAW_h_potential!(
     Nrmesh = pspots[isp].Nr
     aux = zeros(Float64, Nrmesh)
     nspin_lsda = size(rho_lm, 3)
+    @info "nspin_lsda = $(nspin_lsda)"
 
     fill!(v_lm, 0.0)
 

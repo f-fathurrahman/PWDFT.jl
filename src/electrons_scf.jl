@@ -193,6 +193,8 @@ function electrons_scf!(
 
         do_mix!(mixer, Rhoe, Rhoe_in, iterSCF)
 
+        #do_mix!(mixer_becsum, becsum, becsum_in, iterSCF)
+
         #diffRhoe = dot(Rhoe - Rhoe_in, Rhoe - Rhoe_in)
         #@info "diffRhoe after mix = $(diffRhoe)"
 
