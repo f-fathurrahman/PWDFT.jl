@@ -1,12 +1,14 @@
-function PAW_atomic_becsum!( Ham::Hamiltonian )
-    PAW_atomic_becsum!(Ham.atoms, Ham.pspots, Ham.pspotNL, Nspin=Ham.electrons.Nspin)
+function PAW_atomic_becsum!( Ham::Hamiltonian; starting_magnetization=nothing )
+    PAW_atomic_becsum!(Ham.atoms, Ham.pspots, Ham.pspotNL,
+        Nspin=Ham.electrons.Nspin, starting_magnetization=starting_magnetization)
 end
 
 
 # For compatibility
-function PAW_atomic_becsum(atoms, pspots, pspotNL; Nspin=1)
-    PAW_atomic_becsum!(atoms, pspots, pspotNL, Nspin=Nspin)
-    return copy(pspotNL.becsum) # the copy is returned
+function PAW_atomic_becsum(atoms, pspots, pspotNL; Nspin=1, starting_magnetization=nothing)
+    PAW_atomic_becsum!(atoms, pspots, pspotNL,
+        Nspin=Nspin, starting_magnetization=starting_magnetization)
+    return copy(pspotNL.becsum) # the copy is returned as it may become different from pspotNL.becsum
 end
 
 
@@ -21,6 +23,7 @@ function PAW_atomic_becsum!(
     atoms::Atoms,
     pspots::Vector{PsPot_UPF},
     pspotNL::PsPotNL_UPF;
+    starting_magnetization=nothing,
     Nspin=1
 )
 
@@ -39,7 +42,12 @@ function PAW_atomic_becsum!(
     Nspecies = atoms.Nspecies
     atm2species = atoms.atm2species
 
-    starting_magnetization = zeros(Nspecies)
+    @info "PAW_atomic_becsum: Nspin=$(Nspin)"
+    # No starting magnetization is give, set them to a default value
+    if (Nspin == 2) && isnothing(starting_magnetization)
+        starting_magnetization = 0.1*ones(Nspecies)
+        @info "Using default starting magnetization = $(starting_magnetization)"
+    end
 
     becsum = pspotNL.becsum
     fill!(becsum, 0.0)
@@ -84,6 +92,16 @@ function PAW_atomic_becsum!(
             end # ih loop
         end # if psp.is_paw
     end # ia loop
+
+    # Need to symmetryize?
+
+
+    println("becsum[1,1,1] after = ", becsum[1,1,1])
+    println("becsum[2,1,1] after = ", becsum[2,1,1])
+    if Nspin == 2
+        println("becsum[1,1,2] after = ", becsum[1,1,2])
+        println("becsum[2,1,2] after = ", becsum[2,1,2])
+    end
 
     return
 end

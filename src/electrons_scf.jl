@@ -290,12 +290,12 @@ end
 
 
 # Initialize Rhoe, potentials
-function _prepare_scf!(Ham, psiks)
+function _prepare_scf!(Ham, psiks; starting_magnetization=nothing)
     # Initial density
-    Rhoe, _ = atomic_rho_g(Ham)
+    Rhoe, _ = atomic_rho_g(Ham, starting_magnetization=starting_magnetization)
     # Also initialize becsum in case of PAW
     if any(Ham.pspotNL.are_paw)
-        PAW_atomic_becsum!(Ham)
+        PAW_atomic_becsum!(Ham, starting_magnetization=starting_magnetization)
     end
 
     # Set rhoe
