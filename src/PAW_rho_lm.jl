@@ -27,6 +27,7 @@ function PAW_rho_lm!(
     ap = pspotNL.ap
 
     Nspin = size(becsum,3)
+    #@info "Nspin in PAW_rho_lm = $(Nspin)"
 
     # initialize density
     fill!(rho_lm, 0.0)

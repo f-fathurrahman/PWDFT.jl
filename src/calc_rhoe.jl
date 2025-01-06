@@ -111,7 +111,7 @@ function calc_rhoe!(
         _add_usdens!(Ham, becsum, Rhoe) # using real space
     end
 
-    println("calc_rhoe_uspp: integ Rhoe after adding becsum = ", sum(Rhoe)*dVol)
+    #println("calc_rhoe: integ Rhoe after adding becsum = ", sum(Rhoe)*dVol)
 
     # renormalize
     #if renormalize

@@ -20,6 +20,7 @@ function calc_integ_QVeff!( Ham )
     # Fourier transform of the total effective potential
     ctmp = zeros(ComplexF64, Npoints)
     for ispin in 1:Nspin
+        fill!(ctmp, 0.0) # need this?
         for ip in 1:Npoints
             ctmp[ip] = Veff[ip,ispin] # Veff already contains Ps_loc
         end
@@ -189,9 +190,8 @@ function calc_newDeeq!( Ham )
                 end
             end
         end
+        #println("sum Deeq after PAW contrib if any: ", sum(Deeq))
     end
-
-    #println("sum Deeq before after PAW contrib if any: ", sum(Deeq))
 
     return
 

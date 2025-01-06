@@ -69,12 +69,15 @@ function update_from_rhoe!(Ham, psiks, Rhoe, RhoeG)
 
     # PAW stuffs
     if any(Ham.pspotNL.are_paw)
+        #
+        #println("\nCalling PAW_potential")
         # becsum is assumed to be calculated elsewhere
         # Possibly alongside Rhoe calculation
+        #println("update_from_rhoe: sum becsum before PAW_potential = ", sum(Ham.pspotNL.becsum))
         EHxc_paw = PAW_potential!( Ham )
-        #println("EHxc_paw = ", EHxc_paw)
-        #println("sum ddd_paw = ", sum(Ham.pspotNL.paw.ddd_paw))
-        #println("sum becsum = ", sum(Ham.pspotNL.becsum))
+        #println("update_from_rhoe: EHxc_paw = ", EHxc_paw)
+        #println("update_from_rhoe: sum ddd_paw = ", sum(Ham.pspotNL.paw.ddd_paw))
+        #println("update_from_rhoe: sum becsum after PAW_potential = ", sum(Ham.pspotNL.becsum))
         # EHxc_paw is currently not returned
         # We set is here
         Ham.pspotNL.paw.EHxc_paw = EHxc_paw
@@ -117,8 +120,7 @@ function _add_V_xc!(Ham, psiks, Rhoe)
         
         elseif Ham.xcfunc == "PBE"
 
-            @assert Nspin == 1
-            @views calc_epsxc_Vxc_PBE!( Ham.xc_calc, Ham.pw, Rhoe[:,1], epsxc, Vxc[:,1] )
+            @views calc_epsxc_Vxc_PBE!( Ham.xc_calc, Ham.pw, Rhoe, epsxc, Vxc )
         
         else
             # VWN

@@ -60,6 +60,7 @@ function electrons_scf!(
     evals = Ham.electrons.ebands
 
     Rhoe = Ham.rhoe
+    becsum = Ham.pspotNL.becsum
 
     diffRhoe = 0.0
 
@@ -69,9 +70,11 @@ function electrons_scf!(
 
     Vin = zeros(Float64, Npoints, Nspin)
     Rhoe_in = zeros(Float64, Npoints, Nspin)
+
     if ok_paw
         becsum_in = zeros(Float64, size(Ham.pspotNL.becsum))
         mixer_becsum = BroydenMixer(Ham.pspotNL.becsum, betamix, mixdim=8)
+        # FIXME: mixer_becsum need PAW_ddot
     end
 
     ethr = 1e-5 # default
@@ -114,9 +117,7 @@ function electrons_scf!(
         Vin .= Vhartree .+ Vxc
         deband_hwf = -sum(Vin .* Rhoe)*dVol
         if ok_paw
-            ddd_paw = Ham.pspotNL.paw.ddd_paw
-            becsum = Ham.pspotNL.becsum
-            deband_hwf -= sum(ddd_paw .* becsum)
+            deband_hwf -= sum(Ham.pspotNL.paw.ddd_paw .* becsum)
         end
         #
         if xc_calc.family == :metaGGA
@@ -171,9 +172,7 @@ function electrons_scf!(
         Vin .= Vhartree .+ Vxc
         deband = -sum(Vin .* Rhoe)*dVol # TODO: use dot instead?
         if ok_paw
-            ddd_paw = Ham.pspotNL.paw.ddd_paw
-            becsum = Ham.pspotNL.becsum
-            deband -= sum(ddd_paw .* becsum)
+            deband -= sum(Ham.pspotNL.paw.ddd_paw .* becsum)
         end
 
         #
@@ -192,23 +191,23 @@ function electrons_scf!(
         #@info "diffRhoe before mix = $(diffRhoe)"
 
         do_mix!(mixer, Rhoe, Rhoe_in, iterSCF)
-
-        #do_mix!(mixer_becsum, becsum, becsum_in, iterSCF)
+        if ok_paw
+            do_mix!(mixer_becsum, becsum, becsum_in, iterSCF)
+        end
 
         #diffRhoe = dot(Rhoe - Rhoe_in, Rhoe - Rhoe_in)
         #@info "diffRhoe after mix = $(diffRhoe)"
 
         # Check convergence here? (using diffRhoe)
 
-        #
+        # XXX Rhoe and becsum are used here
         Ehartree, Exc = update_from_rhoe!(Ham, psiks, Rhoe)
 
         descf = -sum( (Rhoe_in .- Rhoe).*(Vhartree .+ Vxc) )*dVol
         # XXX: metagga contribution is not included in descf yet !!!
         if ok_paw
-            ddd_paw = Ham.pspotNL.paw.ddd_paw
-            becsum = Ham.pspotNL.becsum
-            descf -= sum(ddd_paw .* (becsum_in - becsum))
+            descf -= sum(Ham.pspotNL.paw.ddd_paw .* (becsum_in - becsum))
+            #@info "sum diff becsum $(sum(becsum_in - becsum))"
         end
 
         Etot = Eband + deband + Ehartree + Exc + Ham.energies.NN + descf + mTS

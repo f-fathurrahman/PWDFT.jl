@@ -82,12 +82,12 @@ function atomic_rho_g(
 
     end # loop over species
 
-    #println("Some rhocg: ")
-    #for ip in 1:5
-    #    @printf("%3d %18.10f %18.10f\n", ip, real(rhocg[ip,1]), imag(rhocg[ip,1]))
-    #end
+    println("Some rhocg: ")
+    for ip in 1:5
+        @printf("%3d %18.10f %18.10f\n", ip, real(rhocg[ip,1]), imag(rhocg[ip,1]))
+    end
 
-    #println("sum abs rhocg = ", sum(abs.(rhocg)))
+    println("sum abs rhocg = ", sum(abs.(rhocg)))
 
     charge = rhocg[1,1]*CellVolume
     print("atomic_rho_g: Initial charge = ", charge)

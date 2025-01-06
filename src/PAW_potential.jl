@@ -95,8 +95,13 @@ function PAW_potential!(
 
             # Compute rho_lm from becsum
             PAW_rho_lm!(AE, ia, atoms, pspots, pspotNL, becsum, rho_lm)
-            #println("AE = ", AE)
-            #println("sum rho_lm = ", sum(rho_lm))
+            #
+            #println("\nsum becsum total = ", sum(becsum))
+            #println("sum becsum spin up = ", sum(becsum[:,:,1]))
+            #(Nspin == 2) && println("sum becsum spin dn = ", sum(becsum[:,:,2]))
+            #println("AE = $(AE) sum rho_lm total = $(sum(rho_lm))")
+            #println("AE = $(AE) sum rho_lm up = $(sum(rho_lm[:,:,1]))")
+            #(Nspin == 2) && println("AE = $(AE) sum rho_lm dn = $(sum(rho_lm[:,:,2]))")
 
             # Hartree term
             #println("\nCalling PAW_h_potential")
@@ -117,13 +122,19 @@ function PAW_potential!(
                 energy = PAW_xc_potential_LDA!( AE, ia, atoms, pspots, pspotNL, xc_calc, rho_lm, v_lm )
             end
             # FIXME: metaGGA is not yet supported
+            #println("After calling PAW_xc_potential: energy = ", energy)
+            #println("After calling PAW_xc_potential: sum v_lm up = ", sum(v_lm[:,:,1]))
+            #(Nspin == 2) && println("After calling PAW_xc_potential: sum v_lm dn = ", sum(v_lm[:,:,2]))
 
             energy_tot += sgn*energy
             e_cmp[ia,2,i_what] = sgn*energy # XC, all-electron
             # PAW_xc_func! is alias to either PAW_xc_potential! or PAW_xc_potential_GGA!
             # switch between LDA and GGA are made above
 
-            @views savedv_lm[:,:,:] .+= v_lm[:,:,:]
+            @views savedv_lm[:,:,1:Nspin] .+= v_lm[:,:,1:Nspin]
+            
+            #println("\nBefore calc ddd_paw: sum savedv_lm up = ", sum(savedv_lm[:,:,1]))
+            #(Nspin == 2) && println("Before calc ddd_paw: sum savedv_lm dn = ", sum(savedv_lm[:,:,2]))
 
             #
             # Calculate ddd_paw
@@ -137,6 +148,8 @@ function PAW_potential!(
                     # compute the density from a single pfunc
                     becfake[nmb,ia,ispin] = 1.0
                     PAW_rho_lm!(AE, ia, atoms, pspots, pspotNL, becfake, rho_lm)
+                    #println("nmb = $(nmb) sum rho_lm spin up = ", sum(rho_lm[:,:,1]))
+                    #println("nmb = $(nmb) sum rho_lm spin dn = ", sum(rho_lm[:,:,2]))
                     #
                     # Now I multiply the rho_lm and the potential, I can use
                     # rho_lm itself as workspace
@@ -154,8 +167,11 @@ function PAW_potential!(
                     becfake[nmb,ia,ispin] = 0.0
                 end
             end # Nspin
-
         end # AE, PS
+
+        #println("\nia=$(ia) sum ddd_paw up = $(sum(ddd_paw[:,ia,1]))")
+        #(Nspin == 2) && println("ia=$(ia) sum ddd_paw dn = $(sum(ddd_paw[:,ia,2]))")
+
     end # loop over all atoms
 
     return energy_tot
