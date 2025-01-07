@@ -8,6 +8,7 @@ mutable struct PAWVariables
     total_core_energy::Float64
     E_paw_cmp::Array{Float64,3}
     EHxc_paw::Float64
+    becsum::Array{Float64,3}
 end
 
 
@@ -74,10 +75,16 @@ function PAWVariables(atoms::Atoms, pspots, nhm::Int64; is_gga=false, Nspin=1)
     E_paw_cmp = zeros(Float64, Natoms, 2, 2)
     EHxc_paw = 0.0
 
+    # This becsum is different from PsPotNL_UPF.becsum
+    # It is symmetrized and mixed.
+    # Used in PAW_rho_lm
+    Nbecsum = Int64( nhm * (nhm + 1)/2 )
+    becsum = zeros(Float64, Nbecsum, Natoms, Nspin)
+
     return PAWVariables(
         lm_fact, lm_fact_x, xlm, radial_grad_style,
         paw_spheres, ddd_paw, total_core_energy,
-        E_paw_cmp, EHxc_paw
+        E_paw_cmp, EHxc_paw, becsum
     )
 
 end

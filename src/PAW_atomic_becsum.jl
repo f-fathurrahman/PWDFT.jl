@@ -49,7 +49,7 @@ function PAW_atomic_becsum!(
         @info "Using default starting magnetization = $(starting_magnetization)"
     end
 
-    becsum = pspotNL.becsum
+    becsum = pspotNL.paw.becsum # use PAW becsum
     fill!(becsum, 0.0)
   
     #!

@@ -39,7 +39,7 @@ function my_pwx(; filename=nothing, do_export_data=false)
     end
 
     #electrons_scf!(Ham, psiks, NiterMax=100, use_smearing=use_smearing, kT=kT, betamix=0.1)
-    electrons_scf_G!(Ham, psiks, NiterMax=1, use_smearing=use_smearing, kT=kT, betamix=0.1)
+    electrons_scf_G!(Ham, psiks, NiterMax=50, use_smearing=use_smearing, kT=kT, betamix=0.1)
 
     #KS_solve_SCF!(Ham, psiks, use_smearing=use_smearing, kT=kT, betamix=0.1)
     # Not yet working for smearing

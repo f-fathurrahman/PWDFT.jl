@@ -50,7 +50,9 @@ function electrons_scf_G!(
     evals = Ham.electrons.ebands
 
     Rhoe = Ham.rhoe
-    becsum = Ham.pspotNL.becsum
+    if ok_paw
+        becsum = Ham.pspotNL.paw.becsum
+    end
 
     RhoeG = _rhoeG_from_rhoe(Ham, Rhoe) # get Rhoe in G-space
     RhoeG_in = zeros(ComplexF64, Npoints, Nspin)
@@ -65,8 +67,8 @@ function electrons_scf_G!(
     Rhoe_in = zeros(Float64, Npoints, Nspin)
 
     if ok_paw
-        becsum_in = zeros(Float64, size(Ham.pspotNL.becsum))
-        mixer_becsum = BroydenMixer(Ham.pspotNL.becsum, betamix, mixdim=8)
+        becsum_in = zeros(Float64, size(Ham.pspotNL.paw.becsum))
+        mixer_becsum = BroydenMixer(Ham.pspotNL.paw.becsum, betamix, mixdim=8)
         # FIXME: mixer_becsum need PAW_ddot
     end
 
@@ -126,7 +128,7 @@ function electrons_scf_G!(
         @views RhoeG_in[:,:] .= RhoeG[:,:]
         # also becsum if using PAW
         if ok_paw
-            becsum_in[:,:,:] .= Ham.pspotNL.becsum[:,:,:]
+            becsum_in[:,:,:] .= Ham.pspotNL.paw.becsum[:,:,:]
         end
         # XXX: also KEdens_in in case of metaGGA
 
@@ -188,6 +190,7 @@ function electrons_scf_G!(
         diffRhoe = dot(Rhoe - Rhoe_in, Rhoe - Rhoe_in)
         #@info "diffRhoe before mix = $(diffRhoe)"
 
+#=
         # Test ddot
         #diffRhoeG = RhoeG_in - RhoeG
         #
@@ -204,21 +207,22 @@ function electrons_scf_G!(
         (Nspin == 2) && println("sum RhoeG tot = ", sum(RhoeG[:,1]) + sum(RhoeG[:,2]))
         (Nspin == 2) && println("sum magnG tot = ", sum(RhoeG[:,1]) - sum(RhoeG[:,2]))
         println("res rhoe_ddot(RhoeG, RhoeG) = ", rhoe_ddot(Ham.pw, RhoeG, RhoeG))
+=#
 
         do_mix!(mixer, Rhoe, Rhoe_in, iterSCF)
-        #if ok_paw
-        #    @info "Also mixing becsum"
-        #    do_mix!(mixer_becsum, becsum, becsum_in, iterSCF)
-        #end
+        if ok_paw
+            @info "Also mixing becsum"
+            do_mix!(mixer_becsum, becsum, becsum_in, iterSCF)
+        end
 
         ##
         # Linear mixing
-        #β_mix_lin = 0.1
+        #β_mix_lin = 0.5
         #Rhoe[:] .= β_mix_lin*Rhoe[:] + (1-β_mix_lin)*Rhoe_in[:]
         #if ok_paw
         #    becsum[:] .= β_mix_lin*becsum[:] + (1-β_mix_lin)*becsum_in[:]
         #end
-        ##
+        #
 
         #diffRhoe = dot(Rhoe - Rhoe_in, Rhoe - Rhoe_in)
         #@info "diffRhoe after mix = $(diffRhoe)"

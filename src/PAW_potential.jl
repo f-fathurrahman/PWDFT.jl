@@ -1,7 +1,7 @@
 function PAW_potential!(Ham::Hamiltonian)
     return PAW_potential!(
         Ham.atoms, Ham.pspots, Ham.pspotNL, Ham.xc_calc,
-        Ham.pspotNL.becsum, # XXX FIXME should be rho_bec (symmetrized and only for PAW)
+        Ham.pspotNL.paw.becsum, # XXX FIXME should be rho_bec (symmetrized and only for PAW)
         Ham.pspotNL.paw.ddd_paw,
         Ham.pspotNL.paw.E_paw_cmp
     )
