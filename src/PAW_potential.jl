@@ -1,7 +1,7 @@
 function PAW_potential!(Ham::Hamiltonian)
     return PAW_potential!(
         Ham.atoms, Ham.pspots, Ham.pspotNL, Ham.xc_calc,
-        Ham.pspotNL.becsum,
+        Ham.pspotNL.becsum, # XXX FIXME should be rho_bec (symmetrized and only for PAW)
         Ham.pspotNL.paw.ddd_paw,
         Ham.pspotNL.paw.E_paw_cmp
     )
@@ -59,7 +59,7 @@ function PAW_potential!(
     # Begin loop over all atoms
     for ia in 1:Natoms
 
-        #println("\nLoop PAW_potential: ia = ", ia)
+        println("\nLoop PAW_potential: ia = ", ia)
 
         isp = atm2species[ia]
         # Skip this atoms if it is not using PAW
@@ -96,17 +96,17 @@ function PAW_potential!(
             # Compute rho_lm from becsum
             PAW_rho_lm!(AE, ia, atoms, pspots, pspotNL, becsum, rho_lm)
             #
-            #println("\nsum becsum total = ", sum(becsum))
-            #println("sum becsum spin up = ", sum(becsum[:,:,1]))
-            #(Nspin == 2) && println("sum becsum spin dn = ", sum(becsum[:,:,2]))
-            #println("AE = $(AE) sum rho_lm total = $(sum(rho_lm))")
-            #println("AE = $(AE) sum rho_lm up = $(sum(rho_lm[:,:,1]))")
-            #(Nspin == 2) && println("AE = $(AE) sum rho_lm dn = $(sum(rho_lm[:,:,2]))")
+            println("\nsum becsum total = ", sum(becsum))
+            println("sum becsum spin up = ", sum(becsum[:,:,1]))
+            (Nspin == 2) && println("sum becsum spin dn = ", sum(becsum[:,:,2]))
+            println("AE = $(AE) sum rho_lm total = $(sum(rho_lm))")
+            println("AE = $(AE) sum rho_lm up = $(sum(rho_lm[:,:,1]))")
+            (Nspin == 2) && println("AE = $(AE) sum rho_lm dn = $(sum(rho_lm[:,:,2]))")
 
             # Hartree term
-            #println("\nCalling PAW_h_potential")
+            println("\nCalling PAW_h_potential")
             @views energy = PAW_h_potential!( ia, atoms, pspots, rho_lm, v_lm[:,:,1] )
-            #println("After calling PAW_h_potential: energy = ", energy)
+            println("After calling PAW_h_potential: energy = ", energy)
             energy_tot += sgn*energy
             e_cmp[ia,1,i_what] = sgn*energy # Hartree, all-electron
             for ispin in 1:Nspin # ... v_H has to be copied to all spin components
@@ -114,7 +114,7 @@ function PAW_potential!(
             end
 
             # XC term
-            #println("\nCalling PAW_xc_potential")
+            println("\nCalling PAW_xc_potential")
             if xc_calc.family == :GGA
                 energy = PAW_xc_potential_GGA!( AE, ia, atoms, pspots, pspotNL, xc_calc, rho_lm, v_lm )
             else
@@ -122,9 +122,9 @@ function PAW_potential!(
                 energy = PAW_xc_potential_LDA!( AE, ia, atoms, pspots, pspotNL, xc_calc, rho_lm, v_lm )
             end
             # FIXME: metaGGA is not yet supported
-            #println("After calling PAW_xc_potential: energy = ", energy)
-            #println("After calling PAW_xc_potential: sum v_lm up = ", sum(v_lm[:,:,1]))
-            #(Nspin == 2) && println("After calling PAW_xc_potential: sum v_lm dn = ", sum(v_lm[:,:,2]))
+            println("After calling PAW_xc_potential: energy = ", energy)
+            println("After calling PAW_xc_potential: sum v_lm up = ", sum(v_lm[:,:,1]))
+            (Nspin == 2) && println("After calling PAW_xc_potential: sum v_lm dn = ", sum(v_lm[:,:,2]))
 
             energy_tot += sgn*energy
             e_cmp[ia,2,i_what] = sgn*energy # XC, all-electron
@@ -133,8 +133,8 @@ function PAW_potential!(
 
             @views savedv_lm[:,:,1:Nspin] .+= v_lm[:,:,1:Nspin]
             
-            #println("\nBefore calc ddd_paw: sum savedv_lm up = ", sum(savedv_lm[:,:,1]))
-            #(Nspin == 2) && println("Before calc ddd_paw: sum savedv_lm dn = ", sum(savedv_lm[:,:,2]))
+            println("\nBefore calc ddd_paw: sum savedv_lm up = ", sum(savedv_lm[:,:,1]))
+            (Nspin == 2) && println("Before calc ddd_paw: sum savedv_lm dn = ", sum(savedv_lm[:,:,2]))
 
             #
             # Calculate ddd_paw
@@ -169,8 +169,8 @@ function PAW_potential!(
             end # Nspin
         end # AE, PS
 
-        #println("\nia=$(ia) sum ddd_paw up = $(sum(ddd_paw[:,ia,1]))")
-        #(Nspin == 2) && println("ia=$(ia) sum ddd_paw dn = $(sum(ddd_paw[:,ia,2]))")
+        println("\nia=$(ia) sum ddd_paw up = $(sum(ddd_paw[:,ia,1]))")
+        (Nspin == 2) && println("ia=$(ia) sum ddd_paw dn = $(sum(ddd_paw[:,ia,2]))")
 
     end # loop over all atoms
 

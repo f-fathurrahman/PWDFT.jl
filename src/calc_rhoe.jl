@@ -103,15 +103,15 @@ function calc_rhoe!(
             _add_becsum!(ik, ispin, Ham, psiks, becsum)
         end
         # Only symmetrize if using PAW
-        #println("calc_rhoe_uspp: sum becsum before symmetrize = ", sum(becsum))
+        println("calc_rhoe_uspp: sum becsum before symmetrize = ", sum(becsum))
         if ok_paw
             PAW_symmetrize!(Ham, becsum)
         end
-        #println("calc_rhoe_uspp: sum becsum after symmetrize = ", sum(becsum))
+        println("calc_rhoe: sum becsum after symmetrize = ", sum(becsum))
         _add_usdens!(Ham, becsum, Rhoe) # using real space
     end
 
-    #println("calc_rhoe: integ Rhoe after adding becsum = ", sum(Rhoe)*dVol)
+    println("calc_rhoe: integ Rhoe after adding becsum = ", sum(Rhoe)*dVol)
 
     # renormalize
     #if renormalize
