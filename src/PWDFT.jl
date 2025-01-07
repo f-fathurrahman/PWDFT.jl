@@ -396,6 +396,7 @@ export atomic_rho_g
 export update_from_rhoe!
 export op_S, op_S!
 
+include("electrons_scf_G.jl")
 
 include("calc_forces_NN.jl")
 export calc_forces_NN, calc_forces_NN!

@@ -1,16 +1,6 @@
-# FIXME: To be included in the main package file
-include("atomic_rho_g.jl")
-include("dense_to_smooth.jl")
-include("smooth_to_dense.jl")
-include("update_from_rhoe.jl")
-include("newd.jl")
-include("op_S.jl")
-include("ortho_with_S.jl")
-include("diag_davidson_qe_v2.jl")
-
-# An implementation of electrons_scf subroutine in PWSCF
-# Total energy is calculated using double-counting formula
-function electrons_scf!(
+# Debug version
+# Similar to electrons_scf, but mixing is done in G-space
+function electrons_scf_G!(
     Ham::Hamiltonian, psiks;
     NiterMax=150,
     betamix=0.5,
@@ -227,7 +217,7 @@ function electrons_scf!(
     
         #
         diffEtot = abs(Etot - Etot_old)
-        @printf("SCF: %5d  %18.10f  %12.5e  %12.5e\n", iterSCF, Etot, diffEtot, diffRhoe)
+        @printf("SCF_G: %5d  %18.10f  %12.5e  %12.5e\n", iterSCF, Etot, diffEtot, diffRhoe)
         if Nspin == 2
             println("integ magn = ", sum(Rhoe[:,1] - Rhoe[:,2])*dVol)
         end
@@ -237,7 +227,7 @@ function electrons_scf!(
             Nconv = 0
         end
         if Nconv >= 2
-            @printf("SCF: Total energy is converged in %d iterations\n", iterSCF)
+            @printf("SCF_G: Total energy is converged in %d iterations\n", iterSCF)
             is_converged = true
             break
         end
@@ -304,51 +294,4 @@ function electrons_scf!(
     return
 end
 
-
-# Initialize Rhoe, potentials
-function _prepare_scf!(Ham, psiks; starting_magnetization=nothing)
-    # Initial density
-    Rhoe, _ = atomic_rho_g(Ham, starting_magnetization=starting_magnetization)
-    # Also initialize becsum in case of PAW
-    if any(Ham.pspotNL.are_paw)
-        PAW_atomic_becsum!(Ham, starting_magnetization=starting_magnetization)
-    end
-
-    # Set rhoe
-    Ham.rhoe[:,:] = Rhoe[:,:]
-
-    # Update the potentials
-    Ehartree, Exc = update_from_rhoe!( Ham, psiks, Rhoe )
-
-    return Ehartree, Exc
-end
-
-
-function _calc_Eband(wk, Focc, evals)
-    Nstates = size(evals, 1)
-    Nkspin = size(evals, 2)
-    Nkpt = size(wk, 1)
-    Nspin = Int64(Nkspin/Nkpt)
-    Eband = 0.0
-    for ispin in 1:Nspin, ik in 1:Nkpt
-        ikspin = ik + (ispin - 1)*Nkpt
-        for ist in 1:Nstates
-            Eband += wk[ik]*Focc[ist,ikspin]*evals[ist,ikspin]
-        end
-    end
-    return Eband
-end
-
-# determine convergence criteria for diagonalization
-function _calc_diag_ethr_conv(iterSCF, ethr_current, ethr_evals_last)
-    if iterSCF == 1
-        ethr = 0.1
-    elseif iterSCF == 2
-        ethr = 0.01
-    else
-        ethr = ethr_current/5.0
-        ethr = max( ethr, ethr_evals_last )
-    end
-    return ethr
-end
 

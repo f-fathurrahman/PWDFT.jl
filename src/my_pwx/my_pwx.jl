@@ -38,7 +38,9 @@ function my_pwx(; filename=nothing, do_export_data=false)
         kT = pwinput.degauss*0.5 # convert from Ry to Ha
     end
 
-    electrons_scf!(Ham, psiks, NiterMax=100, use_smearing=use_smearing, kT=kT, betamix=0.1)
+    #electrons_scf!(Ham, psiks, NiterMax=100, use_smearing=use_smearing, kT=kT, betamix=0.1)
+    electrons_scf_G!(Ham, psiks, NiterMax=1, use_smearing=use_smearing, kT=kT, betamix=0.1)
+
     #KS_solve_SCF!(Ham, psiks, use_smearing=use_smearing, kT=kT, betamix=0.1)
     # Not yet working for smearing
     #KS_solve_Emin_PCG!(Ham, psiks, NiterMax=100)
