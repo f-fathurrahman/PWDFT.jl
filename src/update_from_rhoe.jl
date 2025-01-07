@@ -5,24 +5,32 @@ function update_from_rhoe!(Ham, psiks::BlochWavefunc, Rhoe)
     return update_from_rhoe!(Ham, psiks, Rhoe, RhoeG)
 end
 
+function _rhoeG_from_rhoe(Ham, Rhoe)
+    Nspin = size(Rhoe, 2)
+    Npoints = size(Rhoe, 1)
+    RhoeG = zeros(ComplexF64, Npoints, Nspin)
+    _rhoeG_from_rhoe!(Ham, Rhoe, RhoeG)
+    return RhoeG
+end
+
 # Calculate reciprocal space representation of Rhoe
 # This simply calls R_to_G!
-function _rhoeG_from_rhoe(Ham, Rhoe)
-    Nspin = size(Rhoe,2)
-    Npoints = size(Rhoe,1)
-    RhoeG = zeros(ComplexF64, Npoints, Nspin)
+# Note that RhoeG is already in FFT grid (not array in G-space)
+function _rhoeG_from_rhoe!(Ham, Rhoe, RhoeG)
+    Nspin = size(Rhoe, 2)
+    Npoints = size(Rhoe, 1)
     ctmp = zeros(ComplexF64, Npoints)
     for ispin in 1:Nspin
         ctmp[:] .= Rhoe[:,ispin]
         #
-        R_to_G!(Ham.pw, ctmp) # FIXME: add method
+        R_to_G!(Ham.pw, ctmp)
         RhoeG[:,ispin] = ctmp[:]/Npoints
     end
     # Need to be careful about the normalization
     # Check the charge in G-space
     #charge = RhoeG[1,1]*Ham.pw.CellVolume
     # println("Check charge from RhoeG: ", charge)    
-    return RhoeG
+    return
 end
 
 
