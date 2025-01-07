@@ -52,6 +52,9 @@ function electrons_scf_G!(
     Rhoe = Ham.rhoe
     becsum = Ham.pspotNL.becsum
 
+    RhoeG = _rhoeG_from_rhoe(Ham, Rhoe) # get Rhoe in G-space
+    RhoeG_in = zeros(ComplexF64, Npoints, Nspin)
+
     diffRhoe = 0.0
 
     # Mix directly in R-space
@@ -116,8 +119,11 @@ function electrons_scf_G!(
             deband_hwf -= sum(xc_calc.Vtau .* KEdens[:,1])*dVol
         end
 
-        # Copy input rhoe
+        #
+        # Copy input Rhoe and RhoeG
+        #
         @views Rhoe_in[:,:] .= Rhoe[:,:] # need views here?
+        @views RhoeG_in[:,:] .= RhoeG[:,:]
         # also becsum if using PAW
         if ok_paw
             becsum_in[:,:,:] .= Ham.pspotNL.becsum[:,:,:]
@@ -144,7 +150,9 @@ function electrons_scf_G!(
         # Calculate electron density and band energy
         #
         Eband = _calc_Eband(wk, Focc, evals)
+        #
         calc_rhoe!( Ham, psiks, Rhoe )
+        _rhoeG_from_rhoe!(Ham, Rhoe, RhoeG) # also RhoeG new
         # In case of PAW becsum is also calculated/updated here
 
         #println("integ Rhoe = ", sum(Rhoe)*dVol)
@@ -179,6 +187,25 @@ function electrons_scf_G!(
         #diffRhoe = norm(Rhoe - Rhoe_in)
         diffRhoe = dot(Rhoe - Rhoe_in, Rhoe - Rhoe_in)
         #@info "diffRhoe before mix = $(diffRhoe)"
+
+        # Test ddot
+        diffRhoeG = RhoeG_in - RhoeG
+        #
+        res = rhoe_ddot( Ham.pw, diffRhoeG, diffRhoeG )
+        println("\nres rhoe_ddot diffRhoeG = ", res)
+        #
+        println("\nsum RhoeG up = ", sum(RhoeG[:,1]))
+        (Nspin == 2) && println("sum RhoeG dn = ", sum(RhoeG[:,2]))
+        (Nspin == 2) && println("sum RhoeG tot = ", sum(RhoeG[:,1]) + sum(RhoeG[:,2]))
+        (Nspin == 2) && println("sum magnG tot = ", sum(RhoeG[:,1]) - sum(RhoeG[:,2]))
+        println("res rhoe_ddot(RhoeG, RhoeG) = ", rhoe_ddot(Ham.pw, RhoeG, RhoeG))
+        #
+        println("\nsum RhoeG_in up = ", sum(RhoeG_in[:,1]))
+        (Nspin == 2) && println("sum RhoeG_in dn = ", sum(RhoeG_in[:,2]))
+        (Nspin == 2) && println("sum RhoeG_in tot = ", sum(RhoeG_in[:,1]) + sum(RhoeG_in[:,2]))
+        (Nspin == 2) && println("sum magnG_in tot = ", sum(RhoeG_in[:,1]) - sum(RhoeG_in[:,2]))
+        #
+        println("res rhoe_ddot(RhoeG_in, RhoeG_in) = ", rhoe_ddot(Ham.pw, RhoeG_in, RhoeG_in))
 
         do_mix!(mixer, Rhoe, Rhoe_in, iterSCF)
         #if ok_paw

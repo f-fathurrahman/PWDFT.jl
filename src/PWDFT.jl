@@ -389,6 +389,7 @@ export chebyfilt,
 include("read_psiks.jl")
 export read_psiks
 
+include("rhoe_ddot.jl")
 
 include("electrons_scf.jl")
 export electrons_scf!
