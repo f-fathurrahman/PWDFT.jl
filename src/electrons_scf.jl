@@ -27,7 +27,7 @@ function electrons_scf!(
     # Also calculate some energy terms
     # We don't use Ham.energies to save these terms
     if (startingrhoe == :gaussian) && !restart
-        Ehartree, Exc = _prepare_scf!(Ham, psiks, starting_magnetization=[0.5])
+        Ehartree, Exc = _prepare_scf!(Ham, psiks)
     elseif (startingrhoe == :none) || restart
         Ehartree = Ham.energies.Hartree
         Exc = Ham.energies.XC
@@ -195,13 +195,14 @@ function electrons_scf!(
             do_mix!(mixer_becsum, becsum, becsum_in, iterSCF)
         end
 
-        #=
+        ##
         # Linear mixing
-        Rhoe[:] .= 0.5*Rhoe[:] + 0.5*Rhoe_in[:]
-        if ok_paw
-            becsum[:] .= 0.5*becsum[:] + 0.5*becsum_in[:]
-        end
-        =#
+        #β_mix_lin = 0.1
+        #Rhoe[:] .= β_mix_lin*Rhoe[:] + (1-β_mix_lin)*Rhoe_in[:]
+        #if ok_paw
+        #    becsum[:] .= β_mix_lin*becsum[:] + (1-β_mix_lin)*becsum_in[:]
+        #end
+        ##
 
         #diffRhoe = dot(Rhoe - Rhoe_in, Rhoe - Rhoe_in)
         #@info "diffRhoe after mix = $(diffRhoe)"
@@ -226,6 +227,9 @@ function electrons_scf!(
         #
         diffEtot = abs(Etot - Etot_old)
         @printf("SCF: %5d  %18.10f  %12.5e  %12.5e\n", iterSCF, Etot, diffEtot, diffRhoe)
+        if Nspin == 2
+            println("integ magn = ", sum(Rhoe[:,1] - Rhoe[:,2])*dVol)
+        end
         if diffEtot <= etot_conv_thr
             Nconv = Nconv + 1
         else
