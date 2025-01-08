@@ -174,7 +174,7 @@ function calc_newDeeq!( Ham )
 
     # Add PAW component
     if ok_paw
-        println("\nAdding ddd_paw to Deeq")
+        #println("\nAdding ddd_paw to Deeq")
         ddd_paw = Ham.pspotNL.paw.ddd_paw
         for ia in 1:Natoms
             isp = atm2species[ia]
@@ -190,7 +190,7 @@ function calc_newDeeq!( Ham )
                 end
             end
         end
-        println("sum Deeq after PAW contrib if any: ", sum(Deeq))
+        #println("sum Deeq after PAW contrib if any: ", sum(Deeq))
     end
 
     return

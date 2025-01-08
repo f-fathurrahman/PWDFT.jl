@@ -193,31 +193,12 @@ function electrons_scf_G!(
         diffRhoe = dot(Rhoe - Rhoe_in, Rhoe - Rhoe_in)
         #@info "diffRhoe before mix = $(diffRhoe)"
 
-#=
-        # Test ddot
-        #diffRhoeG = RhoeG_in - RhoeG
-        #
-        #res = rhoe_ddot( Ham.pw, diffRhoeG, diffRhoeG )
-        #println("\nres rhoe_ddot diffRhoeG = ", res)
-        println("\nsum RhoeG_in up = ", sum(RhoeG_in[:,1]))
-        (Nspin == 2) && println("sum RhoeG_in dn = ", sum(RhoeG_in[:,2]))
-        (Nspin == 2) && println("sum RhoeG_in tot = ", sum(RhoeG_in[:,1]) + sum(RhoeG_in[:,2]))
-        (Nspin == 2) && println("sum magnG_in tot = ", sum(RhoeG_in[:,1]) - sum(RhoeG_in[:,2]))
-        println("res rhoe_ddot(RhoeG_in, RhoeG_in) = ", rhoe_ddot(Ham.pw, RhoeG_in, RhoeG_in))
-        #
-        println("\nsum RhoeG up = ", sum(RhoeG[:,1]))
-        (Nspin == 2) && println("sum RhoeG dn = ", sum(RhoeG[:,2]))
-        (Nspin == 2) && println("sum RhoeG tot = ", sum(RhoeG[:,1]) + sum(RhoeG[:,2]))
-        (Nspin == 2) && println("sum magnG tot = ", sum(RhoeG[:,1]) - sum(RhoeG[:,2]))
-        println("res rhoe_ddot(RhoeG, RhoeG) = ", rhoe_ddot(Ham.pw, RhoeG, RhoeG))
-=#
-
         if ok_paw
-            @info "becsum before mix = $(sum(becsum))"
+            #@info "becsum before mix = $(sum(becsum))"
             do_mix!(mixer, Ham.pw, RhoeG, RhoeG_in, iterSCF,
                 bec_in=becsum, bec_out=becsum_in)
             # is becsum updated here?
-            @info "becsum after mix = $(sum(becsum))"
+            #@info "becsum after mix = $(sum(becsum))"
         else
             do_mix!(mixer, Ham.pw, RhoeG, RhoeG_in, iterSCF)
         end
