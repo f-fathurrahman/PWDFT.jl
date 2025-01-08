@@ -97,9 +97,9 @@ function update_from_rhoe!(Ham, psiks, Rhoe, RhoeG)
         # Possibly alongside Rhoe calculation
         #println("update_from_rhoe: sum becsum before PAW_potential = ", sum(Ham.pspotNL.becsum))
         EHxc_paw = PAW_potential!( Ham )
-        println("update_from_rhoe: EHxc_paw = ", EHxc_paw)
-        println("update_from_rhoe: sum ddd_paw = ", sum(Ham.pspotNL.paw.ddd_paw))
-        println("update_from_rhoe: sum becsum after PAW_potential = ", sum(Ham.pspotNL.becsum))
+        #println("update_from_rhoe: EHxc_paw = ", EHxc_paw)
+        #println("update_from_rhoe: sum ddd_paw = ", sum(Ham.pspotNL.paw.ddd_paw))
+        #println("update_from_rhoe: sum becsum after PAW_potential = ", sum(Ham.pspotNL.becsum))
         # EHxc_paw is currently not returned
         # We set is here
         Ham.pspotNL.paw.EHxc_paw = EHxc_paw

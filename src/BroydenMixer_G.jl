@@ -53,8 +53,10 @@ function do_mix!(
         mixer.betamix,
         iterSCF, mixer.mixdim,
         mixer.df, mixer.dv,
-        bec_in=bec_in, bec_out_=bec_out,
-        df_bec=mixer.df_bec, dv_bec=mixer.dv_bec
+        bec_in=bec_in,
+        bec_out_=bec_out,
+        df_bec=mixer.df_bec,
+        dv_bec=mixer.dv_bec
     )
     return
 end
@@ -146,7 +148,7 @@ function _do_mix_broyden_G!(
             beta[i,j] = rhoe_ddot(pw, df[j], df[i])
             beta[j,i] = beta[i,j]
         end
-        beta[i,i] = 1.0
+        beta[i,i] = 1.01
     end
 
     println("\nbeta matrix before inverse")
