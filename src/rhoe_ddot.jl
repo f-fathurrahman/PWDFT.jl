@@ -10,7 +10,7 @@ function rhoe_ddot( pw, rho1, rho2 )
         Ngf = pw.gvec.Ng
     end
 
-    @info "rhoe_ddot: Ngf = $(Ngf)"
+    #@info "rhoe_ddot: Ngf = $(Ngf)"
 
     fac = 4π
 
@@ -30,8 +30,8 @@ function rhoe_ddot( pw, rho1, rho2 )
         ρ2 = rho2[:,1]
     end
 
-    @info "rhoe_ddot: sum ρ1 = $(_sum_until_Ngf(pw, ρ1))"
-    @info "rhoe_ddot: sum ρ2 = $(_sum_until_Ngf(pw, ρ2))"
+    #@info "rhoe_ddot: sum ρ1 = $(_sum_until_Ngf(pw, ρ1))"
+    #@info "rhoe_ddot: sum ρ2 = $(_sum_until_Ngf(pw, ρ2))"
     
     res = 0.0
     for ig in 2:Ngf
@@ -39,24 +39,25 @@ function rhoe_ddot( pw, rho1, rho2 )
         res += real( conj(ρ1[ip,1]) * ρ2[ip,1] ) / G2[ig]
     end
     res *= fac
-    println("res in rhoe_ddot after total rhoe = ", res)
+    #println("res in rhoe_ddot after total rhoe = ", res)
 
     # This is the magnetization?
     if Nspin == 2
         μ1 = rho1[:,1] - rho1[:,2]
         μ2 = rho2[:,1] - rho2[:,2]
-        @info "rhoe_ddot: sum μ1 = $(_sum_until_Ngf(pw, μ1))"
-        @info "rhoe_ddot: sum μ2 = $(_sum_until_Ngf(pw, μ2))"
+        #@info "rhoe_ddot: sum μ1 = $(_sum_until_Ngf(pw, μ1))"
+        #@info "rhoe_ddot: sum μ2 = $(_sum_until_Ngf(pw, μ2))"
         #ip = 1 # ig = 1
+        #@info "μ1[1] = $(μ1[1])"
         res += fac*real( conj(μ1[1]) * μ2[1] ) # why?
-        @info "res line 52 = $(res)"
+        #@info "res line 52 = $(res)"
         for ig in 2:Ngf
             ip = idx_g2r[ig]
             res += fac*real( conj(μ1[ip]) * μ2[ip] )
         end
-        @info "res line 57 = $(res)"
+        #@info "res line 57 = $(res)"
     end
-    println("res in rhoe_ddot after magn = ", 0.5 * res * pw.CellVolume)
+    #println("res in rhoe_ddot after magn = ", 0.5 * res * pw.CellVolume)
     return 0.5 * res * pw.CellVolume # XXX need factor of 1/2 ?
 end
 

@@ -345,6 +345,8 @@ include("BroydenMixer.jl")
 export do_mix!,
        BroydenMixer
 
+include("BroydenMixer_G.jl")
+export BroydenMixer_G
 
 
 include("gen_wavefunc.jl")

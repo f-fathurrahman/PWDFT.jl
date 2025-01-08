@@ -34,6 +34,20 @@ function _rhoeG_from_rhoe!(Ham, Rhoe, RhoeG)
 end
 
 
+function _rhoe_from_rhoeG!(Ham, RhoeG, Rhoe)
+    Nspin = size(Rhoe, 2)
+    Npoints = size(Rhoe, 1)
+    ctmp = zeros(ComplexF64, Npoints)
+    for ispin in 1:Nspin
+        ctmp[:] .= RhoeG[:,ispin]
+        #
+        G_to_R!(Ham.pw, ctmp)
+        @views Rhoe[:,ispin] .= real(ctmp[:])*Npoints  # !!!! check this
+    end
+    return
+end
+
+
 # Can be used for metaGGA (if psiks is not nothing)
 # FIXME: Think of better API for this
 # Probably by setting psiks as optional argument

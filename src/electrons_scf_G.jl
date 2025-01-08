@@ -60,16 +60,19 @@ function electrons_scf_G!(
     diffRhoe = 0.0
 
     # Mix directly in R-space
-    mixer = BroydenMixer(Rhoe, betamix, mixdim=8)
+    #mixer = BroydenMixer(Rhoe, betamix, mixdim=8)
     #mixer = AdaptiveLinearMixer(Rhoe, 0.1, betamax=0.5) # not working
+
 
     Vin = zeros(Float64, Npoints, Nspin)
     Rhoe_in = zeros(Float64, Npoints, Nspin)
 
     if ok_paw
         becsum_in = zeros(Float64, size(Ham.pspotNL.paw.becsum))
-        mixer_becsum = BroydenMixer(Ham.pspotNL.paw.becsum, betamix, mixdim=8)
-        # FIXME: mixer_becsum need PAW_ddot
+        mixer = BroydenMixer_G(RhoeG, becsum, betamix, mixdim=8)
+    else
+        # Try mix in G-space
+        mixer = BroydenMixer_G(RhoeG, betamix, mixdim=8)
     end
 
     ethr = 1e-5 # default
@@ -209,11 +212,14 @@ function electrons_scf_G!(
         println("res rhoe_ddot(RhoeG, RhoeG) = ", rhoe_ddot(Ham.pw, RhoeG, RhoeG))
 =#
 
-        do_mix!(mixer, Rhoe, Rhoe_in, iterSCF)
         if ok_paw
-            @info "Also mixing becsum"
-            do_mix!(mixer_becsum, becsum, becsum_in, iterSCF)
+            do_mix!(mixer, Ham.pw, RhoeG, RhoeG_in, iterSCF,
+                bec_in=becsum, bec_out=becsum_in)
+        else
+            do_mix!(mixer, Ham.pw, RhoeG, RhoeG_in, iterSCF)
         end
+        _rhoe_from_rhoeG!(Ham, RhoeG, Rhoe)
+        println("integ Rhoe after mixing = ", sum(Rhoe)*dVol)
 
         ##
         # Linear mixing
