@@ -194,25 +194,26 @@ function electrons_scf_G!(
         #@info "diffRhoe before mix = $(diffRhoe)"
 
         if ok_paw
-            #@info "becsum before mix = $(sum(becsum))"
+            @info "becsum before mix = $(sum(becsum))"
             do_mix!(mixer, Ham.pw, RhoeG, RhoeG_in, iterSCF,
                 bec_in=becsum, bec_out=becsum_in)
             # is becsum updated here?
-            #@info "becsum after mix = $(sum(becsum))"
+            @info "becsum after mix = $(sum(becsum))"
         else
             do_mix!(mixer, Ham.pw, RhoeG, RhoeG_in, iterSCF)
         end
         _rhoe_from_rhoeG!(Ham, RhoeG, Rhoe)
-        println("integ Rhoe after mixing = ", sum(Rhoe)*dVol)
         
+
         ##
         # Linear mixing
-        #β_mix_lin = 0.5
+        #print("Using linear mix ")
+        #β_mix_lin = 0.1
         #Rhoe[:] .= β_mix_lin*Rhoe[:] + (1-β_mix_lin)*Rhoe_in[:]
-        #if ok_paw
-        #    becsum[:] .= β_mix_lin*becsum[:] + (1-β_mix_lin)*becsum_in[:]
-        #end
-        
+        ##if ok_paw
+        ##    becsum[:] .= β_mix_lin*becsum[:] + (1-β_mix_lin)*becsum_in[:]
+        ##end
+        #println("integ Rhoe after mixing = ", sum(Rhoe)*dVol)
 
         #diffRhoe = dot(Rhoe - Rhoe_in, Rhoe - Rhoe_in)
         #@info "diffRhoe after mix = $(diffRhoe)"

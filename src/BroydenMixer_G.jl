@@ -7,6 +7,43 @@ mutable struct BroydenMixer_G
     dv_bec::Union{Nothing,Vector{Array{Float64}}}
 end
 
+function _convert_to_rhoe_tot_magn!( Rhoe )
+    Nspin = size(Rhoe, 2)
+    @assert Nspin == 2
+    Npoints = size(Rhoe, 1)
+    Rhoe_tmp = copy(Rhoe)
+    for ip in 1:Npoints
+        Rhoe[ip,1] = Rhoe_tmp[ip,1] + Rhoe_tmp[ip,2]
+        Rhoe[ip,2] = Rhoe_tmp[ip,1] - Rhoe_tmp[ip,2] 
+    end
+    return
+end
+
+#=
+Convert to Rhoe_up and Rhoedn    
+
+Rhoe_tot = Rhoe_up + Rhoe_dn   (A)
+magn     = Rhoe_up - Rhoe_dn   (B)
+
+Sum: (A) + (B)
+Rhoe_tot + magn = 2*Rhoe_up -> Rhoe_up = 0.5*( Rhoe_tot + magn )
+
+Diff: (A) - (B)
+Rhoe_tot - magn = 2*Rhoe_dn -> Rhoe_dn = 0.5*( Rhoe_tot - magn )
+=#
+
+function _convert_to_rhoe_up_dn!( Rhoe )
+    Nspin = size(Rhoe, 2)
+    @assert Nspin == 2
+    Npoints = size(Rhoe, 1)
+    Rhoe_tmp = copy(Rhoe)
+    for ip in 1:Npoints
+        Rhoe[ip,1] = 0.5*(Rhoe_tmp[ip,1] + Rhoe_tmp[ip,2])
+        Rhoe[ip,2] = 0.5*(Rhoe_tmp[ip,1] - Rhoe_tmp[ip,2])
+    end
+    return
+end
+
 
 function BroydenMixer_G(Rhoe::Matrix{ComplexF64}, betamix; mixdim=8)
     df = Vector{Matrix{ComplexF64}}(undef, mixdim)
@@ -77,6 +114,16 @@ function _do_mix_broyden_G!(
     bec_in=nothing, bec_out_=nothing,
     df_bec=nothing, dv_bec=nothing
 )
+
+    # Convert to Tot and magn
+    Nspin = size(deltain, 2)
+    if Nspin == 2
+        _convert_to_rhoe_tot_magn!( deltain )
+        _convert_to_rhoe_tot_magn!( deltaout_ )
+        @info "Check total charge (G-space) = $(deltain[1,1]*pw.CellVolume)"
+        @info "Check magn (G-space) = $(deltain[1,2]*pw.CellVolume)"
+    end
+
     # df(ndim,n_iter)
     # dv(ndim,n_iter)
 
@@ -115,10 +162,13 @@ function _do_mix_broyden_G!(
         ip = idx_g2r[ig]
         deltaout[ip,:] = deltaout[ip,:] - deltain[ip,:]
     end
-    #@printf("iter = %4d, norm diff Rhoe (deltaout) = %15.10e\n", iter, norm(deltaout))
+    @printf("mix rhoe = %4d, norm diff deltaout[:,1] = %15.10e\n", iter, norm(deltaout[:,1]))
+    (Nspin == 2) && @printf("mix rhoe = %4d, norm diff deltaout[:,2] = %15.10e\n", iter, norm(deltaout[:,2]))
 
     if !isnothing(bec_in)
         bec_out[:] = bec_out[:] - bec_in[:]
+        @printf("mix rhoe = %4d, norm diff bec_out[:,:,1] = %15.10e\n", iter, norm(bec_out[:,:,1]))
+        (Nspin == 2) && @printf("mix rhoe = %4d, norm diff bec_out[:,:,2] = %15.10e\n", iter, norm(bec_out[:,:,2]))    
     end
 
     if iter > 1
@@ -157,8 +207,8 @@ function _do_mix_broyden_G!(
     beta_inv = inv(beta[1:iter_used,1:iter_used])
     @views beta[1:iter_used,1:iter_used] = beta_inv[:,:]
     
-    #println("\nbeta matrix after inverse")
-    #display(beta[1:iter_used,1:iter_used]); println()
+    println("\nbeta matrix after inverse")
+    display(beta[1:iter_used,1:iter_used]); println()
 
     work = zeros(Float64, iter_used)
     for i in 1:iter_used
@@ -178,6 +228,7 @@ function _do_mix_broyden_G!(
         for j in 1:iter_used
             gammamix = gammamix + beta[j,i] * work[j]
         end
+        @info "gammamix = $(gammamix)" # can be negative?
         for ig in 1:Ngf
             ip = idx_g2r[ig]
             deltain[ip,:] = deltain[ip,:] - gammamix*( alphamix*df[i][ip,:] + dv[i][ip,:] )
@@ -207,6 +258,12 @@ function _do_mix_broyden_G!(
     if !isnothing(bec_in)
         df_bec[inext][:] = bec_out[:]
         dv_bec[inext][:] = bec_in_save[:]
+    end
+
+    # Convert back to up,dn
+    if Nspin == 2
+        _convert_to_rhoe_up_dn!( deltain )
+        _convert_to_rhoe_up_dn!( deltaout_ )
     end
 
     return

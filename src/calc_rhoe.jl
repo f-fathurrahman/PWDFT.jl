@@ -106,15 +106,14 @@ function calc_rhoe!(
         if ok_paw
             paw_becsum = Ham.pspotNL.paw.becsum
             paw_becsum[:,:,:] = becsum[:,:,:]
-            println("calc_rhoe: sum paw_becsum before symmetrize = ", sum(paw_becsum))
             PAW_symmetrize!(Ham, paw_becsum)
-            println("calc_rhoe: sum paw_becsum after symmetrize = ", sum(paw_becsum))
+            #becsum[:,:,:] = paw_becsum[:,:,:] # also use symmetrized becsum for density
         end
-        println("calc_rhoe: sum original becsum ", sum(becsum))
+        #println("calc_rhoe: sum original becsum ", sum(becsum))
         _add_usdens!(Ham, becsum, Rhoe) # using real space
     end
 
-    println("calc_rhoe: integ Rhoe after adding becsum = ", sum(Rhoe)*dVol)
+    @info "calc_rhoe: integ Rhoe after adding becsum = $(sum(Rhoe)*dVol)"
 
     # renormalize
     #if renormalize
