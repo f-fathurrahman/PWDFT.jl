@@ -110,6 +110,10 @@ function electrons_scf_G!(
     @printf("----------------------------------------------------------\n")
 
     for iterSCF in 1:NiterMax
+
+        println("")
+        println("Begin iterSCF = ", iterSCF)
+        println("--------------------------")
         
         # Save input/old potential
         Vin .= Vhartree .+ Vxc
@@ -213,7 +217,8 @@ function electrons_scf_G!(
         ##if ok_paw
         ##    becsum[:] .= β_mix_lin*becsum[:] + (1-β_mix_lin)*becsum_in[:]
         ##end
-        #println("integ Rhoe after mixing = ", sum(Rhoe)*dVol)
+        
+        @info "integ Rhoe after mixing = $(sum(Rhoe)*dVol)"
 
         #diffRhoe = dot(Rhoe - Rhoe_in, Rhoe - Rhoe_in)
         #@info "diffRhoe after mix = $(diffRhoe)"

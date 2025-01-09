@@ -82,11 +82,12 @@ function do_mix!(
     deltain, deltaout_,
     iterSCF::Int64;
     bec_in=nothing, bec_out=nothing
-)   
+)
+    # XXX: alphamix -> mixer.betamix for now
     _do_mix_broyden_G!(
         pw,
         deltain, deltaout_,
-        mixer.betamix,  # formal parameter name is alphamix
+        mixer.betamix,
         iterSCF, mixer.mixdim,
         mixer.df, mixer.dv,
         bec_in=bec_in,
@@ -98,11 +99,17 @@ function do_mix!(
 end
 
 
+#
+# Adapted from PWSCF/Yambo
+#
+# XXX: rename variable alphamix to betamix?
+# OUTPUT: deltain
+# deltaout_ will not be modified
 function _do_mix_broyden_G!(
     pw,
     deltain, deltaout_,
     alphamix::Float64,
-    iterSCF::Int64, n_iter::Int64,
+    iter::Int64, n_iter::Int64,
     df, dv;
     bec_in=nothing, bec_out_=nothing,
     df_bec=nothing, dv_bec=nothing
@@ -126,11 +133,24 @@ function _do_mix_broyden_G!(
         bec_out = copy(bec_out_)
     end
 
+    maxter = n_iter  # FIXME: should be checked against calling functions
+
     deltainsave = copy(deltain)
     if !isnothing(bec_in)
         bec_in_save = copy(bec_in)
     end
+    #
+    # iter_used = iter-1  IF iter <= n_iter
+    # iter_used = n_iter  IF iter >  n_iter
+    #
+    iter_used = min(iter-1, n_iter)
+    #
+    # ipos is the position in which results from the present iteraction
+    # are stored. ipos=iter-1 until ipos=n_iter, THEN back to 1,2,...
+    #
+    ipos = iter - 1 - floor(Int64, (iter-2)/n_iter)*n_iter
 
+    #println("mix_broyden: ipos = ", ipos)
     if pw.using_dual_grid
         Ngf = pw.gvecs.Ng
     else
@@ -138,108 +158,84 @@ function _do_mix_broyden_G!(
     end
     idx_g2r = pw.gvec.idx_g2r
 
-    # call assign_scf_to_mix_type(rhoin, rhoin_m)
-    # rhoin_m is deltain
-
-    # call assign_scf_to_mix_type(input_rhout, rhout_m) 
-    # rhout_m is deltaout
-
-    # compute differences
-    #call mix_type_AXPY( -1.d0, rhoin_m, rhout_m )  ! rhoout_m <- (-1)*rhoin_m + rhout_m
     for ig in 1:Ngf
         ip = idx_g2r[ig]
         deltaout[ip,:] = deltaout[ip,:] - deltain[ip,:]
     end
+    @printf("mix rhoe = %4d, norm diff deltaout[:,1] = %15.10e\n", iter, norm(deltaout[:,1]))
+    (Nspin == 2) && @printf("mix rhoe = %4d, norm diff deltaout[:,2] = %15.10e\n", iter, norm(deltaout[:,2]))
 
-    dr2 = rhoe_ddot(pw, deltaout, deltaout)
-    if dr2 < 0.0
-        error("dr2 is negative in _do_mix_broyden_G")
+    if !isnothing(bec_in)
+        bec_out[:] = bec_out[:] - bec_in[:]
+        @printf("mix rhoe = %4d, norm diff bec_out[:,:,1] = %15.10e\n", iter, norm(bec_out[:,:,1]))
+        (Nspin == 2) && @printf("mix rhoe = %4d, norm diff bec_out[:,:,2] = %15.10e\n", iter, norm(bec_out[:,:,2]))    
     end
 
-    tr2 = 1e-6 # XXX Need to be adaptive?
-    if dr2 < tr2
-        @info "dr2 is small. Converged"
-        return
-    end
-
-    mixrho_iter = iterSCF # alias
-    #
-    # iter_used = mixrho_iter-1  if  mixrho_iter <= n_iter
-    # iter_used = n_iter         if  mixrho_iter >  n_iter
-    #
-    iter_used = min( (mixrho_iter - 1), n_iter )
-    #
-    # ipos is the position in which results from the present iteraction
-    # are stored. ipos=iter-1 until ipos=n_iter, THEN back to 1,2,...
-    #
-    ipos = mixrho_iter - 1 - floor(Int64, (mixrho_iter-2)/n_iter)*n_iter
-
-    if mixrho_iter > 1
+    if iter > 1
         for ig in 1:Ngf
             ip = idx_g2r[ig]
-            #call mix_type_AXPY( -1.d0, rhout_m, df(ipos) )
-            df[ipos][ip,:] = (-1)*deltaout[ip,:] + df[ipos][ip,:]
-            #call mix_type_AXPY( -1.d0, rhoin_m, dv(ipos) )
-            dv[ipos][ip,:] = (-1)*deltain[ip,:] + dv[ipos][ip,:] 
+            df[ipos][ip,:] = deltaout[ip,:] - df[ipos][ip,:]
+            dv[ipos][ip,:] = deltain[ip,:]  - dv[ipos][ip,:]
         end
-        # also do axpy operation for bec
+        nrm = sqrt(rhoe_ddot(pw, df[ipos], df[ipos]))
+        @views df[ipos][:,:] = df[ipos][:,:]/nrm
+        @views dv[ipos][:,:] = dv[ipos][:,:]/nrm
+        #
         if !isnothing(bec_in)
-            df_bec[ipos][:] = (-1)*bec_out[:] + df_bec[ipos][:]
-            dv_bec[ipos][:] = (-1)*bec_in[:] + dv_bec[ipos][:]  
+            df_bec[ipos][:] = bec_out[:] - df_bec[ipos][:]
+            dv_bec[ipos][:] = bec_in[:]  - dv_bec[ipos][:]
+            nrm = norm(df_bec[ipos])
+            @views df_bec[ipos][:] = df_bec[ipos][:]/nrm
+            @views dv_bec[ipos][:] = dv_bec[ipos][:]/nrm
         end
+        # No need to normalize ?
     end
 
-    if iter_used > 0
-    
-        beta = zeros(Float64, iter_used, iter_used)
-        
-        for i in 1:iter_used, j in i:iter_used
-            beta[i,j] = rhoe_ddot( pw, df[j], df[i] )
+    beta = zeros(Float64, maxter, maxter)
+
+    for i in 1:iter_used
+        for j in i+1:iter_used
+            beta[i,j] = rhoe_ddot(pw, df[j], df[i])
             beta[j,i] = beta[i,j]
         end
-
-        println("\nbeta matrix before inverse")
-        display(beta[1:iter_used,1:iter_used]); println()
-    
-        beta_inv = inv(beta[1:iter_used,1:iter_used])
-        @views beta[1:iter_used,1:iter_used] = beta_inv[:,:]
-        
-        #println("\nbeta matrix after inverse")
-        #display(beta[1:iter_used,1:iter_used]); println()
-
-        work = zeros(Float64, iter_used)
-        for i in 1:iter_used
-            work[i] = rhoe_ddot( pw, df[i], deltaout )
-        end
-        
-        for i in 1:iter_used
-            gamma0 = dot( beta[1:iter_used,i], work[1:iter_used] )
-            #@info "gamma0 = $(gamma0)"
-            for ig in 1:Ngf
-                ip = idx_g2r[ig]
-                #call mix_type_AXPY( -gamma0, dv(i), rhoin_m )
-                deltain[ip,:] = -gamma0*dv[i][ip,:] + deltain[ip,:]
-                #call mix_type_AXPY( -gamma0, df(i), rhout_m )
-                deltaout[ip,:] = -gamma0*df[i][ip,:] + deltaout[ip,:] 
-            end
-            if !isnothing(bec_in)
-                bec_in[:] = -gamma0*dv_bec[i][:] + bec_in[:] 
-                bec_out[:] = -gamma0*df_bec[i][:] + bec_out[:] 
-            end
-        end
+        beta[i,i] = 1.01
     end
 
-    #
-    # set new trial density
-    #
-    # rhoin_m <- alphamix*rhout_m + rhoin_m
-    #call mix_type_AXPY( alphamix, rhout_m, rhoin_m )
+    println("\nbeta matrix before inverse")
+    display(beta[1:iter_used,1:iter_used]); println()
+
+    beta_inv = inv(beta[1:iter_used,1:iter_used])
+    @views beta[1:iter_used,1:iter_used] = beta_inv[:,:]
+    
+    println("\nbeta matrix after inverse")
+    display(beta[1:iter_used,1:iter_used]); println()
+
+    work = zeros(Float64, iter_used)
+    for i in 1:iter_used
+        work[i] = rhoe_ddot(pw, df[i], deltaout)
+    end
+
     for ig in 1:Ngf
         ip = idx_g2r[ig]
-        deltain[ip,:] =  alphamix*deltaout[ip,:] + deltain[ip,:]
+        deltain[ip,:] = deltain[ip,:] + alphamix*deltaout[ip,:]
     end
     if !isnothing(bec_in)
-        bec_in[:] = alphamix * bec_out[:] + bec_in[:]
+        bec_in[:] = bec_in[:] + alphamix*bec_out[:]
+    end
+
+    for i in 1:iter_used
+        gammamix = 0.0
+        for j in 1:iter_used
+            gammamix = gammamix + beta[j,i] * work[j]
+        end
+        @info "gammamix = $(gammamix)" # can be negative?
+        for ig in 1:Ngf
+            ip = idx_g2r[ig]
+            deltain[ip,:] = deltain[ip,:] - gammamix*( alphamix*df[i][ip,:] + dv[i][ip,:] )
+        end
+        if !isnothing(bec_in)
+            bec_in[:] = bec_in[:] - gammamix*( alphamix*df_bec[i][:] + dv_bec[i][:] )
+        end
     end
 
     # High freq mixing: using linear mixing
@@ -248,18 +244,12 @@ function _do_mix_broyden_G!(
         ig_stop = pw.gvec.Ng
         for ig in ig_start:ig_stop
             ip = idx_g2r[ig]
-            # use original variables (before modification)
-            deltain[ip,:] = deltainsave[ip,:] + alphamix *( deltaout_[ip,:] - deltainsave[ip,:] )
+            deltain[ip,:] = deltain[ip,:] + alphamix *( deltaout[ip,:] - deltain[ip,:] )
         end
     end
 
-    inext = mixrho_iter - floor(Int64, (mixrho_iter - 1)/n_iter)*n_iter
-    
-    @info "mixrho_iter = $(mixrho_iter)"
-    @info "iter_used = $(iter_used)"
-    @info "ipos = $(ipos)"
-    @info "inext = $(inext)"
-
+    inext = iter - floor(Int64, (iter - 1)/n_iter)*n_iter
+    #println("inext = ", inext)
     for ig in 1:Ngf
         ip = idx_g2r[ig]
         df[inext][ip,:] = deltaout[ip,:]
