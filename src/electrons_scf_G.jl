@@ -164,10 +164,10 @@ function electrons_scf_G!(
         _rhoeG_from_rhoe!(Ham, Rhoe, RhoeG) # also RhoeG new
         # In case of PAW becsum is also calculated/updated here
 
-        #println("integ Rhoe = ", sum(Rhoe)*dVol)
-        #if Nspin == 2
-        #    println("Integ magn = ", sum(Rhoe[:,1]-Rhoe[:,2])*dVol)
-        #end
+        println("integ Rhoe before mixing (after calc_rhoe)= ", sum(Rhoe)*dVol)
+        if Nspin == 2
+            println("Integ magn before mixing = ", sum(Rhoe[:,1]-Rhoe[:,2])*dVol)
+        end
 
         # This is not used later?
         hwf_energy = Eband + deband_hwf + Ehartree + Exc + Ham.energies.NN + mTS
@@ -194,8 +194,8 @@ function electrons_scf_G!(
         # Mix the density
         #
         #diffRhoe = norm(Rhoe - Rhoe_in)
-        diffRhoe = dot(Rhoe - Rhoe_in, Rhoe - Rhoe_in)
-        #@info "diffRhoe before mix = $(diffRhoe)"
+        diffRhoe = norm(Rhoe - Rhoe_in)
+        @info "norm diffRhoe before mix = $(diffRhoe)"
 
         if ok_paw
             @info "becsum before mix = $(sum(becsum))"

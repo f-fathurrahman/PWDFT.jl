@@ -126,7 +126,7 @@ function _do_mix_broyden_G!(
         bec_out = copy(bec_out_)
     end
 
-    deltainsave = copy(deltain)
+    deltain_save = copy(deltain)
     if !isnothing(bec_in)
         bec_in_save = copy(bec_in)
     end
@@ -150,16 +150,19 @@ function _do_mix_broyden_G!(
         ip = idx_g2r[ig]
         deltaout[ip,:] = deltaout[ip,:] - deltain[ip,:]
     end
+    if !isnothing(bec_in)
+        bec_out[:] = bec_out[:] - bec_in[:]
+    end
 
     dr2 = rhoe_ddot(pw, deltaout, deltaout)
+    @info "iter = $(iterSCF) dr2 = $(dr2)"
     if dr2 < 0.0
         error("dr2 is negative in _do_mix_broyden_G")
     end
 
     tr2 = 1e-6 # XXX Need to be adaptive?
     if dr2 < tr2
-        @info "dr2 is small. Converged"
-        return
+        @info "dr2 is quite small already. Should be converged"
     end
 
     mixrho_iter = iterSCF # alias
@@ -174,7 +177,13 @@ function _do_mix_broyden_G!(
     #
     ipos = mixrho_iter - 1 - floor(Int64, (mixrho_iter-2)/n_iter)*n_iter
 
+    inext = mixrho_iter - floor(Int64, (mixrho_iter - 1)/n_iter)*n_iter
+
+    
+    # Set up df
     if mixrho_iter > 1
+        @info "ipos = $(ipos) sum df ipos = $(sum(df[ipos][:,1]))"
+        (Nspin == 2) && @info "ipos = $(ipos) sum df ipos = $(sum(df[ipos][:,2]))"
         for ig in 1:Ngf
             ip = idx_g2r[ig]
             #call mix_type_AXPY( -1.d0, rhout_m, df(ipos) )
@@ -187,6 +196,13 @@ function _do_mix_broyden_G!(
             df_bec[ipos][:] = (-1)*bec_out[:] + df_bec[ipos][:]
             dv_bec[ipos][:] = (-1)*bec_in[:] + dv_bec[ipos][:]  
         end
+    end
+
+    # for next iter, save
+    deltaout_save = copy(deltaout)
+    if !isnothing(bec_in) # check formal arg name
+        @assert !isnothing(bec_out_)
+        bec_out_save = copy(bec_out)
     end
 
     if iter_used > 0
@@ -239,7 +255,7 @@ function _do_mix_broyden_G!(
         deltain[ip,:] =  alphamix*deltaout[ip,:] + deltain[ip,:]
     end
     if !isnothing(bec_in)
-        bec_in[:] = alphamix * bec_out[:] + bec_in[:]
+        bec_in[:] = alphamix*bec_out[:] + bec_in[:]
     end
 
     # High freq mixing: using linear mixing
@@ -249,31 +265,28 @@ function _do_mix_broyden_G!(
         for ig in ig_start:ig_stop
             ip = idx_g2r[ig]
             # use original variables (before modification)
-            deltain[ip,:] = deltainsave[ip,:] + alphamix *( deltaout_[ip,:] - deltainsave[ip,:] )
+            deltain[ip,:] = deltain_save[ip,:] + alphamix *( deltaout_[ip,:] - deltain_save[ip,:] )
         end
     end
 
-    inext = mixrho_iter - floor(Int64, (mixrho_iter - 1)/n_iter)*n_iter
-    
-    @info "mixrho_iter = $(mixrho_iter)"
-    @info "iter_used = $(iter_used)"
-    @info "ipos = $(ipos)"
-    @info "inext = $(inext)"
+    @info "mixrho_iter = $(mixrho_iter) iter_used = $(iter_used)"
+    @info "ipos = $(ipos) inext = $(inext)"
 
+    # Save data for next iteration
     for ig in 1:Ngf
         ip = idx_g2r[ig]
-        df[inext][ip,:] = deltaout[ip,:]
-        dv[inext][ip,:] = deltainsave[ip,:]
+        df[inext][ip,:] = deltaout_save[ip,:]
+        dv[inext][ip,:] = deltain_save[ip,:]
     end
     if !isnothing(bec_in)
-        df_bec[inext][:] = bec_out[:]
+        df_bec[inext][:] = bec_out_save[:]
         dv_bec[inext][:] = bec_in_save[:]
     end
 
     # Convert back to up,dn
     if Nspin == 2
         _convert_to_rhoe_up_dn!( deltain )
-        _convert_to_rhoe_up_dn!( deltaout_ )
+        _convert_to_rhoe_up_dn!( deltaout_ ) # not really needed
     end
 
     return
