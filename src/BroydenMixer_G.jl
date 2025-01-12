@@ -215,13 +215,9 @@ function _do_mix_broyden_G!(
         end
 
         #println("\nbeta matrix before inverse")
-        #display(beta[1:iter_used,1:iter_used]); println()
-    
-        #beta_inv = inv(beta[1:iter_used,1:iter_used])
-        #@views beta[1:iter_used,1:iter_used] = beta_inv[:,:]
-        
-        #println("\nbeta matrix after inverse")
-        #display(beta[1:iter_used,1:iter_used]); println()
+        #display(beta[1:iter_used,1:iter_used]); println()    
+        beta_inv = inv(beta[1:iter_used,1:iter_used])
+        @views beta[1:iter_used,1:iter_used] = beta_inv[:,:]
 
         work = zeros(Float64, iter_used)
         for i in 1:iter_used
