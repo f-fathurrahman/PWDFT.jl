@@ -111,9 +111,9 @@ function electrons_scf_G!(
 
     for iterSCF in 1:NiterMax
 
-        println("")
-        println("Begin iterSCF = ", iterSCF)
-        println("--------------------------")
+        #println("")
+        #println("Begin iterSCF = ", iterSCF)
+        #println("--------------------------")
         
         # Save input/old potential
         Vin .= Vhartree .+ Vxc
@@ -164,10 +164,10 @@ function electrons_scf_G!(
         _rhoeG_from_rhoe!(Ham, Rhoe, RhoeG) # also RhoeG new
         # In case of PAW becsum is also calculated/updated here
 
-        println("integ Rhoe before mixing (after calc_rhoe)= ", sum(Rhoe)*dVol)
-        if Nspin == 2
-            println("Integ magn before mixing = ", sum(Rhoe[:,1]-Rhoe[:,2])*dVol)
-        end
+        #println("integ Rhoe before mixing (after calc_rhoe)= ", sum(Rhoe)*dVol)
+        #if Nspin == 2
+        #    println("Integ magn before mixing = ", sum(Rhoe[:,1]-Rhoe[:,2])*dVol)
+        #end
 
         # This is not used later?
         hwf_energy = Eband + deband_hwf + Ehartree + Exc + Ham.energies.NN + mTS
@@ -195,30 +195,20 @@ function electrons_scf_G!(
         #
         #diffRhoe = norm(Rhoe - Rhoe_in)
         diffRhoe = norm(Rhoe - Rhoe_in)
-        @info "norm diffRhoe before mix = $(diffRhoe)"
+        #@info "norm diffRhoe before mix = $(diffRhoe)"
 
         if ok_paw
-            @info "becsum before mix = $(sum(becsum))"
+            #@info "becsum before mix = $(sum(becsum))"
             do_mix!(mixer, Ham.pw, RhoeG, RhoeG_in, iterSCF,
                 bec_in=becsum, bec_out=becsum_in)
             # is becsum updated here?
-            @info "becsum after mix = $(sum(becsum))"
+            #@info "becsum after mix = $(sum(becsum))"
         else
             do_mix!(mixer, Ham.pw, RhoeG, RhoeG_in, iterSCF)
         end
         _rhoe_from_rhoeG!(Ham, RhoeG, Rhoe)
-        
 
-        ##
-        # Linear mixing
-        #print("Using linear mix ")
-        #β_mix_lin = 0.1
-        #Rhoe[:] .= β_mix_lin*Rhoe[:] + (1-β_mix_lin)*Rhoe_in[:]
-        ##if ok_paw
-        ##    becsum[:] .= β_mix_lin*becsum[:] + (1-β_mix_lin)*becsum_in[:]
-        ##end
-        
-        @info "integ Rhoe after mixing = $(sum(Rhoe)*dVol)"
+        #@info "integ Rhoe after mixing = $(sum(Rhoe)*dVol)"
 
         #diffRhoe = dot(Rhoe - Rhoe_in, Rhoe - Rhoe_in)
         #@info "diffRhoe after mix = $(diffRhoe)"
@@ -246,7 +236,7 @@ function electrons_scf_G!(
         if Nspin == 2
             println("integ magn = ", sum(Rhoe[:,1] - Rhoe[:,2])*dVol)
         end
-        if diffEtot <= etot_conv_thr
+        if mixer.is_converged
             Nconv = Nconv + 1
         else
             Nconv = 0

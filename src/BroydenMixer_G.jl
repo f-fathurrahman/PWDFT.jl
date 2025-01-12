@@ -5,6 +5,8 @@ mutable struct BroydenMixer_G
     dv::Vector{Matrix{ComplexF64}}
     df_bec::Union{Nothing,Vector{Array{Float64}}}
     dv_bec::Union{Nothing,Vector{Array{Float64}}}
+    conv_thr::Float64
+    is_converged::Bool
 end
 
 function _convert_to_rhoe_tot_magn!( Rhoe )
@@ -45,7 +47,7 @@ function _convert_to_rhoe_up_dn!( Rhoe )
 end
 
 
-function BroydenMixer_G(Rhoe::Matrix{ComplexF64}, betamix; mixdim=8)
+function BroydenMixer_G(Rhoe::Matrix{ComplexF64}, betamix; mixdim=8, conv_thr=1e-6)
     df = Vector{Matrix{ComplexF64}}(undef, mixdim)
     dv = Vector{Matrix{ComplexF64}}(undef, mixdim)
     for i in 1:mixdim
@@ -55,11 +57,18 @@ function BroydenMixer_G(Rhoe::Matrix{ComplexF64}, betamix; mixdim=8)
     # No becsum is given
     df_bec = nothing
     dv_bec = nothing
-    return BroydenMixer_G(betamix, mixdim, df, dv, df_bec, dv_bec)
+    conv_thr = conv_thr
+    is_converged = false
+    return BroydenMixer_G(betamix, mixdim, df, dv, df_bec, dv_bec, conv_thr, is_converged)
 end
 
 
-function BroydenMixer_G(Rhoe::Matrix{ComplexF64}, bec::Array{Float64,3}, betamix; mixdim=8)
+function BroydenMixer_G(
+    Rhoe::Matrix{ComplexF64},
+    bec::Array{Float64,3},
+    betamix;
+    mixdim=8, conv_thr=1e-6
+)
     df = Vector{Matrix{ComplexF64}}(undef, mixdim)
     dv = Vector{Matrix{ComplexF64}}(undef, mixdim)
     for i in 1:mixdim
@@ -72,7 +81,9 @@ function BroydenMixer_G(Rhoe::Matrix{ComplexF64}, bec::Array{Float64,3}, betamix
         df_bec[i] = zeros(Float64, size(bec))
         dv_bec[i] = zeros(Float64, size(bec))
     end
-    return BroydenMixer_G(betamix, mixdim, df, dv, df_bec, dv_bec)
+    conv_thr = conv_thr
+    is_converged = false
+    return BroydenMixer_G(betamix, mixdim, df, dv, df_bec, dv_bec, conv_thr, is_converged)
 end
 
 
@@ -83,7 +94,7 @@ function do_mix!(
     iterSCF::Int64;
     bec_in=nothing, bec_out=nothing
 )   
-    _do_mix_broyden_G!(
+    is_converged = _do_mix_broyden_G!(
         pw,
         deltain, deltaout_,
         mixer.betamix,  # formal parameter name is alphamix
@@ -92,8 +103,10 @@ function do_mix!(
         bec_in=bec_in,
         bec_out_=bec_out,
         df_bec=mixer.df_bec,
-        dv_bec=mixer.dv_bec
+        dv_bec=mixer.dv_bec,
+        conv_thr=mixer.conv_thr
     )
+    mixer.is_converged = is_converged
     return
 end
 
@@ -105,7 +118,8 @@ function _do_mix_broyden_G!(
     iterSCF::Int64, n_iter::Int64,
     df, dv;
     bec_in=nothing, bec_out_=nothing,
-    df_bec=nothing, dv_bec=nothing
+    df_bec=nothing, dv_bec=nothing,
+    conv_thr=1e-6
 )
 
     # Convert to Tot and magn
@@ -160,9 +174,11 @@ function _do_mix_broyden_G!(
         error("dr2 is negative in _do_mix_broyden_G")
     end
 
-    tr2 = 5e-7 # XXX Need to be adaptive?
-    if dr2 < tr2
-        @info "dr2 = $(dr2) is quite small already. Should be converged"
+    is_converged = false
+    if sqrt(dr2) < conv_thr
+        @info "sqrt(dr2) = $(sqrt(dr2)) is quite small already. Should be converged"
+        is_converged = true
+        # Do mixing one more time even if it is already converged
     end
 
     mixrho_iter = iterSCF # alias
@@ -285,6 +301,6 @@ function _do_mix_broyden_G!(
         _convert_to_rhoe_up_dn!( deltaout_ ) # not really needed
     end
 
-    return
+    return is_converged
 
 end

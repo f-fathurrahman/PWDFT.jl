@@ -82,11 +82,6 @@ function calc_rhoe!(
         @views smooth_to_dense!(pw, RhoeSmooth[:,ispin], Rhoe[:,ispin])
     end
 
-    #println("calc_rhoe_uspp: integ Rhoe up = ", sum(Rhoe[:,1])*dVol)
-    #println("calc_rhoe_uspp: integ Rhoe dn = ", sum(Rhoe[:,2])*dVol)
-    #println("calc_rhoe_uspp: integ Rhoe = ", sum(Rhoe)*dVol)
-
-
     #
     # Add ultrasoft contrib if needed
     # Use preallocated becsum because it is also used in PAW_potential
@@ -113,7 +108,7 @@ function calc_rhoe!(
         _add_usdens!(Ham, becsum, Rhoe) # using real space
     end
 
-    @info "calc_rhoe: integ Rhoe after adding becsum = $(sum(Rhoe)*dVol)"
+    #@info "calc_rhoe: integ Rhoe after adding becsum = $(sum(Rhoe)*dVol)"
 
     # renormalize
     #if renormalize
