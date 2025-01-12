@@ -160,9 +160,9 @@ function _do_mix_broyden_G!(
         error("dr2 is negative in _do_mix_broyden_G")
     end
 
-    tr2 = 1e-6 # XXX Need to be adaptive?
+    tr2 = 5e-7 # XXX Need to be adaptive?
     if dr2 < tr2
-        @info "dr2 is quite small already. Should be converged"
+        @info "dr2 = $(dr2) is quite small already. Should be converged"
     end
 
     mixrho_iter = iterSCF # alias
