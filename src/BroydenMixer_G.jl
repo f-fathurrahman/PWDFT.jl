@@ -113,8 +113,8 @@ function _do_mix_broyden_G!(
     if Nspin == 2
         _convert_to_rhoe_tot_magn!( deltain )
         _convert_to_rhoe_tot_magn!( deltaout_ )
-        @info "Check total charge (G-space) = $(deltain[1,1]*pw.CellVolume)"
-        @info "Check magn (G-space) = $(deltain[1,2]*pw.CellVolume)"
+        #@info "Check total charge (G-space) = $(deltain[1,1]*pw.CellVolume)"
+        #@info "Check magn (G-space) = $(deltain[1,2]*pw.CellVolume)"
     end
 
     # df(ndim,n_iter)
@@ -155,7 +155,7 @@ function _do_mix_broyden_G!(
     end
 
     dr2 = rhoe_ddot(pw, deltaout, deltaout)
-    @info "iter = $(iterSCF) dr2 = $(dr2)"
+    #@info "iter = $(iterSCF) dr2 = $(dr2)"
     if dr2 < 0.0
         error("dr2 is negative in _do_mix_broyden_G")
     end
@@ -182,8 +182,8 @@ function _do_mix_broyden_G!(
     
     # Set up df
     if mixrho_iter > 1
-        @info "ipos = $(ipos) sum df ipos = $(sum(df[ipos][:,1]))"
-        (Nspin == 2) && @info "ipos = $(ipos) sum df ipos = $(sum(df[ipos][:,2]))"
+        #@info "ipos = $(ipos) sum df ipos = $(sum(df[ipos][:,1]))"
+        #(Nspin == 2) && @info "ipos = $(ipos) sum df ipos = $(sum(df[ipos][:,2]))"
         for ig in 1:Ngf
             ip = idx_g2r[ig]
             #call mix_type_AXPY( -1.d0, rhout_m, df(ipos) )
@@ -214,11 +214,11 @@ function _do_mix_broyden_G!(
             beta[j,i] = beta[i,j]
         end
 
-        println("\nbeta matrix before inverse")
-        display(beta[1:iter_used,1:iter_used]); println()
+        #println("\nbeta matrix before inverse")
+        #display(beta[1:iter_used,1:iter_used]); println()
     
-        beta_inv = inv(beta[1:iter_used,1:iter_used])
-        @views beta[1:iter_used,1:iter_used] = beta_inv[:,:]
+        #beta_inv = inv(beta[1:iter_used,1:iter_used])
+        #@views beta[1:iter_used,1:iter_used] = beta_inv[:,:]
         
         #println("\nbeta matrix after inverse")
         #display(beta[1:iter_used,1:iter_used]); println()
@@ -269,8 +269,8 @@ function _do_mix_broyden_G!(
         end
     end
 
-    @info "mixrho_iter = $(mixrho_iter) iter_used = $(iter_used)"
-    @info "ipos = $(ipos) inext = $(inext)"
+    #@info "mixrho_iter = $(mixrho_iter) iter_used = $(iter_used)"
+    #@info "ipos = $(ipos) inext = $(inext)"
 
     # Save data for next iteration
     for ig in 1:Ngf
