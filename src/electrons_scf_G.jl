@@ -4,7 +4,7 @@ function electrons_scf_G!(
     Ham::Hamiltonian, psiks;
     NiterMax=150,
     betamix=0.5,
-    etot_conv_thr=1e-6,
+    etot_conv_thr=5e-7,
     ethr_evals_last=1e-13,
     use_smearing=false,
     kT::Float64=1e-3,
@@ -242,7 +242,7 @@ function electrons_scf_G!(
         else
             Nconv = 0
         end
-        if Nconv >= 2
+        if Nconv >= 2 # FIXME: make this a parameter
             @printf("SCF_G: Total energy is converged in %d iterations\n", iterSCF)
             is_converged = true
             break

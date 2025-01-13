@@ -67,7 +67,7 @@ function BroydenMixer_G(
     Rhoe::Matrix{ComplexF64},
     bec::Array{Float64,3},
     betamix;
-    mixdim=8, conv_thr=1e-6
+    mixdim=8, conv_thr=5e-7
 )
     df = Vector{Matrix{ComplexF64}}(undef, mixdim)
     dv = Vector{Matrix{ComplexF64}}(undef, mixdim)
@@ -119,7 +119,7 @@ function _do_mix_broyden_G!(
     df, dv;
     bec_in=nothing, bec_out_=nothing,
     df_bec=nothing, dv_bec=nothing,
-    conv_thr=1e-6
+    conv_thr=5e-7
 )
 
     # Convert to Tot and magn
