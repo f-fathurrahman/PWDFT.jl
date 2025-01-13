@@ -38,9 +38,22 @@ function my_pwx(; filename=nothing, do_export_data=false)
         kT = pwinput.degauss*0.5 # convert from Ry to Ha
     end
 
-    #electrons_scf!(Ham, psiks, NiterMax=100, use_smearing=use_smearing, kT=kT, betamix=0.1)
-    electrons_scf_G!(Ham, psiks, NiterMax=50, use_smearing=use_smearing, kT=kT, betamix=0.1)
+    if pwinput.nspin == 2
+        starting_magnetization = pwinput.starting_magnetization
+    else
+        starting_magnetization = nothing
+    end
 
+    #electrons_scf!(Ham, psiks, NiterMax=100, use_smearing=use_smearing, kT=kT, betamix=0.1)
+    
+    electrons_scf_G!(Ham, psiks,
+        NiterMax=50,
+        use_smearing=use_smearing,
+        kT=kT,
+        betamix=0.1,
+        starting_magnetization=starting_magnetization)
+
+    
     #KS_solve_SCF!(Ham, psiks, use_smearing=use_smearing, kT=kT, betamix=0.1)
     # Not yet working for smearing
     #KS_solve_Emin_PCG!(Ham, psiks, NiterMax=100)

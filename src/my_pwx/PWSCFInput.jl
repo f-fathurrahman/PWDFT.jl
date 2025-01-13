@@ -17,6 +17,7 @@ struct PWSCFInput
     nr1::Int64
     nr2::Int64
     nr3::Int64
+    starting_magnetization::Vector{Float64}
 end
 
 
@@ -84,6 +85,9 @@ function PWSCFInput( filename::String )
     nr1 = 0
     nr2 = 0
     nr3 = 0
+
+    starting_magn_dict = Dict{Int64,Float64}()
+    # species and magnetization
 
 
     f = open(filename, "r")
@@ -211,6 +215,7 @@ function PWSCFInput( filename::String )
             println("nr3 = ", nbnd)
             continue
         end
+        
 
 
         # Read pseudo_dir
@@ -228,6 +233,19 @@ function PWSCFInput( filename::String )
             ll = split(l, " = ", keepempty=false)
             input_dft = replace(replace(ll[end], "'" => ""), "\"" => "")
             println("Read input_dft = ", input_dft)
+            continue
+        end
+
+        if occursin("starting_magnetization", l)
+            ll = split(l, " = ", keepempty=false)
+            magn = parse(Float64, ll[2])
+            @info "magn = $(magn)"
+            # with ()
+            ll = split(ll[1], "(", keepempty=false)
+            ll = split(ll[2], ")", keepempty=false)
+            idx_spec = parse(Int64, ll[1])
+            merge!( starting_magn_dict, Dict(idx_spec => magn) )
+            @info "starting_magn_dict = $(starting_magn_dict)"
             continue
         end
 
@@ -484,6 +502,11 @@ function PWSCFInput( filename::String )
     # Set unit lattice vectors manually
     atoms.LatVecs = LatVecs
 
+    starting_magnetization = zeros(Float64, Nspecies)
+    for idx_spec in keys(starting_magn_dict)
+        starting_magnetization[idx_spec] = starting_magn_dict[idx_spec]
+    end
+
     print(atoms)
 
     # Don't forget to convert ecutwfc and ecutrho to Ha
@@ -491,7 +514,8 @@ function PWSCFInput( filename::String )
         atoms, 0.5*ecutwfc, 0.5*ecutrho, pspfiles,
         (meshk1, meshk2, meshk3),
         nbnd, nspin, occupations, smearing, degauss, input_dft,
-        nr1, nr2, nr3
+        nr1, nr2, nr3,
+        starting_magnetization
     )
 end
 

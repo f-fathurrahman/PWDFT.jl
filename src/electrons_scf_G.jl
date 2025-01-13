@@ -10,14 +10,15 @@ function electrons_scf_G!(
     kT::Float64=1e-3,
     startingrhoe::Symbol=:gaussian,
     restart::Bool=false,
-    print_final_ebands::Bool=true
+    print_final_ebands::Bool=true,
+    starting_magnetization=nothing
 )
 
     # Prepare for SCF
     # Also calculate some energy terms
     # We don't use Ham.energies to save these terms
     if (startingrhoe == :gaussian) && !restart
-        Ehartree, Exc = _prepare_scf!(Ham, psiks)
+        Ehartree, Exc = _prepare_scf!(Ham, psiks, starting_magnetization=starting_magnetization)
     elseif (startingrhoe == :none) || restart
         Ehartree = Ham.energies.Hartree
         Exc = Ham.energies.XC
