@@ -32,12 +32,14 @@ function calc_epsxc_Vxc_PBE!(
     ptr = Libxc_xc_func_alloc()
     # exchange part
     Libxc_xc_func_init(ptr, xc_calc.x_id, Nspin)
+    Libxc_xc_func_set_dens_threshold(ptr, 1e-10)
     Libxc_xc_gga_exc_vxc!(ptr, Npoints, Rhoe, gρ2, eps_x, V_x, Vg_x)
     Libxc_xc_func_end(ptr)
 
     #
     # correlation part
     Libxc_xc_func_init(ptr, xc_calc.c_id, Nspin)
+    Libxc_xc_func_set_dens_threshold(ptr, 1e-10)
     Libxc_xc_gga_exc_vxc!(ptr, Npoints, Rhoe, gρ2, eps_c, V_c, Vg_c)
     Libxc_xc_func_end(ptr)
 
@@ -119,11 +121,13 @@ function calc_epsxc_Vxc_PBE!(
     ptr = Libxc_xc_func_alloc()
     # exchange part
     Libxc_xc_func_init(ptr, xc_calc.x_id, Nspin)
+    Libxc_xc_func_set_dens_threshold(ptr, 1e-10)
     Libxc_xc_gga_exc_vxc!(ptr, Npoints, Rhoe_tmp, gρ2, eps_x, V_x, Vg_x)
     Libxc_xc_func_end(ptr)
     #
     # correlation part
     Libxc_xc_func_init(ptr, xc_calc.c_id, Nspin)
+    Libxc_xc_func_set_dens_threshold(ptr, 1e-10)
     Libxc_xc_gga_exc_vxc!(ptr, Npoints, Rhoe_tmp, gρ2, eps_c, V_c, Vg_c)
     Libxc_xc_func_end(ptr)
     #
@@ -222,12 +226,14 @@ function calc_epsxc_PBE!(
     ptr = Libxc_xc_func_alloc()
     # exchange part
     Libxc_xc_func_init(ptr, xc_calc.x_id, Nspin)
+    Libxc_xc_func_set_dens_threshold(ptr, 1e-10)
     Libxc_xc_gga_exc!(ptr, Npoints, Rhoe, gρ2, eps_x)
     Libxc_xc_func_end(ptr)
 
     #
     # correlation part
     Libxc_xc_func_init(ptr, xc_calc.c_id, Nspin)
+    Libxc_xc_func_set_dens_threshold(ptr, 1e-10)
     Libxc_xc_gga_exc!(ptr, Npoints, Rhoe, gρ2, eps_c)
     Libxc_xc_func_end(ptr)
 
@@ -294,12 +300,14 @@ function calc_epsxc_PBE!(
     ptr = Libxc_xc_func_alloc()
     # exchange part
     Libxc_xc_func_init(ptr, xc_calc.x_id, Nspin)
+    Libxc_xc_func_set_dens_threshold(ptr, 1e-10)
     Libxc_xc_gga_exc!(ptr, Npoints, Rhoe_tmp, gρ2, eps_x)
     Libxc_xc_func_end(ptr)
 
     #
     # correlation part
     Libxc_xc_func_init(ptr, xc_calc.c_id, Nspin)
+    Libxc_xc_func_set_dens_threshold(ptr, 1e-10)
     Libxc_xc_gga_exc!(ptr, Npoints, Rhoe_tmp, gρ2, eps_c)
     Libxc_xc_func_end(ptr)
 
@@ -336,12 +344,14 @@ function calc_Vxc_PBE!(
     ptr = Libxc_xc_func_alloc()
     # exchange part
     Libxc_xc_func_init(ptr, xc_calc.x_id, Nspin)
+    Libxc_xc_func_set_dens_threshold(ptr, 1e-10)
     Libxc_xc_gga_vxc!(ptr, Npoints, Rhoe, gρ2, V_x, Vg_x)
     Libxc_xc_func_end(ptr)
 
     #
     # correlation part
     Libxc_xc_func_init(ptr, xc_calc.c_id, Nspin)
+    Libxc_xc_func_set_dens_threshold(ptr, 1e-10)
     Libxc_xc_gga_vxc!(ptr, Npoints, Rhoe, gρ2, V_c, Vg_c)
     Libxc_xc_func_end(ptr)
 
@@ -427,12 +437,14 @@ function calc_Vxc_PBE!(
     ptr = Libxc_xc_func_alloc()
     # exchange part
     Libxc_xc_func_init(ptr, xc_calc.x_id, Nspin)
+    Libxc_xc_func_set_dens_threshold(ptr, 1e-10)
     Libxc_xc_gga_vxc!(ptr, Npoints, Rhoe_tmp, gρ2, V_x, Vg_x)
     Libxc_xc_func_end(ptr)
 
     #
     # correlation part
     Libxc_xc_func_init(ptr, xc_calc.c_id, Nspin)
+    Libxc_xc_func_set_dens_threshold(ptr, 1e-10)
     Libxc_xc_gga_vxc!(ptr, Npoints, Rhoe_tmp, gρ2, V_c, Vg_c)
     Libxc_xc_func_end(ptr)
     #

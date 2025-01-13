@@ -20,14 +20,14 @@ function _driver_xc_PBE!(
  
     ptr = Libxc_xc_func_alloc()
     # exchange part
-    Libxc_xc_func_init(ptr, 101, Nspin)
+    Libxc_xc_func_init(ptr, xc_calc.x_id, Nspin)
     Libxc_xc_func_set_dens_threshold(ptr, 1e-10)
     Libxc_xc_gga_exc_vxc!(ptr, Npoints, Rhoe, gRhoe2, eps_x, V_x, Vg_x)
     Libxc_xc_func_end(ptr)
 
     #
     # correlation part
-    Libxc_xc_func_init(ptr, 130, Nspin)
+    Libxc_xc_func_init(ptr, xc_calc.c_id, Nspin)
     Libxc_xc_func_set_dens_threshold(ptr, 1e-10)
     Libxc_xc_gga_exc_vxc!(ptr, Npoints, Rhoe, gRhoe2, eps_c, V_c, Vg_c)
     Libxc_xc_func_end(ptr)
