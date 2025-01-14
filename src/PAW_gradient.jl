@@ -48,7 +48,7 @@ function PAW_gradient!(
         # compute the square
         @views grho_rad2[:,ispin] .= aux2[:].^2
         # store in vector gradient, if present:
-        @views grho_rad[:,1,ispin] .= aux2[:]
+        @views grho_rad[:,1,ispin] .= aux2[:] # r
     end
  
     dylmp = pspotNL.paw.spheres[isp].dylmp

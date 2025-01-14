@@ -1,23 +1,31 @@
+# This is Nspin==1 version
 function _driver_xc_PBE!(
     xc_calc::LibxcXCCalculator,
-    Rhoe,
-    gRhoe2,
-    epsxc,
-    V_xc,
-    Vg_xc
+    Rhoe::AbstractVector{Float64},
+    gRhoe::AbstractMatrix{Float64}, # (Npoints,3) !!!
+    epsxc::AbstractVector{Float64},
+    V_xc::AbstractVector{Float64},
+    Vg_xc::AbstractVector{Float64}
 )
     Npoints = size(Rhoe, 1)
     Nspin = 1
 
-    eps_x = zeros(Float64,Npoints)
-    eps_c = zeros(Float64,Npoints)
+    eps_x = zeros(Float64, Npoints)
+    eps_c = zeros(Float64, Npoints)
 
-    V_x = zeros(Float64,Npoints)
-    V_c = zeros(Float64,Npoints)
+    V_x = zeros(Float64, Npoints)
+    V_c = zeros(Float64, Npoints)
  
-    Vg_x = zeros(Float64,Npoints)
-    Vg_c = zeros(Float64,Npoints)
+    Vg_x = zeros(Float64, Npoints)
+    Vg_c = zeros(Float64, Npoints)
  
+    @assert size(gRhoe, 1) == Npoints
+    gRhoe2 = zeros(Float64, Npoints)
+    for ip in 1:Npoints
+        gRhoe2[ip] = gRhoe[ip,1]^2 + gRhoe[ip,2]^2 + gRhoe[ip,3]^2
+    end
+    # use radial gRhoe2 ???
+
     ptr = Libxc_xc_func_alloc()
     # exchange part
     Libxc_xc_func_init(ptr, xc_calc.x_id, Nspin)
@@ -37,14 +45,107 @@ function _driver_xc_PBE!(
 
     # update the outputs:
     @views epsxc[:] .= eps_x[:] .+ eps_c[:]
-    @views V_xc[:,1] .= V_x[:] .+ V_c[:]
-    @views Vg_xc[:,1] = Vg_x[:] + Vg_c[:]  # for gradient correction
+    @views V_xc[:] .= V_x[:] .+ V_c[:]
+    @views Vg_xc[:] = Vg_x[:] + Vg_c[:]  # for gradient correction
 
     # V_xc need to be corrected later using Vg_xc
     return
 end
 
 
+# This is Nspin==1 version
+function _driver_xc_PBE!(
+    xc_calc::LibxcXCCalculator,
+    Rhoe::Matrix{Float64},
+    gRhoe::Array{Float64,3},
+    epsxc::AbstractVector{Float64},
+    V_xc::Matrix{Float64},
+    Vg_xc::Matrix{Float64} # (Npoints,3)
+)
+    Nspin = size(Rhoe, 2)
+    if Nspin == 1
+        @views _driver_xc_PBE!( xc_calc, Rhoe[:,1], gRhoe[:,:,1], epsxc, V_xc[:,1], Vg_xc[:,1] )
+        return
+    end
+
+    Npoints = size(Rhoe, 1)
+
+    # gRhoe is (Nrmesh, 3, Nspin) # gradient (r, ϕ, θ)
+    @assert size(gRhoe, 1) == Npoints
+    @assert size(gRhoe, 2) == 3
+
+    # calculate gρ2
+    gρ2 = zeros( Float64, 3*Npoints )
+    @views gρ_up = gRhoe[:,:,1]
+    @views gρ_dn = gRhoe[:,:,2]
+    ipp = 0
+    for ip in 1:3:3*Npoints
+        ipp = ipp + 1
+        # up-up
+        gρ2[ip]   = gρ_up[ipp,1]*gρ_up[ipp,1] + gρ_up[ipp,2]*gρ_up[ipp,2] + gρ_up[ipp,3]*gρ_up[ipp,3]
+        # up-dn
+        gρ2[ip+1] = gρ_up[ipp,1]*gρ_dn[ipp,1] + gρ_up[ipp,2]*gρ_dn[ipp,2] + gρ_up[ipp,3]*gρ_dn[ipp,3]
+        # dn-dn
+        gρ2[ip+2] = gρ_dn[ipp,1]*gρ_dn[ipp,1] + gρ_dn[ipp,2]*gρ_dn[ipp,2] + gρ_dn[ipp,3]*gρ_dn[ipp,3]
+    end
+    # Need these?
+
+    Rhoe_tmp = zeros(Float64, 2*Npoints)
+    ipp = 0
+    for ip in 1:2:2*Npoints
+        ipp = ipp + 1
+        Rhoe_tmp[ip] = Rhoe[ipp,1]
+        Rhoe_tmp[ip+1] = Rhoe[ipp,2]
+    end
+
+    eps_x = zeros(Float64, Npoints)
+    eps_c = zeros(Float64, Npoints)
+
+    V_x  = zeros(Float64, Npoints*2)
+    V_c  = zeros(Float64, Npoints*2)
+
+    Vg_x  = zeros(Float64, 3*Npoints)
+    Vg_c  = zeros(Float64, 3*Npoints)
+
+    ptr = Libxc_xc_func_alloc()
+    # exchange part
+    Libxc_xc_func_init(ptr, xc_calc.x_id, Nspin)
+    Libxc_xc_func_set_dens_threshold(ptr, 1e-10)
+    Libxc_xc_gga_exc_vxc!(ptr, Npoints, Rhoe_tmp, gρ2, eps_x, V_x, Vg_x)
+    Libxc_xc_func_end(ptr)
+    #
+    # correlation part
+    Libxc_xc_func_init(ptr, xc_calc.c_id, Nspin)
+    Libxc_xc_func_set_dens_threshold(ptr, 1e-10)
+    Libxc_xc_gga_exc_vxc!(ptr, Npoints, Rhoe_tmp, gρ2, eps_c, V_c, Vg_c)
+    Libxc_xc_func_end(ptr)
+    #
+    Libxc_xc_func_free(ptr)
+
+    #
+    # energy
+    #
+    epsxc[:] .= eps_x[:] + eps_c[:]
+
+    #
+    # The potential
+    #
+    # LDA contrib is done here
+    ipp = 0
+    for ip in 1:2:2*Npoints
+        ipp = ipp + 1
+        V_xc[ipp,1] = V_x[ip] + V_c[ip]
+        V_xc[ipp,2] = V_x[ip+1] + V_c[ip+1]
+    end
+
+    Vg_xc[:,:] = reshape(Vg_x + Vg_c, (3,Npoints))
+    # gradient correction will be done later (outside this function)
+
+    return
+end
+
+
+# This is using built-in routines
 function _driver_xc_PBE!(
     xc_calc::XCCalculator,
     arho, grhoe2, sxc, v1xc, v2xc
@@ -102,13 +203,16 @@ function PAW_xc_potential_GGA!(
     r = pspots[isp].r
     r2 = r.^2
 
-    arho = zeros(Float64, Nrmesh) # 2nd dim removed 
-    grhoe2 = zeros(Float64, Nrmesh)
-
+    arho = zeros(Float64, Nrmesh, Nspin)
 
     # These arrays should depend on spin
     v1xc = zeros(Float64, Nrmesh, Nspin)
-    v2xc = zeros(Float64, Nrmesh, Nspin)
+    if Nspin == 1
+        v2xc = zeros(Float64, Nrmesh, 1) # to make it 2d array, singleton dim
+    else
+        @assert Nspin == 2
+        v2xc = zeros(Float64, 3, Nrmesh)
+    end
     # These arrays don't depend on spin
     sxc = zeros(Float64, Nrmesh)
 
@@ -147,24 +251,51 @@ function PAW_xc_potential_GGA!(
         #@printf("%5d grad phi  : %18.10e\n", ix, sum(grad[:,2,:]))
         #@printf("%5d grad theta: %18.10e\n", ix, sum(grad[:,3,:]))
 
-        for ir in 1:Nrmesh
-            arho[ir,1] = abs(rho_rad[ir,1]/r2[ir] + rho_core[ir])
-            grhoe2[ir] = grad[ir,1]^2 + grad[ir,2]^2 + grad[ir,3]^2
+        for ispin in 1:Nspin, ir in 1:Nrmesh
+            #arho[ir,ispin] = abs(rho_rad[ir,ispin]/r2[ir] + rho_core[ir]/Nspin)
+            arho[ir,ispin] = rho_rad[ir,ispin]/r2[ir] + rho_core[ir]/Nspin
+            # rho_core up and rho_core dn is assumed to be the same, so we divide with Nspin
+            # in case of spinpol
         end
 
-        _driver_xc_PBE!(xc_calc, arho, grhoe2, sxc, v1xc, v2xc)
+        _driver_xc_PBE!(xc_calc, arho, grad, sxc, v1xc, v2xc)
+        # pass grad2 ?
+        # pass grad ? # this is using spherical components instead of Cartesian
 
         # radial stuffs
         # NOTE: We are using Libxc convention: e_rad is multiplied by arho and
         # h_rad will be multiplied by 2 (here or later in div_h, for calculating the
         # gradient correction to the potential)
-        for ir in 1:Nrmesh
-            e_rad[ir] = sxc[ir] * r2[ir] * arho[ir]
-            gc_rad[ix][ir,1] = v1xc[ir,1]
-            @views h_rad[ix][ir,1:3,1] = v2xc[ir,1]*grad[ir,1:3,1]*r2[ir]
-            # Nspin == 1
+        fill!(e_rad, 0.0)
+        for ispin in 1:Nspin, ir in 1:Nrmesh
+            e_rad[ir] += sxc[ir] * r2[ir] * arho[ir,ispin]
+            # sxc does not depend on spin index 
         end
-    
+        for ispin in 1:Nspin, ir in 1:Nrmesh
+            gc_rad[ix][ir,ispin] = v1xc[ir,ispin]
+        end
+        #
+        if Nspin == 1
+            for ir in 1:Nrmesh
+                h_rad[ix][ir,1:3,1] = v2xc[ir,1]*grad[ir,1:3,1]*r2[ir]
+            end
+        else
+            @assert Nspin == 2
+            Vg_xc = v2xc # alias (3,Nrmesh)
+            @views gρ_up = grad[:,:,1] # (Nrmesh,3)
+            @views gρ_dn = grad[:,:,2] # (Nrmesh,3)
+            #        
+            ispin = 1
+            h_rad[ix][:,1,ispin] .= 2*Vg_xc[1,:] .* gρ_up[:,1] .+ Vg_xc[2,:] .* gρ_dn[:,1]
+            h_rad[ix][:,2,ispin] .= 2*Vg_xc[1,:] .* gρ_up[:,2] .+ Vg_xc[2,:] .* gρ_dn[:,2]
+            h_rad[ix][:,3,ispin] .= 2*Vg_xc[1,:] .* gρ_up[:,3] .+ Vg_xc[2,:] .* gρ_dn[:,3]
+            #
+            ispin = 2
+            h_rad[ix][:,1,ispin] .= 2*Vg_xc[3,:] .* gρ_dn[:,1] .+ Vg_xc[2,:] .* gρ_up[:,1]
+            h_rad[ix][:,2,ispin] .= 2*Vg_xc[3,:] .* gρ_dn[:,2] .+ Vg_xc[2,:] .* gρ_up[:,2]
+            h_rad[ix][:,3,ispin] .= 2*Vg_xc[3,:] .* gρ_dn[:,3] .+ Vg_xc[2,:] .* gρ_up[:,3]    
+        end
+            
         # integrate to obtain the energy
         energy += integ_simpson(Nrmesh, e_rad, pspots[isp].rab)*spheres[isp].ww[ix]
 
@@ -184,8 +315,7 @@ function PAW_xc_potential_GGA!(
 
     # trick to get faster convergence w.r.t to θ
     for ix in 1:nx
-        @views h_rad[ix][:,3,1] = h_rad[ix][:,3,1] / spheres[isp].sin_th[ix]
-        # Nspin = 1
+        @views h_rad[ix][:,3,1:Nspin] = h_rad[ix][:,3,1:Nspin] / spheres[isp].sin_th[ix]
     end
     # 
     #println("sum h_rad after divided by sin_th = ", sum(h_rad))
@@ -220,7 +350,7 @@ function PAW_xc_potential_GGA!(
     # Factor 2 of div_h because we are using Libxc convention
     for ispin in 1:Nspin
         for lm in 1:l2
-            @views v_lm[1:Nrmesh,lm,ispin] .= gc_lm[1:Nrmesh,lm,ispin] .- 2*div_h[1:Nrmesh,lm,ispin]
+            @views v_lm[1:Nrmesh,lm,ispin] .= gc_lm[1:Nrmesh,lm,ispin] .- 2*div_h[1:Nrmesh,lm,ispin]/Nspin
         end
     end
 
