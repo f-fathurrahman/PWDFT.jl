@@ -139,8 +139,16 @@ function _driver_xc_PBE!(
         V_xc[ipp,2] = V_x[ip+1] + V_c[ip+1]
     end
 
-    Vg_xc[:,:] = reshape(Vg_x + Vg_c, (3,Npoints))
+    #Vg_xc[:,:] = reshape(Vg_x + Vg_c, (3,Npoints))
+    #
     # gradient correction will be done later (outside this function)
+    Vg_x = reshape(Vg_x, (3,Npoints))
+    Vg_c = reshape(Vg_c, (3,Npoints))
+    for ip in 1:Npoints
+        Vg_xc[ip,1] = Vg_x[1,ip] + Vg_c[1,ip]
+        Vg_xc[ip,2] = Vg_x[2,ip] + Vg_c[2,ip]
+        Vg_xc[ip,3] = Vg_x[3,ip] + Vg_c[3,ip]
+    end
 
     return
 end
@@ -212,7 +220,7 @@ function PAW_xc_potential_GGA!(
         v2xc = zeros(Float64, Nrmesh, 1) # to make it 2d array, singleton dim
     else
         @assert Nspin == 2
-        v2xc = zeros(Float64, 3, Nrmesh)
+        v2xc = zeros(Float64, Nrmesh, 3)
     end
     # These arrays don't depend on spin
     sxc = zeros(Float64, Nrmesh)
@@ -282,19 +290,19 @@ function PAW_xc_potential_GGA!(
             end
         else
             @assert Nspin == 2
-            Vg_xc = v2xc # alias (3,Nrmesh)
+            Vg_xc = v2xc # alias (Nrmesh,3)
             @views gρ_up = grad[:,:,1] # (Nrmesh,3)
             @views gρ_dn = grad[:,:,2] # (Nrmesh,3)
             #        
             ispin = 1
-            h_rad[ix][:,1,ispin] .= 2*Vg_xc[1,:] .* gρ_up[:,1] .+ Vg_xc[2,:] .* gρ_dn[:,1]
-            h_rad[ix][:,2,ispin] .= 2*Vg_xc[1,:] .* gρ_up[:,2] .+ Vg_xc[2,:] .* gρ_dn[:,2]
-            h_rad[ix][:,3,ispin] .= 2*Vg_xc[1,:] .* gρ_up[:,3] .+ Vg_xc[2,:] .* gρ_dn[:,3]
+            h_rad[ix][:,1,ispin] .= ( 2*Vg_xc[:,1] .* gρ_up[:,1] .+ Vg_xc[:,2] .* gρ_dn[:,1] ) .* r2[:]
+            h_rad[ix][:,2,ispin] .= ( 2*Vg_xc[:,1] .* gρ_up[:,2] .+ Vg_xc[:,2] .* gρ_dn[:,2] ) .* r2[:]
+            h_rad[ix][:,3,ispin] .= ( 2*Vg_xc[:,1] .* gρ_up[:,3] .+ Vg_xc[:,2] .* gρ_dn[:,3] ) .* r2[:]
             #
             ispin = 2
-            h_rad[ix][:,1,ispin] .= 2*Vg_xc[3,:] .* gρ_dn[:,1] .+ Vg_xc[2,:] .* gρ_up[:,1]
-            h_rad[ix][:,2,ispin] .= 2*Vg_xc[3,:] .* gρ_dn[:,2] .+ Vg_xc[2,:] .* gρ_up[:,2]
-            h_rad[ix][:,3,ispin] .= 2*Vg_xc[3,:] .* gρ_dn[:,3] .+ Vg_xc[2,:] .* gρ_up[:,3]    
+            h_rad[ix][:,1,ispin] .= ( 2*Vg_xc[:,3] .* gρ_dn[:,1] .+ Vg_xc[:,2] .* gρ_up[:,1] ) .* r2[:]
+            h_rad[ix][:,2,ispin] .= ( 2*Vg_xc[:,3] .* gρ_dn[:,2] .+ Vg_xc[:,2] .* gρ_up[:,2] ) .* r2[:]
+            h_rad[ix][:,3,ispin] .= ( 2*Vg_xc[:,3] .* gρ_dn[:,3] .+ Vg_xc[:,2] .* gρ_up[:,3] ) .* r2[:]
         end
             
         # integrate to obtain the energy
@@ -351,7 +359,7 @@ function PAW_xc_potential_GGA!(
     # Factor 2 of div_h because we are using Libxc convention
     for ispin in 1:Nspin
         for lm in 1:l2
-            @views v_lm[1:Nrmesh,lm,ispin] .= gc_lm[1:Nrmesh,lm,ispin] .- 2*div_h[1:Nrmesh,lm,ispin]#/Nspin
+            @views v_lm[1:Nrmesh,lm,ispin] .= gc_lm[1:Nrmesh,lm,ispin] .- 2*div_h[1:Nrmesh,lm,ispin]/Nspin
         end
     end
 
