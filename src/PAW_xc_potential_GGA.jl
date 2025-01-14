@@ -294,15 +294,17 @@ function PAW_xc_potential_GGA!(
             @views gρ_up = grad[:,:,1] # (Nrmesh,3)
             @views gρ_dn = grad[:,:,2] # (Nrmesh,3)
             #        
-            ispin = 1
-            h_rad[ix][:,1,ispin] .= ( 2*Vg_xc[:,1] .* gρ_up[:,1] .+ Vg_xc[:,2] .* gρ_dn[:,1] ) .* r2[:]
-            h_rad[ix][:,2,ispin] .= ( 2*Vg_xc[:,1] .* gρ_up[:,2] .+ Vg_xc[:,2] .* gρ_dn[:,2] ) .* r2[:]
-            h_rad[ix][:,3,ispin] .= ( 2*Vg_xc[:,1] .* gρ_up[:,3] .+ Vg_xc[:,2] .* gρ_dn[:,3] ) .* r2[:]
-            #
-            ispin = 2
-            h_rad[ix][:,1,ispin] .= ( 2*Vg_xc[:,3] .* gρ_dn[:,1] .+ Vg_xc[:,2] .* gρ_up[:,1] ) .* r2[:]
-            h_rad[ix][:,2,ispin] .= ( 2*Vg_xc[:,3] .* gρ_dn[:,2] .+ Vg_xc[:,2] .* gρ_up[:,2] ) .* r2[:]
-            h_rad[ix][:,3,ispin] .= ( 2*Vg_xc[:,3] .* gρ_dn[:,3] .+ Vg_xc[:,2] .* gρ_up[:,3] ) .* r2[:]
+            for ir in 1:Nrmesh
+                ispin = 1
+                h_rad[ix][ir,1,ispin] = ( 2*Vg_xc[ir,1] * gρ_up[ir,1] + Vg_xc[ir,2] * gρ_dn[ir,1] ) * r2[ir]
+                h_rad[ix][ir,2,ispin] = ( 2*Vg_xc[ir,1] * gρ_up[ir,2] + Vg_xc[ir,2] * gρ_dn[ir,2] ) * r2[ir]
+                h_rad[ix][ir,3,ispin] = ( 2*Vg_xc[ir,1] * gρ_up[ir,3] + Vg_xc[ir,2] * gρ_dn[ir,3] ) * r2[ir]
+                #
+                ispin = 2
+                h_rad[ix][ir,1,ispin] = ( 2*Vg_xc[ir,3] * gρ_dn[ir,1] + Vg_xc[ir,2] * gρ_up[ir,1] ) * r2[ir]
+                h_rad[ix][ir,2,ispin] = ( 2*Vg_xc[ir,3] * gρ_dn[ir,2] + Vg_xc[ir,2] * gρ_up[ir,2] ) * r2[ir]
+                h_rad[ix][ir,3,ispin] = ( 2*Vg_xc[ir,3] * gρ_dn[ir,3] + Vg_xc[ir,2] * gρ_up[ir,3] ) * r2[ir]
+            end
         end
             
         # integrate to obtain the energy
@@ -323,8 +325,8 @@ function PAW_xc_potential_GGA!(
     #println("sum gc_lm = ", sum(gc_lm))
 
     # trick to get faster convergence w.r.t to θ
-    for ix in 1:nx
-        @views h_rad[ix][:,3,1:Nspin] = h_rad[ix][:,3,1:Nspin] / spheres[isp].sin_th[ix]
+    for ix in 1:nx, ispin in 1:Nspin, ir in 1:Nrmesh
+        h_rad[ix][ir,3,ispin] = h_rad[ix][ir,3,ispin] / spheres[isp].sin_th[ix]
     end
     # 
     #println("sum h_rad after divided by sin_th = ", sum(h_rad))
@@ -357,10 +359,8 @@ function PAW_xc_potential_GGA!(
 
     # Finally sum it back into v_xc
     # Factor 2 of div_h because we are using Libxc convention
-    for ispin in 1:Nspin
-        for lm in 1:l2
-            @views v_lm[1:Nrmesh,lm,ispin] .= gc_lm[1:Nrmesh,lm,ispin] .- 2*div_h[1:Nrmesh,lm,ispin]/Nspin
-        end
+    for ispin in 1:Nspin, lm in 1:l2, ir in 1:Nrmesh
+        v_lm[ir,lm,ispin] = gc_lm[ir,lm,ispin] - 2*div_h[ir,lm,ispin]/Nspin
     end
 
     #println("energy in PAW_xc_potential_GGA: ", energy)
