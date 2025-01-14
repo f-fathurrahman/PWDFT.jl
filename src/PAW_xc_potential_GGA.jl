@@ -68,6 +68,7 @@ function _driver_xc_PBE!(
         return
     end
 
+    @assert Nspin == 2
     Npoints = size(Rhoe, 1)
 
     # gRhoe is (Nrmesh, 3, Nspin) # gradient (r, ϕ, θ)
@@ -252,8 +253,8 @@ function PAW_xc_potential_GGA!(
         #@printf("%5d grad theta: %18.10e\n", ix, sum(grad[:,3,:]))
 
         for ispin in 1:Nspin, ir in 1:Nrmesh
-            #arho[ir,ispin] = abs(rho_rad[ir,ispin]/r2[ir] + rho_core[ir]/Nspin)
-            arho[ir,ispin] = rho_rad[ir,ispin]/r2[ir] + rho_core[ir]/Nspin
+            arho[ir,ispin] = abs(rho_rad[ir,ispin]/r2[ir] + rho_core[ir]/Nspin)
+            #arho[ir,ispin] = rho_rad[ir,ispin]/r2[ir] + rho_core[ir]/Nspin
             # rho_core up and rho_core dn is assumed to be the same, so we divide with Nspin
             # in case of spinpol
         end
@@ -350,7 +351,7 @@ function PAW_xc_potential_GGA!(
     # Factor 2 of div_h because we are using Libxc convention
     for ispin in 1:Nspin
         for lm in 1:l2
-            @views v_lm[1:Nrmesh,lm,ispin] .= gc_lm[1:Nrmesh,lm,ispin] .- 2*div_h[1:Nrmesh,lm,ispin]/Nspin
+            @views v_lm[1:Nrmesh,lm,ispin] .= gc_lm[1:Nrmesh,lm,ispin] .- 2*div_h[1:Nrmesh,lm,ispin]#/Nspin
         end
     end
 
