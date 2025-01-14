@@ -101,7 +101,7 @@ function calc_epsxc_Vxc_PBE!(
         gρ2[ip+2] = gρ_dn[1,ipp]*gρ_dn[1,ipp] + gρ_dn[2,ipp]*gρ_dn[2,ipp] + gρ_dn[3,ipp]*gρ_dn[3,ipp]
     end
 
-    Rhoe_tmp = zeros(2*Npoints)
+    Rhoe_tmp = zeros(Float64, 2*Npoints)
     ipp = 0
     for ip in 1:2:2*Npoints
         ipp = ipp + 1
