@@ -12,8 +12,8 @@
   ibrav = 0
   ntyp = 1
   nat = 2
-  ecutwfc = 50.0
-  ecutrho = 250.0
+  ecutwfc = 40.0
+  ecutrho = 200.0
   nbnd = 20
   nspin = 2
   starting_magnetization(1) = 0.4
