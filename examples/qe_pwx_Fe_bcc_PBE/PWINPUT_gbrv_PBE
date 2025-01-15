@@ -1,0 +1,46 @@
+&CONTROL
+  calculation = 'scf'
+  restart_mode = 'from_scratch'
+  pseudo_dir = '../../pseudopotentials/GBRV_PBE/'
+  outdir = './tmp'
+  disk_io = 'none'
+  tprnfor = .true.
+  tstress = .true.
+/
+
+&SYSTEM
+  ibrav = 0
+  ntyp = 1
+  nat = 2
+  ecutwfc = 40.0
+  ecutrho = 200.0
+  nbnd = 20
+  nspin = 2
+  starting_magnetization(1) = 0.2
+  input_dft = 'gga_x_pbe+gga_c_pbe'
+  occupations = 'smearing'
+  smearing = 'fermi-dirac'
+  degauss = 0.002
+/
+
+&ELECTRONS
+  electron_maxstep = 150
+  mixing_beta = 0.1
+  scf_must_converge = .false.
+/
+
+ATOMIC_SPECIES
+Fe 56.0 fe_pbe_v1.5.uspp.F.UPF
+
+ATOMIC_POSITIONS crystal
+Fe   0.0  0.0  0.0
+Fe   0.5  0.5  0.5
+
+K_POINTS automatic
+3 3 3 0 0 0
+
+CELL_PARAMETERS angstrom
+2.866 0.0    0.0
+0.0   2.866  0.0
+0.0   0.0    2.866
+
