@@ -90,10 +90,22 @@ function atomic_rho_g(
     println("sum abs rhocg = ", sum(abs.(rhocg)))
 
     charge = rhocg[1,1]*CellVolume
-    print("atomic_rho_g: Initial charge = ", charge)
-    # Renormalize
-    println(" Renormalized to ", Nelectrons)
-    rhocg .*= Nelectrons/charge
+    SMALL_CHARGE = 1e-10
+    if abs(charge) < SMALL_CHARGE
+        @info "Small total charge is detected in atomic_rho_g: probably no rhoatom"
+        @info "Initializing to uniform charge density"
+        fill!(rhocg, 0.0 + im*0.0)
+        rhocg[1,1] = Nelectrons/CellVolume
+        # Is this OK?
+        if Nspin == 2
+            rhocg[1,2] = sum(starting_magnetization)
+        end
+    else
+        print("atomic_rho_g: Initial charge = ", charge)
+        # Renormalize
+        println(" Renormalized to ", Nelectrons)
+        rhocg .*= Nelectrons/charge
+    end
 
     Rhoe_tot = real(G_to_R(pw,rhocg[:,1]))*Npoints
 
