@@ -38,14 +38,8 @@ function time_calc_rhoe()
 
     Random.seed!(4321)
     psiks = rand_BlochWavefunc( Ham )
-    for ispin in 1:Nspin, ik in 1:Nkpt
-        Ham.ispin = ispin
-        Ham.ik = ik
-        ikspin = ik + (ispin - 1)*Nkpt
-        PWDFT.ortho_sqrt_with_S!(Ham, psiks[ikspin])
-    end
 
-    Rhoe = zeros(Npoints, Nspin)
+    Rhoe = zeros(Float64, Npoints, Nspin)
 
     @printf("Using calc_rhoe:  ")
     #@btime $Rhoe = calc_rhoe( $Ham, $psiks )
