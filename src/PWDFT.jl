@@ -453,6 +453,7 @@ export get_default_PsPot_GTH
 include("my_pwx/PWSCFInput.jl")
 include("my_pwx/init_Ham_from_pwinput.jl")
 include("my_pwx/my_pwx.jl")
+export init_Ham_from_pwinput
 
 
 # Experiment with PrecompileTools
