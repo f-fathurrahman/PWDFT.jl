@@ -9,6 +9,9 @@ mutable struct Electrons
     Focc::Array{Float64,2}
     ebands::Array{Float64,2}
     Nspin::Int64
+    kT::Float64
+    E_fermi::Float64
+    mTS::Float64
 end
 
 """
@@ -21,7 +24,10 @@ function Electrons()
     Focc = zeros(Nstates,1) # Nkpt=1
     ebands = zeros(Nstates,1) # use Nkpt=1
     Nspin = 1
-    return Electrons( Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin )
+    kT = 0.0
+    E_fermi = 0.0
+    mTS = 0.0
+    return Electrons( Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin, kT, E_fermi, mTS )
 end
 
 """
@@ -151,7 +157,10 @@ function Electrons(
 
     _check_Focc(Focc, Nkpt, Nelectrons)
 
-    return Electrons( Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin )
+    kT = 0.0
+    E_fermi = 0.0
+    mTS = 0.0
+    return Electrons( Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin, kT, E_fermi, mTS )
 end
 
 
@@ -199,7 +208,10 @@ function Electrons(
 
     _check_Focc(Focc, Nkpt, Nelectrons)
 
-    return Electrons( Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin )
+    kT = 0.0
+    E_fermi = 0.0
+    mTS = 0.0
+    return Electrons( Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin, kT, E_fermi, mTS )
 end
 
 
