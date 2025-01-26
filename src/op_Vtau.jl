@@ -5,6 +5,7 @@ function op_Vtau( Ham::Hamiltonian, psiks::BlochWavefunc )
     end
     Nkpt = size(psiks,1)
     # FIXME: spinpol is not yet implemented
+    @assert Ham.electrons.Nspin == 1
     for ik in 1:Nkpt
         Ham.ik = ik
         op_Vtau!(Ham, psiks[ik], Vpsiks[ik])
