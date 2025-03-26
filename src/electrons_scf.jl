@@ -147,7 +147,8 @@ function electrons_scf!(
         if use_smearing
             Focc[:,:], E_fermi = calc_Focc( Nelectrons, wk, kT, evals, Nspin )
             mTS = calc_entropy( wk, kT, evals, E_fermi, Nspin )
-            Ham.electrons.Focc = copy(Focc)
+            Ham.electrons.mTS = mTS
+            Ham.electrons.Focc = copy(Focc) # need this?
         end
 
         #

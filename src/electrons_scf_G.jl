@@ -14,6 +14,8 @@ function electrons_scf_G!(
     starting_magnetization=nothing
 )
 
+# FIXME: use_smearing is read from electrons.use_smearing ?
+
     # Prepare for SCF
     # Also calculate some energy terms
     # We don't use Ham.energies to save these terms
@@ -153,6 +155,7 @@ function electrons_scf_G!(
         if use_smearing
             Focc[:,:], E_fermi = calc_Focc( Nelectrons, wk, kT, evals, Nspin )
             mTS = calc_entropy( wk, kT, evals, E_fermi, Nspin )
+            Ham.electrons.mTS = mTS
             Ham.electrons.Focc = copy(Focc)
         end
 
