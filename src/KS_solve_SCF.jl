@@ -100,8 +100,11 @@ function KS_solve_SCF!(
         if Nspin == 1
             Rhoe[:,1] = guess_rhoe( Ham )
         else
-            #Rhoe = guess_rhoe_atomic( Ham, starting_magnetization=starting_magnetization )
-            Rhoe, _ = atomic_rho_g(Ham, starting_magnetization=starting_magnetization)
+            if eltype(Ham.pspots) == PsPot_GTH
+                Rhoe = guess_rhoe_atomic( Ham, starting_magnetization=starting_magnetization )
+            else
+                Rhoe, _ = atomic_rho_g(Ham, starting_magnetization=starting_magnetization)
+            end
         end
     elseif startingrhoe == :none
         # Use previously calculated density stored in Ham.rhoe
