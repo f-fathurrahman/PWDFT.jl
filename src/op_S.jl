@@ -1,5 +1,5 @@
 function op_S(
-    Ham::Hamiltonian{PsPot_UPF},
+    Ham::Hamiltonian,
     psi::AbstractArray{ComplexF64}
 )
 
@@ -54,6 +54,7 @@ function op_S!(
 
             end
         else
+            # This allows for combination of USPP and NCPP
             if nh[isp] > 0
                 for ia in 1:Natoms
                     if atm2species[ia] != isp
@@ -70,4 +71,14 @@ function op_S!(
 
     return
 
+end
+
+
+function op_S!(
+    Ham::Hamiltonian{PsPot_GTH},
+    psi::AbstractArray{ComplexF64},
+    Spsi::AbstractArray{ComplexF64}
+)
+    @views Spsi[:,:] = psi[:,:]
+    return
 end
