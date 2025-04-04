@@ -60,7 +60,9 @@ function electrons_scf!(
     evals = Ham.electrons.ebands
 
     Rhoe = Ham.rhoe
-    becsum = Ham.pspotNL.becsum
+    if ok_paw
+        becsum = Ham.pspotNL.becsum
+    end
 
     diffRhoe = 0.0
 
@@ -309,7 +311,11 @@ end
 # Initialize Rhoe, potentials
 function _prepare_scf!(Ham, psiks; starting_magnetization=nothing)
     # Initial density
-    Rhoe, _ = atomic_rho_g(Ham, starting_magnetization=starting_magnetization)
+    if eltype(Ham.pspots) == PsPot_GTH
+        Rhoe = guess_rhoe_atomic( Ham, starting_magnetization=starting_magnetization )
+    else
+        Rhoe, _ = atomic_rho_g(Ham, starting_magnetization=starting_magnetization)
+    end
     # Also initialize becsum in case of PAW
     if any(Ham.pspotNL.are_paw)
         PAW_atomic_becsum!(Ham, starting_magnetization=starting_magnetization)
