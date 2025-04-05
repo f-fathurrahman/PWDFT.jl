@@ -216,7 +216,8 @@ function KS_solve_SCF!(
 
         if use_smearing
             Focc, E_fermi = calc_Focc( Nelectrons, wk, kT, evals, Nspin )
-            Entropy = calc_entropy( wk, kT, evals, E_fermi, Nspin )
+            Ham.energies.mTS = calc_entropy( wk, kT, evals, E_fermi, Nspin )
+            Ham.electrons.E_fermi = E_fermi
             Ham.electrons.Focc = copy(Focc)
         end
 
@@ -295,9 +296,6 @@ function KS_solve_SCF!(
 
         # Calculate energies
         Ham.energies = calc_energies( Ham, psiks )
-        if use_smearing
-            Ham.energies.mTS = Entropy
-        end
         Etot = sum(Ham.energies)
         diffE = abs( Etot - Etot_old )
 

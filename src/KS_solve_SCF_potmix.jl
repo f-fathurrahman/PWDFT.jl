@@ -170,7 +170,8 @@ function KS_solve_SCF_potmix!(
 
         if use_smearing
             Focc, E_fermi = calc_Focc( Nelectrons, wk, kT, evals, Nspin )
-            Entropy = calc_entropy( wk, kT, evals, E_fermi, Nspin )
+            Ham.energies.mTS = calc_entropy( wk, kT, evals, E_fermi, Nspin )
+            Ham.electrons.E_fermi = E_fermi
             Ham.electrons.Focc = copy(Focc)
         end
 
