@@ -12,7 +12,6 @@ mutable struct Electrons
     use_smearing::Bool
     kT::Float64
     E_fermi::Float64
-    mTS::Float64
 end
 
 """
@@ -28,10 +27,9 @@ function Electrons()
     use_smearing = false
     kT = 0.0
     E_fermi = 0.0
-    mTS = 0.0
     return Electrons(
         Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin,
-        use_smearing, kT, E_fermi, mTS
+        use_smearing, kT, E_fermi
     )
 end
 
@@ -165,10 +163,9 @@ function Electrons(
     use_smearing = false
     kT = 0.0
     E_fermi = 0.0
-    mTS = 0.0
     return Electrons(
         Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin,
-        use_smearing, kT, E_fermi, mTS
+        use_smearing, kT, E_fermi
     )
 end
 
@@ -220,10 +217,9 @@ function Electrons(
     use_smearing = false
     kT = 0.0
     E_fermi = 0.0
-    mTS = 0.0
     return Electrons(
         Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin,
-        use_smearing, kT, E_fermi, mTS
+        use_smearing, kT, E_fermi
     )
 end
 
