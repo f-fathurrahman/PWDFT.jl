@@ -88,7 +88,7 @@ function electrons_scf!(
     deband = 0.0
     descf = 0.0
     Etot = 0.0
-    mTS = Ham.electrons.mTS
+    mTS = Ham.energies.mTS
 
     xc_calc = Ham.xc_calc
     if xc_calc.family == :metaGGA
