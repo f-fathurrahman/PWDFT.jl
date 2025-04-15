@@ -88,7 +88,6 @@ function electrons_scf!(
     deband = 0.0
     descf = 0.0
     Etot = 0.0
-    mTS = Ham.energies.mTS
 
     xc_calc = Ham.xc_calc
     if xc_calc.family == :metaGGA
@@ -166,7 +165,7 @@ function electrons_scf!(
         #end
 
         # This is not used later?
-        hwf_energy = Eband + deband_hwf + Ehartree + Exc + Ham.energies.NN + mTS
+        hwf_energy = Eband + deband_hwf + Ehartree + Exc + Ham.energies.NN + Ham.energies.mTS
         if ok_paw
             hwf_energy += Ham.pspotNL.paw.EHxc_paw
         end
@@ -223,7 +222,7 @@ function electrons_scf!(
             #@info "sum diff becsum $(sum(becsum_in - becsum))"
         end
 
-        Etot = Eband + deband + Ehartree + Exc + Ham.energies.NN + descf + mTS
+        Etot = Eband + deband + Ehartree + Exc + Ham.energies.NN + descf + Ham.energies.mTS
         if ok_paw
             Etot += Ham.pspotNL.paw.EHxc_paw
         end
@@ -263,7 +262,7 @@ function electrons_scf!(
     @printf("Ehartree = %18.10f Ry\n", 2*Ehartree)
     @printf("Exc      = %18.10f Ry\n", 2*Exc)
     @printf("NN       = %18.10f Ry\n", 2*Ham.energies.NN)
-    @printf("mTS      = %18.10f Ry\n", 2*mTS)
+    @printf("mTS      = %18.10f Ry\n", 2*Ham.energies.mTS)
     if ok_paw
         @printf("EHxc_paw = %18.10f Ry\n", 2*Ham.pspotNL.paw.EHxc_paw)
     end
