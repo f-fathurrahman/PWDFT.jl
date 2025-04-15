@@ -24,7 +24,7 @@
 
 &ELECTRONS
   electron_maxstep = 150
-  mixing_beta = 0.1
+  mixing_beta = 0.5
   scf_must_converge = .false.
 /
 
