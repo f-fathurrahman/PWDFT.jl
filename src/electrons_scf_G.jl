@@ -1,37 +1,48 @@
 # Debug version
 # Similar to electrons_scf, but mixing is done in G-space
 function electrons_scf_G!(
-    Ham::Hamiltonian, psiks;
+    Ham::Hamiltonian;
+    psiks=nothing,
+    Rhoe=nothing,
     NiterMax=150,
     betamix=0.5,
     etot_conv_thr=5e-7,
     ethr_evals_last=1e-13,
-    use_smearing=false,
-    kT::Float64=1e-3,
-    startingrhoe::Symbol=:gaussian,
-    restart::Bool=false,
     print_final_ebands::Bool=true,
     starting_magnetization=nothing
 )
 
-# FIXME: use_smearing is read from electrons.use_smearing ?
-
-    # Prepare for SCF
-    # Also calculate some energy terms
-    # We don't use Ham.energies to save these terms
-    if (startingrhoe == :gaussian) && !restart
-        Ehartree, Exc = _prepare_scf!(Ham, psiks, starting_magnetization=starting_magnetization)
-    elseif (startingrhoe == :none) || restart
-        Ehartree = Ham.energies.Hartree
-        Exc = Ham.energies.XC
-    end
+    # NOTE: use_smearing and kT now are read from Ham.electrons
+    use_smearing = Ham.electrons.use_smearing
+    kT = Ham.electrons.kT
 
     ok_paw = any(Ham.pspotNL.are_paw)
 
-    # Reference EHxc_paw here
-    if ok_paw
-        EHxc_paw = Ham.pspotNL.paw.EHxc_paw
+    if isnothing(psiks)
+        psiks = rand_BlochWavefunc(Ham)
     end
+    
+    # XXX startingrhoe is probably not needed anymore
+    
+    # Initial density
+    if isnothing(Rhoe)
+        if eltype(Ham.pspots) == PsPot_GTH
+            Rhoe = guess_rhoe_atomic( Ham, starting_magnetization=starting_magnetization )
+        else
+            Rhoe, _ = atomic_rho_g(Ham, starting_magnetization=starting_magnetization)
+        end
+    end
+    #
+    # Also initialize becsum in case of PAW
+    if ok_paw
+        PAW_atomic_becsum!(Ham, starting_magnetization=starting_magnetization)
+    end
+
+    # Set rhoe
+    Ham.rhoe[:,:] = Rhoe[:,:]
+
+    # Update the potentials
+    Ehartree, Exc = update_from_rhoe!( Ham, psiks, Rhoe )
 
     # Ham.energies.NN is only used to save this term
     Ham.energies.NN = calc_E_NN(Ham.atoms)
@@ -42,9 +53,7 @@ function electrons_scf_G!(
     Npoints = prod(Ham.pw.Ns)
     CellVolume = Ham.pw.CellVolume
     dVol = CellVolume/Npoints
-    Nstates = Ham.electrons.Nstates # not used?
     Nspin = Ham.electrons.Nspin
-    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     Vhartree = Ham.potentials.Hartree
     Vxc = Ham.potentials.XC
     Focc = Ham.electrons.Focc
@@ -62,20 +71,15 @@ function electrons_scf_G!(
 
     diffRhoe = 0.0
 
-    # Mix directly in R-space
-    #mixer = BroydenMixer(Rhoe, betamix, mixdim=8)
-    #mixer = AdaptiveLinearMixer(Rhoe, 0.1, betamax=0.5) # not working
-
-
     Vin = zeros(Float64, Npoints, Nspin)
     Rhoe_in = zeros(Float64, Npoints, Nspin)
 
     if ok_paw
         becsum_in = zeros(Float64, size(Ham.pspotNL.paw.becsum))
-        mixer = BroydenMixer_G(RhoeG, becsum, betamix, mixdim=8)
+        mixer = BroydenMixer_G(RhoeG, becsum, betamix, mixdim=8, conv_thr=etot_conv_thr)
     else
         # Try mix in G-space
-        mixer = BroydenMixer_G(RhoeG, betamix, mixdim=8)
+        mixer = BroydenMixer_G(RhoeG, betamix, mixdim=8, conv_thr=etot_conv_thr)
     end
 
     ethr = 1e-5 # default
@@ -233,7 +237,7 @@ function electrons_scf_G!(
             Etot += Ham.pspotNL.paw.EHxc_paw
         end
     
-        #
+        # XXX: diffEtot is not used here for convergence criteria
         diffEtot = abs(Etot - Etot_old)
         @printf("SCF_G: %5d  %18.10f  %12.5e  %12.5e\n", iterSCF, Etot, diffEtot, diffRhoe)
         if Nspin == 2
@@ -305,6 +309,9 @@ function electrons_scf_G!(
         @printf("\n")
         print_ebands(Ham.electrons, Ham.pw.gvecw.kpoints, unit="eV")
     end
+
+    Serialization.serialize("psiks.jldat", psiks)
+    Serialization.serialize("Rhoe.jldat", Ham.rhoe)
 
     return
 end

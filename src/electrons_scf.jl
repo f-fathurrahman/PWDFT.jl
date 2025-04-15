@@ -11,29 +11,48 @@ include("diag_davidson_qe_v2.jl")
 # An implementation of electrons_scf subroutine in PWSCF
 # Total energy is calculated using double-counting formula
 function electrons_scf!(
-    Ham::Hamiltonian, psiks;
+    Ham::Hamiltonian;
+    psiks=nothing,
+    Rhoe=nothing,
     NiterMax=150,
     betamix=0.5,
-    etot_conv_thr=1e-6,
+    etot_conv_thr=5e-7,
     ethr_evals_last=1e-13,
-    use_smearing=false,
-    kT::Float64=1e-3,
-    startingrhoe::Symbol=:gaussian,
-    restart::Bool=false,
-    print_final_ebands::Bool=false
+    print_final_ebands::Bool=false,
+    starting_magnetization=nothing
 )
 
-    # Prepare for SCF
-    # Also calculate some energy terms
-    # We don't use Ham.energies to save these terms
-    if (startingrhoe == :gaussian) && !restart
-        Ehartree, Exc = _prepare_scf!(Ham, psiks)
-    elseif (startingrhoe == :none) || restart
-        Ehartree = Ham.energies.Hartree
-        Exc = Ham.energies.XC
-    end
+    # NOTE: use_smearing and kT now are read from Ham.electrons
+    use_smearing = Ham.electrons.use_smearing
+    kT = Ham.electrons.kT
 
     ok_paw = any(Ham.pspotNL.are_paw)
+
+    if isnothing(psiks)
+        psiks = rand_BlochWavefunc(Ham)
+    end
+    
+    # XXX startingrhoe is probably not needed anymore
+    
+    # Initial density
+    if isnothing(Rhoe)
+        if eltype(Ham.pspots) == PsPot_GTH
+            Rhoe = guess_rhoe_atomic( Ham, starting_magnetization=starting_magnetization )
+        else
+            Rhoe, _ = atomic_rho_g(Ham, starting_magnetization=starting_magnetization)
+        end
+    end
+    #
+    # Also initialize becsum in case of PAW
+    if ok_paw
+        PAW_atomic_becsum!(Ham, starting_magnetization=starting_magnetization)
+    end
+
+    # Set rhoe
+    Ham.rhoe[:,:] = Rhoe[:,:]
+
+    # Update the potentials
+    Ehartree, Exc = update_from_rhoe!( Ham, psiks, Rhoe )
 
     # Ham.energies.NN is only used to save this term
     Ham.energies.NN = calc_E_NN(Ham.atoms)
@@ -271,10 +290,13 @@ function electrons_scf!(
         print_ebands(Ham.electrons, Ham.pw.gvecw.kpoints, unit="eV")
     end
 
+    Serialization.serialize("psiks.jldat", psiks)
+    Serialization.serialize("Rhoe.jldat", Ham.rhoe)
+
     return
 end
 
-
+# XXX This is probably not needed anymore
 # Initialize Rhoe, potentials
 function _prepare_scf!(Ham, psiks; starting_magnetization=nothing)
     # Initial density
