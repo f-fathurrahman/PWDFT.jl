@@ -176,7 +176,7 @@ function _do_mix_broyden_G!(
 
     is_converged = false
     if sqrt(dr2) < conv_thr
-        @info "sqrt(dr2) = $(sqrt(dr2)) is quite small already. Should be converged"
+        #@info "sqrt(dr2) = $(sqrt(dr2)) is quite small already. Should be converged"
         is_converged = true
         # Do mixing one more time even if it is already converged
     end
