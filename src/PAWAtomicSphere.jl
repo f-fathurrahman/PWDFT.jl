@@ -129,7 +129,7 @@ function PAWAtomicSphere(l::Int64, ls::Int64; need_gradient::Bool=false)
     # to initialize the gradient of ylm, as we are working in spherical
     # coordinates the formula involves \hat{theta} and \hat{phi}
   
-    println("lm_max = ", lm_max)
+    #println("lm_max = ", lm_max)
     
     if need_gradient
         dylmt = zeros(Float64, nx, lm_max)

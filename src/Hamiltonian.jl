@@ -27,7 +27,7 @@ function Hamiltonian(
     pspots::Vector{Tpsp},
     ecutwfc::Float64,
     options::HamiltonianOptions
-) where Tpsp
+) where Tpsp <: AbstractPsPot
 
     if options.use_symmetry == false
         sym_info = SymmetryInfo()
@@ -38,7 +38,7 @@ function Hamiltonian(
     @assert options.dual >= 4.0
 
     # kpoints
-    if options.kpoints == nothing
+    if isnothing(options.kpoints)
         if options.kpts_str == ""
             # automatic generation of kpoints
             kpoints = KPoints( atoms,

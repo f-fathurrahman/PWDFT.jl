@@ -49,8 +49,8 @@ function PAWVariables(atoms::Atoms, pspots, nhm::Int64; is_gga=false, Nspin=1)
             end
         end
 
-        println("lmax_safe = ", lmax_safe)
-        println("lmax_add  = ", lmax_add)
+        #println("lmax_safe = ", lmax_safe)
+        #println("lmax_add  = ", lmax_add)
 
         paw_spheres[isp] = PAWAtomicSphere(lmax_safe, lmax_add, need_gradient=is_gga)
 

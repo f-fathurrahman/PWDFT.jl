@@ -589,7 +589,7 @@ function _calc_qradG(
         #qradG[isp][:,:,:] = 4*qradG[isp][:,:,:]*prefr
         # Factor of 4 to fix the unit of Deeq and op_S
 
-        qradG[isp][:,:,:] = qradG[isp][:,:,:]*prefr
+        @views qradG[isp][:,:,:] = qradG[isp][:,:,:]*prefr
     end
     return qradG
 end
