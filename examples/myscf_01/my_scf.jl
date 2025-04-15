@@ -70,17 +70,19 @@ function my_scf!(
 
     @assert Nspin == 1  # Current limitation
 
-    Vin = zeros(Npoints)
+    # Preallocated arrays
+    epsxc = zeros(Float64, Npoints)
+    Vin = zeros(Float64, Npoints)
 
-    for iter = 1:NiterMax
+    for iterSCF in 1:NiterMax
 
         #@printf("ethr = %18.10e\n", ethr)
-        evals, ethr = do_diag!(Ham, psiks, update_psi, iter,
+        evals, ethr = do_diag!(Ham, psiks, update_psi, iterSCF,
             Nstates_occ, ethr, ETHR_EVALS_LAST, cheby_degree)
 
         if use_smearing
             Focc, E_fermi = calc_Focc( Nelectrons, wk, kT, evals, Nspin )
-            Entropy = calc_entropy( wk, kT, evals, E_fermi, Nspin )
+            Ham.energies.mTS = calc_entropy( wk, kT, evals, E_fermi, Nspin )
             Ham.electrons.Focc = copy(Focc)
         end
 
@@ -116,12 +118,12 @@ function my_scf!(
         @views EHartree = 0.5*dot(Ham.potentials.Hartree, Rhoe[:,1])*dVol
 
         if Ham.xcfunc == "PBE"
-            epsxc = calc_epsxc_PBE( Ham.xc_calc, Ham.pw, Ham.rhoe )
+            calc_epsxc_PBE!( Ham.xc_calc, Ham.pw, Ham.rhoe, epsxc )
         else
             if Ham.rhoe_core == nothing
-                epsxc = calc_epsxc_VWN( Ham.xc_calc, Ham.rhoe )
+                calc_epsxc_VWN!( Ham.xc_calc, Ham.rhoe, epsxc )
             else
-                epsxc = calc_epsxc_VWN( Ham.xc_calc, Ham.rhoe + Ham.rhoe_core )
+                calc_epsxc_VWN!( Ham.xc_calc, Ham.rhoe + Ham.rhoe_core )
             end
         end
         if Ham.rhoe_core == nothing
@@ -131,14 +133,14 @@ function my_scf!(
         end
 
         if use_smearing
-            Ham.energies.mTS = Entropy
+
         end
         
         #Etot = sum(Ham.energies)
-        Etot = Eband + deband + EHartree + Exc + Ham.energies.NN + descf # entropy missed
+        Etot = Eband + deband + EHartree + Exc + Ham.energies.NN + descf + Ham.energies.mTS
         diffE = abs( Etot - Etot_old )
 
-        @printf("SCF: %8d %18.10f %18.10e %18.10e\n", iter, Etot, diffE, diffRhoe[1] )
+        @printf("SCF: %8d %18.10f %18.10e %18.10e\n", iterSCF, Etot, diffE, diffRhoe[1] )
         
         if diffE < etot_conv_thr
             CONVERGED = CONVERGED + 1
@@ -147,7 +149,7 @@ function my_scf!(
         end
 
         if CONVERGED >= 2
-            @printf("SCF is converged: iter: %d , diffE = %10.7e\n", iter, diffE)
+            @printf("SCF is converged: iterSCF: %d , diffE = %10.7e\n", iterSCF, diffE)
             println()
             println("Total energy terms in Ry:")
             @printf("Eband    = %18.10f Ry\n", 2*Eband)
@@ -156,6 +158,7 @@ function my_scf!(
             @printf("EHartree = %18.10f Ry\n", 2*EHartree)
             @printf("Exc      = %18.10f Ry\n", 2*Exc)
             @printf("NN       = %18.10f Ry\n", 2*Ham.energies.NN)
+            @printf("mTS      = %18.10f Ry\n", 2*Ham.energies.mTS)
             @printf("-----------------------------\n")
             @printf("Total    = %18.10f Ry\n", 2*Etot)
             break
