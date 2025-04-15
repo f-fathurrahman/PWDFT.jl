@@ -35,11 +35,6 @@ function electrons_scf!(
 
     ok_paw = any(Ham.pspotNL.are_paw)
 
-    # Reference EHxc_paw here
-    if ok_paw
-        EHxc_paw = Ham.pspotNL.paw.EHxc_paw
-    end
-
     # Ham.energies.NN is only used to save this term
     Ham.energies.NN = calc_E_NN(Ham.atoms)
 
@@ -49,9 +44,7 @@ function electrons_scf!(
     Npoints = prod(Ham.pw.Ns)
     CellVolume = Ham.pw.CellVolume
     dVol = CellVolume/Npoints
-    Nstates = Ham.electrons.Nstates # not used?
     Nspin = Ham.electrons.Nspin
-    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     Vhartree = Ham.potentials.Hartree
     Vxc = Ham.potentials.XC
     Focc = Ham.electrons.Focc
@@ -68,15 +61,12 @@ function electrons_scf!(
 
     # Mix directly in R-space
     mixer = BroydenMixer(Rhoe, betamix, mixdim=8)
-    #mixer = AdaptiveLinearMixer(Rhoe, 0.1, betamax=0.5) # not working
 
     Vin = zeros(Float64, Npoints, Nspin)
     Rhoe_in = zeros(Float64, Npoints, Nspin)
 
     if ok_paw
         becsum_in = zeros(Float64, size(Ham.pspotNL.becsum))
-        mixer_becsum = BroydenMixer(Ham.pspotNL.becsum, betamix, mixdim=8)
-        # FIXME: mixer_becsum need PAW_ddot
     end
 
     ethr = 1e-5 # default
@@ -188,27 +178,8 @@ function electrons_scf!(
         #
         # Mix the density
         #
-        #diffRhoe = norm(Rhoe - Rhoe_in)
         diffRhoe = dot(Rhoe - Rhoe_in, Rhoe - Rhoe_in)
-        #@info "diffRhoe before mix = $(diffRhoe)"
-
         do_mix!(mixer, Rhoe, Rhoe_in, iterSCF)
-        #if ok_paw
-        #    @info "Also mixing becsum"
-        #    do_mix!(mixer_becsum, becsum, becsum_in, iterSCF)
-        #end
-
-        ##
-        # Linear mixing
-        #β_mix_lin = 0.1
-        #Rhoe[:] .= β_mix_lin*Rhoe[:] + (1-β_mix_lin)*Rhoe_in[:]
-        #if ok_paw
-        #    becsum[:] .= β_mix_lin*becsum[:] + (1-β_mix_lin)*becsum_in[:]
-        #end
-        ##
-
-        #diffRhoe = dot(Rhoe - Rhoe_in, Rhoe - Rhoe_in)
-        #@info "diffRhoe after mix = $(diffRhoe)"
 
         # Check convergence here? (using diffRhoe)
 
