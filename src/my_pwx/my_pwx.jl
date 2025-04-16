@@ -28,14 +28,9 @@ function my_pwx(; filename=nothing, do_export_data=false)
         export_to_script(pwinput, filename="script_"*filename*".jl")
     end
 
-    # This will take into account whether the overlap operator is needed or not
-    psiks = rand_BlochWavefunc(Ham)
-
-    use_smearing = false
-    kT = 0.0
     if pwinput.occupations == "smearing"
-        use_smearing = true
-        kT = pwinput.degauss*0.5 # convert from Ry to Ha
+        Ham.electrons.use_smearing = true
+        Ham.electrons.kT = pwinput.degauss*0.5 # convert from Ry to Ha
     end
 
     if pwinput.nspin == 2
@@ -46,12 +41,13 @@ function my_pwx(; filename=nothing, do_export_data=false)
 
     #electrons_scf!(Ham, psiks, NiterMax=100, use_smearing=use_smearing, kT=kT, betamix=0.1)
     
-    electrons_scf_G!(Ham, psiks,
+    electrons_scf_G!(
+        Ham,
+        psiks=psiks,
         NiterMax=100,
-        use_smearing=use_smearing,
-        kT=kT,
         betamix=0.1,
-        starting_magnetization=starting_magnetization)
+        starting_magnetization=starting_magnetization
+    )
 
     
     #KS_solve_SCF!(Ham, psiks, use_smearing=use_smearing, kT=kT, betamix=0.1)
