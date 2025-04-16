@@ -1,3 +1,5 @@
+*.jldat
+
 lcov.info
 sandbox
 TODO.md
