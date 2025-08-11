@@ -41,6 +41,7 @@ function my_pwx(; filename=nothing, do_export_data=false)
 
     #electrons_scf!(Ham, psiks, NiterMax=100, use_smearing=use_smearing, kT=kT, betamix=0.1)
     
+    psiks = rand_BlochWavefunc(Ham)
     electrons_scf_G!(
         Ham,
         psiks=psiks,
@@ -48,6 +49,7 @@ function my_pwx(; filename=nothing, do_export_data=false)
         betamix=0.1,
         starting_magnetization=starting_magnetization
     )
+    # XXX "Restarting" from previous calculation can be done by specifying Rhoe=Ham.rhoe
 
     
     #KS_solve_SCF!(Ham, psiks, use_smearing=use_smearing, kT=kT, betamix=0.1)
