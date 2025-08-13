@@ -404,6 +404,11 @@ export op_S, op_S!
 include("electrons_scf_G.jl")
 export electrons_scf_G!
 
+include("smearing.jl")
+include("occupations_v2.jl")
+include("electrons_Emin_Haux.jl")
+export electrons_Emin_Haux!
+
 include("calc_forces_NN.jl")
 export calc_forces_NN, calc_forces_NN!
 
