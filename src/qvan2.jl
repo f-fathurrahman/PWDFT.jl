@@ -85,7 +85,7 @@ function qvan2!(
                    qradG[isp][i1,ijv,l] * pwx * vx -
                    qradG[isp][i2,ijv,l] * pwx * ux +
                    qradG[isp][i3,ijv,l] * px * uvx
-            QfuncG[ig] = QfuncG[ig] + prefact * ylmk0[ig,lp] * work
+            QfuncG[ig] += prefact * ylmk0[ig,lp] * work
         end
     end
 

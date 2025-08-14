@@ -403,7 +403,7 @@ function _prepare_aug_charges(
     qq_nt = zeros(Float64, nhm, nhm, Nspecies) # qq_nt, need qvan2
     qq_at = zeros(Float64, nhm, nhm, Natoms)
 
-    G0 = zeros(3,1) # Needs to be a two dimensional array
+    G0 = zeros(Float64, 3, 1) # Needs to be a two dimensional array
     lmaxq = 2*lmaxkb + 1 # using 1-indexing
     ylmk0 = zeros(Float64, 1, lmaxq*lmaxq)
     _lmax = lmaxq - 1 # or 2*lmaxkb
@@ -523,13 +523,13 @@ function _calc_qradG(
 
     #qnorm = 0.0 # XXX HARDCODED, no k-points norm of (q + k) ?
     dq = 0.01 # XXX HARDCODED
-    cell_factor = 1.0 # hardcoded
+    cell_factor = 1.0 # hardcoded (not used)
     nqxq = floor(Int64, sqrt(2*ecutrho)/dq + 4) # factor of 2 in 2*ecutrho (convert to Ry)
 
     besr = zeros(Float64, ndm)
     aux = zeros(Float64, ndm)
     # Radial Fourier transform of
-    qradG = Array{Array{Float64,3},1}(undef,Nspecies)
+    qradG = Vector{Array{Float64,3}}(undef,Nspecies)
     for isp in 1:Nspecies
         Nproj = pspots[isp].Nproj
         Nn2 = round(Int64, Nproj*(Nproj+1)/2)
@@ -590,6 +590,7 @@ function _calc_qradG(
         # Factor of 4 to fix the unit of Deeq and op_S
 
         @views qradG[isp][:,:,:] = qradG[isp][:,:,:]*prefr
+        #qradG[isp] *= prefr #XXX not faster ?
     end
     return qradG
 end
