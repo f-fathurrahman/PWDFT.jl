@@ -398,6 +398,9 @@ function calc_grad_Haux!(
     Ham, Hsub, g_Haux, Kg_Haux;
     κ=1.0
 )
+    # κ is a scalar multiplier for Kg_Haux. There is some heuristics mentioned
+    # in the original paper about how to tune this, however it is not implemented
+    # yet
 
     Nspin = Ham.electrons.Nspin
     Nstates = Ham.electrons.Nstates
@@ -509,7 +512,8 @@ end
 =#
 
 
-
+# Like `electrons_scf` but using direct minimization algorithm for metals
+# TODO: Add original references (including JDFTx)
 function electrons_Emin_Haux!(Ham; NiterMax=100, psiks=nothing, Haux=nothing)
 
     Nspin = Ham.electrons.Nspin
