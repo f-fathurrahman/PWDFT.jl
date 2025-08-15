@@ -560,7 +560,7 @@ function _calc_qradG(
             for iq in 1:nqxq
                 q = (iq - 1) * dq
                 # here we compute the spherical bessel function for each q_i
-                for ir in 1:psp.kkbeta
+                for ir in 1:psp.kkbeta # for PAW this can be kkbeta can be quite extended
                     besr[ir] = sphericalbesselj(l, q*psp.r[ir])
                 end
                 #
