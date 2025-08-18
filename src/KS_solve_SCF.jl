@@ -20,6 +20,7 @@ Commonly used arguments:
 - `use_smearing`: if true then smearing scheme (fractional occupation) is used
 - `kT`: smearing parameter
 """
+# FIXME: Not yet working with USPP and PAW
 function KS_solve_SCF!(
     Ham::Hamiltonian, psiks::BlochWavefunc;
     startingrhoe::Symbol=:gaussian,
