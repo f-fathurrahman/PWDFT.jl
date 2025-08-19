@@ -37,7 +37,7 @@ function main( ; method="SCF" )
     psiks = rand_BlochWavefunc(Ham)
 
     # XXX: Only this solver is currently implemented
-    electrons_scf!(Ham, psiks)
+    electrons_scf!(Ham, psiks=psiks)
 end
 
 @time main()
