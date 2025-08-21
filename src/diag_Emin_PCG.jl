@@ -29,8 +29,7 @@ function diag_Emin_PCG!( Ham::Hamiltonian, psiks::BlochWavefunc;
 
     evals = zeros(Float64,Nstates,Nkspin)
 
-    for ispin = 1:Nspin
-    for ik = 1:Nkpt
+    for ispin in 1:Nspin, ik in 1:Nkpt
         Ham.ik = ik
         Ham.ispin = ispin
         ikspin = ik + (ispin - 1)*Nkpt
@@ -40,8 +39,6 @@ function diag_Emin_PCG!( Ham::Hamiltonian, psiks::BlochWavefunc;
                        verbose_last=verbose_last, Nstates_conv=Nstates_conv,
                        tol_ebands=tol_ebands,
                        α_t=α_t, I_CG_BETA = I_CG_BETA )
-        #
-    end
     end
 
     return evals

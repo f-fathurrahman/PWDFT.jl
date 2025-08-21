@@ -23,8 +23,7 @@ function diag_davidson!( Ham::Hamiltonian, psiks::BlochWavefunc;
 
     evals = zeros(Float64,Nstates,Nkspin)
 
-    for ispin = 1:Nspin
-    for ik = 1:Nkpt
+    for ispin in 1:Nspin, ik in 1:Nkpt
         Ham.ik = ik
         Ham.ispin = ispin
         ikspin = ik + (ispin - 1)*Nkpt
@@ -33,7 +32,6 @@ function diag_davidson!( Ham::Hamiltonian, psiks::BlochWavefunc;
         diag_davidson!( Ham, psiks[ikspin], tol=tol, NiterMax=NiterMax, verbose=verbose,
                         verbose_last=verbose_last, Nstates_conv=Nstates_conv )
         #
-    end
     end
 
     return evals

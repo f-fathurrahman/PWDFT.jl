@@ -12,8 +12,7 @@ function diag_LOBPCG!( Ham::Hamiltonian, psiks::BlochWavefunc;
 
     evals = zeros(Float64,Nstates,Nkspin)
 
-    for ispin = 1:Nspin
-    for ik = 1:Nkpt
+    for ispin in 1:Nspin, ik in 1:Nkpt
         Ham.ik = ik
         Ham.ispin = ispin
         ikspin = ik + (ispin - 1)*Nkpt
@@ -22,7 +21,6 @@ function diag_LOBPCG!( Ham::Hamiltonian, psiks::BlochWavefunc;
         diag_LOBPCG!( Ham, psiks[ikspin], tol=tol, NiterMax=NiterMax, verbose=verbose,
                       verbose_last=verbose_last, Nstates_conv=Nstates_conv )
         #
-    end
     end
 
     return evals
@@ -49,6 +47,7 @@ On return, X will be rewritten as the corresponding eigenvectors.
 
 **IMPORTANT** `X` must be orthonormalized before.
 """
+# XXX This is not yet using overlap operator
 function diag_LOBPCG!( Ham::Hamiltonian, X::AbstractArray{ComplexF64,2};
                        tol=1e-5, NiterMax=100, verbose=false,
                        verbose_last=false, Nstates_conv=0 )
