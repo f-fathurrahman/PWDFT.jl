@@ -386,7 +386,7 @@ end
 
 
 # adapted from ASE
-function get_special_kpoints(lattice::String)
+function get_special_kpoints(lattice::String, atoms::Atoms)
     if lattice == "cubic"
         return Dict("G" => [0.0, 0.0, 0.0],
                     "M" => [1/2, 1/2, 0.0],
@@ -406,6 +406,24 @@ function get_special_kpoints(lattice::String)
                     "H" => [1/2, -1/2, 1/2],
                     "P" => [1/4,  1/4, 1/4],
                     "N" => [0.0,  0.0, 1/2],
+                    "G1" => [0.0, 0.0, 0.0])
+    elseif lattice == "bct2" # ADDED
+        # Logic to extract lattice parameters a and c
+        a = norm(atoms.LatVecs[:,1])
+        c = norm(atoms.LatVecs[:,3])
+        # Calculate Setyawan-Curtarolo parameters
+        sq_ac = (a/c)^2
+        eta = (1 + sq_ac)/4.0
+        zeta = sq_ac/2.0
+        return Dict("G"  => [0.0, 0.0, 0.0],
+                    "N"  => [0.0, 0.5, 0.0],
+                    "P"  => [0.25, 0.25, 0.25],
+                    "Sum" => [-eta, eta, eta],
+                    "Sum1" => [eta, 1-eta, -eta],
+                    "X"  => [0.0, 0.0, 0.5],
+                    "Y"  => [-zeta, zeta, 0.5],
+                    "Y1" => [0.5, 0.5, -zeta],
+                    "Z"  => [0.5, 0.5, -0.5], 
                     "G1" => [0.0, 0.0, 0.0])
     elseif lattice == "tetragonal"
         return Dict("G" => [0.0, 0.0, 0.0],
