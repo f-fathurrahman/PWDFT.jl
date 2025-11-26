@@ -1,8 +1,6 @@
 using DelimitedFiles
-using DelimitedFiles
 using Printf
 using PGFPlotsX
-
 
 function read_special_kpts( filebands::String )
     f = open(filebands, "r")

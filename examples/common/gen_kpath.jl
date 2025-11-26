@@ -1,6 +1,6 @@
 function gen_kpath( atoms::Atoms, path_str_dash::String, lattice::String; Δk = 0.02 )
     
-    dict_spec_kpts = get_special_kpoints(lattice)
+    dict_spec_kpts = get_special_kpoints(lattice, atoms)
 
     path_str = split(path_str_dash,"-",keepempty=false)
     Nkpt_spec = length(path_str)
