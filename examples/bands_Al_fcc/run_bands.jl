@@ -7,8 +7,8 @@ import Serialization
 const DIR_PWDFT = joinpath(dirname(pathof(PWDFT)),"..")
 const DIR_PSP = joinpath(DIR_PWDFT,"pseudopotentials","pade_gth")
 
-include("../common/dump_bandstructure.jl")
-include("../common/gen_kpath.jl")
+include(joinpath(DIR_PWDFT, "examples", "common", "dump_bandstructure.jl"))
+include(joinpath(DIR_PWDFT, "examples", "common", "gen_kpath.jl"))
 
 function main()
 
