@@ -466,6 +466,19 @@ function PWSCFInput( filename::String )
             println("-------------------------------------------------------")
             error()
         end
+    elseif ibrav == 3
+        println("INFO: Generating BCC lattice vectors")
+        if acell > 0.0
+            LatVecs = gen_lattice_bcc(acell)
+        elseif celldm_1 > 0.0
+            LatVecs = gen_lattice_bcc(celldm_1)
+        else
+            println("-------------------------------------------------------")
+            println("ibrav = ", ibrav, " but both acell and celldm_1 is are not valid")
+            println("acell = ", acell, " ibrav = ", ibrav)
+            println("-------------------------------------------------------")
+            error()
+        end
     elseif ibrav == 1
         println("INFO: Generating SC lattice vectors")
         if acell > 0.0
