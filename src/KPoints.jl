@@ -386,6 +386,8 @@ end
 
 
 # adapted from ASE
+# NOTES: This requires more works. Ideally the argument should
+# be lattice vectors only.
 function get_special_kpoints(lattice::String, atoms::Atoms)
     if lattice == "cubic"
         return Dict("G" => [0.0, 0.0, 0.0],
@@ -413,16 +415,17 @@ function get_special_kpoints(lattice::String, atoms::Atoms)
         c = norm(atoms.LatVecs[:,3])
         # Calculate Setyawan-Curtarolo parameters
         sq_ac = (a/c)^2
-        eta = (1 + sq_ac)/4.0
-        zeta = sq_ac/2.0
+        η = (1 + sq_ac)/4.0
+        ζ = sq_ac/2.0
+        #XXX This will only works if LatVecs matches Setyawan-Curtarolo convention
         return Dict("G"  => [0.0, 0.0, 0.0],
                     "N"  => [0.0, 0.5, 0.0],
                     "P"  => [0.25, 0.25, 0.25],
-                    "Sum" => [-eta, eta, eta],
-                    "Sum1" => [eta, 1-eta, -eta],
+                    "S" => [-η, η, η],
+                    "S1" => [η, 1-η, -η],
                     "X"  => [0.0, 0.0, 0.5],
-                    "Y"  => [-zeta, zeta, 0.5],
-                    "Y1" => [0.5, 0.5, -zeta],
+                    "Y"  => [-ζ, ζ, 0.5],
+                    "Y1" => [0.5, 0.5, -ζ],
                     "Z"  => [0.5, 0.5, -0.5], 
                     "G1" => [0.0, 0.0, 0.0])
     elseif lattice == "tetragonal"
