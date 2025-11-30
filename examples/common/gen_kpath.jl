@@ -3,13 +3,15 @@ function gen_kpath( atoms::Atoms, path_str_dash::String, lattice::String; Δk = 
     dict_spec_kpts = get_special_kpoints(lattice, atoms)
 
     path_str = split(path_str_dash,"-",keepempty=false)
+    println("path_str = ", path_str)
     Nkpt_spec = length(path_str)
     kpt_spec = zeros(3,Nkpt_spec)
     kpt_spec_labels = path_str
-    for ik = 1:Nkpt_spec
+    for ik in 1:Nkpt_spec
         label = path_str[ik]
         kvec = dict_spec_kpts[label]
         kpt_spec[:,ik] = kvec
+        println("kpt_spec[:,ik] = ", kpt_spec[:,ik])
     end
 
     # distance between two adjacent special points in path_str
@@ -23,6 +25,7 @@ function gen_kpath( atoms::Atoms, path_str_dash::String, lattice::String; Δk = 
     Nk = zeros(Int64,Nkpt_spec-1)
     for ik = 1:Nkpt_spec-1
         Nk[ik] = round(Int64, d[ik]/Δk)
+        println("Nk[ik] = ", Nk[ik])
     end
 
     ipk = 0
@@ -37,7 +40,8 @@ function gen_kpath( atoms::Atoms, path_str_dash::String, lattice::String; Δk = 
             kpt[:,ipk] = kvec
         end
     end
-    
+    println("Nkpt_on_path = ", Nkpt_on_path)
+
     # The last point
     kpt[:,Nkpt_on_path] = kpt_spec[:,Nkpt_spec]
 
