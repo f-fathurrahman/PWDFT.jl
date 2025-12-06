@@ -15,6 +15,8 @@ struct PsPot_UPF <: AbstractPsPot
     is_nlcc::Bool
     is_ultrasoft::Bool
     is_paw::Bool
+    #
+    has_so::Bool
     # Radial vars
     Nr::Int64
     r::Array{Float64,1}
@@ -51,7 +53,11 @@ struct PsPot_UPF <: AbstractPsPot
     chi::Array{Float64,2}
     lchi::Array{Int64,1}
     occ_chi::Array{Float64,1}
+    #
     rhoatom::Array{Float64,1}
+    #
+    jjj::Union{Vector{Float64},Nothing}
+    jchi::Union{Vector{Float64},Nothing}
     #
     paw_data::Union{PAWData_UPF,Nothing}
 end
@@ -112,6 +118,14 @@ function PsPot_UPF( upf_file::String )
         lmax_rho = parse(Int64, LightXML.attributes_dict(pp_header[1])["l_max_rho"])
     else
         lmax_rho = -1
+    end
+
+    str1 = LightXML.attributes_dict(pp_header[1])["has_so"]
+    if str1 == "T"
+        has_so = true
+        #@info "has_so = $has_so"
+    else
+        has_so = false
     end
 
     #
@@ -338,11 +352,34 @@ function PsPot_UPF( upf_file::String )
         rhoatom[i] = parse(Float64, spl_str[i])
     end
 
+    # Spin-orbit
+    if has_so
+        jjj = zeros(Float64, Nproj)
+        jchi = zeros(Float64, Nchi)
+        pp_spin_orb = LightXML.get_elements_by_tagname(xroot, "PP_SPIN_ORB")
+        for iprj in 1:Nproj
+            tagname = "PP_RELBETA."*string(iprj)
+            pp_relbeta = LightXML.get_elements_by_tagname(pp_spin_orb[1], tagname)
+            jjj[iprj] = parse(Float64, LightXML.attributes_dict(pp_relbeta[1])["jjj"])
+        end
+        for iwf in 1:Nchi
+            tagname = "PP_RELWFC."*string(iwf)
+            pp_relchi = LightXML.get_elements_by_tagname(pp_spin_orb[1], tagname)
+            jchi[iwf] = parse(Float64, LightXML.attributes_dict(pp_relchi[1])["jchi"])
+        end
+    else
+        jjj = nothing
+        jchi = nothing
+    end
+
+
+
     LightXML.free(xdoc)
 
 
     return PsPot_UPF(upf_file, atsymb, zval,
         is_nlcc, is_ultrasoft, is_paw,
+        has_so,
         Nr, r, rab, dx, xmin, rmax, zmesh,
         V_local, Nproj, proj_l, rcut_l, kkbeta, proj_func, Dion,
         h, lmax, Nproj_l,
@@ -351,6 +388,7 @@ function PsPot_UPF( upf_file::String )
         nqf, nqlc, qqq, q_with_l, qfuncl,
         Nchi, chi, lchi, occ_chi,
         rhoatom,
+        jjj, jchi,
         paw_data
     )
 
