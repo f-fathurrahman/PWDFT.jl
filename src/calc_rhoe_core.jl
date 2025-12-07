@@ -66,19 +66,7 @@ function _calc_rhoecgl!(
     r = psp.r
     rab = psp.rab
     rho_atc = psp.rho_atc
-
-    Nr_full = psp.Nr
-    Nr = Nr_full
-    RCUT = 10.0
-    for i in 1:Nr_full
-        if r[i] > RCUT
-            Nr = i
-            break
-        end 
-    end
-    # Force Nr to be odd number
-    Nr = 2*floor(Int64, (Nr + 1)/2) - 1
-    #println("Nr = ", Nr)
+    Nr = psp.Nr_rcut # use effective Nr
 
     Ngl = length(G2_shells)
     aux = zeros(Float64, Nr)

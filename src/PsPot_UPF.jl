@@ -19,6 +19,7 @@ struct PsPot_UPF <: AbstractPsPot
     has_so::Bool
     # Radial vars
     Nr::Int64
+    Nr_rcut::Int64
     r::Array{Float64,1}
     rab::Array{Float64,1}
     dx::Float64
@@ -376,11 +377,23 @@ function PsPot_UPF( upf_file::String )
 
     LightXML.free(xdoc)
 
+    # Used in Vloc construction
+    RCUT = 10.0 # HARDCODED
+    Nr_rcut = Nr
+    for i in 1:Nr
+        if r[i] > RCUT
+            Nr_rcut = i
+            break
+        end 
+    end
+    # Force Nr to be odd number
+    Nr_rcut = 2*floor(Int64, (Nr_rcut + 1)/2) - 1
+    # Nr_rcut is the effective Nr (`msh` array, defined for each atomic species)
 
     return PsPot_UPF(upf_file, atsymb, zval,
         is_nlcc, is_ultrasoft, is_paw,
         has_so,
-        Nr, r, rab, dx, xmin, rmax, zmesh,
+        Nr, Nr_rcut, r, rab, dx, xmin, rmax, zmesh,
         V_local, Nproj, proj_l, rcut_l, kkbeta, proj_func, Dion,
         h, lmax, Nproj_l,
         lmax_rho,
@@ -660,19 +673,7 @@ function eval_Vloc_G!(
 )
 
     r = psp.r
-    Nr_full = psp.Nr
-    Nr = Nr_full
-
-    RCUT = 10.0
-    for i in 1:Nr_full
-        if r[i] > RCUT
-            Nr = i
-            break
-        end 
-    end
-    # Force Nr to be odd number
-    Nr = 2*floor(Int64, (Nr + 1)/2) - 1
-    #println("Nr = ", Nr)
+    Nr = psp.Nr_rcut
 
     rab = psp.rab
     Vloc_at = psp.V_local
