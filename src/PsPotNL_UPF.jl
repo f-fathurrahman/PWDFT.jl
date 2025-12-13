@@ -14,6 +14,7 @@ mutable struct PsPotNL_UPF
     indv::Array{Int64,2}
     nhtol::Array{Int64,2}
     nhtolm::Array{Int64,2}
+    nhtoj::Union{Array{Float64,2},Nothing}
     ijtoh::Array{Int64,3}
     indv_ijkb0::Vector{Int64}
     Dvan::Array{Float64,3}
@@ -25,7 +26,8 @@ mutable struct PsPotNL_UPF
     are_ultrasoft::Vector{Bool} # XXX rename to are_uspp?
     are_paw::Vector{Bool}
     becsum::Array{Float64,3}
-    paw::Union{Nothing,PAWVariables}
+    paw::Union{PAWVariables,Nothing}
+    rot_ylm::Union{Matrix{ComplexF64},Nothing}
 end
 
 
@@ -85,6 +87,21 @@ function PsPotNL_UPF(
     indv_ijkb0 = zeros(Int64, Natoms)
     ijtoh = zeros(Int64, nhm, nhm, Nspecies)
     Dvan = zeros(Float64, nhm, nhm, Nspecies)
+    #
+    any_so = false
+    for isp in 1:Nspecies
+        if pspots[isp].has_so
+            any_so = true
+            break
+        end
+    end
+    if any_so
+        nhtoj = zeros(Float64, nhm, Nspecies)
+        rot_ylm = _init_rot_ylm()
+    else
+        nhtoj = nothing
+        rot_ylm = nothing
+    end
 
     ijkb0 = 0
     for isp in 1:Nspecies
@@ -105,9 +122,10 @@ function PsPotNL_UPF(
         @views ijtoh[:,:,isp] .= -1
         ijv = 0
         for ih in 1:nh[isp], jh in ih:nh[isp]
-             ijv = ijv + 1
-             ijtoh[ih,jh,isp] = ijv
-             ijtoh[jh,ih,isp] = ijv
+            ijv = ijv + 1
+            ijtoh[ih,jh,isp] = ijv
+            ijtoh[jh,ih,isp] = ijv
+            # XXX this ih index is different from ih that is defined in loop over Nspecies
         end
         #
         # ijkb0 points to the last beta "in the solid" for atom ia-1
@@ -132,6 +150,83 @@ function PsPotNL_UPF(
         end
     end
     # TODO: Extract lm -> (l,m)
+
+
+    # Let's just do loop over Nspecies here
+    # XXX Not tested for mixed case of psp.has_so
+    for isp in 1:Nspecies
+        psp = pspots[isp]
+        if psp.has_so
+            ih = 1
+            for nb in 1:psp.Nproj
+                l = psp.proj_l[nb]
+                j = psp.proj_j[nb]
+                for m in 1:(2*l + 1)
+                    nhtoj[ih,isp] = j
+                    ih = ih + 1
+                end
+            end
+        end
+    end
+
+    println("Nspin = ", Nspin)
+    if any_so
+        fcoef = zeros(ComplexF64, nhm, nhm, 2, 2, Nspecies)
+        Dvan_so = zeros(ComplexF64, nhm, nhm, Nspin, Nspecies)
+    else
+        fcoef = nothing
+        Dvan_so = nothing
+    end
+
+    # again spinorbit stuffs
+    for isp in 1:Nspecies
+        psp = pspots[isp]
+        if !psp.has_so
+            continue
+        end
+        # calculate the fcoef
+        for ih in 1:psp.Nproj
+            li = nhtol[ih,isp]
+            ji = nhtoj[ih,isp]
+            mi = nhtolm[ih,isp] - li*li
+            vi = indv[ih,isp]
+            for kh in 1:psp.Nproj
+                lk = nhtol[kh,isp]
+                jk = nhtoj[kh,isp]
+                mk = nhtolm[kh,isp] - lk*lk
+                vk = indv[kh,isp]
+                if (li == lk) && (abs(ji-jk) < 1e-7)
+                    for is1 in 1:2, is2 in 1:2
+                        coeff = 0.0 + im*0.0
+                        for m in (-li-1):li
+                            m0 = sph_ind(li,ji,m,is1) + lmaxx + 1
+                            m1 = sph_ind(lk,jk,m,is2) + lmaxx + 1
+                            Ry1 = rot_ylm[m0,mi]*spinor_coeff(li,ji,m,is1)
+                            Ry2 = conj(rot_ylm[m1,mk])*spinor_coeff(lk,jk,m,is2)
+                            coeff += Ry1 * Ry2
+                        end
+                        fcoef[ih,kh,is1,is2,isp] = coeff
+                    end
+                end # if ! li == lk ...
+            end # loop over kh
+        end # loop over ih
+        # and calculate the bare coefficients
+        #
+        for ih in 1:psp.Nproj[isp]
+            vi = indv[ih,isp]
+            for jh in 1:psp.Nproj[isp]
+                vj = indv[jh,isp]
+                ijs = 0
+                for is1 in 1:2, is2 in 1:2
+                    ijs += 1
+                    Dvan_so[ih,jh,ijs,isp] = psp.Dion[vi,vj] * fcoef[ih,jh,is1,is2,isp]
+                    if vi != vj
+                        fcoef[ih,jh,is1,is2,isp] = 0.0 + im*0.0
+                    end
+                end
+            end # loop jh
+        end # loop ih
+    end
 
     are_ultrasoft = zeros(Bool,Nspecies)
     for isp in 1:Nspecies
@@ -196,11 +291,12 @@ function PsPotNL_UPF(
         lmaxx, lqmax, lmaxkb,
         nh, nhm, NbetaNL, prj_interp_tables,
         ap, lpx, lpl,
-        indv, nhtol, nhtolm, ijtoh, indv_ijkb0,
+        indv, nhtol, nhtolm, nhtoj, ijtoh, indv_ijkb0,
         Dvan, Deeq, qradG, qq_nt, qq_at,
         betaNL,
         are_ultrasoft, are_paw,
-        becsum, paw
+        becsum, paw,
+        rot_ylm
     )
 
 end
@@ -732,6 +828,126 @@ function calc_betaNL_psi(
 
     return pspotNL.betaNL[ik]' * psi
 end
+
+
+function _init_rot_ylm( ; lmaxx=3 )
+    sqrt2 = sqrt(2.0)
+    lqmax = 2*lmaxx + 1
+    rot_ylm = zeros(ComplexF64, lqmax, lqmax)
+    l = lmaxx
+    rot_ylm[l+1,1] = 1.0
+    for n1 in range(2, stop=2*l+1, step=2)
+        m = floor(Int64, n1/2)
+        n = l + 1 - m
+        rot_ylm[n,n1] = complex( (-1)^m/sqrt2, 0.0 )
+        rot_ylm[n,n1+1] = complex( 0.0, -(-1)^m/sqrt2 )
+        n = l + 1 + m
+        rot_ylm[n,n1] = complex(1.0/sqrt2, 0.0)
+        rot_ylm[n,n1+1] = complex(0.0, 1.0/sqrt2)
+    end
+    return rot_ylm
+end
+
+
+#=
+!
+! Copyright (C) 2004 PWSCF group
+! This file is distributed under the terms of the
+! GNU General Public License. See the file `License'
+! in the root directory of the present distribution,
+! or http://www.gnu.org/copyleft/gpl.txt .
+=#
+function spinor_coeff( l, j, m, spin )
+    #=
+    This function calculates the numerical coefficient of a spinor
+    with orbital angular momentum l, total angular momentum j, 
+    projection along z of the total angular momentum m+-1/2. Spin selects
+    the up (spin=1) or down (spin=2) coefficient.
+    l:    orbital angular momentum
+    m:    projection of the total angular momentum+-1/2
+    spin: 1 or 2 select the component
+    j:    total angular momentum
+    =#
+    @assert spin in [1,2]
+    @assert m >= (-l - 1)
+    @assert m <= l
+    denom = 1.0 / (2*l + 1)
+    if abs(j - l - 0.5) < 1e-8
+        #
+        if spin == 1
+            return sqrt((l + m + 1)*denom)
+        end
+        #
+        if spin == 2
+            return sqrt((l-m)*denom)
+        end
+        #
+    elseif abs(j - l + 0.5) < 1e-8
+        #
+        if m < (-l + 1)
+            return 0.0
+        else
+            if spin == 1
+                return sqrt((l - m + 1)*denom)
+            end
+            if spin == 2
+                return -sqrt((l + m)*denom)
+            end
+        end
+        #
+    else
+        error("j and l not compatible")
+    end
+    error("Should not go here")
+end
+
+
+#=
+! Copyright (C) 2004 PWSCF group
+! This file is distributed under the terms of the
+! GNU General Public License. See the file `License'
+! in the root directory of the present distribution,
+! or http://www.gnu.org/copyleft/gpl.txt .
+=#
+function sph_ind( l::Int64, j::Float64, m::Int64, spin::Int64 )
+    #=
+    This function calculates the m index of the spherical harmonic
+    in a spinor with orbital angular momentum l, total angular 
+    momentum j, projection along z of the total angular momentum m+-1/2. 
+    Spin selects the up (spin=1) or down (spin=2) coefficient.
+    =#
+    @assert spin in [1,2]
+    @assert m >= (-l - 1)
+    @assert m <= l
+    #
+    if abs(j - l - 0.5) < 1e-8
+        if spin == 1
+            return m
+        end
+        if spin == 2
+            return m + 1
+        end
+    elseif abs(j - l + 0.5) < 1e-8 # check if j - l == 1/2
+        if m < (-l + 1)
+            return 0
+        else
+            if spin == 1
+                return m - 1
+            end
+            if spin == 2
+                return m
+            end
+        end
+    else
+        error("l=$l and j=$j are not compatible")
+    end
+    #
+    if (sph_ind < -l) || (sph_ind > l)
+        return 0
+    end
+    error("Should go here")
+end
+
 
 
 import Base: print
