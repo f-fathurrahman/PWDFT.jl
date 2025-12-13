@@ -12,7 +12,7 @@ function calc_stress_kinetic!(pw, electrons, psiks, stress_kin)
     wk = pw.gvecw.kpoints.wk
     #
     Nstates = electrons.Nstates
-    Nspin = electrons.Nspin
+    Nspin = electrons.Nspin_channel
     Focc = electrons.Focc # not used?
 
     fill!(stress_kin, 0.0)

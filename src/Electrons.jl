@@ -8,9 +8,10 @@ mutable struct Electrons
     Nstates_occ::Int64
     Focc::Array{Float64,2}
     ebands::Array{Float64,2}
-    Nspin::Int64
+    Nspin_channel::Int64
     use_smearing::Bool
     kT::Float64
+    noncolin::Bool
     E_fermi::Float64
 end
 
@@ -23,13 +24,14 @@ function Electrons()
     Nstates_occ = 1
     Focc = zeros(Nstates,1) # Nkpt=1
     ebands = zeros(Nstates,1) # use Nkpt=1
-    Nspin = 1
+    Nspin_channel = 1
     use_smearing = false
     kT = 0.0
+    noncolin = false
     E_fermi = 0.0
     return Electrons(
-        Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin,
-        use_smearing, kT, E_fermi
+        Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin_channel,
+        use_smearing, kT, noncolin, E_fermi
     )
 end
 
@@ -40,8 +42,8 @@ Creates an instance of `Electrons` given following inputs:
 
 - `Pspots`: an array of `PsPot_GTH` or `PsPot_UPF` instance(s)
 
-- `Nspin`: (optional) number of spin. `Nspin=1` means without spin polarization.
-  `Nspin=2` means with spin-polarization.
+- `Nspin_channel`: (optional) number of spin. `Nspin_channel=1` means without spin polarization.
+  `Nspin_channel=2` means with spin-polarization.
 
 - `Nkpt`: (optional) number of kpoints
 
@@ -52,13 +54,14 @@ Creates an instance of `Electrons` given following inputs:
 """
 function Electrons(
     atoms::Atoms, pspots::Vector{T};
-    Nspin=1, Nkpt=1,
-    Nstates=-1, Nstates_empty=-1
+    Nspin_channel=1, Nkpt=1,
+    Nstates=-1, Nstates_empty=-1, noncolin=false
 ) where T <: AbstractPsPot
     #
     return Electrons(
         atoms, get_Zvals(pspots), 
-        Nspin=Nspin, Nkpt=Nkpt, Nstates=Nstates, Nstates_empty=Nstates_empty
+        Nspin_channel=Nspin_channel, Nkpt=Nkpt, Nstates=Nstates, Nstates_empty=Nstates_empty,
+        noncolin=noncolin
     )
 end
 
@@ -71,8 +74,8 @@ Creates an instance of `Electrons` given following inputs:
 - `zvals`: an array of `Float64` specifying number of valence electrons
   for each atomic species.
 
-- `Nspin`: (optional) number of spin. `Nspin=1` means without spin polarization.
-  `Nspin=2` means with spin-polarization.
+- `Nspin_channel`: (optional) number of spin. `Nspin_channel=1` means without spin polarization.
+  `Nspin_channel=2` means with spin-polarization.
 
 - `Nkpt`: (optional) number of kpoints
 
@@ -83,11 +86,12 @@ Creates an instance of `Electrons` given following inputs:
 """
 function Electrons(
     atoms::Atoms, zvals::Vector{Float64};
-    Nspin=1, Nkpt=1,
-    Nstates=-1, Nstates_empty=-1
+    Nspin_channel=1, Nkpt=1,
+    Nstates=-1, Nstates_empty=-1, noncolin=false
 )
-
-    @assert Nspin <= 2
+    if !noncolin
+        @assert Nspin_channel <= 2
+    end
     @assert length(zvals) == atoms.Nspecies
 
     Nelectrons = get_Nelectrons(atoms, zvals)
@@ -131,14 +135,24 @@ function Electrons(
     #println("Nstates = ", Nstates)
     #println("Nstates_empty = ", Nstates_empty)
 
-    Focc = zeros(Float64,Nstates,Nkpt*Nspin)
-    ebands = zeros(Float64,Nstates,Nkpt*Nspin)
+    Focc = zeros(Float64,Nstates,Nkpt*Nspin_channel)
+    ebands = zeros(Float64,Nstates,Nkpt*Nspin_channel)
     
     Nstates_occ = Nstates - Nstates_empty
 
-    if Nspin == 1
+    if noncolin
+        OCC_MAX = 1.0
+    else
+        if Nspin_channel == 1
+            OCC_MAX = 2.0
+        else
+            OCC_MAX = 1.0
+        end
+    end
+
+    if Nspin_channel == 1
         for ist in 1:Nstates_occ-1
-            Focc[ist,:] .= 2.0
+            Focc[ist,:] .= OCC_MAX
         end
         if is_odd
             Focc[Nstates_occ,:] .= 1.0
@@ -147,14 +161,14 @@ function Electrons(
         end
     else
         for ist = 1:Nstates_occ-1
-            Focc[ist,:] .= 1.0
+            Focc[ist,:] .= OCC_MAX
         end
         idx_up = 1:Nkpt
         if is_odd
             # assign only to the spin up
-            Focc[Nstates_occ,idx_up] .= 1.0
+            Focc[Nstates_occ,idx_up] .= OCC_MAX
         else
-            Focc[Nstates_occ,:] .= 1.0
+            Focc[Nstates_occ,:] .= OCC_MAX
         end
     end
 
@@ -164,8 +178,8 @@ function Electrons(
     kT = 0.0
     E_fermi = 0.0
     return Electrons(
-        Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin,
-        use_smearing, kT, E_fermi
+        Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin_channel,
+        use_smearing, kT, noncolin, E_fermi
     )
 end
 
@@ -193,15 +207,15 @@ function Electrons(
 
     # Nstates_extra is always empty
 
-    Nspin = 2
+    Nspin_channel = 2
     Nelectrons = get_Nelectrons(atoms,Pspots)
     @assert round(Int64,Nelectrons) == sum(NelectronsSpin)
 
     Nstates_occ = maximum(NelectronsSpin)
     Nstates = Nstates_occ + Nstates_extra
 
-    Focc = zeros(Float64,Nstates,Nkpt*Nspin)
-    ebands = zeros(Float64,Nstates,Nkpt*Nspin)
+    Focc = zeros(Float64,Nstates,Nkpt*Nspin_channel)
+    ebands = zeros(Float64,Nstates,Nkpt*Nspin_channel)
 
     for ik in 1:Nkpt
         for i in 1:NelectronsSpin[1]
@@ -217,9 +231,10 @@ function Electrons(
     use_smearing = false
     kT = 0.0
     E_fermi = 0.0
+    noncolin = false
     return Electrons(
-        Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin,
-        use_smearing, kT, E_fermi
+        Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin_channel,
+        use_smearing, kT, noncolin, E_fermi
     )
 end
 

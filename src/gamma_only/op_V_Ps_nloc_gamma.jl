@@ -1,7 +1,7 @@
 function op_V_Ps_nloc( Ham::HamiltonianGamma, psis::BlochWavefuncGamma )
     
     Nstates = size(psis.data[1],2) # Nstates should be similar for all Bloch states
-    Nspin = Ham.electrons.Nspin
+    Nspin = Ham.electrons.Nspin_channel
     out = zeros_BlochWavefuncGamma(Ham)
     
     for ispin in 1:Nspin

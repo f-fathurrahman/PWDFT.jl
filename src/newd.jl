@@ -1,6 +1,6 @@
 function calc_integ_QVeff!( Ham )
 
-    Nspin = Ham.electrons.Nspin
+    Nspin = Ham.electrons.Nspin_channel
     Ng = Ham.pw.gvec.Ng
     lmaxkb = Ham.pspotNL.lmaxkb
     G2 = Ham.pw.gvec.G2
@@ -147,7 +147,7 @@ function calc_newDeeq!( Ham )
     # TODO:
 
     atm2species = Ham.atoms.atm2species
-    Nspin = Ham.electrons.Nspin
+    Nspin = Ham.electrons.Nspin_channel
     Natoms = Ham.atoms.Natoms
     nh = pspotNL.nh
     Dvan = pspotNL.Dvan

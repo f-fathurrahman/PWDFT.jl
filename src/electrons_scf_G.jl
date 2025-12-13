@@ -53,7 +53,7 @@ function electrons_scf_G!(
     Npoints = prod(Ham.pw.Ns)
     CellVolume = Ham.pw.CellVolume
     dVol = CellVolume/Npoints
-    Nspin = Ham.electrons.Nspin
+    Nspin = Ham.electrons.Nspin_channel
     Vhartree = Ham.potentials.Hartree
     Vxc = Ham.potentials.XC
     Focc = Ham.electrons.Focc

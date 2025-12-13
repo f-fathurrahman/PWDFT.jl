@@ -3,7 +3,7 @@ function diag_CheFSI!(
     psiks::BlochWavefunc,
     cheby_degree::Int64
 )
-    Nspin = Ham.electrons.Nspin
+    Nspin = Ham.electrons.Nspin_channel
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     Nstates = Ham.electrons.Nstates
 

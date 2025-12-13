@@ -1,7 +1,7 @@
 function op_K( Ham::Hamiltonian, psiks::BlochWavefunc )
     Nstates = size(psiks[1])[2] # Nstates should be similar for all Bloch states
     
-    Nspin = Ham.electrons.Nspin
+    Nspin = Ham.electrons.Nspin_channel
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     out = zeros_BlochWavefunc(Ham)
     
@@ -19,7 +19,7 @@ function op_K!( Ham::Hamiltonian, psiks::BlochWavefunc, Hpsiks::BlochWavefunc )
     #
     Nstates = size(psiks[1],2) # Nstates should be similar for all Bloch states
     #
-    Nspin = Ham.electrons.Nspin
+    Nspin = Ham.electrons.Nspin_channel
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     #
     for ispin in 1:Nspin, ik in 1:Nkpt

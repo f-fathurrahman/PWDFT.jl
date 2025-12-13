@@ -14,7 +14,7 @@ function atomic_rho_g(
     idx_g2r = pw.gvec.idx_g2r
     CellVolume = pw.CellVolume
     Nelectrons = Ham.electrons.Nelectrons
-    Nspin = Ham.electrons.Nspin
+    Nspin = Ham.electrons.Nspin_channel
     Ngl = length(Ham.pw.gvec.G2_shells)
 
     eps8 = 1e-8

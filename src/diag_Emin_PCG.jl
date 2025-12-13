@@ -22,7 +22,7 @@ function diag_Emin_PCG!( Ham::Hamiltonian, psiks::BlochWavefunc;
     pw = Ham.pw
     electrons = Ham.electrons
     Nkpt = pw.gvecw.kpoints.Nkpt
-    Nspin = electrons.Nspin
+    Nspin = electrons.Nspin_channel
     Nkspin = Nspin*Nkpt
     Ngw = pw.gvecw.Ngw
     Nstates = electrons.Nstates

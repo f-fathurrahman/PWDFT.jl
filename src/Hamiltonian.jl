@@ -137,21 +137,25 @@ function Hamiltonian(
         rhoe_core = nothing
     end
 
-
+    if options.use_noncol_magn
+        Nspin_channel = 1
+    else
+        Nspin_channel = options.Nspin
+    end
     if options.extra_states > -1
         electrons = Electrons( atoms, pspots,
-            Nspin=options.Nspin, Nkpt=kpoints.Nkpt,
+            Nspin_channel=Nspin_channel, Nkpt=kpoints.Nkpt,
             Nstates_empty=options.extra_states )
     #
     elseif options.Nstates > -1
         electrons = Electrons( atoms, pspots,
-            Nspin=options.Nspin, Nkpt=kpoints.Nkpt,
+            Nspin_channel=Nspin_channel, Nkpt=kpoints.Nkpt,
             Nstates=options.Nstates )
     #
     elseif (options.Nstates == -1) && (options.extra_states == -1)
         # Default value for Nstates and Nstates_empty
         # Nstates will be calculated automatically
-        electrons = Electrons( atoms, pspots, Nspin=options.Nspin, Nkpt=kpoints.Nkpt )
+        electrons = Electrons( atoms, pspots, Nspin_channel=Nspin_channel, Nkpt=kpoints.Nkpt )
     else
         error("Error in initializing instance of Electrons")
     end
@@ -269,7 +273,9 @@ function Hamiltonian(
     use_xc_internal::Bool=false,
     extra_states::Int64=-1,
     Nstates::Int64=-1,
-    use_symmetry::Bool=true
+    use_symmetry::Bool=true,
+    use_soc::Bool=false,
+    use_noncol_magn::Bool=false,
 )
 
     # FIXME: This constructor is type-unstable (?)
@@ -277,7 +283,7 @@ function Hamiltonian(
     options = HamiltonianOptions(
         dual, Nspin, meshk, shiftk, time_reversal, Ns_,
         kpoints, kpts_str, xcfunc, use_xc_internal,
-        extra_states, Nstates, use_symmetry
+        extra_states, Nstates, use_symmetry, use_soc, use_noncol_magn
     )
 
     Nspecies = atoms.Nspecies

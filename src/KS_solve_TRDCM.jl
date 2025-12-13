@@ -24,7 +24,7 @@ function KS_solve_TRDCM!( Ham::Hamiltonian;
     Nelectrons = electrons.Nelectrons
 
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
-    Nspin = electrons.Nspin
+    Nspin = electrons.Nspin_channel
 
     Nkspin = Nkpt*Nspin
 

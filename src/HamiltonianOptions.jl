@@ -13,6 +13,8 @@ mutable struct HamiltonianOptions
     extra_states::Int64
     Nstates::Int64
     use_symmetry::Bool
+    use_soc::Bool # spin-orbit coupling
+    use_noncol_magn::Bool # noncollinear magn
 end
 
 function HamiltonianOptions()
@@ -29,9 +31,12 @@ function HamiltonianOptions()
     extra_states = -1
     Nstates = -1
     use_symmetry = true
+    use_soc = false
+    use_noncol_magn = false
     return HamiltonianOptions(
         dual, Nspin, meshk, shiftk, time_reversal, Ns,
         kpoints, kpts_str, xcfunc, use_xc_internal,
-        extra_states, Nstates, use_symmetry
+        extra_states, Nstates, use_symmetry,
+        use_soc, use_noncol_magn
     )
 end

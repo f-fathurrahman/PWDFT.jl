@@ -53,7 +53,7 @@ function KS_solve_Emin_PCG!(
     Ngwx = pw.gvecw.Ngwx
     Nkpt = pw.gvecw.kpoints.Nkpt
     
-    Nspin = electrons.Nspin
+    Nspin = electrons.Nspin_channel
     Nkspin = Nkpt*Nspin
 
     #

@@ -74,7 +74,7 @@ end
 
 
 function zeros_BlochWavefuncGamma( Ham::HamiltonianGamma )
-    return zeros_BlochWavefuncGamma(Ham.pw.gvecw.Ngw, Ham.electrons.Nstates, Nspin=Ham.electrons.Nspin)
+    return zeros_BlochWavefuncGamma(Ham.pw.gvecw.Ngw, Ham.electrons.Nstates, Nspin=Ham.electrons.Nspin_channel)
 end
 
 
@@ -94,7 +94,7 @@ end
 function randn_BlochWavefuncGamma( Ham::HamiltonianGamma; zero_dc=false )
     return randn_BlochWavefuncGamma(
         Ham.pw.gvecw.Ngw, Ham.electrons.Nstates,
-        Nspin=Ham.electrons.Nspin, zero_dc=zero_dc
+        Nspin=Ham.electrons.Nspin_channel, zero_dc=zero_dc
     )
 end
 
@@ -124,7 +124,7 @@ end
 function rand_BlochWavefuncGamma( Ham::HamiltonianGamma; zero_dc=false )
     return rand_BlochWavefuncGamma(
         Ham.pw.gvecw.Ngw, Ham.electrons.Nstates,
-        Nspin=Ham.electrons.Nspin, zero_dc=zero_dc
+        Nspin=Ham.electrons.Nspin_channel, zero_dc=zero_dc
     )
 end
 

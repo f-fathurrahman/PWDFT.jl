@@ -114,7 +114,7 @@ function update_from_wavefunc!(Ham, psiks)
 end
 
 function get_diag_Haux_from_ebands( Ham )
-    Nspin = Ham.electrons.Nspin
+    Nspin = Ham.electrons.Nspin_channel
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     Nkspin = Nkpt*Nspin
     Haux = Vector{Matrix{ComplexF64}}(undef, Nkspin)
@@ -131,7 +131,7 @@ function transform_psiks_Haux_update_ebands!(
     overwrite_Haux=true,
     do_ortho_psi=true
 )
-    Nspin = Ham.electrons.Nspin
+    Nspin = Ham.electrons.Nspin_channel
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     Nkspin = Nkpt*Nspin
     ebands = Ham.electrons.ebands
@@ -315,7 +315,7 @@ end
 
 
 function constrain_search_dir!( Ham, d::BlochWavefunc, psiks::BlochWavefunc )
-    Nspin = Ham.electrons.Nspin
+    Nspin = Ham.electrons.Nspin_channel
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     #XXX need overlap ?
     for ispin in 1:Nspin, ik in 1:Nkpt
@@ -334,7 +334,7 @@ end
 
 
 function my_Kprec!(Ham, g, Kg)
-    Nspin = Ham.electrons.Nspin
+    Nspin = Ham.electrons.Nspin_channel
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     for ispin in 1:Nspin, ik in 1:Nkpt
         ikspin = ik + (ispin-1)*Nkpt
@@ -355,7 +355,7 @@ function calc_grad_psiks!(
 )
     Nstates = Ham.electrons.Nstates
     Focc = Ham.electrons.Focc
-    Nspin = Ham.electrons.Nspin
+    Nspin = Ham.electrons.Nspin_channel
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     Focc = Ham.electrons.Focc
     wk = Ham.pw.gvecw.kpoints.wk
@@ -402,7 +402,7 @@ function calc_grad_Haux!(
     # in the original paper about how to tune this, however it is not implemented
     # yet
 
-    Nspin = Ham.electrons.Nspin
+    Nspin = Ham.electrons.Nspin_channel
     Nstates = Ham.electrons.Nstates
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
 
@@ -516,7 +516,7 @@ end
 # TODO: Add original references (including JDFTx)
 function electrons_Emin_Haux!(Ham; NiterMax=100, psiks=nothing, Haux=nothing)
 
-    Nspin = Ham.electrons.Nspin
+    Nspin = Ham.electrons.Nspin_channel
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     Nkspin = Nkpt*Nspin
     Nstates = Ham.electrons.Nstates

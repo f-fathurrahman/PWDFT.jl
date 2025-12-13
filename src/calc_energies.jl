@@ -18,7 +18,7 @@ function calc_E_Ps_nloc(
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     wk = Ham.pw.gvecw.kpoints.wk
     NbetaNL = Ham.pspotNL.NbetaNL
-    Nspin = Ham.electrons.Nspin
+    Nspin = Ham.electrons.Nspin_channel
 
     # calculate E_NL
     E_Ps_nloc = 0.0
@@ -65,7 +65,7 @@ function calc_E_Ps_nloc(
 
     Nstates = Ham.electrons.Nstates
     Focc = Ham.electrons.Focc
-    Nspin = Ham.electrons.Nspin
+    Nspin = Ham.electrons.Nspin_channel
 
     Natoms = Ham.atoms.Natoms
     Nspecies = Ham.atoms.Nspecies
@@ -138,7 +138,7 @@ function calc_E_local( Ham::Hamiltonian, psiks::BlochWavefunc )
 
     Npoints = prod(Ham.pw.Ns)
     dVol = Ham.pw.CellVolume/Npoints
-    Nspin = Ham.electrons.Nspin
+    Nspin = Ham.electrons.Nspin_channel
     potentials = Ham.potentials
 
     Rhoe = Ham.rhoe # alias
@@ -199,7 +199,7 @@ function calc_E_kin( Ham::Hamiltonian, psiks::BlochWavefunc )
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     Nstates = Ham.electrons.Nstates
     wk = Ham.pw.gvecw.kpoints.wk
-    Nspin = Ham.electrons.Nspin
+    Nspin = Ham.electrons.Nspin_channel
 
     Ngw = Ham.pw.gvecw.Ngw
     idx_gw2g = Ham.pw.gvecw.idx_gw2g

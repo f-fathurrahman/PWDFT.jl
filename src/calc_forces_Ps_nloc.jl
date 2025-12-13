@@ -44,7 +44,7 @@ function calc_forces_Ps_nloc!(
     G = pw.gvec.G
     NbetaNL = pspotNL.NbetaNL
     Nstates = electrons.Nstates
-    Nspin = electrons.Nspin
+    Nspin = electrons.Nspin_channel
     Nkpt = pw.gvecw.kpoints.Nkpt
 
     Ngw = pw.gvecw.Ngw
@@ -306,7 +306,7 @@ function calc_forces_Ps_nloc!(
     Nkpt = pw.gvecw.kpoints.Nkpt
     wk = pw.gvecw.kpoints.wk
     NbetaNL = pspotNL.NbetaNL
-    Nspin = electrons.Nspin
+    Nspin = electrons.Nspin_channel
 
     if NbetaNL == 0
         return F_Ps_nloc

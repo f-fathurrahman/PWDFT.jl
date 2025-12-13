@@ -8,13 +8,13 @@ All occupation numbers will be displayed for all kpoints.
 """
 function print( io::IO, electrons::Electrons; header=true, all_states=false )
 
-    Nspin = electrons.Nspin
+    Nspin_channel = electrons.Nspin_channel
     Focc = electrons.Focc
     Nelectrons = electrons.Nelectrons
     Nstates = electrons.Nstates
     Nstates_occ = electrons.Nstates_occ
     Nkspin = size(Focc)[2]
-    Nkpt = Nkspin/Nspin
+    Nkpt = Nkspin/Nspin_channel
 
     if header
         @printf(io, "\n")
@@ -23,14 +23,14 @@ function print( io::IO, electrons::Electrons; header=true, all_states=false )
         @printf(io, "                                    ---------\n")
         @printf(io, "\n")
     end
-    @printf(io, "Nspin         = %8d\n", Nspin)
+    @printf(io, "Nspin_channel = %8d\n", Nspin_channel)
     @printf(io, "Nkpt          = %8d\n", Nkpt)
     @printf(io, "Nelectrons    =  %18.10f\n", Nelectrons)
     @printf(io, "Nstates       = %8d\n", Nstates)
     @printf(io, "Nstates_occ   = %8d\n", Nstates_occ)
     @printf(io, "Nstates_empty = %8d\n\n", Nstates - Nstates_occ)
 
-    if Nspin == 1
+    if Nspin_channel == 1
         @printf(io, "Occupation numbers: (spin-paired)\n\n")
     else
         @printf(io, "Occupation numbers: (spin-polarized)\n\n")
@@ -92,7 +92,7 @@ function print_ebands( io::IO, electrons::Electrons, kpoints::KPoints; unit="har
         ebands = electrons.ebands
     end
 
-    Nspin = electrons.Nspin
+    Nspin_channel = electrons.Nspin_channel
     Focc = copy(electrons.Focc)
     Nkspin = size(Focc)[2]
     Nkpt = kpoints.Nkpt
@@ -103,7 +103,7 @@ function print_ebands( io::IO, electrons::Electrons, kpoints::KPoints; unit="har
     for ik = 1:Nkpt
         @printf(io, "ik = %5d, k = (%18.10f,%18.10f,%18.10f)\n\n",
                 ik, kpoints.k[1,ik], kpoints.k[2,ik], kpoints.k[3,ik])
-        if electrons.Nspin == 2
+        if electrons.Nspin_channel == 2
             for ist = 1:Nstates
                 @printf(io, "%8d %13.10f %18.10f -- %13.10f %18.10f\n", ist,
                         Focc[ist,ik], ebands[ist,ik], Focc[ist,ik+Nkpt], ebands[ist,ik+Nkpt])
@@ -120,7 +120,7 @@ function print_ebands( io::IO, electrons::Electrons, kpoints::KPoints; unit="har
     for ik = 1:Nkpt
         Focc[:,ik] = wk[ik]*Focc[:,ik]
     end
-    if Nspin == 2
+    if Nspin_channel == 2
         for ik = 1:Nkpt
             Focc[:,ik+Nkpt] = wk[ik]*Focc[:,ik+Nkpt]
         end

@@ -2,7 +2,7 @@ function calc_E_Ps_nloc( Ham::HamiltonianGamma, psis::BlochWavefuncGamma )
 
     Nstates = Ham.electrons.Nstates
     Focc = Ham.electrons.Focc
-    Nspin = Ham.electrons.Nspin
+    Nspin = Ham.electrons.Nspin_channel
 
     Natoms = Ham.atoms.Natoms
     atm2species = Ham.atoms.atm2species
@@ -51,7 +51,7 @@ function calc_E_local( Ham::HamiltonianGamma )
 
     Npoints = prod(Ham.pw.Ns)
     dVol = Ham.pw.CellVolume/Npoints
-    Nspin = Ham.electrons.Nspin
+    Nspin = Ham.electrons.Nspin_channel
     potentials = Ham.potentials
 
     Rhoe_tot = zeros(Npoints)
@@ -77,7 +77,7 @@ function calc_E_kin( Ham::HamiltonianGamma, psis::BlochWavefuncGamma )
 
     Focc = Ham.electrons.Focc
     Nstates = Ham.electrons.Nstates
-    Nspin = Ham.electrons.Nspin
+    Nspin = Ham.electrons.Nspin_channel
 
     Ngw = Ham.pw.gvecw.Ngw
     idx_gw2g = Ham.pw.gvecw.idx_gw2g

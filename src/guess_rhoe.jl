@@ -110,7 +110,7 @@ function guess_rhoe_atomic( Ham::Hamiltonian; starting_magnetization=nothing )
     Npoints = prod(pw.Ns)
     idx_g2r = pw.gvec.idx_g2r
     CellVolume = pw.CellVolume
-    Nspin = Ham.electrons.Nspin
+    Nspin = Ham.electrons.Nspin_channel
     rhocg = zeros(ComplexF64,Npoints,Nspin)
 
     if (Nspin == 2) && starting_magnetization==nothing

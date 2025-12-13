@@ -57,7 +57,7 @@ struct PsPot_UPF <: AbstractPsPot
     #
     rhoatom::Array{Float64,1}
     #
-    jjj::Union{Vector{Float64},Nothing}
+    proj_j::Union{Vector{Float64},Nothing} # originally jjj
     jchi::Union{Vector{Float64},Nothing}
     #
     paw_data::Union{PAWData_UPF,Nothing}
@@ -355,13 +355,13 @@ function PsPot_UPF( upf_file::String )
 
     # Spin-orbit
     if has_so
-        jjj = zeros(Float64, Nproj)
+        proj_j = zeros(Float64, Nproj)
         jchi = zeros(Float64, Nchi)
         pp_spin_orb = LightXML.get_elements_by_tagname(xroot, "PP_SPIN_ORB")
         for iprj in 1:Nproj
             tagname = "PP_RELBETA."*string(iprj)
             pp_relbeta = LightXML.get_elements_by_tagname(pp_spin_orb[1], tagname)
-            jjj[iprj] = parse(Float64, LightXML.attributes_dict(pp_relbeta[1])["jjj"])
+            proj_j[iprj] = parse(Float64, LightXML.attributes_dict(pp_relbeta[1])["jjj"])
         end
         for iwf in 1:Nchi
             tagname = "PP_RELWFC."*string(iwf)
@@ -369,7 +369,7 @@ function PsPot_UPF( upf_file::String )
             jchi[iwf] = parse(Float64, LightXML.attributes_dict(pp_relchi[1])["jchi"])
         end
     else
-        jjj = nothing
+        proj_j = nothing
         jchi = nothing
     end
 
@@ -401,7 +401,7 @@ function PsPot_UPF( upf_file::String )
         nqf, nqlc, qqq, q_with_l, qfuncl,
         Nchi, chi, lchi, occ_chi,
         rhoatom,
-        jjj, jchi,
+        proj_j, jchi,
         paw_data
     )
 
