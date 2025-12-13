@@ -28,6 +28,8 @@ mutable struct PsPotNL_UPF
     becsum::Array{Float64,3}
     paw::Union{PAWVariables,Nothing}
     rot_ylm::Union{Matrix{ComplexF64},Nothing}
+    fcoef::Union{Array{ComplexF64,5},Nothing}
+    Dvan_so::Union{Array{ComplexF64,4},Nothing}
 end
 
 
@@ -169,7 +171,6 @@ function PsPotNL_UPF(
         end
     end
 
-    println("Nspin = ", Nspin)
     if any_so
         fcoef = zeros(ComplexF64, nhm, nhm, 2, 2, Nspecies)
         Dvan_so = zeros(ComplexF64, nhm, nhm, Nspin, Nspecies)
@@ -185,26 +186,26 @@ function PsPotNL_UPF(
             continue
         end
         # calculate the fcoef
-        for ih in 1:psp.Nproj
+        for ih in 1:nh[isp]
             li = nhtol[ih,isp]
             ji = nhtoj[ih,isp]
             mi = nhtolm[ih,isp] - li*li
-            vi = indv[ih,isp]
-            for kh in 1:psp.Nproj
+            for kh in 1:nh[isp]
                 lk = nhtol[kh,isp]
                 jk = nhtoj[kh,isp]
                 mk = nhtolm[kh,isp] - lk*lk
-                vk = indv[kh,isp]
                 if (li == lk) && (abs(ji-jk) < 1e-7)
                     for is1 in 1:2, is2 in 1:2
                         coeff = 0.0 + im*0.0
                         for m in (-li-1):li
                             m0 = sph_ind(li,ji,m,is1) + lmaxx + 1
                             m1 = sph_ind(lk,jk,m,is2) + lmaxx + 1
+                            #println("($m0,$mi) ($m1,$mk)")
                             Ry1 = rot_ylm[m0,mi]*spinor_coeff(li,ji,m,is1)
                             Ry2 = conj(rot_ylm[m1,mk])*spinor_coeff(lk,jk,m,is2)
                             coeff += Ry1 * Ry2
                         end
+                        #println("$ih $kh $is1 $is2 $isp $coeff")
                         fcoef[ih,kh,is1,is2,isp] = coeff
                     end
                 end # if ! li == lk ...
@@ -212,9 +213,9 @@ function PsPotNL_UPF(
         end # loop over ih
         # and calculate the bare coefficients
         #
-        for ih in 1:psp.Nproj[isp]
+        for ih in 1:nh[isp] # not Nproj
             vi = indv[ih,isp]
-            for jh in 1:psp.Nproj[isp]
+            for jh in 1:nh[isp]
                 vj = indv[jh,isp]
                 ijs = 0
                 for is1 in 1:2, is2 in 1:2
@@ -296,7 +297,7 @@ function PsPotNL_UPF(
         betaNL,
         are_ultrasoft, are_paw,
         becsum, paw,
-        rot_ylm
+        rot_ylm, fcoef, Dvan_so
     )
 
 end
@@ -920,32 +921,33 @@ function sph_ind( l::Int64, j::Float64, m::Int64, spin::Int64 )
     @assert m >= (-l - 1)
     @assert m <= l
     #
+    res = -1
     if abs(j - l - 0.5) < 1e-8
         if spin == 1
-            return m
+            res = m
         end
         if spin == 2
-            return m + 1
+            res = m + 1
         end
     elseif abs(j - l + 0.5) < 1e-8 # check if j - l == 1/2
         if m < (-l + 1)
-            return 0
+            res = 0
         else
             if spin == 1
-                return m - 1
+                res = m - 1
             end
             if spin == 2
-                return m
+                res = m
             end
         end
     else
         error("l=$l and j=$j are not compatible")
     end
     #
-    if (sph_ind < -l) || (sph_ind > l)
-        return 0
+    if (res < -l) || (res > l)
+        res = 0
     end
-    error("Should go here")
+    return res
 end
 
 
