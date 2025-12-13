@@ -148,7 +148,7 @@ function prepare_Ham_from_pwinput(; filename=nothing)
         starting_magnetization = nothing
     end
 
-    Nspin = Ham.electrons.Nspin
+    Nspin = Ham.electrons.Nspin_channel
     # Initialize electronic variables: `psiks` and `Haux`:
     Random.seed!(1234)
     psiks = rand_BlochWavefunc(Ham)

@@ -38,14 +38,17 @@ function init_Ham_from_pwinput(; filename::Union{Nothing,String}=nothing)
     Ns = (pwinput.nr1, pwinput.nr2, pwinput.nr3)
     Nspin = pwinput.nspin
     meshk = pwinput.meshk
+    noncolin = pwinput.noncolin
+    lspinorb = pwinput.lspinorb
     if pwinput.nbnd != -1
+        # nbnd is given from pwinput
         Ham = Hamiltonian(atoms, pspfiles, ecutwfc,
             meshk=[meshk[1], meshk[2], meshk[3]], dual=dual, Nstates=pwinput.nbnd, xcfunc=xcfunc, Ns_=Ns,
-            Nspin=Nspin)
+            Nspin=Nspin, use_soc=lspinorb, use_noncol_magn=noncolin)
     else
         Ham = Hamiltonian(atoms, pspfiles, ecutwfc,
             meshk=[meshk[1], meshk[2], meshk[3]], dual=dual, xcfunc=xcfunc, Ns_=Ns,
-            Nspin=Nspin)
+            Nspin=Nspin, use_soc=lspinorb, use_noncol_magn=noncolin)
     end
 
     return Ham, pwinput

@@ -18,6 +18,8 @@ struct PWSCFInput
     nr2::Int64
     nr3::Int64
     starting_magnetization::Vector{Float64}
+    lspinorb::Bool
+    noncolin::Bool
 end
 
 
@@ -76,6 +78,9 @@ function PWSCFInput( filename::String )
 
     celldm_1 = -1.0
     input_dft = ""
+
+    lspinorb = false
+    noncolin = false
 
     IGNORED = ["", "\n", "/", "&ELECTRONS", "&CONTROL", "&SYSTEM"]
 
@@ -216,6 +221,21 @@ function PWSCFInput( filename::String )
             continue
         end
         
+        if occursin("lspinorb =", l)
+            ll = split(l, " = ", keepempty=false)
+            if lowercase(ll[end]) == ".true."
+                lspinorb = true
+            end
+            continue
+        end
+
+        if occursin("noncolin =", l)
+            ll = split(l, " = ", keepempty=false)
+            if lowercase(ll[end]) == ".true."
+                noncolin = true
+            end
+            continue
+        end
 
 
         # Read pseudo_dir
@@ -520,6 +540,15 @@ function PWSCFInput( filename::String )
         starting_magnetization[idx_spec] = starting_magn_dict[idx_spec]
     end
 
+    if lspinorb
+        nspin = 4
+        @assert noncolin
+        # spin-orbital calculation need noncollinear magnetism
+    end
+    if noncolin
+        nspin = 4
+    end
+
     print(atoms)
 
     # Don't forget to convert ecutwfc and ecutrho to Ha
@@ -528,7 +557,8 @@ function PWSCFInput( filename::String )
         (meshk1, meshk2, meshk3),
         nbnd, nspin, occupations, smearing, degauss, input_dft,
         nr1, nr2, nr3,
-        starting_magnetization
+        starting_magnetization,
+        lspinorb, noncolin
     )
 end
 
