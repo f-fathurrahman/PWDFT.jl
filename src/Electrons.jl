@@ -13,6 +13,7 @@ mutable struct Electrons
     kT::Float64
     noncolin::Bool
     E_fermi::Float64
+    Nspin_comp::Int64
 end
 
 """
@@ -25,13 +26,14 @@ function Electrons()
     Focc = zeros(Nstates,1) # Nkpt=1
     ebands = zeros(Nstates,1) # use Nkpt=1
     Nspin_channel = 1
+    Nspin_comp = 1
     use_smearing = false
     kT = 0.0
     noncolin = false
     E_fermi = 0.0
     return Electrons(
         Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin_channel,
-        use_smearing, kT, noncolin, E_fermi
+        use_smearing, kT, noncolin, E_fermi, Nspin_comp
     )
 end
 
@@ -93,6 +95,18 @@ function Electrons(
         @assert Nspin_channel <= 2
     end
     @assert length(zvals) == atoms.Nspecies
+
+    # Determine Nspin_comp
+    Nspin_comp = 1 # default
+    # Collinear magnetism
+    if !noncolin && (Nspin_channel == 2)
+        Nspin_comp = 2
+    end
+    # For noncolin Nspin_channel = 1 and Nspin_comp = 4
+    if noncolin
+        @assert Nspin_channel == 1
+        Nspin_comp = 4
+    end
 
     Nelectrons = get_Nelectrons(atoms, zvals)
 
@@ -179,7 +193,7 @@ function Electrons(
     E_fermi = 0.0
     return Electrons(
         Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin_channel,
-        use_smearing, kT, noncolin, E_fermi
+        use_smearing, kT, noncolin, E_fermi, Nspin_comp
     )
 end
 
@@ -199,6 +213,7 @@ end
 NelectronsSpin = (Nel_up, Nel_dn)
 This is useful for molecule.
 """
+# XXX: Not tested for noncolin
 function Electrons(
     atoms::Atoms, Pspots,
     NelectronsSpin::Tuple{Int64,Int64};
@@ -232,6 +247,7 @@ function Electrons(
     kT = 0.0
     E_fermi = 0.0
     noncolin = false
+    Nspin_comp = 2 # collinear magnetism
     return Electrons(
         Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin_channel,
         use_smearing, kT, noncolin, E_fermi
