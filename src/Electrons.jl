@@ -114,45 +114,52 @@ function Electrons(
 
     # If Nstates is not specified and Nstates_empty == 0, we calculate
     # Nstates manually from Nelectrons
-    if Nstates == -1
-        Nstates = round(Int64, Nelectrons/2)
-        if Nstates*2 < Nelectrons
-            Nstates = Nstates + 1
-        end
-        if Nstates_empty > 0
-            Nstates = Nstates + Nstates_empty
+    if !noncolin
+        if Nstates == -1
+            Nstates = round(Int64, Nelectrons/2)
+            if Nstates*2 < Nelectrons
+                Nstates = Nstates + 1
+            end
+            if Nstates_empty > 0
+                Nstates = Nstates + Nstates_empty
+            else
+                Nstates_empty = 0 # Given Nstates_empty a valid value
+            end
         else
-            Nstates_empty = 0 # Given Nstates_empty a valid value
+            # Nstates is not given its default (invalid value)
+            if Nstates_empty != -1
+                println("Please specify Nstates only or Nstates_empty only")
+                error()
+            end
+            NstatesMin = round(Int64, Nelectrons/2)
+            if NstatesMin*2 < Nelectrons
+                NstatesMin += 1
+            end
+            if Nstates < NstatesMin
+            @printf("Given Nstates is not enough: Nstates = %d, NstatesMin = %d", Nstates, NstatesMin)
+            end
+            if Nstates > NstatesMin
+                Nstates_empty = Nstates - NstatesMin
+            else
+                Nstates_empty = 0
+            end
         end
+        # Nstates, Nstates_empty must be set up to their valid values now
+        # i.e. they should not have value of -1
     else
-        # Nstates is not given its default (invalid value)
-        if Nstates_empty != -1
-            println("Please specify Nstates only or Nstates_empty only")
-            error()
-        end
-        NstatesMin = round(Int64, Nelectrons/2)
-        if NstatesMin*2 < Nelectrons
-            NstatesMin += 1
-        end
-        if Nstates < NstatesMin
-           @printf("Given Nstates is not enough: Nstates = %d, NstatesMin = %d", Nstates, NstatesMin)
-        end
-        if Nstates > NstatesMin
-            Nstates_empty = Nstates - NstatesMin
-        else
-            Nstates_empty = 0
-        end
+        Nstates_empty = Int64(Nstates - Nelectrons)
     end
-    # Nstates, Nstates_empty must be set up to their valid values now
-    # i.e. they should not have value of -1
 
-    #println("Nstates = ", Nstates)
-    #println("Nstates_empty = ", Nstates_empty)
-
-    Focc = zeros(Float64,Nstates,Nkpt*Nspin_channel)
-    ebands = zeros(Float64,Nstates,Nkpt*Nspin_channel)
+    Focc = zeros(Float64, Nstates, Nkpt*Nspin_channel)
+    ebands = zeros(Float64, Nstates, Nkpt*Nspin_channel)
     
     Nstates_occ = Nstates - Nstates_empty
+
+    @info "Nstates = $(Nstates)"
+    @info "Nstates_empty = $(Nstates_empty)"
+    @info "Nstates_occ = $(Nstates_occ)"
+    @info "Nspin_channel = $(Nspin_channel)"
+    @info "Nspin_comp = $(Nspin_comp)"
 
     if noncolin
         OCC_MAX = 1.0
@@ -163,6 +170,7 @@ function Electrons(
             OCC_MAX = 1.0
         end
     end
+    @info "OCC_MAX = $(OCC_MAX)"
 
     if Nspin_channel == 1
         for ist in 1:Nstates_occ-1
@@ -171,7 +179,7 @@ function Electrons(
         if is_odd
             Focc[Nstates_occ,:] .= 1.0
         else
-            Focc[Nstates_occ,:] .= 2.0
+            Focc[Nstates_occ,:] .= OCC_MAX
         end
     else
         for ist = 1:Nstates_occ-1
