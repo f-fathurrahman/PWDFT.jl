@@ -1,6 +1,8 @@
 function atomic_rho_g(
     Ham::Hamiltonian{PsPot_UPF};
-    starting_magnetization::Union{Nothing,Vector{Float64}}=nothing
+    starting_magnetization::Union{Nothing,Vector{Float64}} = nothing,
+    angle1::Union{Nothing,Vector{Float64}} = nothing,
+    angle2::Union{Nothing,Vector{Float64}} = nothing
 )
 
     atoms = Ham.atoms
@@ -14,7 +16,7 @@ function atomic_rho_g(
     idx_g2r = pw.gvec.idx_g2r
     CellVolume = pw.CellVolume
     Nelectrons = Ham.electrons.Nelectrons
-    Nspin = Ham.electrons.Nspin_channel
+    Nspin = Ham.electrons.Nspin_comp
     Ngl = length(Ham.pw.gvec.G2_shells)
 
     eps8 = 1e-8
@@ -38,6 +40,16 @@ function atomic_rho_g(
         starting_magnetization = 0.1*ones(Nspecies)
         @info "Using default starting magnetization = $(starting_magnetization)"
     end
+
+    if (Nspin == 4) && isnothing(angle1) && isnothing(angle2)
+        starting_magnetization = 0.1*ones(Nspecies)
+        angle1 = 0.4*pi*ones(Nspecies)
+        angle2 = 0.5*pi*ones(Nspecies)
+        @info "Using default angle1 = $(angle1)"
+        @info "Using default angle2 = $(angle2)"
+    end
+
+    angular = zeros(Float64, 3)
 
     for isp in 1:Nspecies
 
@@ -72,6 +84,7 @@ function atomic_rho_g(
             rhocg[ip,1] += strf[ig,isp]*rhocgnt[igl]/CellVolume
         end
 
+        # Collinear magnetism
         if Nspin == 2
             for ig in 1:Ng
                 ip = idx_g2r[ig]
@@ -79,12 +92,35 @@ function atomic_rho_g(
                 rhocg[ip,2] += starting_magnetization[isp]*strf[ig,isp]*rhocgnt[igl]/CellVolume
             end
         end
+        
+        # ffr: spherical coord?
+        if Nspin == 4
+            angular[1] = sin(angle1[isp])*cos(angle2[isp])
+            angular[2] = sin(angle1[isp])*sin(angle2[isp])
+            angular[3] = cos(angle1[isp])
+            # For spin-polarized case
+            for ispin in 2:Nspin
+                for ig in 1:Ng
+                    ip = idx_g2r[ig]
+                    igl = idx_g2shells[ig]
+                    # rhoscale is set to 1
+                    rho1 = angular[ispin-1] * strf[ig,isp] * rhocgnt[igl] / CellVolume
+                    rhocg[ip,ispin] += starting_magnetization[isp] * rho1
+                end
+            end
+        end # if
 
     end # loop over species
 
     println("Some rhocg: ")
     for ip in 1:5
         @printf("%3d %18.10f %18.10f\n", ip, real(rhocg[ip,1]), imag(rhocg[ip,1]))
+    end
+    if Nspin == 4
+        println("Some magn cg: ")
+        for ip in 1:5
+            println("$ip $(rhocg[ip,2]) $(rhocg[ip,3]) $(rhocg[ip,4])" )
+        end
     end
 
     println("sum abs rhocg = ", sum(abs.(rhocg)))
@@ -119,6 +155,10 @@ function atomic_rho_g(
         magn = real(G_to_R(pw,rhocg[:,2]))*Npoints
         Rhoe[:,1] = 0.5*(Rhoe_tot + magn)
         Rhoe[:,2] = 0.5*(Rhoe_tot - magn)
+    elseif Nspin == 4
+        for i in 1:4
+            Rhoe[:,i] = real(G_to_R(pw,rhocg[:,i]))*Npoints
+        end
     else
         Rhoe[:,1] = Rhoe_tot
     end
