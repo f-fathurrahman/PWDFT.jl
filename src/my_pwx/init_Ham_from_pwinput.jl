@@ -42,6 +42,7 @@ function init_Ham_from_pwinput(; filename::Union{Nothing,String}=nothing)
     lspinorb = pwinput.lspinorb
     if pwinput.nbnd != -1
         # nbnd is given from pwinput
+        @info "Pass here 45 in init_Ham_from_pwinput"
         Ham = Hamiltonian(atoms, pspfiles, ecutwfc,
             meshk=[meshk[1], meshk[2], meshk[3]], dual=dual, Nstates=pwinput.nbnd, xcfunc=xcfunc, Ns_=Ns,
             Nspin=Nspin, use_soc=lspinorb, use_noncol_magn=noncolin)

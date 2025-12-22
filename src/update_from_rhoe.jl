@@ -120,7 +120,7 @@ end
 # FIXME: allow psiks to be nothing (?)
 function _add_V_xc!(Ham, psiks, Rhoe)
 
-    Nspin = Ham.electrons.Nspin_channel
+    Nspin = Ham.electrons.Nspin_comp
 
     Npoints = size(Rhoe, 1)
     epsxc = zeros(Float64, Npoints)
@@ -146,7 +146,14 @@ function _add_V_xc!(Ham, psiks, Rhoe)
         
         else
             # VWN
-            calc_epsxc_Vxc_VWN!( Ham.xc_calc, Rhoe, epsxc, Vxc )
+            if Nspin <= 2
+                calc_epsxc_Vxc_VWN!( Ham.xc_calc, Rhoe, epsxc, Vxc )
+            elseif Nspin == 4
+                # XXX Special case for noncolin, not using magnetism
+                @views calc_epsxc_Vxc_VWN!( Ham.xc_calc, Rhoe[:,1], epsxc, Vxc[:,1] )
+            else
+                @error("Wrong Nspin=$Nspin")
+            end 
         end
         Exc = sum(epsxc .* Rhoe)*dVol # is this working for spinpol?
     

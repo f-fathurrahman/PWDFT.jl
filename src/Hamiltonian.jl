@@ -137,25 +137,46 @@ function Hamiltonian(
         rhoe_core = nothing
     end
 
+    if options.use_soc
+        Nspin_channel = 1
+        Nspin_comp = 4
+        @assert options.use_noncol_magn
+    end
     if options.use_noncol_magn
         Nspin_channel = 1
+        Nspin_comp = 4
     else
         Nspin_channel = options.Nspin
+        Nspin_comp = options.Nspin
     end
+    # extra_states is given
     if options.extra_states > -1
+        @info "Pass here 154"
         electrons = Electrons( atoms, pspots,
-            Nspin_channel=Nspin_channel, Nkpt=kpoints.Nkpt,
-            Nstates_empty=options.extra_states )
-    #
+            Nspin_channel = Nspin_channel,
+            Nkpt = kpoints.Nkpt,
+            Nstates_empty = options.extra_states,
+            noncolin = options.use_noncol_magn
+        )
+    # no extra_states is given but Nstates is given
     elseif options.Nstates > -1
+        @info "Pass here 163"
         electrons = Electrons( atoms, pspots,
-            Nspin_channel=Nspin_channel, Nkpt=kpoints.Nkpt,
-            Nstates=options.Nstates )
+            Nspin_channel = Nspin_channel,
+            Nkpt = kpoints.Nkpt,
+            Nstates = options.Nstates,
+            noncolin = options.use_noncol_magn
+        )
     #
     elseif (options.Nstates == -1) && (options.extra_states == -1)
+        @info "Pass here 172"
         # Default value for Nstates and Nstates_empty
         # Nstates will be calculated automatically
-        electrons = Electrons( atoms, pspots, Nspin_channel=Nspin_channel, Nkpt=kpoints.Nkpt )
+        electrons = Electrons( atoms, pspots,
+            Nspin_channel = Nspin_channel,
+            Nkpt = kpoints.Nkpt,
+            noncolin = options.use_noncol_magn
+        )
     else
         error("Error in initializing instance of Electrons")
     end
