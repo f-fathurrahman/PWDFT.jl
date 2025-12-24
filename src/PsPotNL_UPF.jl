@@ -951,6 +951,43 @@ function sph_ind( l::Int64, j::Float64, m::Int64, spin::Int64 )
 end
 
 
+function _build_chi_interp_table(psp, pw)
+    ecutwfc = pw.ecutwfc
+    CellVolume = pw.CellVolume
+    cell_factor = 1.0 # XXX HARDCODED
+    dq = 0.01 # XXX HARDCODED
+    ndm = psp.Nr_rcut
+    aux = zeros(Float64, ndm)
+    vchi = zeros(Float64, ndm)
+    
+    # chiq = radial fourier transform of atomic orbitals chi
+    pref = 4π / sqrt(CellVolume)
+    # needed to normalize atomic wfcs (not a bad idea in general and 
+    # necessary to compute correctly lda+U projections)
+    
+    Nq = floor( Int64, (sqrt(2*ecutwfc)/dq + 4)*cell_factor )
+    Nwfc = psp.Nchi
+    tab_at = zeros(Float64, Nq, Nwfc)
+    for iwf in 1:Nwfc
+        if psp.occ_chi[iwf] >= 0.0
+            l = psp.lchi[iwf]
+            for iq in 1:Nq
+                q = dq * (iq - 1)
+                PWDFT.qe_sph_bes!(l, q, psp.r[1:ndm], aux)
+                for ir in 1:ndm
+                    vchi[ir] = psp.chi[ir,iwf] * aux[ir] * psp.r[ir]
+                end
+                vqint = PWDFT.integ_simpson( ndm, vchi, psp.rab )
+                tab_at[iq,iwf] = vqint * pref
+            end
+        end # if
+    end # iwf
+    return tab_at
+end
+
+
+
+
 
 import Base: print
 function print( io::IO, pspotNL::PsPotNL_UPF )
