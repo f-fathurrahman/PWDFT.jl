@@ -156,7 +156,7 @@ function Hamiltonian(
             Nspin_channel = Nspin_channel,
             Nkpt = kpoints.Nkpt,
             Nstates_empty = options.extra_states,
-            noncolin = options.use_noncol_magn
+            noncollinear = options.use_noncol_magn
         )
     # no extra_states is given but Nstates is given
     elseif options.Nstates > -1
@@ -165,7 +165,7 @@ function Hamiltonian(
             Nspin_channel = Nspin_channel,
             Nkpt = kpoints.Nkpt,
             Nstates = options.Nstates,
-            noncolin = options.use_noncol_magn
+            noncollinear = options.use_noncol_magn
         )
     #
     elseif (options.Nstates == -1) && (options.extra_states == -1)
@@ -175,7 +175,7 @@ function Hamiltonian(
         electrons = Electrons( atoms, pspots,
             Nspin_channel = Nspin_channel,
             Nkpt = kpoints.Nkpt,
-            noncolin = options.use_noncol_magn
+            noncollinear = options.use_noncol_magn
         )
     else
         error("Error in initializing instance of Electrons")

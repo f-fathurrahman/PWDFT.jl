@@ -11,7 +11,7 @@ mutable struct Electrons
     Nspin_channel::Int64
     use_smearing::Bool
     kT::Float64
-    noncolin::Bool
+    noncollinear::Bool
     E_fermi::Float64
     Nspin_comp::Int64
 end
@@ -29,11 +29,11 @@ function Electrons()
     Nspin_comp = 1
     use_smearing = false
     kT = 0.0
-    noncolin = false
+    noncollinear = false
     E_fermi = 0.0
     return Electrons(
         Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin_channel,
-        use_smearing, kT, noncolin, E_fermi, Nspin_comp
+        use_smearing, kT, noncollinear, E_fermi, Nspin_comp
     )
 end
 
@@ -57,13 +57,13 @@ Creates an instance of `Electrons` given following inputs:
 function Electrons(
     atoms::Atoms, pspots::Vector{T};
     Nspin_channel=1, Nkpt=1,
-    Nstates=-1, Nstates_empty=-1, noncolin=false
+    Nstates=-1, Nstates_empty=-1, noncollinear=false
 ) where T <: AbstractPsPot
     #
     return Electrons(
         atoms, get_Zvals(pspots), 
         Nspin_channel=Nspin_channel, Nkpt=Nkpt, Nstates=Nstates, Nstates_empty=Nstates_empty,
-        noncolin=noncolin
+        noncollinear=noncollinear
     )
 end
 
@@ -89,9 +89,9 @@ Creates an instance of `Electrons` given following inputs:
 function Electrons(
     atoms::Atoms, zvals::Vector{Float64};
     Nspin_channel=1, Nkpt=1,
-    Nstates=-1, Nstates_empty=-1, noncolin=false
+    Nstates=-1, Nstates_empty=-1, noncollinear=false
 )
-    if !noncolin
+    if !noncollinear
         @assert Nspin_channel <= 2
     end
     @assert length(zvals) == atoms.Nspecies
@@ -99,11 +99,11 @@ function Electrons(
     # Determine Nspin_comp
     Nspin_comp = 1 # default
     # Collinear magnetism
-    if !noncolin && (Nspin_channel == 2)
+    if !noncollinear && (Nspin_channel == 2)
         Nspin_comp = 2
     end
-    # For noncolin Nspin_channel = 1 and Nspin_comp = 4
-    if noncolin
+    # For noncollinear Nspin_channel = 1 and Nspin_comp = 4
+    if noncollinear
         @assert Nspin_channel == 1
         Nspin_comp = 4
     end
@@ -114,7 +114,7 @@ function Electrons(
 
     # If Nstates is not specified and Nstates_empty == 0, we calculate
     # Nstates manually from Nelectrons
-    if !noncolin
+    if !noncollinear
         if Nstates == -1
             Nstates = round(Int64, Nelectrons/2)
             if Nstates*2 < Nelectrons
@@ -161,7 +161,7 @@ function Electrons(
     @info "Nspin_channel = $(Nspin_channel)"
     @info "Nspin_comp = $(Nspin_comp)"
 
-    if noncolin
+    if noncollinear
         OCC_MAX = 1.0
     else
         if Nspin_channel == 1
@@ -201,7 +201,7 @@ function Electrons(
     E_fermi = 0.0
     return Electrons(
         Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin_channel,
-        use_smearing, kT, noncolin, E_fermi, Nspin_comp
+        use_smearing, kT, noncollinear, E_fermi, Nspin_comp
     )
 end
 
@@ -221,7 +221,7 @@ end
 NelectronsSpin = (Nel_up, Nel_dn)
 This is useful for molecule.
 """
-# XXX: Not tested for noncolin
+# XXX: Not tested for noncollinear
 function Electrons(
     atoms::Atoms, Pspots,
     NelectronsSpin::Tuple{Int64,Int64};
@@ -254,11 +254,11 @@ function Electrons(
     use_smearing = false
     kT = 0.0
     E_fermi = 0.0
-    noncolin = false
+    noncollinear = false
     Nspin_comp = 2 # collinear magnetism
     return Electrons(
         Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin_channel,
-        use_smearing, kT, noncolin, E_fermi
+        use_smearing, kT, noncollinear, E_fermi
     )
 end
 

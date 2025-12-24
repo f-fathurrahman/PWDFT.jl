@@ -154,7 +154,7 @@ function _add_V_xc!(Ham, psiks, Rhoe)
             if Nspin <= 2
                 calc_epsxc_Vxc_VWN!( Ham.xc_calc, Rhoe, epsxc, Vxc )
             elseif Nspin == 4
-                # XXX Special case for noncolin, not using magnetism
+                # XXX Special case for noncollinear, not using magnetism
                 @views calc_epsxc_Vxc_VWN!( Ham.xc_calc, Rhoe[:,1], epsxc, Vxc[:,1] )
             else
                 @error("Wrong Nspin=$Nspin")
