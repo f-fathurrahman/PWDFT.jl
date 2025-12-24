@@ -10,6 +10,23 @@ function calc_epsxc_Vxc_VWN(
     end
 end
 
+function _rearrange_rhoe_comp(Rhoe)
+    Nspin = size(Rhoe, 2)
+    Npoints = size(Rhoe, 1)
+    @assert Nspin in [1,2,4]
+    # Do the transpose manually
+    Rhoe_tmp = zeros(Float64, Nspin*Npoints)
+    ipp = 0
+    for ip in 1:Nspin:Nspin*Npoints
+        ipp = ipp + 1
+        Rhoe_tmp[ip] = Rhoe[ipp,1]
+        for i in 1:(Nspin-1)
+            Rhoe_tmp[ip+i] = Rhoe[ipp,i+1]
+        end
+    end
+    return Rhoe_tmp
+end
+
 # In-place version, both epsxc and Vxc, spinpol
 function calc_epsxc_Vxc_VWN!(
     xc_calc::LibxcXCCalculator,
@@ -19,6 +36,7 @@ function calc_epsxc_Vxc_VWN!(
 )
 
     Nspin = size(Rhoe, 2)
+    @assert Nspin in [1,2]
     Npoints = size(Rhoe, 1)
 
     if Nspin == 1
@@ -28,13 +46,14 @@ function calc_epsxc_Vxc_VWN!(
     end
 
     # Do the transpose manually
-    Rhoe_tmp = zeros(Float64, 2*Npoints)
-    ipp = 0
-    for ip in 1:2:2*Npoints
-        ipp = ipp + 1
-        Rhoe_tmp[ip] = Rhoe[ipp,1]
-        Rhoe_tmp[ip+1] = Rhoe[ipp,2]
-    end
+    #Rhoe_tmp = zeros(Float64, 2*Npoints)
+    #ipp = 0
+    #for ip in 1:2:2*Npoints
+    #    ipp = ipp + 1
+    #    Rhoe_tmp[ip] = Rhoe[ipp,1]
+    #    Rhoe_tmp[ip+1] = Rhoe[ipp,2]
+    #end
+    Rhoe_tmp = _rearrange_rhoe_comp(Rhoe)
 
     eps_x = zeros(Float64, Npoints)
     eps_c = zeros(Float64, Npoints)
@@ -174,6 +193,7 @@ function calc_epsxc_VWN!(
 )
 
     Nspin = size(Rhoe, 2)
+    @assert Nspin in [1,2]
     if Nspin == 1
         calc_epsxc_VWN!( xc_calc, Rhoe[:,1], epsxc )
         return
@@ -219,7 +239,7 @@ function calc_Vxc_VWN!(
     Vxc::AbstractVector{Float64}
 )
 
-    Npoints = size(Rhoe)[1]
+    Npoints = size(Rhoe, 1)
     Nspin = 1
     v_x = zeros(Float64,Npoints)
     v_c = zeros(Float64,Npoints)
