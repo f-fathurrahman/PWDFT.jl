@@ -201,8 +201,8 @@ function PsPotNL_UPF(
                             m0 = sph_ind(li,ji,m,is1) + lmaxx + 1
                             m1 = sph_ind(lk,jk,m,is2) + lmaxx + 1
                             #println("($m0,$mi) ($m1,$mk)")
-                            Ry1 = rot_ylm[m0,mi]*spinor_coeff(li,ji,m,is1)
-                            Ry2 = conj(rot_ylm[m1,mk])*spinor_coeff(lk,jk,m,is2)
+                            Ry1 = rot_ylm[m0,mi]*spinor_coef(li,ji,m,is1)
+                            Ry2 = conj(rot_ylm[m1,mk])*spinor_coef(lk,jk,m,is2)
                             coeff += Ry1 * Ry2
                         end
                         #println("$ih $kh $is1 $is2 $isp $coeff")
@@ -858,7 +858,7 @@ end
 ! in the root directory of the present distribution,
 ! or http://www.gnu.org/copyleft/gpl.txt .
 =#
-function spinor_coeff( l, j, m, spin )
+function spinor_coef( l, j, m, spin )
     #=
     This function calculates the numerical coefficient of a spinor
     with orbital angular momentum l, total angular momentum j, 
