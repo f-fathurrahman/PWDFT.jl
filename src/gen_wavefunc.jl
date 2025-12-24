@@ -9,20 +9,21 @@ end
 function zeros_BlochWavefunc( pw::PWGrid, electrons::Electrons )
     Nspin = electrons.Nspin_channel
     Nstates = electrons.Nstates
-    return zeros_BlochWavefunc( pw, Nstates, Nspin )
+    Npol = 1
+    if electrons.noncolin
+        Npol = 2
+    end
+    return zeros_BlochWavefunc( pw, Nstates, Nspin, Npol = Npol )
 end
 
-function zeros_BlochWavefunc( pw::PWGrid, Nstates::Int64, Nspin::Int64)
+function zeros_BlochWavefunc( pw::PWGrid, Nstates::Int64, Nspin::Int64; Npol = 1)
     Nkpt = pw.gvecw.kpoints.Nkpt
     Ngw = pw.gvecw.Ngw
-
     Nkspin = Nspin*Nkpt
-
     psiks = BlochWavefunc(undef,Nkspin)
-
     for ispin in 1:Nspin, ik in 1:Nkpt
         ikspin = ik + (ispin-1)*Nkpt
-        psiks[ikspin] = zeros(ComplexF64,Ngw[ik],Nstates)
+        psiks[ikspin] = zeros(ComplexF64, Npol*Ngw[ik], Nstates)
     end
 	return psiks
 end
@@ -34,9 +35,17 @@ end
 # -----------------------------------------------------------------------------
 
 function rand_BlochWavefunc( Ham::Hamiltonian )
+    Npol = 1
+    if Ham.electrons.noncolin
+        Npol = 2
+    end
     # Overlap is not needed
     if !Ham.need_overlap
-        return rand_BlochWavefunc( Ham.pw, Ham.electrons.Nstates, Ham.electrons.Nspin_channel )
+        return rand_BlochWavefunc(
+            Ham.pw, Ham.electrons.Nstates,
+            Ham.electrons.Nspin_channel,
+            Npol = Npol
+        )
     end
 
     # Overlap is needed
@@ -50,7 +59,7 @@ function rand_BlochWavefunc( Ham::Hamiltonian )
         Ham.ispin = ispin
         Ham.ik = ik
         ikspin = ik + (ispin-1)*Nkpt
-        psiks[ikspin] = rand_Wavefunc(Ngw[ik], Nstates)
+        psiks[ikspin] = rand_Wavefunc(Ngw[ik], Nstates, Npol = Npol)
         ortho_sqrt!(Ham, psiks[ikspin])
     end
     return psiks
@@ -59,26 +68,27 @@ end
 function rand_BlochWavefunc( pw::PWGrid, electrons::Electrons )
     Nspin = electrons.Nspin_channel
     Nstates = electrons.Nstates
-    return rand_BlochWavefunc( pw, Nstates, Nspin )
+    Npol = 1
+    if Ham.electron.noncolin
+        Npol = 2
+    end
+    return rand_BlochWavefunc( pw, Nstates, Nspin, Npol = Npol )
 end
 
-function rand_BlochWavefunc( pw::PWGrid, Nstates::Int64, Nspin::Int64 )
+function rand_BlochWavefunc( pw::PWGrid, Nstates::Int64, Nspin::Int64; Npol = 1 )
     Nkpt = pw.gvecw.kpoints.Nkpt
     Ngw = pw.gvecw.Ngw
-
     Nkspin = Nspin*Nkpt
-
     psiks = BlochWavefunc(undef,Nkspin)
-
     for ispin in 1:Nspin, ik in 1:Nkpt
         ikspin = ik + (ispin-1)*Nkpt
-        psiks[ikspin] = rand_Wavefunc(Ngw[ik], Nstates)
+        psiks[ikspin] = rand_Wavefunc(Ngw[ik], Nstates, Npol = Npol)
     end
     return psiks
 end
 
-function rand_Wavefunc( Nbasis, Nstates )
-    return ortho_sqrt( rand(ComplexF64,Nbasis,Nstates) )
+function rand_Wavefunc( Nbasis, Nstates; Npol=1 )
+    return ortho_sqrt( rand(ComplexF64, Npol*Nbasis, Nstates) )
 end
 
 #
@@ -93,11 +103,15 @@ function rand_wfc( Ham::Hamiltonian )
     Nspin = Ham.electrons.Nspin_channel
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     Ngw = Ham.pw.gvecw.Ngw
-
+    Npol = 1
+    if Ham.electrons.noncolin
+        Npol = 2
+    end
     psiks = zeros_BlochWavefunc(Ham)
-
     for ispin in 1:Nspin, ik in 1:Nkpt
         ikspin = ik + (ispin - 1)*Nkpt
+        # reshape return a reference not a copy
+        psi = reshape(psiks[ikspin], Ngw[ik], Npol, Nstates)
         for ist in 1:Nstates, igk in 1:Ngw[ik]
             ig = idx_gw2g[ik][igk]
             rr = rand()
@@ -108,7 +122,7 @@ function rand_wfc( Ham::Hamiltonian )
             Gk3 = G[3,ig] + k[3,ik]
             Gw2 = Gk1^2 + Gk2^2 + Gk3^2
             denum = Gw2 + 1.0
-            psiks[ikspin][igk,ist] = num/denum
+            psi[igk,ipol,ist] = num/denum
         end
         Ham.ispin = ispin
         Ham.ik = ik
@@ -127,3 +141,6 @@ function rand_wfc( Ham::Hamiltonian )
 
 end
  
+#function atomic_wfc(Ham::Hamiltonian)
+#    return Ham.
+#end
