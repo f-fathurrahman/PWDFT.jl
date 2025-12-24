@@ -35,9 +35,13 @@ function op_V_loc!(
     psi::AbstractArray{ComplexF64},
     Hpsi::AbstractArray{ComplexF64}
 )
-
+    # XXX This should also works for collinear
+    if Ham.electrons.noncollinear
+        op_V_loc_noncollin!(Ham, psi, Hpsi)
+        return
+    end
+    #
     pw = Ham.pw
-
     ik = Ham.ik
     ispin = Ham.ispin
     #
@@ -77,7 +81,7 @@ function op_V_loc!(
         #
         R_to_G!(pw, ctmp, smooth=pw.using_dual_grid)
         #
-        # Accumalate result in Hpsi
+        # Accumulate the result in Hpsi
         #
         for igw in 1:Ngw_ik
             ip = idx[igw]
@@ -86,6 +90,76 @@ function op_V_loc!(
     end
     return
 end
+
+
+# In-place, accumulated version, noncollinear version
+# Potential is taken from Ham.potentials.Total or Ham.potentials.TotalSmooth
+function op_V_loc_noncollin!(
+    Ham::Hamiltonian,
+    psi::AbstractArray{ComplexF64},
+    Hpsi::AbstractArray{ComplexF64}
+)
+
+    pw = Ham.pw
+    ik = Ham.ik
+    ispin = Ham.ispin
+    #
+    if pw.using_dual_grid
+        V_loc = Ham.potentials.TotalSmooth
+        Npoints = prod(pw.Nss)
+    else
+        V_loc = Ham.potentials.Total
+        Npoints = prod(pw.Ns)
+    end
+    # XXX Should always Npol = 2
+    Npol = 1
+    if Ham.electrons.noncollinear
+        Npol = 2
+    end
+    Nstates = size(psi,2)
+    idx = pw.gvecw.idx_gw2r[ik]
+    Ngw_ik = pw.gvecw.Ngw[ik]
+    #
+    ctmp = zeros(ComplexF64, Npoints, Npol)
+    psir = reshape(psi, Ngw_ik, Npol, Nstates)
+    Hpsir = reshape(Hpsi, Ngw_ik, Npol, Nstates)
+    #
+    for ist in 1:Nstates
+        #
+        fill!(ctmp, 0.0 + im*0.0)
+        for ipol in 1:Npol, igw in 1:Ngw_ik
+            ip = idx[igw]
+            ctmp[ip,ipol] = psir[igw,ipol,ist]
+        end
+        #
+        # get values of psi in real space grid
+        #
+        for ipol in 1:Npol
+            @views G_to_R!(pw, ctmp[:,ipol], smooth=pw.using_dual_grid)
+        end
+        #
+        # Multiply in real space
+        #
+        for ipol in 1:Npol, ip in 1:Npoints
+            ctmp[ip,ipol] *= V_loc[ip,ispin]
+        end
+        #
+        # Back to G-space
+        #
+        for ipol in 1:Npol
+            @views R_to_G!(pw, ctmp[:,ipol], smooth=pw.using_dual_grid)
+        end
+        #
+        # Accumulate the result in Hpsi
+        #
+        for ipol in 1:Npol, igw in 1:Ngw_ik
+            ip = idx[igw]
+            Hpsir[igw,ipol,ist] += ctmp[ip,ipol]
+        end
+    end
+    return
+end
+
 
 
 # apply V_Ps_loc, Hartree, and XC potentials

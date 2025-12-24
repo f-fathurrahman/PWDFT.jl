@@ -48,7 +48,7 @@ function op_K!(
 )
     #
     Npol = 1
-    if Ham.electrons.noncolin
+    if Ham.electrons.noncollinear
         Npol = 2
     end
     ik = Ham.ik # current ik index
