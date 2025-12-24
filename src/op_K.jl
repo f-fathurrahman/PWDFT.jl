@@ -1,10 +1,9 @@
 function op_K( Ham::Hamiltonian, psiks::BlochWavefunc )
-    Nstates = size(psiks[1])[2] # Nstates should be similar for all Bloch states
-    
+    #    
     Nspin = Ham.electrons.Nspin_channel
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     out = zeros_BlochWavefunc(Ham)
-    
+    #
     for ispin in 1:Nspin, ik in 1:Nkpt
         Ham.ik = ik
         Ham.ispin = ispin
@@ -16,8 +15,6 @@ end
 
 # In-place, accumulated version
 function op_K!( Ham::Hamiltonian, psiks::BlochWavefunc, Hpsiks::BlochWavefunc )
-    #
-    Nstates = size(psiks[1],2) # Nstates should be similar for all Bloch states
     #
     Nspin = Ham.electrons.Nspin_channel
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
@@ -50,23 +47,28 @@ function op_K!(
     Hpsi::AbstractArray{ComplexF64}
 )
     #
-    ik = Ham.ik
-
+    Npol = 1
+    if Ham.electrons.noncolin
+        Npol = 2
+    end
+    ik = Ham.ik # current ik index
     Nstates = size(psi,2)
-
     pw = Ham.pw
-    Ngwx = pw.gvecw.Ngwx
     Ngw = pw.gvecw.Ngw
     idx_gw2g = pw.gvecw.idx_gw2g[ik]
     G = pw.gvec.G
     k1 = pw.gvecw.kpoints.k[1,ik]
     k2 = pw.gvecw.kpoints.k[2,ik]
     k3 = pw.gvecw.kpoints.k[3,ik]
+    #
+    psir = reshape(psi, Ngw[ik], Npol, Nstates)
+    Hpsir = reshape(Hpsi, Ngw[ik], Npol, Nstates)
+    #
     for ist in 1:Nstates
-        for igk in 1:Ngw[ik]
+        for ipol in 1:Npol, igk in 1:Ngw[ik]
             ig = idx_gw2g[igk]
             Gw2 = (G[1,ig] + k1)^2 + (G[2,ig] + k2)^2 + (G[3,ig] + k3)^2
-            Hpsi[igk,ist] = Hpsi[igk,ist] + 0.5*psi[igk,ist]*Gw2
+            Hpsir[igk,ipol,ist] += 0.5*psir[igk,ipol,ist]*Gw2
         end
     end
     return
