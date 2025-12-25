@@ -27,9 +27,12 @@ mutable struct PsPotNL_UPF
     are_paw::Vector{Bool}
     becsum::Array{Float64,3}
     paw::Union{PAWVariables,Nothing}
+    lspinorb::Bool
+    noncollinear::Bool
     rot_ylm::Union{Matrix{ComplexF64},Nothing}
     fcoef::Union{Array{ComplexF64,5},Nothing}
     Dvan_so::Union{Array{ComplexF64,4},Nothing}
+    Deeq_nc::Union{Array{ComplexF64,4},Nothing}
 end
 
 
@@ -37,8 +40,10 @@ function PsPotNL_UPF(
     atoms::Atoms,
     pw::PWGrid,
     pspots::Vector{PsPot_UPF};
-    is_gga=false,
-    Nspin=1
+    is_gga = false,
+    lspinorb = false,
+    noncollinear = false,
+    Nspin = 1
 )
 
     Natoms = atoms.Natoms
@@ -90,6 +95,7 @@ function PsPotNL_UPF(
     ijtoh = zeros(Int64, nhm, nhm, Nspecies)
     Dvan = zeros(Float64, nhm, nhm, Nspecies)
     #
+    # XXX This should be by request, not determined by pspot
     any_so = false
     for isp in 1:Nspecies
         if pspots[isp].has_so
@@ -97,7 +103,12 @@ function PsPotNL_UPF(
             break
         end
     end
+    # Check?
+    if lspinorb
+        @assert any_so
+    end
     if any_so
+        @assert noncollinear
         nhtoj = zeros(Float64, nhm, Nspecies)
         rot_ylm = _init_rot_ylm()
     else
@@ -171,7 +182,7 @@ function PsPotNL_UPF(
         end
     end
 
-    if any_so
+    if lspinorb
         fcoef = zeros(ComplexF64, nhm, nhm, 2, 2, Nspecies)
         Dvan_so = zeros(ComplexF64, nhm, nhm, Nspin, Nspecies)
     else
@@ -262,16 +273,26 @@ function PsPotNL_UPF(
     # integral of augmentation charges times Veff)
     # Depends on spin
     Deeq = zeros(Float64, nhm, nhm, Natoms, Nspin)
-    # Set to Dvan if no ultrasoft (need this?)
-    #if all(.!are_ultrasoft)
-        for ia in 1:Natoms
-            isp = atm2species[ia]
-            nht = nh[isp]
-            for ispin in 1:Nspin
-                @views Deeq[1:nht,1:nht,ia,ispin] = Dvan[1:nht,1:nht,isp]
-            end
+    if lspinorb || noncollinear
+        Deeq_nc = zeros(ComplexF64, nhm, nhm, Natoms, Nspin)
+    else
+        Deeq_nc = nothing
+    end
+    # Set to Dvan (bare coefficients, no potential contribution) if no ultrasoft (need this?)
+    for ia in 1:Natoms
+        isp = atm2species[ia]
+        nht = nh[isp]
+        if lspinorb
+            @views Deeq_nc[1:nht,1:nht,ia,1:Nspin] .= Dvan_so[1:nht,1:nht,1:Nspin,isp]
+        elseif noncollinear
+            @views Deeq_nc[1:nht,1:nht,ia,1] .= Dvan[1:nht,1:nht,isp]
+            @views Deeq_nc[1:nht,1:nht,ia,2] .= 0.0 + im*0.0
+            @views Deeq_nc[1:nht,1:nht,ia,3] .= 0.0 + im*0.0
+            @views Deeq_nc[1:nht,1:nht,ia,4] .= Dvan[1:nht,1:nht,isp]
+        else
+            @views Deeq[1:nht,1:nht,ia,1:Nspin] .= Dvan[1:nht,1:nht,isp]
         end
-    #end
+    end
 
 
     are_paw = zeros(Bool,Nspecies)
@@ -297,7 +318,8 @@ function PsPotNL_UPF(
         betaNL,
         are_ultrasoft, are_paw,
         becsum, paw,
-        rot_ylm, fcoef, Dvan_so
+        lspinorb, noncollinear,
+        rot_ylm, fcoef, Dvan_so, Deeq_nc
     )
 
 end

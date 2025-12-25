@@ -191,9 +191,14 @@ function Hamiltonian(
     end
     if all(are_using_upf)
         is_gga = (options.xcfunc == "PBE") # XXX FIX THIS !!!!
-        pspotNL = PsPotNL_UPF(atoms, pw, pspots, is_gga=is_gga, Nspin=options.Nspin)
+        pspotNL = PsPotNL_UPF( atoms, pw, pspots,
+            is_gga = is_gga,
+            Nspin = Nspin_comp,
+            noncollinear = options.use_noncol_magn,
+            lspinorb = options.use_soc
+        )
     elseif all(.!are_using_upf)
-        pspotNL = PsPotNL( atoms, pw, pspots, check_norm=false )
+        pspotNL = PsPotNL( atoms, pw, pspots, check_norm = false )
     else
         error("Not supporting mixed pseudopotential types: GTH and UPF")
     end
