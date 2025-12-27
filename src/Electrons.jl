@@ -37,35 +37,56 @@ function Electrons()
     )
 end
 
-"""
-Creates an instance of `Electrons` given following inputs:
-
-- `atoms`: an instance of `Atoms`
-
-- `Pspots`: an array of `PsPot_GTH` or `PsPot_UPF` instance(s)
-
-- `Nspin_channel`: (optional) number of spin. `Nspin_channel=1` means without spin polarization.
-  `Nspin_channel=2` means with spin-polarization.
-
-- `Nkpt`: (optional) number of kpoints
-
-- `Nstates`: (optional) total number of electronic states
-
-- `Nstates_empty`: (optional) number of additional states which will be
-  regarded as empty.
-"""
+# Zvals will be determined from pspots
 function Electrons(
     atoms::Atoms, pspots::Vector{T};
-    Nspin_channel=1, Nkpt=1,
-    Nstates=-1, Nstates_empty=-1, noncollinear=false
+    Nspin_channel = 1,
+    Nkpt = 1,
+    Nstates = -1,
+    Nstates_empty = -1,
+    noncollinear = false
 ) where T <: AbstractPsPot
     #
-    return Electrons(
-        atoms, get_Zvals(pspots), 
-        Nspin_channel=Nspin_channel, Nkpt=Nkpt, Nstates=Nstates, Nstates_empty=Nstates_empty,
-        noncollinear=noncollinear
+    Zvals = get_Zvals(pspots)
+    return Electrons( atoms, Zvals, 
+        Nspin_channel = Nspin_channel,
+        Nkpt = Nkpt,
+        Nstates = Nstates,
+        Nstates_empty = Nstates_empty,
+        noncollinear = noncollinear
     )
 end
+
+
+function calc_Nstates(
+    Nelectrons;
+    Nstates_empty = -1,
+    use_smearing = false,
+    noncollinear = false
+)
+    if noncollinear
+        degspin = 1
+    else
+        degspin = 2
+    end
+    Nstates = ceil(Int64, Nelectrons/degspin)
+    if use_smearing && Nstates_empty == -1
+        # metallic case: add 20% more bands, with a minimum of 4
+        Nstates = maximum([
+            ceil(Int64, 1.2*Nelectrons/degspin),
+            Nstates + 4
+        ])
+    elseif Nstates_empty > 0
+        Nstates += Nstates_empty
+    end
+    if Nstates_empty == -1
+        Nstates_empty = Nstates - ceil(Int64, Nelectrons/degspin)
+        @assert Nstates_empty >= 0
+    end
+    return Nstates, Nstates_empty
+end
+
+
 
 
 """
@@ -88,8 +109,11 @@ Creates an instance of `Electrons` given following inputs:
 """
 function Electrons(
     atoms::Atoms, zvals::Vector{Float64};
-    Nspin_channel=1, Nkpt=1,
-    Nstates=-1, Nstates_empty=-1, noncollinear=false
+    Nspin_channel = 1,
+    Nkpt = 1,
+    Nstates = -1,
+    Nstates_empty = -1,
+    noncollinear = false
 )
     if !noncollinear
         @assert Nspin_channel <= 2
@@ -128,15 +152,14 @@ function Electrons(
         else
             # Nstates is not given its default (invalid value)
             if Nstates_empty != -1
-                println("Please specify Nstates only or Nstates_empty only")
-                error()
+                error("Please specify Nstates only or Nstates_empty only")
             end
             NstatesMin = round(Int64, Nelectrons/2)
             if NstatesMin*2 < Nelectrons
                 NstatesMin += 1
             end
             if Nstates < NstatesMin
-            @printf("Given Nstates is not enough: Nstates = %d, NstatesMin = %d", Nstates, NstatesMin)
+                error("Given Nstates is not enough: Nstates = $(Nstates), NstatesMin = $(NstatesMin)")
             end
             if Nstates > NstatesMin
                 Nstates_empty = Nstates - NstatesMin
@@ -147,12 +170,15 @@ function Electrons(
         # Nstates, Nstates_empty must be set up to their valid values now
         # i.e. they should not have value of -1
     else
+        if Nstates == -1
+            error("Please specify Nstates manually")
+        end
         Nstates_empty = Int64(Nstates - Nelectrons)
     end
 
     Focc = zeros(Float64, Nstates, Nkpt*Nspin_channel)
     ebands = zeros(Float64, Nstates, Nkpt*Nspin_channel)
-    
+    @info "Pass here 154"
     Nstates_occ = Nstates - Nstates_empty
 
     @info "Nstates = $(Nstates)"
@@ -210,8 +236,7 @@ function _check_Focc(Focc::Matrix{Float64}, Nkpt::Int64, Nelectrons)
     sFocc = sum(Focc)/Nkpt
     # Check if the generated Focc is consistent
     if abs( sFocc - Nelectrons ) > eps()
-        @printf("sum Focc = %f, Nelectrons = %f\n", sFocc, Nelectrons)
-        error(@sprintf("ERROR diff sum(Focc) and Nelectrons is not small\n"))
+        error("sum(Focc) = $sFocc and Nelectrons = $Nelectrons does not match")
     end
     return
 end
@@ -222,7 +247,7 @@ NelectronsSpin = (Nel_up, Nel_dn)
 This is useful for molecule.
 """
 # XXX: Not tested for noncollinear
-function Electrons(
+function init_electrons_molecule(
     atoms::Atoms, Pspots,
     NelectronsSpin::Tuple{Int64,Int64};
     Nkpt=1, Nstates_extra=0
@@ -258,7 +283,7 @@ function Electrons(
     Nspin_comp = 2 # collinear magnetism
     return Electrons(
         Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin_channel,
-        use_smearing, kT, noncollinear, E_fermi
+        use_smearing, kT, noncollinear, E_fermi, Nspin_comp
     )
 end
 

@@ -1,3 +1,5 @@
+include("HamiltonianOptions.jl")
+
 mutable struct Hamiltonian{Tpsp<:AbstractPsPot}
     pw::PWGrid
     potentials::Potentials
@@ -15,11 +17,8 @@ mutable struct Hamiltonian{Tpsp<:AbstractPsPot}
     ik::Int64   # current kpoint index
     ispin::Int64 # current spin index
     need_overlap::Bool
+    options::HamiltonianOptions # copy
 end
-
-
-include("HamiltonianOptions.jl")
-
 
 
 function Hamiltonian(
@@ -103,22 +102,37 @@ function Hamiltonian(
     V_Ps_loc = real(G_to_R(pw, Vg))
     V_Ps_loc *= Npoints # Rescale using PWSCF convention
 
+
+    if options.lspinorb
+        Nspin_channel = 1
+        Nspin_comp = 4
+        @assert options.noncollinear
+    end
+    if options.noncollinear
+        Nspin_channel = 1
+        Nspin_comp = 4
+    else
+        Nspin_channel = options.Nspin_channel
+        Nspin_comp = options.Nspin_comp
+    end
+    @info "Nspin_channel=$(Nspin_channel) Nspin_comp=$(Nspin_comp)"
+
     # other potential terms are set to zero
     V_Hartree = zeros( Float64, Npoints )
-    V_xc = zeros( Float64, Npoints, options.Nspin )
-    V_loc_tot = zeros( Float64, Npoints, options.Nspin )
+    V_xc = zeros( Float64, Npoints, Nspin_comp )
+    V_loc_tot = zeros( Float64, Npoints, Nspin_comp )
     if pw.using_dual_grid
         # We initialize smooth local potential here (total)
         potentials = Potentials(
             V_Ps_loc, V_Hartree, V_xc, V_loc_tot,
-            zeros(Float64, prod(pw.Nss), options.Nspin),
-            zeros(Float64, Npoints, options.Nspin)
+            zeros(Float64, prod(pw.Nss), Nspin_comp),
+            zeros(Float64, Npoints, Nspin_comp)
         )
     else
         potentials = Potentials(
             V_Ps_loc, V_Hartree, V_xc, V_loc_tot,
             nothing,
-            zeros(Float64, Npoints, options.Nspin)
+            zeros(Float64, Npoints, Nspin_comp)
         )
     end
 
@@ -126,7 +140,7 @@ function Hamiltonian(
     #
     energies = Energies()
     #
-    rhoe = zeros( Float64, Npoints, options.Nspin )
+    rhoe = zeros( Float64, Npoints, Nspin_comp )
     #
     # Initialize core electron density for NLCC if needed
     #
@@ -137,18 +151,6 @@ function Hamiltonian(
         rhoe_core = nothing
     end
 
-    if options.use_soc
-        Nspin_channel = 1
-        Nspin_comp = 4
-        @assert options.use_noncol_magn
-    end
-    if options.use_noncol_magn
-        Nspin_channel = 1
-        Nspin_comp = 4
-    else
-        Nspin_channel = options.Nspin
-        Nspin_comp = options.Nspin
-    end
     # extra_states is given
     if options.extra_states > -1
         @info "Pass here 154"
@@ -156,7 +158,7 @@ function Hamiltonian(
             Nspin_channel = Nspin_channel,
             Nkpt = kpoints.Nkpt,
             Nstates_empty = options.extra_states,
-            noncollinear = options.use_noncol_magn
+            noncollinear = options.noncollinear
         )
     # no extra_states is given but Nstates is given
     elseif options.Nstates > -1
@@ -165,7 +167,7 @@ function Hamiltonian(
             Nspin_channel = Nspin_channel,
             Nkpt = kpoints.Nkpt,
             Nstates = options.Nstates,
-            noncollinear = options.use_noncol_magn
+            noncollinear = options.noncollinear
         )
     #
     elseif (options.Nstates == -1) && (options.extra_states == -1)
@@ -175,7 +177,7 @@ function Hamiltonian(
         electrons = Electrons( atoms, pspots,
             Nspin_channel = Nspin_channel,
             Nkpt = kpoints.Nkpt,
-            noncollinear = options.use_noncol_magn
+            noncollinear = options.noncollinear
         )
     else
         error("Error in initializing instance of Electrons")
@@ -194,8 +196,8 @@ function Hamiltonian(
         pspotNL = PsPotNL_UPF( atoms, pw, pspots,
             is_gga = is_gga,
             Nspin = Nspin_comp,
-            noncollinear = options.use_noncol_magn,
-            lspinorb = options.use_soc
+            noncollinear = options.noncollinear,
+            lspinorb = options.lspinorb
         )
     elseif all(.!are_using_upf)
         pspotNL = PsPotNL( atoms, pw, pspots, check_norm = false )
@@ -244,9 +246,12 @@ function Hamiltonian(
 
     need_overlap = any(pspotNL.are_ultrasoft) || any(pspotNL.are_paw)
 
-    return Hamiltonian( pw, potentials, energies, rhoe, rhoe_core,
-                        electrons, atoms, sym_info, rhoe_symmetrizer,
-                        pspots, pspotNL, options.xcfunc, xc_calc, ik, ispin, need_overlap )
+    return Hamiltonian(
+        pw, potentials, energies, rhoe, rhoe_core,
+        electrons, atoms, sym_info, rhoe_symmetrizer,
+        pspots, pspotNL, options.xcfunc, xc_calc, ik, ispin, need_overlap,
+        options
+    )
 end
 
 
@@ -300,16 +305,23 @@ function Hamiltonian(
     extra_states::Int64=-1,
     Nstates::Int64=-1,
     use_symmetry::Bool=true,
-    use_soc::Bool=false,
-    use_noncol_magn::Bool=false,
+    lspinorb::Bool=false,
+    noncollinear::Bool=false,
+    angle1 = nothing,
+    angle2 = nothing,
+    use_smearing = false
 )
 
     # FIXME: This constructor is type-unstable (?)
 
+    Nspin_channel = Nspin
+    Nspin_comp = Nspin # XXX
     options = HamiltonianOptions(
-        dual, Nspin, meshk, shiftk, time_reversal, Ns_,
+        dual, Nspin_channel, Nspin_comp, meshk, shiftk, time_reversal, Ns,
         kpoints, kpts_str, xcfunc, use_xc_internal,
-        extra_states, Nstates, use_symmetry, use_soc, use_noncol_magn
+        extra_states, Nstates, use_symmetry, use_smearing,
+        starting_magn, angle1, angle2,
+        lspinorb, noncollinear
     )
 
     Nspecies = atoms.Nspecies

@@ -35,22 +35,46 @@ function init_Ham_from_pwinput(; filename::Union{Nothing,String}=nothing)
     # XXX probably need to process input_dft string
     println("Using xcfunc = ", xcfunc)
 
-    Ns = (pwinput.nr1, pwinput.nr2, pwinput.nr3)
-    Nspin = pwinput.nspin
-    meshk = pwinput.meshk
-    noncolin = pwinput.noncolin
-    lspinorb = pwinput.lspinorb
-    if pwinput.nbnd != -1
-        # nbnd is given from pwinput
-        @info "Pass here 45 in init_Ham_from_pwinput"
-        Ham = Hamiltonian(atoms, pspfiles, ecutwfc,
-            meshk=[meshk[1], meshk[2], meshk[3]], dual=dual, Nstates=pwinput.nbnd, xcfunc=xcfunc, Ns_=Ns,
-            Nspin=Nspin, use_soc=lspinorb, use_noncol_magn=noncolin)
-    else
-        Ham = Hamiltonian(atoms, pspfiles, ecutwfc,
-            meshk=[meshk[1], meshk[2], meshk[3]], dual=dual, xcfunc=xcfunc, Ns_=Ns,
-            Nspin=Nspin, use_soc=lspinorb, use_noncol_magn=noncolin)
+    Ns = (pwinput.nr1, pwinput.nr2, pwinput.nr3)    
+    if pwinput.nspin == 2
+        @assert !pwinput.noncolin
     end
+    if pwinput.lspinorb
+        @assert pwinput.noncolin
+    end
+
+    options = HamiltonianOptions()
+    options.meshk[1] = pwinput.meshk[1]
+    options.meshk[2] = pwinput.meshk[2]
+    options.meshk[3] = pwinput.meshk[3] 
+    options.dual = dual
+    if pwinput.nbnd != -1
+        options.Nstates = pwinput.nbnd
+    end
+    options.xcfunc = xcfunc
+    options.Ns = Ns
+    options.lspinorb = pwinput.lspinorb
+    options.noncollinear = pwinput.noncolin
+    options.Nspin_channel = pwinput.nspin
+
+    pspots = Vector{PsPot_UPF}(undef, atoms.Nspecies)
+    for isp in 1:atoms.Nspecies
+        pspots[isp] = PsPot_UPF(pspfiles[isp])
+    end
+
+    Ham = Hamiltonian(atoms, pspots, ecutwfc, options)
+
+#    if pwinput.nbnd != -1
+#        # nbnd is given from pwinput
+#        @info "Pass here 45 in init_Ham_from_pwinput"
+#        Ham = Hamiltonian(atoms, pspfiles, ecutwfc,
+#            meshk=[meshk[1], meshk[2], meshk[3]], dual=dual, Nstates=pwinput.nbnd, xcfunc=xcfunc, Ns_=Ns,
+#            Nspin=Nspin, use_soc=lspinorb, use_noncol_magn=noncolin)
+#    else
+#        Ham = Hamiltonian(atoms, pspfiles, ecutwfc,
+#            meshk=[meshk[1], meshk[2], meshk[3]], dual=dual, xcfunc=xcfunc, Ns_=Ns,
+#            Nspin=Nspin, use_soc=lspinorb, use_noncol_magn=noncolin)
+#    end
 
     return Ham, pwinput
 end

@@ -1,7 +1,8 @@
 # Originally the fields are keyword arguments to `Hamiltonian`
 mutable struct HamiltonianOptions
     dual::Float64
-    Nspin::Int64
+    Nspin_channel::Int64 # for wavefunction
+    Nspin_comp::Int64 # for density, potentials
     meshk::Vector{Int64}
     shiftk::Vector{Int64}
     time_reversal::Bool
@@ -13,13 +14,18 @@ mutable struct HamiltonianOptions
     extra_states::Int64
     Nstates::Int64
     use_symmetry::Bool
-    use_soc::Bool # spin-orbit coupling
-    use_noncol_magn::Bool # noncollinear magn
+    use_smearing::Bool
+    starting_magn::Union{Vector{Float64},Nothing}
+    angle1::Union{Vector{Float64},Nothing}
+    angle2::Union{Vector{Float64},Nothing}
+    lspinorb::Bool # spin-orbit coupling
+    noncollinear::Bool # noncollinear magn
 end
 
 function HamiltonianOptions()
     dual = 4.0
-    Nspin = 1
+    Nspin_channel = 1
+    Nspin_comp = 1
     meshk = [1,1,1]
     shiftk = [0,0,0]
     time_reversal = true
@@ -31,12 +37,17 @@ function HamiltonianOptions()
     extra_states = -1
     Nstates = -1
     use_symmetry = true
-    use_soc = false
-    use_noncol_magn = false
+    use_smearing = false
+    starting_magn = nothing
+    angle1 = nothing
+    angle2 = nothing
+    lspinorb = false
+    noncollinear = false
     return HamiltonianOptions(
-        dual, Nspin, meshk, shiftk, time_reversal, Ns,
+        dual, Nspin_channel, Nspin_comp, meshk, shiftk, time_reversal, Ns,
         kpoints, kpts_str, xcfunc, use_xc_internal,
-        extra_states, Nstates, use_symmetry,
-        use_soc, use_noncol_magn
+        extra_states, Nstates, use_symmetry, use_smearing,
+        starting_magn, angle1, angle2,
+        lspinorb, noncollinear
     )
 end
