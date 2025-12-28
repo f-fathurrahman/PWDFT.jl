@@ -21,7 +21,7 @@ function KS_solve_SCF!(
     cheby_degree=8,
     etot_conv_thr=1e-6,
     ethr_evals_last=1e-5,
-    starting_magnetization=nothing 
+    starting_magn=nothing 
 )
 
     Npoints = prod(Ham.pw.Ns)
@@ -61,7 +61,7 @@ function KS_solve_SCF!(
         if Nspin == 1
             Rhoe[:,1] = guess_rhoe( Ham )
         else
-            Rhoe = guess_rhoe_atomic( Ham, starting_magnetization=starting_magnetization )
+            Rhoe = guess_rhoe_atomic( Ham, starting_magn=starting_magn )
         end
     else
         calc_rhoe!( Ham, psis, Rhoe )

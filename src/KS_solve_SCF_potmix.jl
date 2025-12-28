@@ -30,7 +30,7 @@ function KS_solve_SCF_potmix!(
     cheby_degree::Int64=8,
     etot_conv_thr::Float64=1e-6,
     ethr_evals_last::Float64=1e-5,
-    starting_magnetization::Union{Vector{Float64},Nothing}=nothing 
+    starting_magn::Union{Vector{Float64},Nothing}=nothing 
 )
 
     Npoints = prod(Ham.pw.Ns)
@@ -68,7 +68,7 @@ function KS_solve_SCF_potmix!(
         if Nspin == 1
             Rhoe[:,1] = guess_rhoe( Ham )
         else
-            Rhoe = guess_rhoe_atomic( Ham, starting_magnetization=starting_magnetization )
+            Rhoe = guess_rhoe_atomic( Ham, starting_magn=starting_magn )
         end
     else
         calc_rhoe!( Ham, psiks, Rhoe )

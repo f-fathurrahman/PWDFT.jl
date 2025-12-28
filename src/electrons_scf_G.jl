@@ -9,7 +9,7 @@ function electrons_scf_G!(
     etot_conv_thr=5e-7,
     ethr_evals_last=1e-13,
     print_final_ebands::Bool=true,
-    starting_magnetization=nothing
+    starting_magn=nothing
 )
 
     # NOTE: use_smearing and kT now are read from Ham.electrons
@@ -27,15 +27,15 @@ function electrons_scf_G!(
     # Initial density
     if isnothing(Rhoe)
         if eltype(Ham.pspots) == PsPot_GTH
-            Rhoe = guess_rhoe_atomic( Ham, starting_magnetization=starting_magnetization )
+            Rhoe = guess_rhoe_atomic( Ham, starting_magn=starting_magn )
         else
-            Rhoe, _ = atomic_rho_g(Ham, starting_magnetization=starting_magnetization)
+            Rhoe, _ = atomic_rho_g(Ham, starting_magn=starting_magn)
         end
     end
     #
     # Also initialize becsum in case of PAW
     if ok_paw
-        PAW_atomic_becsum!(Ham, starting_magnetization=starting_magnetization)
+        PAW_atomic_becsum!(Ham, starting_magn=starting_magn)
     end
 
     # Set rhoe

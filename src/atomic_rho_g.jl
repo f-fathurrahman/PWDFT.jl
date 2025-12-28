@@ -1,6 +1,6 @@
 function atomic_rho_g(
     Ham::Hamiltonian{PsPot_UPF};
-    starting_magnetization::Union{Nothing,Vector{Float64}} = nothing,
+    starting_magn::Union{Nothing,Vector{Float64}} = nothing,
     angle1::Union{Nothing,Vector{Float64}} = nothing,
     angle2::Union{Nothing,Vector{Float64}} = nothing
 )
@@ -36,13 +36,13 @@ function atomic_rho_g(
     rhocg = zeros(ComplexF64, Npoints, Nspin)
 
     # No starting magnetization is give, set them to a default value
-    if (Nspin == 2) && isnothing(starting_magnetization)
-        starting_magnetization = 0.1*ones(Nspecies)
-        @info "Using default starting magnetization = $(starting_magnetization)"
+    if (Nspin == 2) && isnothing(starting_magn)
+        starting_magn = 0.1*ones(Nspecies)
+        @info "Using default starting magnetization = $(starting_magn)"
     end
 
     if (Nspin == 4) && isnothing(angle1) && isnothing(angle2)
-        starting_magnetization = 0.1*ones(Nspecies)
+        starting_magn = 0.1*ones(Nspecies)
         angle1 = 0.4*pi*ones(Nspecies)
         angle2 = 0.5*pi*ones(Nspecies)
         @info "Using default angle1 = $(angle1)"
@@ -89,7 +89,7 @@ function atomic_rho_g(
             for ig in 1:Ng
                 ip = idx_g2r[ig]
                 igl = idx_g2shells[ig]
-                rhocg[ip,2] += starting_magnetization[isp]*strf[ig,isp]*rhocgnt[igl]/CellVolume
+                rhocg[ip,2] += starting_magn[isp]*strf[ig,isp]*rhocgnt[igl]/CellVolume
             end
         end
         
@@ -105,7 +105,7 @@ function atomic_rho_g(
                     igl = idx_g2shells[ig]
                     # rhoscale is set to 1
                     rho1 = angular[ispin-1] * strf[ig,isp] * rhocgnt[igl] / CellVolume
-                    rhocg[ip,ispin] += starting_magnetization[isp] * rho1
+                    rhocg[ip,ispin] += starting_magn[isp] * rho1
                 end
             end
         end # if
@@ -134,7 +134,7 @@ function atomic_rho_g(
         rhocg[1,1] = Nelectrons/CellVolume
         # Is this OK?
         if Nspin == 2
-            rhocg[1,2] = sum(starting_magnetization)
+            rhocg[1,2] = sum(starting_magn)
         end
     else
         print("atomic_rho_g: Initial charge = ", charge)

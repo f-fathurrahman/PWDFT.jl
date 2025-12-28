@@ -34,9 +34,9 @@ function my_pwx(; filename=nothing, do_export_data=false)
     end
 
     if pwinput.nspin == 2
-        starting_magnetization = pwinput.starting_magnetization
+        starting_magn = pwinput.starting_magnetization
     else
-        starting_magnetization = nothing
+        starting_magn = nothing
     end
 
     #electrons_scf!(Ham, psiks, NiterMax=100, use_smearing=use_smearing, kT=kT, betamix=0.1)
@@ -47,7 +47,7 @@ function my_pwx(; filename=nothing, do_export_data=false)
         psiks=psiks,
         NiterMax=100,
         betamix=0.1,
-        starting_magnetization=starting_magnetization
+        starting_magn=starting_magn
     )
     # XXX "Restarting" from previous calculation can be done by specifying Rhoe=Ham.rhoe
 
@@ -143,9 +143,9 @@ function prepare_Ham_from_pwinput(; filename=nothing)
     end
 
     if pwinput.nspin == 2
-        starting_magnetization = pwinput.starting_magnetization
+        starting_magn = pwinput.starting_magnetization
     else
-        starting_magnetization = nothing
+        starting_magn = nothing
     end
 
     Nspin = Ham.electrons.Nspin_channel
@@ -166,14 +166,14 @@ function prepare_Ham_from_pwinput(; filename=nothing)
         _, _ = _prepare_scf!(Ham, psiks)
         _, _ = update_from_rhoe!( Ham, psiks, Ham.rhoe )
         Rhoe_tot = Ham.rhoe[:,1] + Ham.rhoe[:,2]
-        magn = starting_magnetization .* ones(size(Rhoe_tot)) / Ham.pw.CellVolume
+        magn = starting_magn .* ones(size(Rhoe_tot)) / Ham.pw.CellVolume
         Ham.rhoe[:,1] .= 0.5*(Rhoe_tot + magn)
         Ham.rhoe[:,2] .= 0.5*(Rhoe_tot - magn)
         # Update again the Hamiltonian
         _, _ = update_from_rhoe!( Ham, psiks, Ham.rhoe )
     else
         # for everything else atomic rhoe from pspots should be available
-        _, _ = _prepare_scf!(Ham, psiks, starting_magnetization=starting_magnetization)
+        _, _ = _prepare_scf!(Ham, psiks, starting_magn=starting_magn)
     end
 
     return Ham

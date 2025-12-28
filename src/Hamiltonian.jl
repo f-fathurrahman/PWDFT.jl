@@ -293,7 +293,8 @@ function Hamiltonian(
     ecutwfc::Float64;
     # Keyword arguments
     dual::Float64=4.0,
-    Nspin::Int64=1,
+    Nspin_channel::Int64=1,
+    Nspin_comp::Int64=1,
     meshk::Vector{Int64}=[1,1,1],  # FIXME: convert to tuple?
     shiftk::Vector{Int64}=[0,0,0],
     time_reversal::Bool=true,
@@ -307,17 +308,16 @@ function Hamiltonian(
     use_symmetry::Bool=true,
     lspinorb::Bool=false,
     noncollinear::Bool=false,
+    starting_magn = nothing,
     angle1 = nothing,
     angle2 = nothing,
     use_smearing = false
 )
-
     # FIXME: This constructor is type-unstable (?)
 
-    Nspin_channel = Nspin
-    Nspin_comp = Nspin # XXX
+    # Build HamiltonianOptions from kwargs
     options = HamiltonianOptions(
-        dual, Nspin_channel, Nspin_comp, meshk, shiftk, time_reversal, Ns,
+        dual, Nspin_channel, Nspin_comp, meshk, shiftk, time_reversal, Ns_,
         kpoints, kpts_str, xcfunc, use_xc_internal,
         extra_states, Nstates, use_symmetry, use_smearing,
         starting_magn, angle1, angle2,

@@ -40,7 +40,7 @@ function KS_solve_SCF!(
     print_e_gap::Bool=false,
     etot_conv_thr::Float64=1e-6,
     ethr_evals_last::Float64=1e-5,
-    starting_magnetization::Union{Vector{Float64},Nothing}=nothing
+    starting_magn::Union{Vector{Float64},Nothing}=nothing
 )
 
     pw = Ham.pw
@@ -102,9 +102,9 @@ function KS_solve_SCF!(
             Rhoe[:,1] = guess_rhoe( Ham )
         else
             if eltype(Ham.pspots) == PsPot_GTH
-                Rhoe = guess_rhoe_atomic( Ham, starting_magnetization=starting_magnetization )
+                Rhoe = guess_rhoe_atomic( Ham, starting_magn=starting_magn )
             else
-                Rhoe, _ = atomic_rho_g(Ham, starting_magnetization=starting_magnetization)
+                Rhoe, _ = atomic_rho_g(Ham, starting_magn=starting_magn)
             end
         end
     elseif startingrhoe == :none

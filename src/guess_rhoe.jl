@@ -49,7 +49,7 @@ function get_atmlength( atoms::Atoms, pspots )
 end
 
 
-function guess_rhoe_atomic( Ham::Hamiltonian; starting_magnetization=nothing )
+function guess_rhoe_atomic( Ham::Hamiltonian; starting_magn=nothing )
 
     atoms = Ham.atoms
     pw = Ham.pw
@@ -113,8 +113,8 @@ function guess_rhoe_atomic( Ham::Hamiltonian; starting_magnetization=nothing )
     Nspin = Ham.electrons.Nspin_channel
     rhocg = zeros(ComplexF64,Npoints,Nspin)
 
-    if (Nspin == 2) && starting_magnetization==nothing
-        starting_magnetization = 0.1*ones(Nspecies)
+    if (Nspin == 2) && starting_magn==nothing
+        starting_magn = 0.1*ones(Nspecies)
     end
 
     for isp = 1:Nspecies
@@ -144,7 +144,7 @@ function guess_rhoe_atomic( Ham::Hamiltonian; starting_magnetization=nothing )
         if Nspin == 2
             for ig = 1:Ng
                 ip = idx_g2r[ig]
-                rhocg[ip,2] = rhocg[ip,2] + starting_magnetization[isp]*strf[ig,isp]*rhocgnt[idx_g2shells[ig]]/CellVolume
+                rhocg[ip,2] = rhocg[ip,2] + starting_magn[isp]*strf[ig,isp]*rhocgnt[idx_g2shells[ig]]/CellVolume
             end
         end
     end

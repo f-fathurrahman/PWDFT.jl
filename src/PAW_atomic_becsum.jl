@@ -1,13 +1,13 @@
-function PAW_atomic_becsum!( Ham::Hamiltonian; starting_magnetization=nothing )
+function PAW_atomic_becsum!( Ham::Hamiltonian; starting_magn=nothing )
     PAW_atomic_becsum!(Ham.atoms, Ham.pspots, Ham.pspotNL,
-        Nspin=Ham.electrons.Nspin_channel, starting_magnetization=starting_magnetization)
+        Nspin=Ham.electrons.Nspin_channel, starting_magn=starting_magn)
 end
 
 
 # For compatibility
-function PAW_atomic_becsum(atoms, pspots, pspotNL; Nspin=1, starting_magnetization=nothing)
+function PAW_atomic_becsum(atoms, pspots, pspotNL; Nspin=1, starting_magn=nothing)
     PAW_atomic_becsum!(atoms, pspots, pspotNL,
-        Nspin=Nspin, starting_magnetization=starting_magnetization)
+        Nspin=Nspin, starting_magn=starting_magn)
     return copy(pspotNL.becsum) # the copy is returned as it may become different from pspotNL.becsum
 end
 
@@ -23,7 +23,7 @@ function PAW_atomic_becsum!(
     atoms::Atoms,
     pspots::Vector{PsPot_UPF},
     pspotNL::PsPotNL_UPF;
-    starting_magnetization=nothing,
+    starting_magn=nothing,
     Nspin=1
 )
 
@@ -44,9 +44,9 @@ function PAW_atomic_becsum!(
 
     @info "PAW_atomic_becsum: Nspin=$(Nspin)"
     # No starting magnetization is give, set them to a default value
-    if (Nspin == 2) && isnothing(starting_magnetization)
-        starting_magnetization = 0.1*ones(Nspecies)
-        @info "Using default starting magnetization = $(starting_magnetization)"
+    if (Nspin == 2) && isnothing(starting_magn)
+        starting_magn = 0.1*ones(Nspecies)
+        @info "Using default starting magnetization = $(starting_magn)"
     end
 
     becsum = pspotNL.paw.becsum # use PAW becsum
@@ -63,7 +63,7 @@ function PAW_atomic_becsum!(
         isp = atm2species[ia]
         psp = pspots[isp]
         if Nspin == 2
-            μ = starting_magnetization[isp]
+            μ = starting_magn[isp]
         end
         if psp.is_paw
             ijh = 1

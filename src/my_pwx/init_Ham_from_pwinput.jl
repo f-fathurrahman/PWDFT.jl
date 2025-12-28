@@ -55,7 +55,21 @@ function init_Ham_from_pwinput(; filename::Union{Nothing,String}=nothing)
     options.Ns = Ns
     options.lspinorb = pwinput.lspinorb
     options.noncollinear = pwinput.noncolin
-    options.Nspin_channel = pwinput.nspin
+    #
+    # Determine Nspin_channel and Nspin_comp from pwinput
+    if pwinput.lspinorb
+        options.Nspin_channel = 1
+        options.Nspin_comp = 4
+        @assert pwinput.noncolin
+    end
+    if pwinput.noncolin
+        options.Nspin_channel = 1
+        options.Nspin_comp = 4
+    else
+        options.Nspin_channel = pwinput.nspin
+        options.Nspin_comp = pwinput.nspin
+    end
+
 
     pspots = Vector{PsPot_UPF}(undef, atoms.Nspecies)
     for isp in 1:atoms.Nspecies
