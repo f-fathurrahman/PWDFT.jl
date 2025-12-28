@@ -22,12 +22,18 @@ function main()
         """, in_bohr=true,
         LatVecs = gen_lattice_fcc(6.65914911201) )
 
-    pspfiles = [joinpath(DIR_PSP,"Ni-q10.gth")]
+    pspots = [PsPot_GTH(joinpath(DIR_PSP,"Ni-q10.gth"))]
     ecutwfc = 50.0
 
-    Ham = Hamiltonian( atoms, pspfiles, ecutwfc, meshk=[8,8,8], extra_states=4, Nspin=2 )
+    options = HamiltonianOptions()
+    options.meshk = [8,8,8]
+    options.extra_states = 4
+    options.Nspin_channel = 2
+    options.Nspin_comp = 2
+    Ham = Hamiltonian( atoms, pspots, ecutwfc, options )
     KS_solve_SCF!( Ham, mix_method="anderson",
-        betamix=0.1, starting_magnetization=[0.1], use_smearing=true )
+        betamix=0.1, starting_magn=[0.1], use_smearing=true
+    )
 
     Serialization.serialize("Ham_ecut_"*string(ecutwfc)*".data", Ham)
 

@@ -26,7 +26,7 @@ function my_scf!(
     Focc = copy(electrons.Focc) # make sure to use the copy
     Nstates = electrons.Nstates
     Nstates_occ = electrons.Nstates_occ
-    Nspin = electrons.Nspin
+    Nspin = electrons.Nspin_channel
     Nkspin = Nkpt*Nspin
     Nstates_occ = electrons.Nstates_occ
 
