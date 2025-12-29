@@ -17,9 +17,11 @@ struct PWSCFInput
     nr1::Int64
     nr2::Int64
     nr3::Int64
-    starting_magnetization::Vector{Float64}
+    starting_magnetization::Union{Vector{Float64},Nothing}
     lspinorb::Bool
     noncolin::Bool
+    angle1::Union{Vector{Float64},Nothing}
+    angle2::Union{Vector{Float64},Nothing}
 end
 
 
@@ -93,6 +95,10 @@ function PWSCFInput( filename::String )
 
     starting_magn_dict = Dict{Int64,Float64}()
     # species and magnetization
+
+    # starting spin angle for each atoms
+    angle1_dict = Dict{Int64,Float64}()
+    angle2_dict = Dict{Int64,Float64}()
 
 
     f = open(filename, "r")
@@ -266,6 +272,32 @@ function PWSCFInput( filename::String )
             idx_spec = parse(Int64, ll[1])
             merge!( starting_magn_dict, Dict(idx_spec => magn) )
             @info "starting_magn_dict = $(starting_magn_dict)"
+            continue
+        end
+
+        if occursin("angle1", l)
+            ll = split(l, " = ", keepempty=false)
+            val_angle = parse(Float64, ll[2])
+            @info "val_angle = $(val_angle)"
+            # parse index of the atom within ()
+            ll = split(ll[1], "(", keepempty=false)
+            ll = split(ll[2], ")", keepempty=false)
+            idx_atom = parse(Int64, ll[1])
+            merge!(angle1_dict, Dict(idx_atom => val_angle) )
+            @info "angle1_dict = $(angle1_dict)"
+            continue
+        end
+
+        if occursin("angle2", l)
+            ll = split(l, " = ", keepempty=false)
+            val_angle = parse(Float64, ll[2])
+            @info "val_angle = $(val_angle)"
+            # parse index of the atom within ()
+            ll = split(ll[1], "(", keepempty=false)
+            ll = split(ll[2], ")", keepempty=false)
+            idx_atom = parse(Int64, ll[1])
+            merge!(angle2_dict, Dict(idx_atom => val_angle) )
+            @info "angle2_dict = $(angle2_dict)"
             continue
         end
 
@@ -535,9 +567,13 @@ function PWSCFInput( filename::String )
     # Set unit lattice vectors manually
     atoms.LatVecs = LatVecs
 
-    starting_magnetization = zeros(Float64, Nspecies)
-    for idx_spec in keys(starting_magn_dict)
-        starting_magnetization[idx_spec] = starting_magn_dict[idx_spec]
+    if isempty(starting_magn_dict)
+        starting_magnetization = nothing
+    else
+        starting_magnetization = zeros(Float64, Nspecies)
+        for idx_spec in keys(starting_magn_dict)
+            starting_magnetization[idx_spec] = starting_magn_dict[idx_spec]
+        end
     end
 
     if lspinorb
@@ -549,6 +585,25 @@ function PWSCFInput( filename::String )
         nspin = 4
     end
 
+    if isempty(angle1_dict)
+        angle1 = nothing
+    else
+        angle1 = zeros(Float64, Natoms)
+        for idx_atom in keys(angle1_dict)
+            angle1[idx_atom] = angle1_dict[idx_atom]
+        end
+    end
+
+    if isempty(angle2_dict)
+        angle2 = nothing
+    else
+        angle2 = zeros(Float64, Natoms)
+        for idx_atom in keys(angle2_dict)
+            angle2[idx_atom] = angle2_dict[idx_atom]
+        end
+    end
+
+
     print(atoms)
 
     # Don't forget to convert ecutwfc and ecutrho to Ha
@@ -558,7 +613,7 @@ function PWSCFInput( filename::String )
         nbnd, nspin, occupations, smearing, degauss, input_dft,
         nr1, nr2, nr3,
         starting_magnetization,
-        lspinorb, noncolin
+        lspinorb, noncolin, angle1, angle2
     )
 end
 
