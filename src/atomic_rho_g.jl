@@ -163,7 +163,13 @@ function atomic_rho_g(
         Rhoe[:,1] = Rhoe_tot
     end
 
-    println("atomic_rho_g: integ rhoe = ", sum(Rhoe)*CellVolume/Npoints)
+    if Nspin == 4
+        integRhoe = sum(Rhoe[:,1])*CellVolume/Npoints
+    else
+        integRhoe = sum(Rhoe)*CellVolume/Npoints
+    end
+    println("atomic_rho_g: integ rhoe = ", integRhoe)
+
 
     return Rhoe, rhocg
 

@@ -13,7 +13,7 @@ end
 function _rearrange_rhoe_comp(Rhoe)
     Nspin = size(Rhoe, 2)
     Npoints = size(Rhoe, 1)
-    @assert Nspin in [1,2,4]
+    @assert Nspin == 2 
     # Do the transpose manually
     Rhoe_tmp = zeros(Float64, Nspin*Npoints)
     ipp = 0
@@ -26,6 +26,50 @@ function _rearrange_rhoe_comp(Rhoe)
     end
     return Rhoe_tmp
 end
+
+function calc_epsxc_Vxc_VWN_noncollinear!(
+    xc_calc::LibxcXCCalculator,
+    Rhoe::Array{Float64,2},
+    epsxc::Vector{Float64},
+    Vxc::Array{Float64,2}
+)
+    Npoints = size(Rhoe, 1)
+    Nspin = size(Rhoe, 2)
+    @assert Nspin == 4
+
+    rhoe_up_dn = zeros(Float64, Npoints, 2)
+    magn = @views Rhoe[:,2:4]
+    for ip in 1:Npoints
+        amag = sqrt(magn[ip,1]^2 + magn[ip,2]^2 + magn[ip,3]^2)
+        rhoe_up_dn[ip,1] = 0.5*(Rhoe[ip,1] + amag) # up
+        rhoe_up_dn[ip,2] = 0.5*(Rhoe[ip,2] - amag) # dn
+    end
+
+    Vxc_up_dn = zeros(Float64, Npoints, 2)
+    calc_epsxc_Vxc_VWN!( xc_calc, rhoe_up_dn, epsxc, Vxc_up_dn )
+
+    SMALL_CHARGE = 1e-10
+    SMALL_MAGN = 1e-20
+
+    fill!(Vxc, 0.0)
+    # Prepare output potentials
+    for ip in 1:Npoints
+        arho = abs(Rhoe[ip,1])
+        if arho < SMALL_CHARGE
+            continue
+        end
+        Vs = 0.5*( Vxc_up_dn[ip,1] - Vxc_up_dn[ip,2] ) # diff up dn
+        Vxc[ip,1] = 0.5*( Vxc_up_dn[ip,1] + Vxc_up_dn[ip,2] ) # sum up dn
+        #
+        amag = sqrt(magn[ip,1]^2 + magn[ip,2]^2 + magn[ip,3]^2)
+        if amag > SMALL_MAGN
+            @views Vxc[ip,2:4] .= Vs .* Rhoe[ip,2:4] ./ amag
+        end
+    end
+
+    return
+end
+
 
 # In-place version, both epsxc and Vxc, spinpol
 function calc_epsxc_Vxc_VWN!(
@@ -46,13 +90,6 @@ function calc_epsxc_Vxc_VWN!(
     end
 
     # Do the transpose manually
-    #Rhoe_tmp = zeros(Float64, 2*Npoints)
-    #ipp = 0
-    #for ip in 1:2:2*Npoints
-    #    ipp = ipp + 1
-    #    Rhoe_tmp[ip] = Rhoe[ipp,1]
-    #    Rhoe_tmp[ip+1] = Rhoe[ipp,2]
-    #end
     Rhoe_tmp = _rearrange_rhoe_comp(Rhoe)
 
     eps_x = zeros(Float64, Npoints)

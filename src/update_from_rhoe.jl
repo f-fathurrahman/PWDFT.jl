@@ -53,7 +53,7 @@ end
 # Probably by setting psiks as optional argument
 function update_from_rhoe!(Ham, psiks, Rhoe, RhoeG)
 
-    Nspin = Ham.electrons.Nspin_channel
+    Nspin = Ham.electrons.Nspin_comp
     Npoints = size(Rhoe, 1)
 
     # Save old potential
@@ -150,12 +150,16 @@ function _add_V_xc!(Ham, psiks, Rhoe)
             @views calc_epsxc_Vxc_PBE!( Ham.xc_calc, Ham.pw, Rhoe, epsxc, Vxc )
         
         else
-            # VWN
+            # VWN, handle 
             if Nspin <= 2
                 calc_epsxc_Vxc_VWN!( Ham.xc_calc, Rhoe, epsxc, Vxc )
             elseif Nspin == 4
-                # XXX Special case for noncollinear, not using magnetism
-                @views calc_epsxc_Vxc_VWN!( Ham.xc_calc, Rhoe[:,1], epsxc, Vxc[:,1] )
+                if Ham.electrons.domag
+                    calc_epsxc_Vxc_VWN_noncollinear!( Ham.xc_calc, Rhoe, epsxc, Vxc )
+                else
+                    # XXX Special case for noncollinear, not using magnetism
+                    @views calc_epsxc_Vxc_VWN!( Ham.xc_calc, Rhoe[:,1], epsxc, Vxc[:,1] )
+                end
             else
                 @error("Wrong Nspin=$Nspin")
             end 
@@ -175,7 +179,19 @@ function _add_V_xc!(Ham, psiks, Rhoe)
         end
 
         if Ham.xcfunc == "VWN"
-            calc_epsxc_Vxc_VWN!( Ham.xc_calc, Rhoe, epsxc, Vxc )
+            # VWN, handle 
+            if Nspin <= 2
+                calc_epsxc_Vxc_VWN!( Ham.xc_calc, Rhoe, epsxc, Vxc )
+            elseif Nspin == 4
+                if Ham.electrons.domag
+                    calc_epsxc_Vxc_VWN_noncollinear!( Ham.xc_calc, Rhoe, epsxc, Vxc )
+                else
+                    # XXX Special case for noncollinear, not using magnetism
+                    @views calc_epsxc_Vxc_VWN!( Ham.xc_calc, Rhoe[:,1], epsxc, Vxc[:,1] )
+                end
+            else
+                @error("Wrong Nspin=$Nspin")
+            end 
         elseif Ham.xcfunc == "PBE"
             # check if this is working
             calc_epsxc_Vxc_PBE!( Ham.xc_calc, Ham.pw, Rhoe, epsxc, Vxc )
