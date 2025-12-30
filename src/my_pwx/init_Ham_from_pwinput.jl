@@ -70,6 +70,16 @@ function init_Ham_from_pwinput(; filename::Union{Nothing,String}=nothing)
         options.Nspin_comp = pwinput.nspin
     end
 
+    if !isnothing(pwinput.starting_magnetization)
+        options.starting_magn = pwinput.starting_magnetization
+    end
+    if !isnothing(pwinput.angle1)
+        options.angle1 = pwinput.angle1
+    end
+    if !isnothing(pwinput.angle2)
+        options.angle2 = pwinput.angle2
+    end
+
 
     pspots = Vector{PsPot_UPF}(undef, atoms.Nspecies)
     for isp in 1:atoms.Nspecies

@@ -151,14 +151,23 @@ function Hamiltonian(
         rhoe_core = nothing
     end
 
+    # Initialize electronic states variable
+    #
     # extra_states is given
+    domag = false # this is only have meaning in case of lspinorb (with noncollinear)
+    if options.noncollinear
+        if !isnothing(options.starting_magn)
+            domag = true
+        end
+    end
     if options.extra_states > -1
         @info "Pass here 154"
         electrons = Electrons( atoms, pspots,
             Nspin_channel = Nspin_channel,
             Nkpt = kpoints.Nkpt,
             Nstates_empty = options.extra_states,
-            noncollinear = options.noncollinear
+            noncollinear = options.noncollinear,
+            domag = domag
         )
     # no extra_states is given but Nstates is given
     elseif options.Nstates > -1
@@ -167,7 +176,8 @@ function Hamiltonian(
             Nspin_channel = Nspin_channel,
             Nkpt = kpoints.Nkpt,
             Nstates = options.Nstates,
-            noncollinear = options.noncollinear
+            noncollinear = options.noncollinear,
+            domag = domag
         )
     #
     elseif (options.Nstates == -1) && (options.extra_states == -1)
@@ -177,7 +187,8 @@ function Hamiltonian(
         electrons = Electrons( atoms, pspots,
             Nspin_channel = Nspin_channel,
             Nkpt = kpoints.Nkpt,
-            noncollinear = options.noncollinear
+            noncollinear = options.noncollinear,
+            domag = domag
         )
     else
         error("Error in initializing instance of Electrons")

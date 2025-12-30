@@ -14,6 +14,7 @@ mutable struct Electrons
     noncollinear::Bool
     E_fermi::Float64
     Nspin_comp::Int64
+    domag::Bool
 end
 
 """
@@ -31,9 +32,10 @@ function Electrons()
     kT = 0.0
     noncollinear = false
     E_fermi = 0.0
+    domag = false
     return Electrons(
         Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin_channel,
-        use_smearing, kT, noncollinear, E_fermi, Nspin_comp
+        use_smearing, kT, noncollinear, E_fermi, Nspin_comp, domag
     )
 end
 
@@ -44,7 +46,8 @@ function Electrons(
     Nkpt = 1,
     Nstates = -1,
     Nstates_empty = -1,
-    noncollinear = false
+    noncollinear = false,
+    domag = false
 ) where T <: AbstractPsPot
     #
     Zvals = get_Zvals(pspots)
@@ -53,7 +56,8 @@ function Electrons(
         Nkpt = Nkpt,
         Nstates = Nstates,
         Nstates_empty = Nstates_empty,
-        noncollinear = noncollinear
+        noncollinear = noncollinear,
+        domag = domag
     )
 end
 
@@ -113,7 +117,8 @@ function Electrons(
     Nkpt = 1,
     Nstates = -1,
     Nstates_empty = -1,
-    noncollinear = false
+    noncollinear = false,
+    domag = false
 )
     if !noncollinear
         @assert Nspin_channel <= 2
@@ -227,7 +232,8 @@ function Electrons(
     E_fermi = 0.0
     return Electrons(
         Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin_channel,
-        use_smearing, kT, noncollinear, E_fermi, Nspin_comp
+        use_smearing, kT, noncollinear, E_fermi, Nspin_comp,
+        domag
     )
 end
 
@@ -281,9 +287,11 @@ function init_electrons_molecule(
     E_fermi = 0.0
     noncollinear = false
     Nspin_comp = 2 # collinear magnetism
+    domag = true
     return Electrons(
         Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin_channel,
-        use_smearing, kT, noncollinear, E_fermi, Nspin_comp
+        use_smearing, kT, noncollinear, E_fermi, Nspin_comp,
+        domag
     )
 end
 
