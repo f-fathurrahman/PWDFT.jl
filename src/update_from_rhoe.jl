@@ -174,7 +174,7 @@ function _add_V_xc!(Ham, psiks, Rhoe)
         if Nspin == 2
             Rhoe[:,1] .+= Ham.rhoe_core*0.5
             Rhoe[:,2] .+= Ham.rhoe_core*0.5
-        else
+        else # for both Nspin == 1 and Nspin == 4
             Rhoe[:,1] .+= Ham.rhoe_core
         end
 
@@ -183,8 +183,14 @@ function _add_V_xc!(Ham, psiks, Rhoe)
             if Nspin <= 2
                 calc_epsxc_Vxc_VWN!( Ham.xc_calc, Rhoe, epsxc, Vxc )
             elseif Nspin == 4
+                @info "sum Rhoe[:,1] = $(sum(Rhoe[:,1]))"
+                @info "sum Rhoe[:,2] = $(sum(Rhoe[:,2]))"
+                @info "sum Rhoe[:,3] = $(sum(Rhoe[:,3]))"
+                @info "sum Rhoe[:,4] = $(sum(Rhoe[:,4]))"
                 if Ham.electrons.domag
+                    @info "Pass here 191 in update_from_rhoe"
                     calc_epsxc_Vxc_VWN_noncollinear!( Ham.xc_calc, Rhoe, epsxc, Vxc )
+                    @info "sum epsxc = $(sum(epsxc))"
                 else
                     # XXX Special case for noncollinear, not using magnetism
                     @views calc_epsxc_Vxc_VWN!( Ham.xc_calc, Rhoe[:,1], epsxc, Vxc[:,1] )
@@ -199,7 +205,11 @@ function _add_V_xc!(Ham, psiks, Rhoe)
             # This is SCAN
             error("Core correction is yet not supported in SCAN")
         end
-        Exc = sum(epsxc .* Rhoe)*dVol
+        if Nspin == 4
+            Exc = sum(epsxc .* Rhoe[:,1])*dVol
+        else
+            Exc = sum(epsxc .* Rhoe)*dVol
+        end
 
         # Recover
         if Nspin == 2

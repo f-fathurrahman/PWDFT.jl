@@ -95,9 +95,9 @@ function atomic_rho_g(
         
         # ffr: spherical coord?
         if Nspin == 4
-            angular[1] = sin(angle1[isp])*cos(angle2[isp])
-            angular[2] = sin(angle1[isp])*sin(angle2[isp])
-            angular[3] = cos(angle1[isp])
+            angular[1] = sind(angle1[isp])*cosd(angle2[isp])
+            angular[2] = sind(angle1[isp])*sind(angle2[isp])
+            angular[3] = cosd(angle1[isp])
             # For spin-polarized case
             for ispin in 2:Nspin
                 for ig in 1:Ng

@@ -42,11 +42,14 @@ function calc_epsxc_Vxc_VWN_noncollinear!(
     for ip in 1:Npoints
         amag = sqrt(magn[ip,1]^2 + magn[ip,2]^2 + magn[ip,3]^2)
         rhoe_up_dn[ip,1] = 0.5*(Rhoe[ip,1] + amag) # up
-        rhoe_up_dn[ip,2] = 0.5*(Rhoe[ip,2] - amag) # dn
+        rhoe_up_dn[ip,2] = 0.5*(Rhoe[ip,1] - amag) # dn
     end
 
     Vxc_up_dn = zeros(Float64, Npoints, 2)
     calc_epsxc_Vxc_VWN!( xc_calc, rhoe_up_dn, epsxc, Vxc_up_dn )
+    
+    @info "in LDA_VWN: sum(epsxc) = $(sum(epsxc))"
+    @info "in LDA_VWN: sum(Vxc_up_dn) = $(sum(Vxc_up_dn))"
 
     SMALL_CHARGE = 1e-10
     SMALL_MAGN = 1e-20
@@ -90,7 +93,14 @@ function calc_epsxc_Vxc_VWN!(
     end
 
     # Do the transpose manually
-    Rhoe_tmp = _rearrange_rhoe_comp(Rhoe)
+    #Rhoe_tmp = _rearrange_rhoe_comp(Rhoe)
+    Rhoe_tmp = zeros(Float64, 2*Npoints)
+    ipp = 0
+    for ip in 1:2:2*Npoints
+        ipp = ipp + 1
+        Rhoe_tmp[ip] = Rhoe[ipp,1]
+        Rhoe_tmp[ip+1] = Rhoe[ipp,2]
+    end
 
     eps_x = zeros(Float64, Npoints)
     eps_c = zeros(Float64, Npoints)
