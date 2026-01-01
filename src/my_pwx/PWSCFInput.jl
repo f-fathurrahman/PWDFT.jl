@@ -279,11 +279,11 @@ function PWSCFInput( filename::String )
             ll = split(l, " = ", keepempty=false)
             val_angle = parse(Float64, ll[2])
             @info "val_angle = $(val_angle)"
-            # parse index of the atom within ()
+            # parse index of the species within ()
             ll = split(ll[1], "(", keepempty=false)
             ll = split(ll[2], ")", keepempty=false)
-            idx_atom = parse(Int64, ll[1])
-            merge!(angle1_dict, Dict(idx_atom => val_angle) )
+            idx_spec = parse(Int64, ll[1])
+            merge!(angle1_dict, Dict(idx_spec => val_angle) )
             @info "angle1_dict = $(angle1_dict)"
             continue
         end
@@ -292,11 +292,11 @@ function PWSCFInput( filename::String )
             ll = split(l, " = ", keepempty=false)
             val_angle = parse(Float64, ll[2])
             @info "val_angle = $(val_angle)"
-            # parse index of the atom within ()
+            # parse index of the species within ()
             ll = split(ll[1], "(", keepempty=false)
             ll = split(ll[2], ")", keepempty=false)
-            idx_atom = parse(Int64, ll[1])
-            merge!(angle2_dict, Dict(idx_atom => val_angle) )
+            idx_spec = parse(Int64, ll[1])
+            merge!(angle2_dict, Dict(idx_spec => val_angle) )
             @info "angle2_dict = $(angle2_dict)"
             continue
         end
@@ -588,18 +588,18 @@ function PWSCFInput( filename::String )
     if isempty(angle1_dict)
         angle1 = nothing
     else
-        angle1 = zeros(Float64, Natoms)
-        for idx_atom in keys(angle1_dict)
-            angle1[idx_atom] = angle1_dict[idx_atom]
+        angle1 = zeros(Float64, Nspecies)
+        for idx_spec in keys(angle1_dict)
+            angle1[idx_spec] = angle1_dict[idx_spec]
         end
     end
 
     if isempty(angle2_dict)
         angle2 = nothing
     else
-        angle2 = zeros(Float64, Natoms)
-        for idx_atom in keys(angle2_dict)
-            angle2[idx_atom] = angle2_dict[idx_atom]
+        angle2 = zeros(Float64, Nspecies)
+        for idx_spec in keys(angle2_dict)
+            angle2[idx_spec] = angle2_dict[idx_spec]
         end
     end
 
