@@ -245,7 +245,11 @@ end
 # On output, the array sym is set to .TRUE.. for each operation
 # of the original point group that is also a symmetry operation
 # of the crystal symmetry point group.
-function sgam_at!( atoms::Atoms, sym, no_z_inv, nrot, s, ft, sname, irt )
+function sgam_at!(
+    atoms::Atoms, sym, nrot, s, ft, irt;
+    no_z_inv = false,
+    fractional_translations = true
+)
     
     nat = atoms.Natoms
     tau = atoms.positions
@@ -272,30 +276,23 @@ function sgam_at!( atoms::Atoms, sym, no_z_inv, nrot, s, ft, sname, irt )
     nb = 1
     irot = 1
 
-    fractional_translations = true # FIXME true by default
-
     if fractional_translations
         for na in 2:nat
-            if atm2species[nb] == atm2species[na]
-                
-                for i in 1:3
-                    ft_[i] = xau[i,na] - xau[i,nb] - round( xau[i,na] - xau[i,nb] )
-                end
-
-                sym[irot] = checksym!( irot, nat, atm2species, xau, xau, ft_, irt )
-                
-                if sym[irot]
-                    fractional_translations = false
-                    #println("Found symmetry operation: I + ", ft_[:])
-                    #println("This is a supercell")
-                    #println("Fractional translations are disabled")
-                    break # go outside the loop over na
-                end # if
-            
-            end # if
-        
-        end # for
-    
+            if atm2species[nb] != atm2species[na]
+                continue
+            end 
+            for i in 1:3
+                ft_[i] = xau[i,na] - xau[i,nb] - round( xau[i,na] - xau[i,nb] )
+            end
+            sym[irot] = checksym!( irot, nat, atm2species, xau, xau, ft_, irt )    
+            if sym[irot]
+                fractional_translations = false
+                #println("Found symmetry operation: I + ", ft_[:])
+                #println("This is a supercell")
+                #println("Fractional translations are disabled")
+                break # go outside the loop over na
+            end        
+        end # for na
     end # if
 
     nsym_ns = 0
@@ -375,9 +372,104 @@ function sgam_at!( atoms::Atoms, sym, no_z_inv, nrot, s, ft, sname, irt )
 
     end
 
+    # disable z -> -z symmetry
+    if no_z_inv
+        for irot in 1:nrot
+            if s[3,3,irot] == -1
+                sym[irot] = false
+            end
+        end
+    end
+
     return
 
 end
+
+
+function sgam_at_mag!( atoms::Atoms, m_loc, sym, nrot, s, ft, sname, irt, t_rev, nsym_ns )
+#=
+    Find magnetic symmetries, i.e. point-group symmetries that are
+    also symmetries of the local magnetization - including
+    rotation + time reversal operations.
+=#
+
+    EPS2 = 1e-5
+
+    Natoms = atoms.Natoms
+    mxau = zeros(Float64, 3, Natoms) # magnetization
+    mrau = zeros(Float64, 3, Natoms) # rotated magnetization
+
+    no_t_rev = false # XXX
+    
+    bg = inv(Matrix(atoms.LatVecs'))  # follows QE convention (no 2*pi factor)
+    # The exact value of bg does not need to coincide with QE
+
+    println("in sgam_at_mag!: m_loc = ", m_loc)
+
+    # Compute the local magnetization of each atom in the basis of
+    # the direct lattice vectors
+    for ia in 1:Natoms
+        mxau[:,ia] = bg[1,:]*m_loc[1,ia] + bg[2,:]*m_loc[2,ia] + bg[3,:]*m_loc[3,ia]
+        println("ia = $ia mxau = $mxau")
+    end
+    
+    for irot in 1:nrot
+        #
+        println("\nirot = ", irot)
+        #
+        t_rev[irot] = false
+        if sym[irot]
+            # rotated local magnetization
+            for ia in 1:Natoms
+                mrau[:,ia]= s[1,:,irot]*mxau[1,ia] +
+                            s[2,:,irot]*mxau[2,ia] +
+                            s[3,:,irot]*mxau[3,ia]
+                println("ia=$ia mrau = $mrau")
+            end
+            if sname[irot][1:3] == "inv"
+                @info "inversion sym, set mrau to -mrau"
+                mrau[:,:] = -mrau[:,:]
+            end
+            # check if this a magnetic symmetry
+            t1 = true
+            t2 = true  
+            for ia in 1:Natoms
+                ja = irt[irot,ia]
+                if (ja < 1) || (ja > Natoms)
+                    error("out-of-bound atomic index: $ja")
+                end
+                ss1 = sum(abs.(mrau[:,ia] - mxau[:,ja]))
+                ss2 = sum(abs.(mrau[:,ia] + mxau[:,ja]))
+                t1 = ( ss1 < EPS2 ) && t1
+                t2 = ( ss2 < EPS2 ) && t2
+                println("ss1=$ss1 t1=$t1 , ss2=$ss2 t2=$t2")
+            end
+           
+            if (!t1 && !t2)
+                # not a magnetic symmetry
+                sym[irot] = false
+                println("sym irot is set to false: ", irot)
+            elseif (t2 && !t1)
+                # magnetic symmetry with time reversal, if allowed
+                if no_t_rev
+                    sym[irot] = false
+                else
+                    t_rev[irot] = true
+                end
+            end # if 
+            #
+            if ( !sym[irot] && any( abs.(ft[:,irot]) .> EPS2 ) )
+                nsym_ns -= 1
+            end
+        end # if
+    end # nrot
+
+    @info "at the end of sgam_at_mag!: $(count(sym))"
+
+    return nsym_ns
+end
+
+
 
 # Returns minimum common multiple of two integers
 # if i=0, returns j, and vice versa; if i<0 or j<0, returns -1.
@@ -396,7 +488,7 @@ function _mcm( i, j )
                 return res
             end
         end
-        mcm = n2
+        res = n2
     end
     return res
 end
@@ -612,7 +704,7 @@ function SymmetryInfo()
     return SymmetryInfo( Nrots, Nsyms, s, inv_s, sname, sr, ft, non_symmorphic, irt, D1, D2, D3 )
 end
 
-function SymmetryInfo( atoms::Atoms )
+function SymmetryInfo( atoms::Atoms; magnetic_sym = false, m_loc = nothing )
 
     Nrots, s, sname = find_symm_bravais_latt( atoms.LatVecs )
 
@@ -621,7 +713,16 @@ function SymmetryInfo( atoms::Atoms )
     irt = zeros(Int64, 48, atoms.Natoms)
     ft = zeros(Float64, 3, 48)
 
-    sgam_at!( atoms, sym, false, Nrots, s, ft, sname, irt )
+    sgam_at!( atoms, sym, Nrots, s, ft, irt,
+        fractional_translations = true, no_z_inv = false
+    )
+
+    nsym_ns = 0 # nonsymmorphic (fractional translation) symms
+    t_rev = zeros(Bool, 48)
+    if magnetic_sym
+        @assert !isnothing(m_loc)
+        nsym_ns = sgam_at_mag!( atoms, m_loc, sym, Nrots, s, ft, sname, irt, t_rev, nsym_ns )
+    end
 
     Nsyms = copy_sym!( Nrots, sym, s, ft, sname, irt )
     

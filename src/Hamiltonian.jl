@@ -28,10 +28,33 @@ function Hamiltonian(
     options::HamiltonianOptions
 ) where Tpsp <: AbstractPsPot
 
+    domag = false # this is only have meaning in case of lspinorb (with noncollinear)
+    if options.noncollinear
+        if !isnothing(options.starting_magn)
+            domag = true
+        end
+    end
+
     if options.use_symmetry == false
         sym_info = SymmetryInfo()
     else
-        sym_info = SymmetryInfo(atoms)
+        magnetic_sym = options.noncollinear && domag
+        #time_reversal = .NOT. noinv .AND. .NOT. magnetic_sym
+        if options.noncollinear
+            s_mag = options.starting_magn
+            angle1 = options.angle1
+            angle2 = options.angle2
+            m_loc = zeros(Float64, 3, atoms.Natoms)
+            for ia in 1:atoms.Natoms
+                isp = atoms.atm2species[ia]
+                m_loc[1,ia] = s_mag[isp] * sind(angle1[isp]) * cosd(angle2[isp])
+                m_loc[2,ia] = s_mag[isp] * sind(angle1[isp]) * sind(angle2[isp])
+                m_loc[3,ia] = s_mag[isp] * cosd(angle1[isp])
+            end
+        else
+            m_loc = nothing
+        end
+        sym_info = SymmetryInfo(atoms, magnetic_sym = magnetic_sym, m_loc = m_loc)
     end
 
     @assert options.dual >= 4.0
@@ -154,12 +177,6 @@ function Hamiltonian(
     # Initialize electronic states variable
     #
     # extra_states is given
-    domag = false # this is only have meaning in case of lspinorb (with noncollinear)
-    if options.noncollinear
-        if !isnothing(options.starting_magn)
-            domag = true
-        end
-    end
     if options.extra_states > -1
         @info "Pass here 154"
         electrons = Electrons( atoms, pspots,
