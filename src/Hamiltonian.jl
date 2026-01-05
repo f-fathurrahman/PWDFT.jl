@@ -30,7 +30,7 @@ function Hamiltonian(
 
     domag = false # this is only have meaning in case of lspinorb (with noncollinear)
     if options.noncollinear
-        if !isnothing(options.starting_magn)
+        if !isnothing(options.starting_magn) && !isapprox(sum(options.starting_magn), 0.0)
             domag = true
         end
     end
@@ -40,7 +40,7 @@ function Hamiltonian(
     else
         magnetic_sym = options.noncollinear && domag
         #time_reversal = .NOT. noinv .AND. .NOT. magnetic_sym
-        if options.noncollinear
+        if options.noncollinear && domag
             s_mag = options.starting_magn
             angle1 = options.angle1
             angle2 = options.angle2
