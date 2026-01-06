@@ -18,6 +18,7 @@ function atomic_rho_g(
     Nelectrons = Ham.electrons.Nelectrons
     Nspin = Ham.electrons.Nspin_comp
     Ngl = length(Ham.pw.gvec.G2_shells)
+    domag = get_domag(Ham.options)
 
     eps8 = 1e-8
     strf = calc_strfact( atoms, pw )
@@ -41,13 +42,14 @@ function atomic_rho_g(
         @info "Using default starting magnetization = $(starting_magn)"
     end
 
-    if (Nspin == 4) && isnothing(angle1) && isnothing(angle2)
-        starting_magn = 0.1*ones(Nspecies)
-        angle1 = 0.4*pi*ones(Nspecies)
-        angle2 = 0.5*pi*ones(Nspecies)
-        @info "Using default angle1 = $(angle1)"
-        @info "Using default angle2 = $(angle2)"
-    end
+    # Need this?
+    #if (Nspin == 4) && isnothing(angle1) && isnothing(angle2)
+    #    starting_magn = 0.1*ones(Nspecies)
+    #    angle1 = 0.4*pi*ones(Nspecies)
+    #    angle2 = 0.5*pi*ones(Nspecies)
+    #    @info "Using default angle1 = $(angle1)"
+    #    @info "Using default angle2 = $(angle2)"
+    #end
 
     angular = zeros(Float64, 3)
 
@@ -94,7 +96,7 @@ function atomic_rho_g(
         end
         
         # ffr: spherical coord?
-        if Nspin == 4
+        if Nspin == 4 && domag
             angular[1] = sind(angle1[isp])*cosd(angle2[isp])
             angular[2] = sind(angle1[isp])*sind(angle2[isp])
             angular[3] = cosd(angle1[isp])

@@ -51,3 +51,13 @@ function HamiltonianOptions()
         lspinorb, noncollinear
     )
 end
+
+function get_domag(options::HamiltonianOptions)
+    domag = false # this is only have meaning in case of lspinorb (with noncollinear)
+    if options.noncollinear
+        if !isnothing(options.starting_magn) && !isapprox(sum(options.starting_magn), 0.0)
+            domag = true
+        end
+    end
+    return domag
+end
