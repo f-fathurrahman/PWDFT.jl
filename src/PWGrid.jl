@@ -93,8 +93,6 @@ function PWGrid(
     else
         Ns = Ns_[:]
     end
-
-    Npoints = prod(Ns)
     
     gvec = init_gvec( Ns, RecVecs, ecutrho )
     planfw = plan_fft!( zeros(ComplexF64,Ns), flags=FFTW.MEASURE )
@@ -102,7 +100,7 @@ function PWGrid(
 
 
     # If dual is larger than 4 then we need to allocate a smooth grid:
-    # gvecs and its grid size, and the FFR plans associated with it
+    # gvecs and its grid size, and the FFT plans associated with it
     #
     # "Smooth" here means that the functions described by the grid are assumed
     # to be smooth enough such that 4*ecutwfc is enough.
@@ -136,7 +134,7 @@ function PWGrid(
         planbws = nothing
     end
 
-    if kpoints == nothing
+    if isnothing(kpoints)
         kpoints = KPoints( 1, (1,1,1), zeros(3,1), [1.0], RecVecs )
     end
 
@@ -174,9 +172,7 @@ function calc_Ng( Ns, RecVecs, ecutrho )
     #
     G = zeros(Float64,3)
     #
-    for k in 0:Ns[3]-1
-    for j in 0:Ns[2]-1
-    for i in 0:Ns[1]-1
+    for k in 0:Ns[3]-1, j in 0:Ns[2]-1, i in 0:Ns[1]-1
         ig = ig + 1
         gi = mm_to_nn( i, Ns[1] )
         gj = mm_to_nn( j, Ns[2] )
@@ -188,8 +184,6 @@ function calc_Ng( Ns, RecVecs, ecutrho )
         if 0.5*G2 <= ecutrho
             Ng = Ng + 1
         end
-    end
-    end
     end
     return Ng
 end
@@ -215,9 +209,7 @@ function init_gvec( Ns, RecVecs, ecutrho )
 
     ig = 0
     ip = 0
-    for k in 0:Ns[3]-1
-    for j in 0:Ns[2]-1
-    for i in 0:Ns[1]-1
+    for k in 0:Ns[3]-1, j in 0:Ns[2]-1, i in 0:Ns[1]-1
         ip = ip + 1
         gi = mm_to_nn( i, Ns[1] )
         gj = mm_to_nn( j, Ns[2] )
@@ -234,8 +226,6 @@ function init_gvec( Ns, RecVecs, ecutrho )
             idx_g2r[ig] = ip
             idx_g2miller[ig] = (gi, gj, gk)
         end
-    end
-    end
     end
 
     # if sorted
@@ -259,7 +249,7 @@ function init_Gshells( G2_sorted::Array{Float64,1} )
     Ng = length(G2_sorted)
 
     ngl = 1
-    for ig = 2:Ng
+    for ig in 2:Ng
         if G2_sorted[ig] > (G2_sorted[ig-1] + eps8)
             ngl = ngl + 1
         end
@@ -272,7 +262,7 @@ function init_Gshells( G2_sorted::Array{Float64,1} )
     idx_g2shells[1] = 1
 
     igl = 1
-    for ig = 2:Ng
+    for ig in 2:Ng
         if G2_sorted[ig] > (G2_sorted[ig-1] + eps8)
             igl = igl + 1
             G2_shells[igl] = G2_sorted[ig]
@@ -313,8 +303,8 @@ function init_gvecw( ecutwfc::Float64, gvec::GVectors, kpoints::KPoints )
     idx_gw2r = Array{Array{Int64,1},1}(undef,Nkpt)
     Ngw = Array{Int64,1}(undef,Nkpt)
     #
-    for ik = 1:Nkpt
-        for ig = 1:Ng
+    for ik in 1:Nkpt
+        for ig in 1:Ng
             Gk[1] = G[1,ig] + kpts[1,ik]
             Gk[2] = G[2,ig] + kpts[2,ik]
             Gk[3] = G[3,ig] + kpts[3,ik]
@@ -344,15 +334,11 @@ function init_grid_R( Ns, LatVecs )
     #
     R = Array{Float64}(undef,3,Npoints)
     ip = 0
-    for k in 0:Ns[3]-1
-    for j in 0:Ns[2]-1
-    for i in 0:Ns[1]-1
+    for k in 0:Ns[3]-1, j in 0:Ns[2]-1, i in 0:Ns[1]-1
         ip = ip + 1
         R[1,ip] = LatVecs[1,1]*i/Ns[1] + LatVecs[1,2]*j/Ns[2] + LatVecs[1,3]*k/Ns[3]
         R[2,ip] = LatVecs[2,1]*i/Ns[1] + LatVecs[2,2]*j/Ns[2] + LatVecs[2,3]*k/Ns[3]
         R[3,ip] = LatVecs[3,1]*i/Ns[1] + LatVecs[3,2]*j/Ns[2] + LatVecs[3,3]*k/Ns[3]
-    end
-    end
     end
     #
     return R
@@ -373,7 +359,7 @@ function op_nabla( pw::PWGrid, Rhoe::AbstractVector{Float64} )
     ∇RhoeG_full = zeros(ComplexF64,3,Npoints)
     ∇Rhoe = zeros(Float64,3,Npoints)
     
-    for ig = 1:Ng
+    for ig in 1:Ng
         ip = idx_g2r[ig]
         ∇RhoeG_full[1,ip] = im*G[1,ig]*RhoeG[ig]
         ∇RhoeG_full[2,ip] = im*G[2,ig]*RhoeG[ig]
@@ -401,7 +387,7 @@ function op_nabla_dot( pw::PWGrid, h::Array{Float64,2} )
 
     divhG_full = zeros(ComplexF64,Npoints)
     
-    for ig = 1:Ng
+    for ig in 1:Ng
         ip = idx_g2r[ig]
         divhG_full[ip] = im*( G[1,ig]*hG[1,ig] + G[2,ig]*hG[2,ig] + G[3,ig]*hG[3,ig] )
     end
@@ -422,7 +408,6 @@ function op_nabla_dot(
     G = pw.gvec.G
     Ng = pw.gvec.Ng
     idx_g2r = pw.gvec.idx_g2r
-    Npoints = prod(pw.Ns)
 
     R_to_G!(pw, hGx)
     R_to_G!(pw, hGy)
@@ -430,7 +415,7 @@ function op_nabla_dot(
 
     divhG_full = zeros(ComplexF64, pw.Ns)
     
-    for ig = 1:Ng
+    for ig in 1:Ng
         ip = idx_g2r[ig]
         divhG_full[ip] = im*( G[1,ig]*hGx[ip] + G[2,ig]*hGy[ip] + G[3,ig]*hGz[ip] )
     end
