@@ -853,6 +853,27 @@ function calc_betaNL_psi(
 end
 
 
+function calc_betaNL_psi_noncollinear(
+    ik::Int64,
+    pspotNL::PsPotNL_UPF,
+    psi::AbstractArray{ComplexF64}
+)
+    Npol = 2
+    Npw2 = size(psi, 1)
+    Nstates = size(psi, 2)
+    Npw = round(Int64, Npw2/Npol)
+    
+    NbetaNL = pspotNL.NbetaNL
+    # output
+    betaNL_psi = zeros(ComplexF64, NbetaNL, Npol, Nstates)
+    #
+    psir = reshape(psi, Npw, Npol, Nstates)
+    betaNL_psi[:,1,:] = pspotNL.betaNL[ik]' * psir[:,1,:]
+    betaNL_psi[:,2,:] = pspotNL.betaNL[ik]' * psir[:,2,:]
+    return betaNL_psi
+end
+
+
 function _init_rot_ylm( ; lmaxx=3 )
     sqrt2 = sqrt(2.0)
     lqmax = 2*lmaxx + 1
