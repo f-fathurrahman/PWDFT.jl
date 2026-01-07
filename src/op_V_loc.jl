@@ -37,7 +37,7 @@ function op_V_loc!(
 )
     # XXX This should also works for collinear
     if Ham.electrons.noncollinear
-        op_V_loc_noncollin!(Ham, psi, Hpsi)
+        op_V_loc_noncollinear!(Ham, psi, Hpsi)
         return
     end
     #
@@ -94,7 +94,7 @@ end
 
 # In-place, accumulated version, noncollinear version
 # Potential is taken from Ham.potentials.Total or Ham.potentials.TotalSmooth
-function op_V_loc_noncollin!(
+function op_V_loc_noncollinear!(
     Ham::Hamiltonian,
     psi::AbstractArray{ComplexF64},
     Hpsi::AbstractArray{ComplexF64}
