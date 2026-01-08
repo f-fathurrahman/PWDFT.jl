@@ -232,6 +232,8 @@ function PsPotNL_UPF(
                 for is1 in 1:2, is2 in 1:2
                     ijs += 1
                     Dvan_so[ih,jh,ijs,isp] = psp.Dion[vi,vj] * fcoef[ih,jh,is1,is2,isp]
+                    #
+                    # XXX why set fcoef here? new info vi=indv[ih,isp] and vj=indv[jh,isp]
                     if vi != vj
                         fcoef[ih,jh,is1,is2,isp] = 0.0 + im*0.0
                     end

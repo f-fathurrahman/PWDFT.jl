@@ -3,8 +3,8 @@ include("HamiltonianOptions.jl")
 mutable struct Hamiltonian{Tpsp<:AbstractPsPot}
     pw::PWGrid
     potentials::Potentials
-    energies::Energies
-    rhoe::Array{Float64,2} # spin dependent
+    energies::Energies # probably can be excluded but included for convenience
+    rhoe::Array{Float64,2} # spin dependent XXX: probably need to exclude rhoe from fields of Hamiltonian
     rhoe_core::Union{Nothing,Array{Float64,2}}
     electrons::Electrons
     atoms::Atoms
