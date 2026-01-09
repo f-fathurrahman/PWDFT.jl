@@ -48,8 +48,8 @@ function calc_epsxc_Vxc_VWN_noncollinear!(
     Vxc_up_dn = zeros(Float64, Npoints, 2)
     calc_epsxc_Vxc_VWN!( xc_calc, rhoe_up_dn, epsxc, Vxc_up_dn )
     
-    @info "in LDA_VWN: sum(epsxc) = $(sum(epsxc))"
-    @info "in LDA_VWN: sum(Vxc_up_dn) = $(sum(Vxc_up_dn))"
+    #@info "in LDA_VWN: sum(epsxc) = $(sum(epsxc))"
+    #@info "in LDA_VWN: sum(Vxc_up_dn) = $(sum(Vxc_up_dn))"
 
     SMALL_CHARGE = 1e-10
     SMALL_MAGN = 1e-20
@@ -70,6 +70,29 @@ function calc_epsxc_Vxc_VWN_noncollinear!(
         end
     end
 
+    return
+end
+
+
+# energy only, noncollinear
+function calc_epsxc_VWN_noncollinear!(
+    xc_calc::LibxcXCCalculator,
+    Rhoe::Array{Float64,2},
+    epsxc::Vector{Float64}
+)
+    Npoints = size(Rhoe, 1)
+    Nspin = size(Rhoe, 2)
+    @assert Nspin == 4
+
+    rhoe_up_dn = zeros(Float64, Npoints, 2)
+    magn = @views Rhoe[:,2:4]
+    for ip in 1:Npoints
+        amag = sqrt(magn[ip,1]^2 + magn[ip,2]^2 + magn[ip,3]^2)
+        rhoe_up_dn[ip,1] = 0.5*(Rhoe[ip,1] + amag) # up
+        rhoe_up_dn[ip,2] = 0.5*(Rhoe[ip,1] - amag) # dn
+    end
+
+    calc_epsxc_VWN!( xc_calc, rhoe_up_dn, epsxc )
     return
 end
 
@@ -189,10 +212,10 @@ end
 function calc_epsxc_VWN!(
     xc_calc::LibxcXCCalculator,
     Rhoe::AbstractVector{Float64},
-    epsxc::Vector{Float64}
+    epsxc::AbstractVector{Float64}
 )
 
-    Npoints = size(Rhoe)[1]
+    Npoints = size(Rhoe, 1)
     Nspin = 1
     eps_x = zeros(Float64,Npoints)
     eps_c = zeros(Float64,Npoints)
@@ -235,7 +258,7 @@ This function works for both spin-polarized and spin-unpolarized system.
 """
 function calc_epsxc_VWN!(
     xc_calc::LibxcXCCalculator,
-    Rhoe::Array{Float64,2},
+    Rhoe::Matrix{Float64},
     epsxc::Vector{Float64}
 )
 

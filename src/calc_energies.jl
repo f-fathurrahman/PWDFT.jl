@@ -138,54 +138,90 @@ function calc_E_local( Ham::Hamiltonian, psiks::BlochWavefunc )
 
     Npoints = prod(Ham.pw.Ns)
     dVol = Ham.pw.CellVolume/Npoints
-    Nspin = Ham.electrons.Nspin_channel
+    Nspin = Ham.electrons.Nspin_comp
     potentials = Ham.potentials
 
     Rhoe = Ham.rhoe # alias
     Rhoe_tot = zeros(Float64, Npoints)
-    for ispin in 1:Nspin, ip in 1:Npoints
-        Rhoe_tot[ip] += Rhoe[ip,ispin]
+    if Nspin in [1,2]
+        # XXX: use reduce?
+        for ispin in 1:Nspin, ip in 1:Npoints
+            Rhoe_tot[ip] += Rhoe[ip,ispin]
+        end
+    else
+        # Nspin == 4
+        Rhoe_tot[:] = Rhoe[:,1]
     end
-    # XXX: use reduce?
 
     E_Hartree = 0.5*dot( potentials.Hartree, Rhoe_tot ) * dVol
     E_Ps_loc = dot( potentials.Ps_loc, Rhoe_tot ) * dVol
+    
+    # XC energy is handled by different function
+    E_xc = calc_E_xc(Ham, psiks)
+
+    return E_Ps_loc, E_Hartree, E_xc
+end
+
+function calc_E_xc(Ham, psiks)
+
+    Rhoe = Ham.rhoe # alias    
+    Npoints = prod(Ham.pw.Ns)
+    dVol = Ham.pw.CellVolume/Npoints
+    Nspin = Ham.electrons.Nspin_comp
 
     if !isnothing(Ham.rhoe_core)
         if Nspin == 2
             Rhoe[:,1] .+= Ham.rhoe_core*0.5
             Rhoe[:,2] .+= Ham.rhoe_core*0.5
-        else # should be Nspin == 1
+        else # for both Nspin == 1 and Nspin == 4
             Rhoe[:,1] .+= Ham.rhoe_core
         end
     end
-    #
+
+    domag = get_domag(Ham.options)
     epsxc = zeros(Float64, Npoints)
-    #
-    if Ham.xcfunc == "SCAN"
-        # FIXME: no spinpol yet
-        calc_epsxc_SCAN!( Ham, psiks, Rhoe, epsxc )
-        #
+    if Ham.xcfunc == "VWN"
+        # VWN, handle 
+        if Nspin <= 2
+            calc_epsxc_VWN!( Ham.xc_calc, Rhoe, epsxc )
+        elseif Nspin == 4
+            if domag
+                calc_epsxc_VWN_noncollinear!( Ham.xc_calc, Rhoe, epsxc )
+            else
+                # XXX Special case for noncollinear, not using magnetism
+                @views calc_epsxc_VWN!( Ham.xc_calc, Rhoe[:,1], epsxc )
+            end
+        else
+            @error("Wrong Nspin=$Nspin")
+        end 
     elseif Ham.xcfunc == "PBE"
-        #
+        # check if this is working
         calc_epsxc_PBE!( Ham.xc_calc, Ham.pw, Rhoe, epsxc )
-        #
     else
-        calc_epsxc_VWN!( Ham.xc_calc, Rhoe, epsxc )
+        # FIXME: no spinpol and core-correction yet
+        @assert isnothing(Ham.rhoe_core)
+        @assert Nspin == 1
+        calc_epsxc_SCAN!( Ham, psiks, Rhoe, epsxc )
     end
-    # Compute the energy
-    E_xc = sum( epsxc .* Rhoe ) * dVol
-    # Restore
+    if Nspin == 4
+        E_xc = sum(epsxc .* Rhoe[:,1])*dVol
+    else
+        E_xc = sum(epsxc .* Rhoe)*dVol
+    end
+
     if !isnothing(Ham.rhoe_core)
+        # Recover
         if Nspin == 2
             Rhoe[:,1] .-= Ham.rhoe_core*0.5
             Rhoe[:,2] .-= Ham.rhoe_core*0.5
-        else # should be Nspin == 1
+        else
             Rhoe[:,1] .-= Ham.rhoe_core
         end
     end
-    return E_Ps_loc, E_Hartree, E_xc
+
+    return E_xc
 end
+
 
 
 """

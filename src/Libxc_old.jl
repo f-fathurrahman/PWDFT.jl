@@ -143,8 +143,8 @@ end
 function Libxc_xc_lda_exc!(
     p::Ptr{XCFuncType},
     np::Int,
-    rho::Array{Float64,1},
-    zk::Array{Float64,1}
+    rho::AbstractVector{Float64},
+    zk::AbstractVector{Float64}
 )
     ccall( (:xc_lda_exc, LIBXC5), Cvoid,
            (Ptr{XCFuncType}, Cint, Ptr{Float64}, Ptr{Float64}),
