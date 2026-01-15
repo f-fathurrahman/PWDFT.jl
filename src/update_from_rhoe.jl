@@ -77,10 +77,10 @@ function update_from_rhoe!(Ham, psiks, Rhoe, RhoeG)
     Exc = _add_V_xc!( Ham, psiks, Rhoe )
     Ehartree = _add_V_Hartree!( Ham, RhoeG )
 
-    @info "sum Vxc = $(sum(Ham.potentials.XC))"
-    @info "sum abs Vhartree = $(sum(abs.(Ham.potentials.Hartree)))"
-    @info "Exc = $Exc"
-    @info "Ehartree = $Ehartree"
+    #@info "sum Vxc = $(sum(Ham.potentials.XC))"
+    #@info "sum abs Vhartree = $(sum(abs.(Ham.potentials.Hartree)))"
+    #@info "Exc = $Exc"
+    #@info "Ehartree = $Ehartree"
 
     # Add V_Ps_loc contribution
     for ispin in 1:Nspin

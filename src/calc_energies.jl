@@ -128,8 +128,26 @@ function calc_E_Ps_nloc(
 
 end
 
-
 function calc_E_Ps_nloc_noncollinear(
+    Ham::Hamiltonian{PsPot_UPF},
+    psiks::BlochWavefunc
+)
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+    wk = Ham.pw.gvecw.kpoints.wk
+    Focc = Ham.electrons.Focc
+    Nstates = Ham.electrons.Nstates
+    Vpsnloc_psiks = op_V_Ps_nloc(Ham, psiks)
+
+    E_Ps_nloc = 0.0;
+    for ik in 1:Nkpt, ist in 1:Nstates
+        E_Ps_nloc += wk[ik]*Focc[ist,ik]*real(dot(psiks[ik][:,ist], Vpsnloc_psiks[ik][:,ist]))
+    end
+    return E_Ps_nloc
+end
+
+
+# Not yet working
+function calc_E_Ps_nloc_noncollinear_v2(
     Ham::Hamiltonian{PsPot_UPF},
     psiks::BlochWavefunc
 )
@@ -139,6 +157,7 @@ function calc_E_Ps_nloc_noncollinear(
     Focc = Ham.electrons.Focc
 
     Natoms = Ham.atoms.Natoms
+    Nspecies = Ham.atoms.Nspecies
     atm2species = Ham.atoms.atm2species
 
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
@@ -174,32 +193,37 @@ function calc_E_Ps_nloc_noncollinear(
         betaNL_psi[:,1,:] = betaNL_k' * psir[:,1,:]
         betaNL_psi[:,2,:] = betaNL_k' * psir[:,2,:]
 
-        for ia in 1:Natoms
-            isp = atm2species[ia]
+        for isp in 1:Nspecies
             if nh[isp] == 0
                 continue
             end
-            for ist in 1:Nstates
-                for jh in 1:nh[isp]
-                    jkb = indv_ijkb0[ia] + jh
-                    for ih in 1:nh[isp]
-                        ikb = indv_ijkb0[ia] + ih
-                        ps[ikb,1,ist] += Dvan[ih,jh,1,isp]*betaNL_psi[jkb,1,ist] + 
-                                         Dvan[ih,jh,2,isp]*betaNL_psi[jkb,2,ist] 
-                        ps[ikb,2,ist] += Dvan[ih,jh,3,isp]*betaNL_psi[jkb,1,ist] +
-                                         Dvan[ih,jh,4,isp]*betaNL_psi[jkb,2,ist]
+            for ia in 1:Natoms
+                if atm2species[ia] != isp
+                    continue
+                end
+                for ist in 1:Nstates
+                    for jh in 1:nh[isp]
+                        jkb = indv_ijkb0[ia] + jh
+                        for ih in 1:nh[isp]
+                            ikb = indv_ijkb0[ia] + ih
+                            ps[ikb,1,ist] += Dvan[ih,jh,1,isp]*betaNL_psi[jkb,1,ist] + 
+                                             Dvan[ih,jh,2,isp]*betaNL_psi[jkb,2,ist] 
+                            ps[ikb,2,ist] += Dvan[ih,jh,3,isp]*betaNL_psi[jkb,1,ist] +
+                                             Dvan[ih,jh,4,isp]*betaNL_psi[jkb,2,ist]
+                        end
                     end
                 end
-            end
-        end # loop over Natoms
+            end # loop over Natoms
+        end
 
         # Accumulate
         @views Vpsi[1:Ngw[ik],1,:] = betaNL_k * ps[:,1,:]
         @views Vpsi[1:Ngw[ik],2,:] = betaNL_k * ps[:,2,:]
         for ist in 1:Nstates
             # XXX: something missing here?
-            @views ss = real(dot(psir[:,1:Npol,ist], Vpsi[1:Ngw[ik],1:Npol,ist]))
-            E_Ps_nloc += wk[ik]*Focc[ist,ik]*ss
+            ss1 = real(dot(psir[:,1,ist], Vpsi[1:Ngw[ik],1,ist]))
+            ss2 = real(dot(psir[:,2,ist], Vpsi[1:Ngw[ik],2,ist]))
+            E_Ps_nloc += wk[ik]*Focc[ist,ik]*(ss1 + ss2)
         end
 
     end
@@ -349,6 +373,20 @@ function calc_E_kin( Ham::Hamiltonian, psiks::BlochWavefunc )
 end
 
 function calc_E_kin_noncollinear( Ham::Hamiltonian, psiks::BlochWavefunc )
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+    wk = Ham.pw.gvecw.kpoints.wk
+    Focc = Ham.electrons.Focc
+    Nstates = Ham.electrons.Nstates
+    K_psiks = op_K(Ham, psiks)
+    E_kin = 0.0;
+    for ik in 1:Nkpt, ist in 1:Nstates
+        E_kin += wk[ik]*Focc[ist,ik]*real(dot(psiks[ik][:,ist], K_psiks[ik][:,ist]))
+    end
+    return E_kin
+end
+
+# Not yet working
+function calc_E_kin_noncollinear_v2( Ham::Hamiltonian, psiks::BlochWavefunc )
 
     Npol = 2 # HARDCODED
 
@@ -364,7 +402,7 @@ function calc_E_kin_noncollinear( Ham::Hamiltonian, psiks::BlochWavefunc )
 
     E_kin = 0.0
     for ik in 1:Nkpt
-        psir = reshape(psiks[ik], (Ngw[ik], 2, Nstates))
+        psir = reshape(psiks[ik], (Ngw[ik], Npol, Nstates))
         for ist in 1:Nstates
             psiKpsi = 0.0
             for ipol in 1:Npol, igk in 1:Ngw[ik]
