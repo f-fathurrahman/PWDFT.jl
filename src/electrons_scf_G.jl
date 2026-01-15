@@ -53,7 +53,8 @@ function electrons_scf_G!(
     Npoints = prod(Ham.pw.Ns)
     CellVolume = Ham.pw.CellVolume
     dVol = CellVolume/Npoints
-    Nspin = Ham.electrons.Nspin_channel
+    Nspin_wf = Ham.electrons.Nspin_channel
+    Nspin_dens = Ham.electrons.Nspin_comp
     Vhartree = Ham.potentials.Hartree
     Vxc = Ham.potentials.XC
     Focc = Ham.electrons.Focc
@@ -67,12 +68,12 @@ function electrons_scf_G!(
     end
 
     RhoeG = _rhoeG_from_rhoe(Ham, Rhoe) # get Rhoe in G-space
-    RhoeG_in = zeros(ComplexF64, Npoints, Nspin)
+    RhoeG_in = zeros(ComplexF64, Npoints, Nspin_dens)
 
     diffRhoe = 0.0
 
-    Vin = zeros(Float64, Npoints, Nspin)
-    Rhoe_in = zeros(Float64, Npoints, Nspin)
+    Vin = zeros(Float64, Npoints, Nspin_dens)
+    Rhoe_in = zeros(Float64, Npoints, Nspin_dens)
 
     if ok_paw
         becsum_in = zeros(Float64, size(Ham.pspotNL.paw.becsum))
@@ -94,8 +95,8 @@ function electrons_scf_G!(
 
     xc_calc = Ham.xc_calc
     if xc_calc.family == :metaGGA
-        KEdens = zeros(Float64, Npoints, Nspin)
-        KEdens_in = zeros(Float64, Npoints, Nspin)  # ????
+        KEdens = zeros(Float64, Npoints, Nspin_dens)
+        KEdens_in = zeros(Float64, Npoints, Nspin_dens)  # ????
     end
 
     @printf("\n")
@@ -103,7 +104,7 @@ function electrons_scf_G!(
     @printf("\n")
 
     # additional info for spinpol calculation
-    if Nspin == 2
+    if Nspin_dens == 2
         @printf("Initial integ Rhoe up  = %18.10f\n", sum(Rhoe[:,1])*dVol)
         @printf("Initial integ Rhoe dn  = %18.10f\n", sum(Rhoe[:,2])*dVol)
         @printf("Initial integ magn_den = %18.10f\n", sum(Rhoe[:,1] - Rhoe[:,2])*dVol)
@@ -152,12 +153,14 @@ function electrons_scf_G!(
         #
         #println("\niterSCF = ", iterSCF)
         #println("Davidson diagonalization with ethr = ", ethr)
-        evals[:,:] .= diag_davidson_qe!( Ham, psiks, tol=ethr )
+        evals[:,:] .= diag_davidson_qe!( Ham, psiks, tol=ethr, noncollinear = Ham.options.noncollinear )
 
         # Update occupation numbers from computed eigenvalues
         if use_smearing
-            Focc[:,:], E_fermi = calc_Focc( Nelectrons, wk, kT, evals, Nspin )
-            Ham.energies.mTS = calc_entropy( wk, kT, evals, E_fermi, Nspin )
+            Focc[:,:], E_fermi = calc_Focc( Nelectrons, wk, kT, evals, Nspin_wf,
+                noncollinear = Ham.options.noncollinear )
+            Ham.energies.mTS = calc_entropy( wk, kT, evals, E_fermi, Nspin_wf,
+                noncollinear = Ham.options.noncollinear )
             Ham.electrons.E_fermi = E_fermi
             Ham.electrons.Focc = copy(Focc)
         end
@@ -240,7 +243,7 @@ function electrons_scf_G!(
         # XXX: diffEtot is not used here for convergence criteria
         diffEtot = abs(Etot - Etot_old)
         @printf("SCF_G: %5d  %18.10f  %12.5e  %12.5e\n", iterSCF, Etot, diffEtot, diffRhoe)
-        if Nspin == 2
+        if Nspin_dens == 2
             println("integ magn = ", sum(Rhoe[:,1] - Rhoe[:,2])*dVol)
         end
         if mixer.is_converged
@@ -283,7 +286,7 @@ function electrons_scf_G!(
         @printf("Total all electrons = %18.10f Ry\n", 2*(Etot + Ham.pspotNL.paw.total_core_energy))
     end
 
-    if Nspin == 2
+    if Nspin_dens == 2
         println("integ magn = ", sum(Rhoe[:,1] - Rhoe[:,2])*dVol)
     end
 

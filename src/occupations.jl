@@ -8,9 +8,10 @@ function calc_Focc(
     wk::Array{Float64,1},
     kT::Float64,
     evals::Array{Float64,2},
-    Nspin::Int64
+    Nspin::Int64;
+    noncollinear = false
 )
-
+    @assert Nspin in [1,2]
     E_fermi = find_E_fermi( Nelectrons, wk, kT, evals, Nspin )
   
     Nkspin = size(evals)[2]
@@ -22,7 +23,7 @@ function calc_Focc(
         Focc[ist,ikspin] = wgauss( (E_fermi - evals[ist,ikspin])/kT )
     end
   
-    if Nspin == 1
+    if Nspin == 1 && !noncollinear
         return 2.0*Focc, E_fermi
     else
         return Focc, E_fermi
@@ -222,13 +223,14 @@ function calc_entropy(
   kT::Float64,
   evals::Array{Float64,2},
   E_fermi::Float64,
-  Nspin::Int64
+  Nspin::Int64;
+  noncollinear = false
 )    
     Nkspin = size(evals)[2]
     Nstates = size(evals)[1]
 
     wks = repeat(wk,Nspin)
-    if Nspin == 1
+    if Nspin == 1 && !noncollinear
         wks[:] = wks[:]*2
     end
 

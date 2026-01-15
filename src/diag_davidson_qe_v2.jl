@@ -5,8 +5,9 @@ For diag_davidson! replacement
 
 function diag_davidson_qe!(
     Ham::Hamiltonian, psiks::BlochWavefunc;
-    tol=1e-5, NiterMax=100, verbose=false,
-    verbose_last=false, Nstates_conv=0
+    tol = 1e-5, NiterMax = 100, verbose = false,
+    verbose_last = false, Nstates_conv = 0,
+    noncollinear = false
 )
     
     pw = Ham.pw
@@ -14,7 +15,6 @@ function diag_davidson_qe!(
     Nkpt = pw.gvecw.kpoints.Nkpt
     Nspin = electrons.Nspin_channel
     Nkspin = Nspin*Nkpt
-    Ngw = pw.gvecw.Ngw
     Nstates = electrons.Nstates
 
     evals = zeros(Float64,Nstates,Nkspin)
@@ -24,8 +24,12 @@ function diag_davidson_qe!(
         Ham.ispin = ispin
         ikspin = ik + (ispin - 1)*Nkpt
         #
-        evals[:,ikspin] =
-        diag_davidson_qe!( Ham, psiks[ikspin], EBANDS_THR=tol, NiterMax=NiterMax )
+        evals[:,ikspin] = diag_davidson_qe!(
+            Ham, psiks[ikspin],
+            EBANDS_THR = tol,
+            NiterMax = NiterMax,
+            noncollinear = noncollinear
+        )
     end
 
     return evals
@@ -35,7 +39,8 @@ end
 
 function diag_davidson_qe!(
     Ham::Hamiltonian, evc::Matrix{ComplexF64};
-    EBANDS_THR=1e-8, NiterMax=40
+    EBANDS_THR=1e-8, NiterMax=40,
+    noncollinear = false
 )
 
     N = size(evc,1)
@@ -107,7 +112,7 @@ function diag_davidson_qe!(
         end
         @views psi[:,nb1:nb1+notcnv-1] .+= Hpsi[:,1:nbase]*vc[1:nbase,1:notcnv]
 
-        @views Kprec_inplace!(Ham.ik, Ham.pw, psi[:,nb1:nb1+notcnv-1])
+        @views Kprec_inplace!(Ham.ik, Ham.pw, psi[:,nb1:nb1+notcnv-1], noncollinear = noncollinear)
 
         # "normalize" correction vectors psi(:,nb1:nbase+notcnv) in
         # order to improve numerical stability of subspace diagonalization

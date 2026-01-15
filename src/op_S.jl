@@ -15,6 +15,11 @@ function op_S!(
     Spsi::AbstractArray{ComplexF64}
 )
 
+    if !Ham.need_overlap
+        Spsi[:] = psi[:]
+        return
+    end
+
     # Check Vnl_KB construction
     ik = Ham.ik
     ispin = Ham.ispin # XXX: used?

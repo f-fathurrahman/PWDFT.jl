@@ -44,18 +44,22 @@ function Kprec!( ik::Int64, pw::PWGrid, psi, Kpsi )
 end
 
 
-function Kprec_inplace!( ik::Int64, pw::PWGrid, psi )
-    Ngw_ik  = size(psi)[1]
-    Nstates = size(psi)[2]
+function Kprec_inplace!( ik::Int64, pw::PWGrid, psi; noncollinear = false )
+    if noncollinear
+        Npol = 2
+    else
+        Npol = 1
+    end
+    Ngw_ik  = pw.gvecw.Ngw[ik]
+    Nstates = size(psi, 2)
     idx_gw2g = pw.gvecw.idx_gw2g[ik]
     G = pw.gvec.G
+    psir = reshape(psi, Ngw_ik, Npol, Nstates)
     @views k = pw.gvecw.kpoints.k[:,ik]
-    for ist = 1:Nstates
-        for igk = 1:Ngw_ik
-            ig = idx_gw2g[igk]
-            Gw2 = (G[1,ig] + k[1])^2 + (G[2,ig] + k[2])^2 + (G[3,ig] + k[3])^2
-            psi[igk,ist] = psi[igk,ist] / ( 1.0 + Gw2 )
-        end
+    for ist in 1:Nstates, ipol in 1:Npol, igk in 1:Ngw_ik
+        ig = idx_gw2g[igk]
+        Gw2 = (G[1,ig] + k[1])^2 + (G[2,ig] + k[2])^2 + (G[3,ig] + k[3])^2
+        psir[igk,ipol,ist] = psir[igk,ipol,ist] / ( 1.0 + Gw2 )
     end
     return
 end
