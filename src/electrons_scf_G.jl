@@ -174,7 +174,7 @@ function electrons_scf_G!(
         _rhoeG_from_rhoe!(Ham, Rhoe, RhoeG) # also RhoeG new
         # In case of PAW becsum is also calculated/updated here
 
-        #println("integ Rhoe before mixing (after calc_rhoe)= ", sum(Rhoe)*dVol)
+        println("integ Rhoe before mixing (after calc_rhoe) = ", sum(Rhoe)*dVol)
         #if Nspin == 2
         #    println("Integ magn before mixing = ", sum(Rhoe[:,1]-Rhoe[:,2])*dVol)
         #end
@@ -218,7 +218,7 @@ function electrons_scf_G!(
         end
         _rhoe_from_rhoeG!(Ham, RhoeG, Rhoe)
 
-        #@info "integ Rhoe after mixing = $(sum(Rhoe)*dVol)"
+        @info "integ Rhoe after mixing = $(sum(Rhoe)*dVol)"
 
         #diffRhoe = dot(Rhoe - Rhoe_in, Rhoe - Rhoe_in)
         #@info "diffRhoe after mix = $(diffRhoe)"

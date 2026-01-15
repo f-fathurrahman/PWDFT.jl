@@ -12,7 +12,7 @@ function calc_Focc(
     noncollinear = false
 )
     @assert Nspin in [1,2]
-    E_fermi = find_E_fermi( Nelectrons, wk, kT, evals, Nspin )
+    E_fermi = find_E_fermi( Nelectrons, wk, kT, evals, Nspin, noncollinear = noncollinear )
   
     Nkspin = size(evals)[2]
     Nstates = size(evals)[1]
@@ -94,14 +94,15 @@ function sumkg(
   kT::Float64,
   evals::Array{Float64,2},
   ene::Float64,
-  Nspin::Int64
+  Nspin::Int64,
+  noncollinear::Bool
 )
 
     Nkspin = size(evals)[2]
     Nstates = size(evals)[1]
 
     wks = repeat(wk,Nspin)
-    if Nspin == 1
+    if (Nspin == 1) && !noncollinear
         wks[:] = wks[:]*2
     end
 
@@ -128,7 +129,7 @@ function find_E_fermi(
   kT::Float64,
   evals::Array{Float64,2},
   Nspin::Int64;
-  NiterMax=300, verbose=false
+  NiterMax=300, verbose=false, noncollinear = false
 )
 
     Nkspin = size(evals)[2]
@@ -144,8 +145,8 @@ function find_E_fermi(
     Elw = Elw - 2*kT
     Eup = Eup + 2*kT
 
-    sumklw = sumkg( wk, kT, evals, Elw, Nspin )
-    sumkup = sumkg( wk, kT, evals, Eup, Nspin )
+    sumklw = sumkg( wk, kT, evals, Elw, Nspin, noncollinear )
+    sumkup = sumkg( wk, kT, evals, Eup, Nspin, noncollinear )
 
     SMALL = 1e-10
 
@@ -157,7 +158,7 @@ function find_E_fermi(
     Ef = 0.5*(Eup + Elw)
     Ef_old = Ef
     for iter = 1:NiterMax
-        sumkmid = sumkg( wk, kT, evals, Ef, Nspin )
+        sumkmid = sumkg( wk, kT, evals, Ef, Nspin, noncollinear )
         if abs(sumkmid-Nelectrons) < SMALL
             return Ef
         elseif sumkmid-Nelectrons < -SMALL

@@ -17,9 +17,10 @@ function calc_rhoe!(
     # XXX: This is not yet adapted for magnetization
     Nelectrons_true = Ham.electrons.Nelectrons
 
-    Npol = 1
     if Ham.electrons.noncollinear
         Npol = 2
+    else
+        Npol = 1
     end
 
     CellVolume  = pw.CellVolume
