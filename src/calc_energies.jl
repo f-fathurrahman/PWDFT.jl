@@ -62,6 +62,9 @@ function calc_E_Ps_nloc(
     Ham::Hamiltonian{PsPot_UPF},
     psiks::BlochWavefunc
 )
+    if Ham.options.noncollinear
+        return calc_E_Ps_nloc_noncollinear(Ham, psiks)
+    end
 
     Nstates = Ham.electrons.Nstates
     Focc = Ham.electrons.Focc
@@ -126,6 +129,87 @@ function calc_E_Ps_nloc(
 end
 
 
+function calc_E_Ps_nloc_noncollinear(
+    Ham::Hamiltonian{PsPot_UPF},
+    psiks::BlochWavefunc
+)
+
+    Npol = 2 # HARDCODED
+    Nstates = Ham.electrons.Nstates
+    Focc = Ham.electrons.Focc
+
+    Natoms = Ham.atoms.Natoms
+    atm2species = Ham.atoms.atm2species
+
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+    wk = Ham.pw.gvecw.kpoints.wk
+    Ngw = Ham.pw.gvecw.Ngw
+    Ngwx = maximum(Ngw)
+
+    # XXX Note that we are using Dvan instead of Deeq here
+    if Ham.options.lspinorb
+        Dvan = Ham.pspotNL.Dvan_so
+    else
+        Dvan = Ham.pspotNL.Dvan
+    end
+
+    NbetaNL = Ham.pspotNL.NbetaNL
+    nh = Ham.pspotNL.nh
+    indv_ijkb0 = Ham.pspotNL.indv_ijkb0
+
+    ps = zeros(ComplexF64, NbetaNL, Npol, Nstates)
+    Vpsi = zeros(ComplexF64, Ngwx, Npol, Nstates)
+    betaNL_psi = zeros(ComplexF64, NbetaNL, Npol, Nstates)
+
+    E_Ps_nloc = 0.0
+
+    for ik in 1:Nkpt
+        
+        psir = reshape(psiks[ik], Ngw[ik], Npol, Nstates)
+        
+        #
+        # Here is the operation of op_V_Ps_nloc
+        #
+        betaNL_k = Ham.pspotNL.betaNL[ik]        
+        betaNL_psi[:,1,:] = betaNL_k' * psir[:,1,:]
+        betaNL_psi[:,2,:] = betaNL_k' * psir[:,2,:]
+
+        for ia in 1:Natoms
+            isp = atm2species[ia]
+            if nh[isp] == 0
+                continue
+            end
+            for ist in 1:Nstates
+                for jh in 1:nh[isp]
+                    jkb = indv_ijkb0[ia] + jh
+                    for ih in 1:nh[isp]
+                        ikb = indv_ijkb0[ia] + ih
+                        ps[ikb,1,ist] += Dvan[ih,jh,1,isp]*betaNL_psi[jkb,1,ist] + 
+                                         Dvan[ih,jh,2,isp]*betaNL_psi[jkb,2,ist] 
+                        ps[ikb,2,ist] += Dvan[ih,jh,3,isp]*betaNL_psi[jkb,1,ist] +
+                                         Dvan[ih,jh,4,isp]*betaNL_psi[jkb,2,ist]
+                    end
+                end
+            end
+        end # loop over Natoms
+
+        # Accumulate
+        @views Vpsi[1:Ngw[ik],1,:] = betaNL_k * ps[:,1,:]
+        @views Vpsi[1:Ngw[ik],2,:] = betaNL_k * ps[:,2,:]
+        for ist in 1:Nstates
+            # XXX: something missing here?
+            @views ss = real(dot(psir[:,1:Npol,ist], Vpsi[1:Ngw[ik],1:Npol,ist]))
+            E_Ps_nloc += wk[ik]*Focc[ist,ik]*ss
+        end
+
+    end
+
+    return E_Ps_nloc
+
+end
+
+
+
 
 
 """
@@ -178,7 +262,7 @@ function calc_E_xc(Ham, psiks)
         end
     end
 
-    domag = get_domag(Ham.options)
+    domag = Ham.electrons.domag
     epsxc = zeros(Float64, Npoints)
     if Ham.xcfunc == "VWN"
         # VWN, handle 
@@ -231,6 +315,10 @@ Compute and return kinetic energy term for a given Hamiltonian `Ham` and BlochWa
 """
 function calc_E_kin( Ham::Hamiltonian, psiks::BlochWavefunc )
 
+    if Ham.options.noncollinear
+        return calc_E_kin_noncollinear(Ham, psiks)
+    end
+
     Focc = Ham.electrons.Focc
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     Nstates = Ham.electrons.Nstates
@@ -259,6 +347,38 @@ function calc_E_kin( Ham::Hamiltonian, psiks::BlochWavefunc )
     return 0.5*E_kin
 
 end
+
+function calc_E_kin_noncollinear( Ham::Hamiltonian, psiks::BlochWavefunc )
+
+    Npol = 2 # HARDCODED
+
+    Focc = Ham.electrons.Focc
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+    Nstates = Ham.electrons.Nstates
+    wk = Ham.pw.gvecw.kpoints.wk
+
+    Ngw = Ham.pw.gvecw.Ngw
+    idx_gw2g = Ham.pw.gvecw.idx_gw2g
+    G = Ham.pw.gvec.G
+    k = Ham.pw.gvecw.kpoints.k
+
+    E_kin = 0.0
+    for ik in 1:Nkpt
+        psir = reshape(psiks[ik], (Ngw[ik], 2, Nstates))
+        for ist in 1:Nstates
+            psiKpsi = 0.0
+            for ipol in 1:Npol, igk in 1:Ngw[ik]
+                ig = idx_gw2g[ik][igk]
+                Gw2 = (G[1,ig] + k[1,ik])^2 + (G[2,ig] + k[2,ik])^2 + (G[3,ig] + k[3,ik])^2
+                psiKpsi += abs(psir[igk,ipol,ist])^2*Gw2
+            end
+            E_kin += wk[ik]*Focc[ist,ik]*psiKpsi
+        end
+    end
+    return 0.5*E_kin
+
+end
+
 
 
 """

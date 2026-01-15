@@ -173,7 +173,6 @@ function Hamiltonian(
     #
     # extra_states is given
     if options.extra_states > -1
-        @info "Pass here 154"
         electrons = Electrons( atoms, pspots,
             Nspin_channel = Nspin_channel,
             Nkpt = kpoints.Nkpt,
@@ -183,7 +182,6 @@ function Hamiltonian(
         )
     # no extra_states is given but Nstates is given
     elseif options.Nstates > -1
-        @info "Pass here 163"
         electrons = Electrons( atoms, pspots,
             Nspin_channel = Nspin_channel,
             Nkpt = kpoints.Nkpt,
@@ -193,7 +191,6 @@ function Hamiltonian(
         )
     #
     elseif (options.Nstates == -1) && (options.extra_states == -1)
-        @info "Pass here 172"
         # Default value for Nstates and Nstates_empty
         # Nstates will be calculated automatically
         electrons = Electrons( atoms, pspots,
