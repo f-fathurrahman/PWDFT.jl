@@ -9,7 +9,7 @@ function electrons_scf_G!(
     etot_conv_thr=5e-7,
     ethr_evals_last=1e-13,
     print_final_ebands::Bool=true,
-    starting_magn=nothing
+    starting_magn=nothing # XXX should be deprecated
 )
 
     # NOTE: use_smearing and kT now are read from Ham.electrons
@@ -27,9 +27,14 @@ function electrons_scf_G!(
     # Initial density
     if isnothing(Rhoe)
         if eltype(Ham.pspots) == PsPot_GTH
-            Rhoe = guess_rhoe_atomic( Ham, starting_magn=starting_magn )
+            Rhoe = guess_rhoe_atomic( Ham, starting_magn = Ham.options.starting_magn )
         else
-            Rhoe, _ = atomic_rho_g(Ham, starting_magn=starting_magn)
+            Rhoe, _ = atomic_rho_g(
+                Ham,
+                starting_magn = Ham.options.starting_magn,
+                angle1 = Ham.options.angle1,
+                angle2 = Ham.options.angle2
+            )
         end
     end
     #

@@ -18,7 +18,7 @@ function atomic_rho_g(
     Nelectrons = Ham.electrons.Nelectrons
     Nspin = Ham.electrons.Nspin_comp
     Ngl = length(Ham.pw.gvec.G2_shells)
-    domag = get_domag(Ham.options)
+    domag = get_domag(Ham.options) # also can be taken from Ham.electrons.domag
 
     eps8 = 1e-8
     strf = calc_strfact( atoms, pw )
@@ -37,7 +37,7 @@ function atomic_rho_g(
     rhocg = zeros(ComplexF64, Npoints, Nspin)
 
     # No starting magnetization is give, set them to a default value
-    if (Nspin == 2) && isnothing(starting_magn)
+    if ((Nspin == 2) || (Nspin == 4 && domag)) && isnothing(starting_magn)
         starting_magn = 0.1*ones(Nspecies)
         @info "Using default starting magnetization = $(starting_magn)"
     end
@@ -100,7 +100,10 @@ function atomic_rho_g(
             angular[1] = sind(angle1[isp])*cosd(angle2[isp])
             angular[2] = sind(angle1[isp])*sind(angle2[isp])
             angular[3] = cosd(angle1[isp])
-            # For spin-polarized case
+            # We are doing magnetization
+            @info "Pass here 104"
+            @info "angular = $(angular)"
+            @info "starting_magn = $(starting_magn)"
             for ispin in 2:Nspin
                 for ig in 1:Ng
                     ip = idx_g2r[ig]
