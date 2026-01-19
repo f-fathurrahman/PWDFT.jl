@@ -6,8 +6,7 @@ For diag_davidson! replacement
 function diag_davidson_qe!(
     Ham::Hamiltonian, psiks::BlochWavefunc;
     tol = 1e-5, NiterMax = 100, verbose = false,
-    verbose_last = false, Nstates_conv = 0,
-    noncollinear = false
+    verbose_last = false, Nstates_conv = 0
 )
     
     pw = Ham.pw
@@ -27,8 +26,7 @@ function diag_davidson_qe!(
         evals[:,ikspin] = diag_davidson_qe!(
             Ham, psiks[ikspin],
             EBANDS_THR = tol,
-            NiterMax = NiterMax,
-            noncollinear = noncollinear
+            NiterMax = NiterMax
         )
     end
 
@@ -39,12 +37,13 @@ end
 
 function diag_davidson_qe!(
     Ham::Hamiltonian, evc::Matrix{ComplexF64};
-    EBANDS_THR=1e-8, NiterMax=40,
-    noncollinear = false
+    EBANDS_THR=1e-8, NiterMax=40
 )
 
     N = size(evc,1)
     Nvec = size(evc,2)
+
+    noncollinear = Ham.options.noncollinear
 
     evals = zeros(Float64, Nvec) # will be returned
 

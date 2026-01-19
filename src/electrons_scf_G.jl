@@ -158,7 +158,7 @@ function electrons_scf_G!(
         #
         #println("\niterSCF = ", iterSCF)
         #println("Davidson diagonalization with ethr = ", ethr)
-        evals[:,:] .= diag_davidson_qe!( Ham, psiks, tol=ethr, noncollinear = Ham.options.noncollinear )
+        evals[:,:] .= diag_davidson_qe!( Ham, psiks, tol=ethr )
 
         # Update occupation numbers from computed eigenvalues
         if use_smearing
