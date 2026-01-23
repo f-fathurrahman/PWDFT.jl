@@ -11,6 +11,35 @@ function _print_forces(atoms::Atoms, F, title_str)
 end
 
 """
+Write a Julia script for initializing input variables to `Hamiltonian`
+constructor from a given `PWSCFInput` instance and HamiltonianOptions.
+"""
+function export_to_script(
+    options::HamiltonianOptions,
+    pwinput::PWSCFInput; filename="script_PWINPUT.jl"
+)
+    
+    f = open(filename, "w")
+    
+    println(f, "atoms = " * repr(pwinput.atoms))
+    println(f, "pspfiles = " * repr(pwinput.pspfiles))
+    println(f, "ecutwfc = " * repr(pwinput.ecutwfc))
+    println(f, "options = " * repr(options))
+
+    println(f, """
+    pspots = Vector{PsPot_UPF}(undef, atoms.Nspecies)
+    for isp in 1:atoms.Nspecies
+        pspots[isp] = PsPot_UPF(pspfiles[isp])
+    end
+    Ham = Hamiltonian(atoms, pspots, ecutwfc, options)
+    """)
+
+    close(f)
+    return
+end
+
+
+"""
 This function roughly emulates pw.x binary in Quantum Espresso.
 It reads pw.x input file given in keyword argument `filename`.
 If no argument is given the default filename is `PWINPUT` which should be
@@ -23,9 +52,9 @@ function my_pwx(; filename=nothing, do_export_data=false)
     println(Ham)
 
     if isnothing(filename)
-        export_to_script(pwinput)
+        export_to_script(Ham.options, pwinput)
     else
-        export_to_script(pwinput, filename="script_"*filename*".jl")
+        export_to_script(Ham.options, pwinput, filename="script_"*filename*".jl")
     end
 
     if pwinput.occupations == "smearing"

@@ -628,40 +628,4 @@ function decide_xcfunc(pwinput::PWSCFInput)
     return xcfunc
 end
 
-"""
-Write a Julia script for initializing input variables to `Hamiltonian`
-constructor from a given `PWSCFInput` instance.
-"""
-function export_to_script(pwinput::PWSCFInput; filename="script_PWINPUT.jl")
-    
-    f = open(filename, "w")
-    
-    println(f, "atoms = " * repr(pwinput.atoms))
-    println(f, "pspfiles = " * repr(pwinput.pspfiles))
-    
-    println(f, "ecutwfc = " * repr(pwinput.ecutwfc))
-    println(f, "ecutrho = " * repr(pwinput.ecutrho))
-    println(f, "dual = ecutrho/ecutwfc")
-
-    println(f, "meshk = " * repr(pwinput.meshk))
-    println(f, "nbnd = " * repr(pwinput.nbnd))
-
-    Ns = (pwinput.nr1, pwinput.nr2, pwinput.nr3)
-    println(f, "Ns = " * repr(Ns))
-
-    xcfunc = decide_xcfunc(pwinput)
-    println(f, "xcfunc = " * repr(xcfunc))
-
-    use_smearing = false
-    kT = 0.0
-    if pwinput.occupations == "smearing"
-        use_smearing = true
-        kT = pwinput.degauss*0.5 # convert from Ry to Ha
-    end
-    println(f, "use_smearing = " * repr(use_smearing))
-    println(f, "kT = " * repr(kT))
-
-    close(f)
-    return
-end
 
