@@ -66,6 +66,7 @@ function electrons_scf_G!(
     wk = Ham.pw.gvecw.kpoints.wk
     Nelectrons = Ham.electrons.Nelectrons
     evals = Ham.electrons.ebands
+    domag = Ham.electrons.domag
 
     Rhoe = Ham.rhoe
     if ok_paw
@@ -123,9 +124,9 @@ function electrons_scf_G!(
 
     for iterSCF in 1:NiterMax
 
-        #println("")
-        #println("Begin iterSCF = ", iterSCF)
-        #println("--------------------------")
+        println("")
+        println("Begin iterSCF = ", iterSCF)
+        println("--------------------------")
         
         # Save input/old potential
         Vin .= Vhartree .+ Vxc
@@ -176,13 +177,18 @@ function electrons_scf_G!(
         Eband = _calc_Eband(wk, Focc, evals)
         #
         calc_rhoe!( Ham, psiks, Rhoe )
-        _rhoeG_from_rhoe!(Ham, Rhoe, RhoeG) # also RhoeG new
-        # In case of PAW becsum is also calculated/updated here
 
+        @info "sum Rhoe[:,1] before mixing = $(sum(Rhoe[:,1]))"
+        @info "sum Rhoe[:,2] before mixing = $(sum(Rhoe[:,2]))"
+        @info "sum Rhoe[:,3] before mixing = $(sum(Rhoe[:,3]))"
+        @info "sum Rhoe[:,4] before mixing = $(sum(Rhoe[:,4]))"
         println("integ Rhoe before mixing (after calc_rhoe) = ", sum(Rhoe)*dVol)
         #if Nspin == 2
         #    println("Integ magn before mixing = ", sum(Rhoe[:,1]-Rhoe[:,2])*dVol)
         #end
+
+        _rhoeG_from_rhoe!(Ham, Rhoe, RhoeG) # also RhoeG new
+        # In case of PAW becsum is also calculated/updated here
 
         # This is not used later?
         hwf_energy = Eband + deband_hwf + Ehartree + Exc + Ham.energies.NN + Ham.energies.mTS
@@ -192,7 +198,12 @@ function electrons_scf_G!(
 
         # Calculate deband (using new Rhoe)
         Vin .= Vhartree .+ Vxc
-        deband = -sum(Vin .* Rhoe)*dVol # TODO: use dot instead?
+        #if (Nspin_dens == 4) && domag
+        #    deband = -sum(Vin[:,1] .* Rhoe[:,1])*dVol
+        #else
+            deband = -sum(Vin .* Rhoe)*dVol
+        #end
+        #
         if ok_paw
             deband -= sum(Ham.pspotNL.paw.ddd_paw .* becsum)
         end
@@ -223,6 +234,10 @@ function electrons_scf_G!(
         end
         _rhoe_from_rhoeG!(Ham, RhoeG, Rhoe)
 
+        @info "sum Rhoe[:,1] after mixing = $(sum(Rhoe[:,1]))"
+        @info "sum Rhoe[:,2] after mixing = $(sum(Rhoe[:,2]))"
+        @info "sum Rhoe[:,3] after mixing = $(sum(Rhoe[:,3]))"
+        @info "sum Rhoe[:,4] after mixing = $(sum(Rhoe[:,4]))"
         @info "integ Rhoe after mixing = $(sum(Rhoe)*dVol)"
 
         #diffRhoe = dot(Rhoe - Rhoe_in, Rhoe - Rhoe_in)
