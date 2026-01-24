@@ -203,6 +203,10 @@ function Hamiltonian(
         error("Error in initializing instance of Electrons")
     end
 
+    # Set smearing
+    electrons.use_smearing = options.use_smearing
+    electrons.kT = options.smearing_kT
+
 
     # FIXME: Make parametric PsPotNL ?
     # NL pseudopotentials
@@ -331,7 +335,8 @@ function Hamiltonian(
     starting_magn = nothing,
     angle1 = nothing,
     angle2 = nothing,
-    use_smearing = false
+    use_smearing = false,
+    smearing_kT = 0.0
 )
     # FIXME: This constructor is type-unstable (?)
 
@@ -339,7 +344,7 @@ function Hamiltonian(
     options = HamiltonianOptions(
         dual, Nspin_channel, Nspin_comp, meshk, shiftk, time_reversal, Ns_,
         kpoints, kpts_str, xcfunc, use_xc_internal,
-        extra_states, Nstates, use_symmetry, use_smearing,
+        extra_states, Nstates, use_symmetry, use_smearing, smearing_kT,
         starting_magn, angle1, angle2,
         lspinorb, noncollinear
     )

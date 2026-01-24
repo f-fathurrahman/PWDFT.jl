@@ -21,17 +21,17 @@ function export_to_script(
     
     f = open(filename, "w")
     
-    println(f, "atoms = " * repr(pwinput.atoms))
-    println(f, "pspfiles = " * repr(pwinput.pspfiles))
-    println(f, "ecutwfc = " * repr(pwinput.ecutwfc))
-    println(f, "options = " * repr(options))
+    println(f, "atoms = " * repr(pwinput.atoms) * ";")
+    println(f, "pspfiles = " * repr(pwinput.pspfiles) * ";")
+    println(f, "ecutwfc = " * repr(pwinput.ecutwfc) * ";")
+    println(f, "options = " * repr(options) * ";")
 
     println(f, """
-    pspots = Vector{PsPot_UPF}(undef, atoms.Nspecies)
+    pspots = Vector{PsPot_UPF}(undef, atoms.Nspecies);
     for isp in 1:atoms.Nspecies
-        pspots[isp] = PsPot_UPF(pspfiles[isp])
+        pspots[isp] = PsPot_UPF(pspfiles[isp]);
     end
-    Ham = Hamiltonian(atoms, pspots, ecutwfc, options)
+    Ham = Hamiltonian(atoms, pspots, ecutwfc, options);
     """)
 
     close(f)
@@ -57,17 +57,6 @@ function my_pwx(; filename=nothing, do_export_data=false)
         export_to_script(Ham.options, pwinput, filename="script_"*filename*".jl")
     end
 
-    if pwinput.occupations == "smearing"
-        Ham.electrons.use_smearing = true
-        Ham.electrons.kT = pwinput.degauss*0.5 # convert from Ry to Ha
-    end
-
-    if pwinput.nspin == 2
-        starting_magn = pwinput.starting_magnetization
-    else
-        starting_magn = nothing
-    end
-
     #electrons_scf!(Ham, psiks, NiterMax=100, use_smearing=use_smearing, kT=kT, betamix=0.1)
     
     psiks = rand_BlochWavefunc(Ham)
@@ -76,7 +65,7 @@ function my_pwx(; filename=nothing, do_export_data=false)
         psiks=psiks,
         NiterMax=100,
         betamix=0.1,
-        starting_magn=starting_magn
+        starting_magn=Ham.options.starting_magn
     )
     # XXX "Restarting" from previous calculation can be done by specifying Rhoe=Ham.rhoe
 

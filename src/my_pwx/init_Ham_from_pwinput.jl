@@ -82,6 +82,10 @@ function init_Ham_from_pwinput(; filename::Union{Nothing,String}=nothing)
         options.angle2 = pwinput.angle2
     end
 
+    if pwinput.occupations == "smearing"
+        options.use_smearing = true
+        options.smearing_kT = pwinput.degauss*0.5 # convert from Ry to Ha
+    end
 
     pspots = Vector{PsPot_UPF}(undef, atoms.Nspecies)
     for isp in 1:atoms.Nspecies

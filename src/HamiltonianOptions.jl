@@ -15,6 +15,7 @@ mutable struct HamiltonianOptions
     Nstates::Int64
     use_symmetry::Bool
     use_smearing::Bool
+    smearing_kT::Float64
     starting_magn::Union{Vector{Float64},Nothing}
     angle1::Union{Vector{Float64},Nothing}
     angle2::Union{Vector{Float64},Nothing}
@@ -38,6 +39,7 @@ function HamiltonianOptions()
     Nstates = -1
     use_symmetry = true
     use_smearing = false
+    smearing_kT = true
     starting_magn = nothing
     angle1 = nothing
     angle2 = nothing
@@ -46,7 +48,7 @@ function HamiltonianOptions()
     return HamiltonianOptions(
         dual, Nspin_channel, Nspin_comp, meshk, shiftk, time_reversal, Ns,
         kpoints, kpts_str, xcfunc, use_xc_internal,
-        extra_states, Nstates, use_symmetry, use_smearing,
+        extra_states, Nstates, use_symmetry, use_smearing, smearing_kT,
         starting_magn, angle1, angle2,
         lspinorb, noncollinear
     )
