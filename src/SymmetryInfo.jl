@@ -666,10 +666,12 @@ struct SymmetryInfo
     Nsyms::Int64
     s::Array{Int64,3}
     inv_s::Array{Int64,3}
+    idx_inv_s::Vector{Int64}
     sname::Array{String}
     sr::Array{Float64,3}
     ft::Array{Float64,2}
-    non_symmorphic::Array{Bool,1}
+    non_symmorphic::Vector{Bool}
+    t_rev::Vector{Bool}
     irt::Array{Int64,2}
     D1::Array{Float64,3}
     D2::Array{Float64,3}
@@ -688,12 +690,14 @@ function SymmetryInfo()
     # We need Atoms.LatVecs to properly set up this
     #
     inv_s = copy(s)
+    idx_inv_s = [1]
     #
     sname = ["identity"]
     #
     ft = zeros(3,1)
     #
     non_symmorphic = [false]
+    t_rev = [false]
     #
     irt = zeros(Int64,1,1)
     #
@@ -701,7 +705,7 @@ function SymmetryInfo()
     D2 = zeros(1,1,1)
     D3 = zeros(1,1,1)
     #
-    return SymmetryInfo( Nrots, Nsyms, s, inv_s, sname, sr, ft, non_symmorphic, irt, D1, D2, D3 )
+    return SymmetryInfo( Nrots, Nsyms, s, inv_s, idx_inv_s, sname, sr, ft, non_symmorphic, t_rev, irt, D1, D2, D3 )
 end
 
 function SymmetryInfo( atoms::Atoms; magnetic_sym = false, m_loc = nothing )
@@ -731,6 +735,23 @@ function SymmetryInfo( atoms::Atoms; magnetic_sym = false, m_loc = nothing )
         inv_s[:,:,isym] = Base.convert(Array{Int64,2}, inv(s[:,:,isym]))
     end
 
+    idx_inv_s = zeros(Int64, Nsyms)
+    ss = zeros(Int64, 3, 3)
+    for isym in 1:Nsyms
+        found = false
+        for jsym in 1:Nsyms
+            ss[:,:] = s[:,:,jsym] * s[:,:,isym]
+            # s(:,:,1) is the identity
+            if all( s[:,:,1] .== ss )
+                idx_inv_s[isym] = jsym
+                found = true
+            end
+        end
+        if !found
+            @error("idx_inv_s is not found")
+        end
+    end
+
     non_symmorphic = zeros(Bool,Nsyms)
     SMALL = 1e-10
     for isym = 1:Nsyms
@@ -751,9 +772,9 @@ function SymmetryInfo( atoms::Atoms; magnetic_sym = false, m_loc = nothing )
 
     return SymmetryInfo(
         Nrots, Nsyms,
-        s[:,:,1:Nsyms], inv_s, sname[1:Nsyms],
+        s[:,:,1:Nsyms], inv_s, idx_inv_s, sname[1:Nsyms],
         sr,
-        ft[:,1:Nsyms], non_symmorphic,
+        ft[:,1:Nsyms], non_symmorphic, t_rev,
         irt[1:Nsyms,:],
         D1, D2, D3
     )
