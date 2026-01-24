@@ -63,8 +63,17 @@ function update_from_rhoe!(Ham, psiks, Rhoe, RhoeG)
     # converged SCF calculation, or, calculate it as needed
 
     # Save old potential (only Hartree and XC)
-    for ispin in 1:Nspin, ip in 1:Npoints
-        Ham.potentials.TotalOld[ip,ispin] = Ham.potentials.XC[ip,ispin] + Ham.potentials.Hartree[ip]
+    if Nspin in [1,2]
+        for ispin in 1:Nspin, ip in 1:Npoints
+            Ham.potentials.TotalOld[ip,ispin] = Ham.potentials.XC[ip,ispin] + Ham.potentials.Hartree[ip]
+        end
+    else
+        for ip in 1:Npoints
+            Ham.potentials.TotalOld[ip,1] = Ham.potentials.XC[ip,1] + Ham.potentials.Hartree[ip]
+            Ham.potentials.TotalOld[ip,2] = Ham.potentials.XC[ip,2]
+            Ham.potentials.TotalOld[ip,3] = Ham.potentials.XC[ip,3]
+            Ham.potentials.TotalOld[ip,4] = Ham.potentials.XC[ip,4]
+        end
     end
     # This might be useful to potential mixing, too.
     # XXX: Rename TotalOld to HxcPrev ?
@@ -83,8 +92,13 @@ function update_from_rhoe!(Ham, psiks, Rhoe, RhoeG)
     #@info "Ehartree = $Ehartree"
 
     # Add V_Ps_loc contribution
-    for ispin in 1:Nspin
-        Ham.potentials.Total[:,ispin] .+= Ham.potentials.Ps_loc[:]
+    if Nspin in [1,2]
+        for ispin in 1:Nspin
+            Ham.potentials.Total[:,ispin] .+= Ham.potentials.Ps_loc[:]
+        end
+    else
+        # Only add to the ispin = 1 component (total)
+        Ham.potentials.Total[:,1] .+= Ham.potentials.Ps_loc[:]
     end
 
     if Ham.pw.using_dual_grid
@@ -183,14 +197,8 @@ function _add_V_xc!(Ham, psiks, Rhoe)
             if Nspin <= 2
                 calc_epsxc_Vxc_VWN!( Ham.xc_calc, Rhoe, epsxc, Vxc )
             elseif Nspin == 4
-                @info "sum Rhoe[:,1] = $(sum(Rhoe[:,1]))"
-                @info "sum Rhoe[:,2] = $(sum(Rhoe[:,2]))"
-                @info "sum Rhoe[:,3] = $(sum(Rhoe[:,3]))"
-                @info "sum Rhoe[:,4] = $(sum(Rhoe[:,4]))"
                 if Ham.electrons.domag
-                    @info "Pass here 191 in update_from_rhoe"
                     calc_epsxc_Vxc_VWN_noncollinear!( Ham.xc_calc, Rhoe, epsxc, Vxc )
-                    @info "sum epsxc = $(sum(epsxc))"
                 else
                     # XXX Special case for noncollinear, not using magnetism
                     @views calc_epsxc_Vxc_VWN!( Ham.xc_calc, Rhoe[:,1], epsxc, Vxc[:,1] )
@@ -271,7 +279,11 @@ function _add_V_Hartree!(Ham, RhoeG)
     G_to_R!(pw, VhG)
     VhG[:] *= Npoints # XXX: scale by Npoints
     Ham.potentials.Hartree[:] = real(VhG) # update
-    Ham.potentials.Total .+= real(VhG)
+    if Nspin in [1,2]
+        Ham.potentials.Total .+= real(VhG)
+    else
+        Ham.potentials.Total[:,1] .+= real(VhG)
+    end
 
     # Hartree energy will be returned
     Ehartree *= Ham.pw.CellVolume

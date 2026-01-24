@@ -102,7 +102,7 @@ function op_V_loc_noncollinear!(
 
     pw = Ham.pw
     ik = Ham.ik
-    ispin = Ham.ispin
+    domag = Ham.electrons.domag
     #
     if pw.using_dual_grid
         V_loc = Ham.potentials.TotalSmooth
@@ -112,10 +112,7 @@ function op_V_loc_noncollinear!(
         Npoints = prod(pw.Ns)
     end
     # XXX Should always Npol = 2
-    Npol = 1
-    if Ham.electrons.noncollinear
-        Npol = 2
-    end
+    Npol = 2
     Nstates = size(psi,2)
     idx = pw.gvecw.idx_gw2r[ik]
     Ngw_ik = pw.gvecw.Ngw[ik]
@@ -140,8 +137,17 @@ function op_V_loc_noncollinear!(
         #
         # Multiply in real space
         #
-        for ipol in 1:Npol, ip in 1:Npoints
-            ctmp[ip,ipol] *= V_loc[ip,ispin]
+        if domag
+            for ip in 1:Npoints
+                sup = ctmp[ip,1]*( V_loc[ip,1] + V_loc[ip,4] ) + ctmp[ip,2]*( V_loc[ip,2] - im*V_loc[ip,3] )
+                sdn = ctmp[ip,2]*( V_loc[ip,1] - V_loc[ip,4] ) + ctmp[ip,1]*( V_loc[ip,2] + im*V_loc[ip,3] )
+                ctmp[ip,1] = sup
+                ctmp[ip,2] = sdn
+            end
+        else
+            for ipol in 1:Npol, ip in 1:Npoints
+                ctmp[ip,ipol] *= V_loc[ip,1]
+            end
         end
         #
         # Back to G-space
