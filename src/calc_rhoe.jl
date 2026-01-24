@@ -11,17 +11,16 @@ function calc_rhoe!(
     psiks::BlochWavefunc,
     Rhoe::Array{Float64,2}
 )
-    pw = Ham.pw
-    Focc = Ham.electrons.Focc
-    Nspin = Ham.electrons.Nspin_channel
-    # XXX: This is not yet adapted for magnetization
-    Nelectrons_true = Ham.electrons.Nelectrons
 
     if Ham.electrons.noncollinear
-        Npol = 2
-    else
-        Npol = 1
+        calc_rhoe_noncollinear!( Ham, psiks, Rhoe)
+        return
     end
+
+    pw = Ham.pw
+    Focc = Ham.electrons.Focc
+    Nspin = Ham.electrons.Nspin_comp
+    @assert Nspin in [1,2]
 
     CellVolume  = pw.CellVolume
     Ns = pw.Ns
@@ -38,50 +37,45 @@ function calc_rhoe!(
     Nstates = size(psiks[1], 2)
 
     RhoeSmooth = zeros(Float64, NpointsSmooth, Nspin)
-    ctmp = zeros(ComplexF64, NpointsSmooth, Npol)
+    ctmp = zeros(ComplexF64, NpointsSmooth)
 
     # dont forget to zero out the Rhoe first
     fill!(Rhoe, 0.0)
 
     NptsPerSqrtVol = NpointsSmooth/sqrt(CellVolume)
 
-    dVol = CellVolume/Npoints # dense
-
-    Natoms = Ham.atoms.Natoms
+    #dVol = CellVolume/Npoints # dense
+    #Natoms = Ham.atoms.Natoms
 
     #
     for ispin in 1:Nspin, ik in 1:Nkpt
         #
         ikspin = ik + (ispin - 1)*Nkpt
         psi = psiks[ikspin]
-        psir = reshape(psi, Ngw[ik], Npol, Nstates)
         #
         for ist in 1:Nstates
             #
             fill!(ctmp, 0.0 + im*0.0)
             #
-            for ipol in 1:Npol, igw in 1:Ngw[ik]
+            for igw in 1:Ngw[ik]
                 ip = idx_gw2r[ik][igw]
-                ctmp[ip,ipol] = psir[igw,ipol,ist]
+                ctmp[ip,ipol] = psi[igw,ist]
             end
             # to real space (use smooth grid if using dual grid)
-            for ipol in 1:Npol
-                @views G_to_R!(pw, ctmp[:,ipol], smooth=pw.using_dual_grid)
-            end
+            @views G_to_R!(pw, ctmp, smooth=pw.using_dual_grid)
             # Renormalize
-            for ipol in 1:Npol, ip in 1:NpointsSmooth
-                ctmp[ip,ipol] *= NptsPerSqrtVol
+            for ip in 1:NpointsSmooth
+                ctmp[ip] *= NptsPerSqrtVol
             end
             #
             w = wk[ik]*Focc[ist,ikspin]
             #
-            for ipol in 1:Npol, ip in 1:NpointsSmooth
+            for ip in 1:NpointsSmooth
                 # accumulate
-                RhoeSmooth[ip,ispin] += w*real( conj(ctmp[ip,ipol])*ctmp[ip,ipol] )
+                RhoeSmooth[ip,ispin] += w*real( conj(ctmp[ip])*ctmp[ip] )
             end
         end
     end # ik, ispin
-    # XXX Need to compute magnetization for noncollinear magnetism
 
     #println("calc_rhoe_uspp: integ RhoeSmooth up = ", sum(RhoeSmooth[:,1])*dVol)
     #println("calc_rhoe_uspp: integ RhoeSmooth dn = ", sum(RhoeSmooth[:,2])*dVol)
@@ -122,6 +116,7 @@ function calc_rhoe!(
     #@info "calc_rhoe: integ Rhoe after adding becsum = $(sum(Rhoe)*dVol)"
 
     # renormalize
+    # Nelectrons_true = Ham.electrons.Nelectrons
     #if renormalize
     #    integ_rho = sum(Rhoe)*CellVolume/Npoints
     #    for i in 1:length(Rhoe)
@@ -138,6 +133,131 @@ function calc_rhoe!(
 
     return
 end
+
+
+function calc_rhoe_noncollinear!(
+    Ham::Hamiltonian,
+    psiks::BlochWavefunc,
+    Rhoe::Array{Float64,2}
+)
+    pw = Ham.pw
+    Focc = Ham.electrons.Focc
+    Nspin_dens = Ham.electrons.Nspin_comp
+    Npol = 2
+    domag = Ham.electrons.domag
+
+    CellVolume = pw.CellVolume
+    Ns = pw.Ns
+    Nkpt = pw.gvecw.kpoints.Nkpt
+    Ngw = pw.gvecw.Ngw
+    wk = pw.gvecw.kpoints.wk
+    idx_gw2r = pw.gvecw.idx_gw2r
+    Npoints = prod(Ns)
+    if pw.using_dual_grid
+        NpointsSmooth = prod(pw.Nss)
+    else
+        NpointsSmooth = Npoints
+    end
+    Nstates = size(psiks[1], 2)
+
+    RhoeSmooth = zeros(Float64, NpointsSmooth, Nspin_dens)
+    ctmp = zeros(ComplexF64, NpointsSmooth, Npol)
+
+    # dont forget to zero out the Rhoe first
+    fill!(Rhoe, 0.0)
+
+    NptsPerSqrtVol = NpointsSmooth/sqrt(CellVolume)
+
+    dVol = CellVolume/Npoints # dense
+    Natoms = Ham.atoms.Natoms
+    #
+    for ik in 1:Nkpt
+        #
+        psi = psiks[ik]
+        psir = reshape(psi, Ngw[ik], Npol, Nstates)
+        #
+        for ist in 1:Nstates
+            #
+            fill!(ctmp, 0.0 + im*0.0)
+            #
+            for ipol in 1:Npol, igw in 1:Ngw[ik]
+                ip = idx_gw2r[ik][igw]
+                ctmp[ip,ipol] = psir[igw,ipol,ist]
+            end
+            # to real space (use smooth grid if using dual grid)
+            for ipol in 1:Npol
+                @views G_to_R!(pw, ctmp[:,ipol], smooth=pw.using_dual_grid)
+            end
+            # Renormalize
+            for ipol in 1:Npol, ip in 1:NpointsSmooth
+                ctmp[ip,ipol] *= NptsPerSqrtVol
+            end
+            #
+            w = wk[ik]*Focc[ist,ik]
+            #
+            for ipol in 1:Npol, ip in 1:NpointsSmooth
+                # accumulate
+                RhoeSmooth[ip,1] += w*real( conj(ctmp[ip,ipol])*ctmp[ip,ipol] )
+            end
+            if domag
+                for ip in 1:NpointsSmooth
+                    RhoeSmooth[ip,2] += w*2.0*(real(ctmp[ip,1]) * real(ctmp[ip,2]) +
+                                               imag(ctmp[ip,1]) * imag(ctmp[ip,2]))
+                    RhoeSmooth[ip,3] += w*2.0*(real(ctmp[ip,1]) * imag(ctmp[ip,2]) -
+                                               real(ctmp[ip,2]) * imag(ctmp[ip,1]))
+                    RhoeSmooth[ip,4] += w*(real(ctmp[ip,1])^2 + imag(ctmp[ip,1])^2 -
+                                           real(ctmp[ip,2])^2 - imag(ctmp[ip,2])^2)
+                end
+            else
+                fill!(RhoeSmooth[:,2:4], 0.0)
+            end
+        end
+    end # ik, ispin
+    # XXX Need to compute magnetization for noncollinear magnetism
+
+    #println("calc_rhoe_uspp: integ RhoeSmooth up = ", sum(RhoeSmooth[:,1])*dVol)
+    #println("calc_rhoe_uspp: integ RhoeSmooth dn = ", sum(RhoeSmooth[:,2])*dVol)
+    #println("calc_rhoe_uspp: integ RhoeSmooth = ", sum(RhoeSmooth)*dVol)
+
+    # Interpolate
+    for ispin in 1:Nspin_dens
+        # This will simply copy if no interpolation is needed (handled inside the function)
+        @views smooth_to_dense!(pw, RhoeSmooth[:,ispin], Rhoe[:,ispin])
+    end
+
+    #
+    # Add ultrasoft contrib if needed
+    # Use preallocated becsum because it is also used in PAW_potential
+    #
+    ok_paw = any(Ham.pspotNL.are_paw)
+    ok_uspp = any(Ham.pspotNL.are_ultrasoft)
+    #
+    # This should be done for ok_paw or ok_uspp
+    if ok_uspp || ok_paw
+        @error "This is not yet implemented"
+    end
+
+    #@info "calc_rhoe: integ Rhoe after adding becsum = $(sum(Rhoe)*dVol)"
+
+    # renormalize
+    #if renormalize
+    #    integ_rho = sum(Rhoe)*CellVolume/Npoints
+    #    for i in 1:length(Rhoe)
+    #        Rhoe[i] *= Nelectrons_true/integ_rho
+    #    end
+    #end
+
+    # FIXME: Need to calculate RhoeG here?
+
+    # Symmetrize Rhoe if needed
+    if Ham.sym_info.Nsyms > 1
+        symmetrize_rhoe!( Ham.pw, Ham.sym_info, Ham.rhoe_symmetrizer, Rhoe )
+    end
+
+    return
+end
+
+
 
 
 function _add_usdens!( Ham, becsum, Rhoe )
