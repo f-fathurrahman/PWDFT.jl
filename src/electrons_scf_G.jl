@@ -197,14 +197,17 @@ function electrons_scf_G!(
         end
 
         # Calculate deband (using new Rhoe)
-        Vin .= Vhartree .+ Vxc
-        #if (Nspin_dens == 4) && domag
-        #    deband = -sum(Vin[:,1] .* Rhoe[:,1])*dVol
-        #else
-            deband = -sum(Vin .* Rhoe)*dVol
-        #end
-        #
+        if Nspin_dens == 4
+            @. Vin[:,1] = Vhartree[:,1] + Vxc[:,1]
+            @. Vin[:,2:4] = Vxc[:,2:4]
+        else
+            Vin .= Vhartree .+ Vxc
+        end
+        deband = -sum(Vin .* Rhoe)*dVol
+
         if ok_paw
+            # This is not yet adapted for noncollinear case
+            @assert Nspin_dens in [1,2]
             deband -= sum(Ham.pspotNL.paw.ddd_paw .* becsum)
         end
 
