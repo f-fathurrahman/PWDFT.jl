@@ -27,11 +27,12 @@ function rhoe_ddot( pw, rho1, rho2 )
     end
     res *= fac
 
-    if Nspin == 2
-        res += fac*real( conj(rho1[1,2]) * rho2[1,2] ) # why?
+    # XXX This also includes the case of noncollinear magn
+    if Nspin >= 2
+        res += fac*sum(real.( conj(rho1[1,2:Nspin]) .* rho2[1,2:Nspin] )) # why?
         for ig in 2:Ngf
             ip = idx_g2r[ig]
-            res += fac*real( conj(rho1[ip,2]) * rho2[ip,2] )
+            res += fac*sum(real.( conj(rho1[ip,2:Nspin]) .* rho2[ip,2:Nspin] ))
         end
     end
     return 0.5 * res * pw.CellVolume # XXX need factor of 1/2 ?
