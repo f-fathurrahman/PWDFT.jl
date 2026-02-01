@@ -59,7 +59,7 @@ function calc_rhoe!(
             #
             for igw in 1:Ngw[ik]
                 ip = idx_gw2r[ik][igw]
-                ctmp[ip,ipol] = psi[igw,ist]
+                ctmp[ip] = psi[igw,ist]
             end
             # to real space (use smooth grid if using dual grid)
             @views G_to_R!(pw, ctmp, smooth=pw.using_dual_grid)
