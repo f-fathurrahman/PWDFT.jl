@@ -548,7 +548,7 @@ function electrons_Emin_Haux!(Ham; NiterMax=100, psiks=nothing, Haux=nothing)
         for ikspin in 1:Nkspin
             Haux[ikspin] = randn(ComplexF64, Nstates, Nstates)
             # the same as Hsub
-            Haux[ikspin][:,:] = Hsub[ikspin][:,:]
+            #Haux[ikspin][:,:] = Hsub[ikspin][:,:]
             Haux[ikspin][:,:] = 0.5*( Haux[ikspin] + Haux[ikspin]' ) # make symmetric
             #Haux[ikspin] = diagm(0 => sort(randn(Float64, Nstates)))
         end
@@ -577,6 +577,9 @@ function electrons_Emin_Haux!(Ham; NiterMax=100, psiks=nothing, Haux=nothing)
     # Make Haux diagonal and rotate psiks
     # Ham.electrons.ebands are updated here
     transform_psiks_Haux_update_ebands!( Ham, psiks, Haux, rots_cache )
+
+    # Calcuate nuc-nuc interaction energy
+    Ham.energies.NN = calc_E_NN(Ham.atoms)
 
     # Update Hamiltonian, compute energy and gradients at current psiks and Haux:
 
