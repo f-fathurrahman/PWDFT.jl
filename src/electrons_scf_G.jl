@@ -124,9 +124,9 @@ function electrons_scf_G!(
 
     for iterSCF in 1:NiterMax
 
-        println("")
-        println("Begin iterSCF = ", iterSCF)
-        println("--------------------------")
+        #println("")
+        #println("Begin iterSCF = ", iterSCF)
+        #println("--------------------------")
         
         # Save input/old potential
         Vin .= Vhartree .+ Vxc
@@ -178,11 +178,6 @@ function electrons_scf_G!(
         #
         calc_rhoe!( Ham, psiks, Rhoe )
 
-        @info "sum Rhoe[:,1] before mixing = $(sum(Rhoe[:,1]))"
-        @info "sum Rhoe[:,2] before mixing = $(sum(Rhoe[:,2]))"
-        @info "sum Rhoe[:,3] before mixing = $(sum(Rhoe[:,3]))"
-        @info "sum Rhoe[:,4] before mixing = $(sum(Rhoe[:,4]))"
-        println("integ Rhoe before mixing (after calc_rhoe) = ", sum(Rhoe)*dVol)
         #if Nspin == 2
         #    println("Integ magn before mixing = ", sum(Rhoe[:,1]-Rhoe[:,2])*dVol)
         #end
@@ -236,12 +231,6 @@ function electrons_scf_G!(
             do_mix!(mixer, Ham.pw, RhoeG, RhoeG_in, iterSCF)
         end
         _rhoe_from_rhoeG!(Ham, RhoeG, Rhoe)
-
-        @info "sum Rhoe[:,1] after mixing = $(sum(Rhoe[:,1]))"
-        @info "sum Rhoe[:,2] after mixing = $(sum(Rhoe[:,2]))"
-        @info "sum Rhoe[:,3] after mixing = $(sum(Rhoe[:,3]))"
-        @info "sum Rhoe[:,4] after mixing = $(sum(Rhoe[:,4]))"
-        @info "integ Rhoe after mixing = $(sum(Rhoe)*dVol)"
 
         #diffRhoe = dot(Rhoe - Rhoe_in, Rhoe - Rhoe_in)
         #@info "diffRhoe after mix = $(diffRhoe)"
