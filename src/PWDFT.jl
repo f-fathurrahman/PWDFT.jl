@@ -85,11 +85,6 @@ export PWGrid,
        GVectorsW,
        op_nabla, op_nabla_dot
 
-include("gamma_only/PWGridGamma.jl")
-export PWGridGamma,
-       GVectorsGamma,
-       GVectorsWGamma
-
 #
 # FFT
 #
@@ -184,9 +179,6 @@ include("qvan2.jl")
 include("PsPotNL_UPF.jl")
 export PsPotNL_UPF, qvan2!
 
-include("gamma_only/PsPotNLGamma.jl")
-export PsPotNLGamma
-
 include("RhoeSymmetrizer.jl")
 export RhoeSymmetrizer,
        symmetrize_rhoe!
@@ -196,20 +188,6 @@ export calc_rhoe_core!
 
 include("Hamiltonian.jl")
 export Hamiltonian, HamiltonianOptions, update!
-
-include("gamma_only/HamiltonianGamma.jl")
-export HamiltonianGamma
-
-include("gamma_only/BlochWavefuncGamma.jl")
-export BlochWavefuncGamma,
-       rand_BlochWavefuncGamma,
-       randn_BlochWavefuncGamma,
-       dot_gamma, overlap_gamma,
-       ortho_sqrt_gamma, ortho_sqrt_gamma!,
-       ortho_check_gamma
-
-include("gamma_only/unfold_BlochWavefuncGamma.jl")
-export unfold_BlochWavefuncGamma
 
 include("ortho_sqrt.jl")
 export ortho_sqrt, ortho_sqrt!
@@ -230,11 +208,6 @@ include("op_H.jl")
 export op_H, op_K, op_V_loc, op_V_Ps_loc, op_V_Ps_nloc,
        op_H!, op_K!, op_V_loc!, op_V_Ps_loc!, op_V_Ps_nloc!,
        op_Vtau, op_Vtau!
-
-include("gamma_only/op_K_gamma.jl")
-include("gamma_only/op_V_loc_gamma.jl")
-include("gamma_only/op_V_Ps_nloc_gamma.jl")
-include("gamma_only/op_H_gamma.jl")
 
 include("PAW_symmetrize.jl")
 export PAW_symmetrize!
@@ -280,13 +253,8 @@ export PAW_divergence!
 include("Poisson_solve.jl")
 export Poisson_solve, Poisson_solve!
 
-include("gamma_only/Poisson_solve_gamma.jl")
-
-
 include("calc_rhoe.jl")
 export calc_rhoe, calc_rhoe!
-
-include("gamma_only/calc_rhoe_gamma.jl")
 
 include("Kprec.jl")
 export Kprec, Kprec!, Kprec_inplace!
@@ -298,9 +266,6 @@ export calc_energies, calc_energies!,
        calc_E_Ps_nloc
 # calc_E_xc, calc_E_Hartree # Not needed?
 
-include("gamma_only/calc_energies_gamma.jl")
-
-
 include("occupations.jl")
 export calc_Focc,
        calc_entropy,
@@ -308,9 +273,7 @@ export calc_Focc,
 
 include("calc_grad.jl")
 export calc_grad
-
-include("gamma_only/calc_grad_gamma.jl")
-export calc_grad! # FIXME, also implement for kpt-version
+#export calc_grad! # FIXME, also implement for kpt-version
 
 #
 # Diagonalization methods
@@ -321,9 +284,6 @@ include("diag_davidson.jl")
 export diag_LOBPCG, diag_LOBPCG!,
        diag_Emin_PCG, diag_Emin_PCG!,
        diag_davidson, diag_davidson!
-
-include("gamma_only/diag_Emin_PCG_gamma.jl")
-
 
 #
 # Mixing functions
@@ -363,22 +323,11 @@ export guess_rhoe, guess_rhoe_atomic
 include("KS_solve_Emin_PCG.jl")
 export KS_solve_Emin_PCG!
 
-include("gamma_only/setup_guess_wavefunc.jl")
-include("gamma_only/linmin_grad_gamma.jl")
-include("gamma_only/calc_energies_grad_gamma.jl")
-include("gamma_only/KS_solve_Emin_PCG_dot_gamma.jl")
-export KS_solve_Emin_PCG_dot!,
-       setup_guess_wavefunc!
-
 include("KS_solve_SCF.jl")
 export KS_solve_SCF!
 
-include("gamma_only/KS_solve_SCF_gamma.jl")
-
 include("KS_solve_SCF_potmix.jl")
 export KS_solve_SCF_potmix!
-
-include("gamma_only/KS_solve_SCF_potmix_gamma.jl")
 
 include("KS_solve_DCM.jl")
 export KS_solve_DCM!
@@ -427,12 +376,6 @@ export calc_forces_nlcc!, calc_forces_nlcc
 
 include("calc_forces.jl")
 export calc_forces
-
-include("gamma_only/calc_forces_NN_gamma.jl")
-include("gamma_only/calc_forces_Ps_loc_gamma.jl")
-include("gamma_only/calc_forces_Ps_nloc_gamma.jl")
-include("gamma_only/calc_forces_gamma.jl")
-
 
 # Stress calculations
 include("stress/calc_stress_hartree.jl")
