@@ -109,3 +109,26 @@ function create_Ham_N2H4_gbrv()
     Ham = Hamiltonian( atoms, pspots, ecutwfc, options )
     return Ham
 end
+
+
+function create_Ham_Fe_bcc_oncv()
+    atoms = Atoms(2, 1,
+        [0.0 2.7079775377810678; 0.0 2.7079775377810678; 0.0 2.7079775377810678],
+        [1, 1], ["Fe", "Fe"], ["Fe"],
+        [5.4159550755621355 0.0 0.0; 0.0 5.4159550755621355 0.0; 0.0 0.0 5.4159550755621355],
+        [16.0], [0.0]
+    );
+    pspfiles = [joinpath(DIR_PSP, "ONCV_v0.4.1_LDA", "Fe.upf")];
+    ecutwfc = 20.0;
+    options = HamiltonianOptions(4.0,
+        2, 2, [3, 3, 3], [0, 0, 0], true, (0, 0, 0), nothing, "", "VWN",
+        false, -1, 20, true, true, 0.001, [0.4], nothing, nothing, false, false
+    );
+    #(;(v=>getfield(atoms, v) for v in fieldnames(typeof(atoms)))...)
+    pspots = Vector{PsPot_UPF}(undef, atoms.Nspecies);
+    for isp in 1:atoms.Nspecies
+        pspots[isp] = PsPot_UPF(pspfiles[isp]);
+    end
+    Ham = Hamiltonian(atoms, pspots, ecutwfc, options);
+    return Ham
+end
