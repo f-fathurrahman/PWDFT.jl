@@ -8,11 +8,11 @@ mutable struct HamiltonianOptions
     time_reversal::Bool
     Ns::Tuple{Int64,Int64,Int64}
     kpoints::Union{KPoints,Nothing}
-    kpts_str::String
-    xcfunc::String
+    kpts_str::Union{String,Nothing}
+    xcfunc::Union{String,Nothing}
     use_xc_internal::Bool
-    extra_states::Int64
-    Nstates::Int64
+    extra_states::Union{Int64,Nothing}
+    Nstates::Union{Int64,Nothing}
     use_symmetry::Bool
     use_smearing::Bool
     smearing_kT::Float64
@@ -32,14 +32,14 @@ function HamiltonianOptions()
     time_reversal = true
     Ns = (0,0,0)
     kpoints = nothing
-    kpts_str = ""
+    kpts_str = nothing
     xcfunc = "VWN"
     use_xc_internal = false
-    extra_states = -1
-    Nstates = -1
+    extra_states = nothing
+    Nstates = nothing
     use_symmetry = true
     use_smearing = false
-    smearing_kT = true
+    smearing_kT = 0.0
     starting_magn = nothing
     angle1 = nothing
     angle2 = nothing

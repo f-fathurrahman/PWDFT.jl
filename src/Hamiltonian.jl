@@ -56,7 +56,7 @@ function Hamiltonian(
 
     # kpoints
     if isnothing(options.kpoints)
-        if options.kpts_str == ""
+        if isnothing(options.kpts_str)
             # automatic generation of kpoints
             kpoints = KPoints( atoms,
                 options.meshk, options.shiftk,
@@ -172,7 +172,7 @@ function Hamiltonian(
     # Initialize electronic states variable
     #
     # extra_states is given
-    if options.extra_states > -1
+    if !isnothing(options.extra_states)
         electrons = Electrons( atoms, pspots,
             Nspin_channel = Nspin_channel,
             Nkpt = kpoints.Nkpt,
@@ -181,7 +181,7 @@ function Hamiltonian(
             domag = domag
         )
     # no extra_states is given but Nstates is given
-    elseif options.Nstates > -1
+    elseif !isnothing(options.Nstates)
         electrons = Electrons( atoms, pspots,
             Nspin_channel = Nspin_channel,
             Nkpt = kpoints.Nkpt,
@@ -190,7 +190,7 @@ function Hamiltonian(
             domag = domag
         )
     #
-    elseif (options.Nstates == -1) && (options.extra_states == -1)
+    elseif isnothing(options.Nstates) && isnothing(options.extra_states)
         # Default value for Nstates and Nstates_empty
         # Nstates will be calculated automatically
         electrons = Electrons( atoms, pspots,
@@ -316,22 +316,22 @@ function Hamiltonian(
     pspfiles::Vector{String},
     ecutwfc::Float64;
     # Keyword arguments
-    dual::Float64=4.0,
-    Nspin_channel::Int64=1,
-    Nspin_comp::Int64=1,
-    meshk::Vector{Int64}=[1,1,1],  # FIXME: convert to tuple?
-    shiftk::Vector{Int64}=[0,0,0],
-    time_reversal::Bool=true,
-    Ns_::Tuple{Int64,Int64,Int64}=(0,0,0),
-    kpoints::Union{KPoints,Nothing}=nothing,
-    kpts_str::String="",
-    xcfunc::String="VWN",
-    use_xc_internal::Bool=false,
-    extra_states::Int64=-1,
-    Nstates::Int64=-1,
-    use_symmetry::Bool=true,
-    lspinorb::Bool=false,
-    noncollinear::Bool=false,
+    dual::Float64 = 4.0,
+    Nspin_channel::Int64 = 1,
+    Nspin_comp::Int64 = 1,
+    meshk::Vector{Int64} = [1,1,1],  # FIXME: convert to tuple?
+    shiftk::Vector{Int64} = [0,0,0],
+    time_reversal::Bool = true,
+    Ns_::Tuple{Int64,Int64,Int64} = (0,0,0),
+    kpoints::Union{KPoints,Nothing} = nothing,
+    kpts_str = nothing,
+    xcfunc::String = "VWN",
+    use_xc_internal::Bool = false,
+    extra_states::Int64 = nothing,
+    Nstates::Int64 = nothing,
+    use_symmetry::Bool = true,
+    lspinorb::Bool = false,
+    noncollinear::Bool = false,
     starting_magn = nothing,
     angle1 = nothing,
     angle2 = nothing,
