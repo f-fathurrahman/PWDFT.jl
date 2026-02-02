@@ -10,6 +10,14 @@ function _print_forces(atoms::Atoms, F, title_str)
     return
 end
 
+function struct_to_namedtuple(obj)
+    return (;(v=>getfield(obj, v) for v in fieldnames(typeof(obj)))...)
+end
+
+#function namedtuple_to_struct()
+#end
+
+
 """
 Write a Julia script for initializing input variables to `Hamiltonian`
 constructor from a given `PWSCFInput` instance and HamiltonianOptions.
@@ -21,10 +29,12 @@ function export_to_script(
     
     f = open(filename, "w")
     
-    println(f, "atoms = " * repr(pwinput.atoms) * ";")
+    println(f, "atoms_tuple = " * repr(struct_to_namedtuple(pwinput.atoms)) * ";")
+    println(f, "atoms = Atoms(atoms_tuple...);")
     println(f, "pspfiles = " * repr(pwinput.pspfiles) * ";")
     println(f, "ecutwfc = " * repr(pwinput.ecutwfc) * ";")
-    println(f, "options = " * repr(options) * ";")
+    println(f, "options_tuple = " * repr(struct_to_namedtuple(options)) * ";")
+    println(f, "options = HamiltonianOptions(options_tuple...);")
 
     println(f, """
     pspots = Vector{PsPot_UPF}(undef, atoms.Nspecies);
