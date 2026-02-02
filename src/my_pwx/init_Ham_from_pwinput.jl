@@ -56,20 +56,20 @@ function init_Ham_from_pwinput(; filename::Union{Nothing,String}=nothing)
     options.lspinorb = pwinput.lspinorb
     options.noncollinear = pwinput.noncolin
     #
-    # Determine Nspin_channel and Nspin_comp from pwinput
+    # Determine Nspin_wf and Nspin_dens from pwinput
     if pwinput.lspinorb
-        options.Nspin_channel = 1
-        options.Nspin_comp = 4
+        options.Nspin_wf = 1
+        options.Nspin_dens = 4
         options.time_reversal = false
         @assert pwinput.noncolin
     end
     if pwinput.noncolin
-        options.Nspin_channel = 1
-        options.Nspin_comp = 4
+        options.Nspin_wf = 1
+        options.Nspin_dens = 4
         options.time_reversal = false
     else
-        options.Nspin_channel = pwinput.nspin
-        options.Nspin_comp = pwinput.nspin
+        options.Nspin_wf = pwinput.nspin
+        options.Nspin_dens = pwinput.nspin
     end
 
     if !isnothing(pwinput.starting_magnetization)

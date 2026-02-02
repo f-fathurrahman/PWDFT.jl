@@ -8,12 +8,12 @@ mutable struct Electrons
     Nstates_occ::Int64
     Focc::Array{Float64,2}
     ebands::Array{Float64,2}
-    Nspin_channel::Int64
+    Nspin_wf::Int64
     use_smearing::Bool
     kT::Float64
     noncollinear::Bool
     E_fermi::Float64
-    Nspin_comp::Int64
+    Nspin_dens::Int64
     domag::Bool
 end
 
@@ -26,23 +26,23 @@ function Electrons()
     Nstates_occ = 1
     Focc = zeros(Nstates,1) # Nkpt=1
     ebands = zeros(Nstates,1) # use Nkpt=1
-    Nspin_channel = 1
-    Nspin_comp = 1
+    Nspin_wf = 1
+    Nspin_dens = 1
     use_smearing = false
     kT = 0.0
     noncollinear = false
     E_fermi = 0.0
     domag = false
     return Electrons(
-        Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin_channel,
-        use_smearing, kT, noncollinear, E_fermi, Nspin_comp, domag
+        Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin_wf,
+        use_smearing, kT, noncollinear, E_fermi, Nspin_dens, domag
     )
 end
 
 # Zvals will be determined from pspots
 function Electrons(
     atoms::Atoms, pspots::Vector{T};
-    Nspin_channel = 1,
+    Nspin_wf = 1,
     Nkpt = 1,
     Nstates = -1,
     Nstates_empty = -1,
@@ -52,7 +52,7 @@ function Electrons(
     #
     Zvals = get_Zvals(pspots)
     return Electrons( atoms, Zvals, 
-        Nspin_channel = Nspin_channel,
+        Nspin_wf = Nspin_wf,
         Nkpt = Nkpt,
         Nstates = Nstates,
         Nstates_empty = Nstates_empty,
@@ -101,8 +101,8 @@ Creates an instance of `Electrons` given following inputs:
 - `zvals`: an array of `Float64` specifying number of valence electrons
   for each atomic species.
 
-- `Nspin_channel`: (optional) number of spin. `Nspin_channel=1` means without spin polarization.
-  `Nspin_channel=2` means with spin-polarization.
+- `Nspin_wf`: (optional) number of spin. `Nspin_wf=1` means without spin polarization.
+  `Nspin_wf=2` means with spin-polarization.
 
 - `Nkpt`: (optional) number of kpoints
 
@@ -113,7 +113,7 @@ Creates an instance of `Electrons` given following inputs:
 """
 function Electrons(
     atoms::Atoms, zvals::Vector{Float64};
-    Nspin_channel = 1,
+    Nspin_wf = 1,
     Nkpt = 1,
     Nstates = -1,
     Nstates_empty = -1,
@@ -121,20 +121,20 @@ function Electrons(
     domag = false
 )
     if !noncollinear
-        @assert Nspin_channel <= 2
+        @assert Nspin_wf <= 2
     end
     @assert length(zvals) == atoms.Nspecies
 
-    # Determine Nspin_comp
-    Nspin_comp = 1 # default
+    # Determine Nspin_dens
+    Nspin_dens = 1 # default
     # Collinear magnetism
-    if !noncollinear && (Nspin_channel == 2)
-        Nspin_comp = 2
+    if !noncollinear && (Nspin_wf == 2)
+        Nspin_dens = 2
     end
-    # For noncollinear Nspin_channel = 1 and Nspin_comp = 4
+    # For noncollinear Nspin_wf = 1 and Nspin_dens = 4
     if noncollinear
-        @assert Nspin_channel == 1
-        Nspin_comp = 4
+        @assert Nspin_wf == 1
+        Nspin_dens = 4
     end
 
     Nelectrons = get_Nelectrons(atoms, zvals)
@@ -181,21 +181,21 @@ function Electrons(
         Nstates_empty = Int64(Nstates - Nelectrons)
     end
 
-    Focc = zeros(Float64, Nstates, Nkpt*Nspin_channel)
-    ebands = zeros(Float64, Nstates, Nkpt*Nspin_channel)
+    Focc = zeros(Float64, Nstates, Nkpt*Nspin_wf)
+    ebands = zeros(Float64, Nstates, Nkpt*Nspin_wf)
     @info "Pass here 154"
     Nstates_occ = Nstates - Nstates_empty
 
     @info "Nstates = $(Nstates)"
     @info "Nstates_empty = $(Nstates_empty)"
     @info "Nstates_occ = $(Nstates_occ)"
-    @info "Nspin_channel = $(Nspin_channel)"
-    @info "Nspin_comp = $(Nspin_comp)"
+    @info "Nspin_wf = $(Nspin_wf)"
+    @info "Nspin_dens = $(Nspin_dens)"
 
     if noncollinear
         OCC_MAX = 1.0
     else
-        if Nspin_channel == 1
+        if Nspin_wf == 1
             OCC_MAX = 2.0
         else
             OCC_MAX = 1.0
@@ -203,7 +203,7 @@ function Electrons(
     end
     @info "OCC_MAX = $(OCC_MAX)"
 
-    if Nspin_channel == 1
+    if Nspin_wf == 1
         for ist in 1:Nstates_occ-1
             Focc[ist,:] .= OCC_MAX
         end
@@ -231,8 +231,8 @@ function Electrons(
     kT = 0.0
     E_fermi = 0.0
     return Electrons(
-        Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin_channel,
-        use_smearing, kT, noncollinear, E_fermi, Nspin_comp,
+        Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin_wf,
+        use_smearing, kT, noncollinear, E_fermi, Nspin_dens,
         domag
     )
 end
@@ -261,15 +261,15 @@ function init_electrons_molecule(
 
     # Nstates_extra is always empty
 
-    Nspin_channel = 2
+    Nspin_wf = 2
     Nelectrons = get_Nelectrons(atoms,Pspots)
     @assert round(Int64,Nelectrons) == sum(NelectronsSpin)
 
     Nstates_occ = maximum(NelectronsSpin)
     Nstates = Nstates_occ + Nstates_extra
 
-    Focc = zeros(Float64,Nstates,Nkpt*Nspin_channel)
-    ebands = zeros(Float64,Nstates,Nkpt*Nspin_channel)
+    Focc = zeros(Float64,Nstates,Nkpt*Nspin_wf)
+    ebands = zeros(Float64,Nstates,Nkpt*Nspin_wf)
 
     for ik in 1:Nkpt
         for i in 1:NelectronsSpin[1]
@@ -286,11 +286,11 @@ function init_electrons_molecule(
     kT = 0.0
     E_fermi = 0.0
     noncollinear = false
-    Nspin_comp = 2 # collinear magnetism
+    Nspin_dens = 2 # collinear magnetism
     domag = true
     return Electrons(
-        Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin_channel,
-        use_smearing, kT, noncollinear, E_fermi, Nspin_comp,
+        Nelectrons, Nstates, Nstates_occ, Focc, ebands, Nspin_wf,
+        use_smearing, kT, noncollinear, E_fermi, Nspin_dens,
         domag
     )
 end

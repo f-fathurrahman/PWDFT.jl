@@ -1,6 +1,6 @@
 function PAW_atomic_becsum!( Ham::Hamiltonian; starting_magn=nothing )
     PAW_atomic_becsum!(Ham.atoms, Ham.pspots, Ham.pspotNL,
-        Nspin=Ham.electrons.Nspin_channel, starting_magn=starting_magn)
+        Nspin=Ham.electrons.Nspin_wf, starting_magn=starting_magn)
 end
 
 

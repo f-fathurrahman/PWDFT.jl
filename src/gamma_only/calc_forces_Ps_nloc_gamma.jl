@@ -23,7 +23,7 @@ function calc_forces_Ps_nloc!(
     atm2species = atoms.atm2species
     prj2beta = pspotNL.prj2beta
     NbetaNL = pspotNL.NbetaNL
-    Nspin = electrons.Nspin_channel
+    Nspin = electrons.Nspin_wf
 
     if NbetaNL == 0
         return F_Ps_nloc

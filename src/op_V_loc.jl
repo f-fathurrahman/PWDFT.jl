@@ -1,6 +1,6 @@
 function op_V_loc( Ham::Hamiltonian, psiks::BlochWavefunc )
     Nstates = size(psiks[1],2) # Nstates should be similar for all Bloch states
-    Nspin = Ham.electrons.Nspin_channel
+    Nspin = Ham.electrons.Nspin_wf
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     out = zeros_BlochWavefunc(Ham)    
     for ispin in 1:Nspin, ik in 1:Nkpt
@@ -16,7 +16,7 @@ end
 # In-place, accumulated version
 function op_V_loc!( Ham::Hamiltonian, psiks::BlochWavefunc, Hpsiks::BlochWavefunc )
     Nstates = size(psiks[1],2) # Nstates should be similar for all Bloch states
-    Nspin = Ham.electrons.Nspin_channel
+    Nspin = Ham.electrons.Nspin_wf
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt    
     for ispin in 1:Nspin, ik in 1:Nkpt
         Ham.ik = ik
@@ -189,7 +189,7 @@ end
 
 function op_V_Ps_loc( Ham::Hamiltonian, psiks::BlochWavefunc )
     Nstates = size(psiks[1],2) # Nstates should be similar for all Bloch states
-    Nspin = Ham.electrons.Nspin_channel
+    Nspin = Ham.electrons.Nspin_wf
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     out = zeros_BlochWavefunc(Ham)
     

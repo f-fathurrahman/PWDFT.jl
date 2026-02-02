@@ -1,7 +1,7 @@
 function op_K( Ham::HamiltonianGamma, psis::BlochWavefuncGamma )
 
     Nstates = size(psis.data[1],2)
-    Nspin = Ham.electrons.Nspin_channel
+    Nspin = Ham.electrons.Nspin_wf
     out = zeros_BlochWavefuncGamma(Ham)
     
     for ispin in 1:Nspin

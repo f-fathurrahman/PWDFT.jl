@@ -21,7 +21,7 @@ function diag_Emin_PCG!( Ham::HamiltonianGamma, psis::BlochWavefuncGamma;
     
     pw = Ham.pw
     electrons = Ham.electrons
-    Nspin = electrons.Nspin_channel
+    Nspin = electrons.Nspin_wf
     Ngw = pw.gvecw.Ngw
     Nstates = electrons.Nstates
     evals = zeros(Float64,Nstates,Nspin)

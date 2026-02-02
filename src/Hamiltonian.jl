@@ -122,35 +122,35 @@ function Hamiltonian(
 
 
     if options.lspinorb
-        Nspin_channel = 1
-        Nspin_comp = 4
+        Nspin_wf = 1
+        Nspin_dens = 4
         @assert options.noncollinear
     end
     if options.noncollinear
-        Nspin_channel = 1
-        Nspin_comp = 4
+        Nspin_wf = 1
+        Nspin_dens = 4
     else
-        Nspin_channel = options.Nspin_channel
-        Nspin_comp = options.Nspin_comp
+        Nspin_wf = options.Nspin_wf
+        Nspin_dens = options.Nspin_dens
     end
-    @info "Nspin_channel=$(Nspin_channel) Nspin_comp=$(Nspin_comp)"
+    @info "Nspin_wf=$(Nspin_wf) Nspin_dens=$(Nspin_dens)"
 
     # other potential terms are set to zero
     V_Hartree = zeros( Float64, Npoints )
-    V_xc = zeros( Float64, Npoints, Nspin_comp )
-    V_loc_tot = zeros( Float64, Npoints, Nspin_comp )
+    V_xc = zeros( Float64, Npoints, Nspin_dens )
+    V_loc_tot = zeros( Float64, Npoints, Nspin_dens )
     if pw.using_dual_grid
         # We initialize smooth local potential here (total)
         potentials = Potentials(
             V_Ps_loc, V_Hartree, V_xc, V_loc_tot,
-            zeros(Float64, prod(pw.Nss), Nspin_comp),
-            zeros(Float64, Npoints, Nspin_comp)
+            zeros(Float64, prod(pw.Nss), Nspin_dens),
+            zeros(Float64, Npoints, Nspin_dens)
         )
     else
         potentials = Potentials(
             V_Ps_loc, V_Hartree, V_xc, V_loc_tot,
             nothing,
-            zeros(Float64, Npoints, Nspin_comp)
+            zeros(Float64, Npoints, Nspin_dens)
         )
     end
 
@@ -158,7 +158,7 @@ function Hamiltonian(
     #
     energies = Energies()
     #
-    rhoe = zeros( Float64, Npoints, Nspin_comp )
+    rhoe = zeros( Float64, Npoints, Nspin_dens )
     #
     # Initialize core electron density for NLCC if needed
     #
@@ -174,7 +174,7 @@ function Hamiltonian(
     # extra_states is given
     if !isnothing(options.extra_states)
         electrons = Electrons( atoms, pspots,
-            Nspin_channel = Nspin_channel,
+            Nspin_wf = Nspin_wf,
             Nkpt = kpoints.Nkpt,
             Nstates_empty = options.extra_states,
             noncollinear = options.noncollinear,
@@ -183,7 +183,7 @@ function Hamiltonian(
     # no extra_states is given but Nstates is given
     elseif !isnothing(options.Nstates)
         electrons = Electrons( atoms, pspots,
-            Nspin_channel = Nspin_channel,
+            Nspin_wf = Nspin_wf,
             Nkpt = kpoints.Nkpt,
             Nstates = options.Nstates,
             noncollinear = options.noncollinear,
@@ -194,7 +194,7 @@ function Hamiltonian(
         # Default value for Nstates and Nstates_empty
         # Nstates will be calculated automatically
         electrons = Electrons( atoms, pspots,
-            Nspin_channel = Nspin_channel,
+            Nspin_wf = Nspin_wf,
             Nkpt = kpoints.Nkpt,
             noncollinear = options.noncollinear,
             domag = domag
@@ -219,7 +219,7 @@ function Hamiltonian(
         is_gga = (options.xcfunc == "PBE") # XXX FIX THIS !!!!
         pspotNL = PsPotNL_UPF( atoms, pw, pspots,
             is_gga = is_gga,
-            Nspin = Nspin_comp,
+            Nspin = Nspin_dens,
             noncollinear = options.noncollinear,
             lspinorb = options.lspinorb
         )
@@ -316,22 +316,22 @@ function Hamiltonian(
     pspfiles::Vector{String},
     ecutwfc::Float64;
     # Keyword arguments
-    dual::Float64 = 4.0,
-    Nspin_channel::Int64 = 1,
-    Nspin_comp::Int64 = 1,
-    meshk::Vector{Int64} = [1,1,1],  # FIXME: convert to tuple?
-    shiftk::Vector{Int64} = [0,0,0],
-    time_reversal::Bool = true,
-    Ns_::Tuple{Int64,Int64,Int64} = (0,0,0),
-    kpoints::Union{KPoints,Nothing} = nothing,
+    dual = 4.0,
+    Nspin_wf = 1,
+    Nspin_dens = 1,
+    meshk = [1,1,1],  # FIXME: convert to tuple?
+    shiftk = [0,0,0],
+    time_reversal = true,
+    Ns_ = (0,0,0),
+    kpoints = nothing,
     kpts_str = nothing,
-    xcfunc::String = "VWN",
-    use_xc_internal::Bool = false,
-    extra_states::Int64 = nothing,
-    Nstates::Int64 = nothing,
-    use_symmetry::Bool = true,
-    lspinorb::Bool = false,
-    noncollinear::Bool = false,
+    xcfunc = "VWN",
+    use_xc_internal = false,
+    extra_states = nothing,
+    Nstates = nothing,
+    use_symmetry = true,
+    lspinorb = false,
+    noncollinear = false,
     starting_magn = nothing,
     angle1 = nothing,
     angle2 = nothing,
@@ -342,7 +342,7 @@ function Hamiltonian(
 
     # Build HamiltonianOptions from kwargs
     options = HamiltonianOptions(
-        dual, Nspin_channel, Nspin_comp, meshk, shiftk, time_reversal, Ns_,
+        dual, Nspin_wf, Nspin_dens, meshk, shiftk, time_reversal, Ns_,
         kpoints, kpts_str, xcfunc, use_xc_internal,
         extra_states, Nstates, use_symmetry, use_smearing, smearing_kT,
         starting_magn, angle1, angle2,

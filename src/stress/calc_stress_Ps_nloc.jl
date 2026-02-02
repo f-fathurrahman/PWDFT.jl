@@ -16,7 +16,7 @@ function calc_stress_Ps_nloc!(
     wk = pw.gvecw.kpoints.wk # not used?
     #
     Nstates = electrons.Nstates # not used?
-    Nspin = electrons.Nspin_channel
+    Nspin = electrons.Nspin_wf
     Focc = electrons.Focc # not used?
 
     fill!(stress_Ps_nloc, 0.0)

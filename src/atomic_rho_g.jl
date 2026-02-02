@@ -16,7 +16,7 @@ function atomic_rho_g(
     idx_g2r = pw.gvec.idx_g2r
     CellVolume = pw.CellVolume
     Nelectrons = Ham.electrons.Nelectrons
-    Nspin = Ham.electrons.Nspin_comp
+    Nspin = Ham.electrons.Nspin_dens
     Ngl = length(Ham.pw.gvec.G2_shells)
     domag = get_domag(Ham.options) # also can be taken from Ham.electrons.domag
 

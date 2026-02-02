@@ -25,7 +25,7 @@ function KS_solve_DCM!( Ham::Hamiltonian;
     Nstates = electrons.Nstates
     
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
-    Nspin = electrons.Nspin_channel
+    Nspin = electrons.Nspin_wf
 
     Nkspin = Nkpt*Nspin
 

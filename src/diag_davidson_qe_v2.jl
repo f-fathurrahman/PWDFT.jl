@@ -12,7 +12,7 @@ function diag_davidson_qe!(
     pw = Ham.pw
     electrons = Ham.electrons
     Nkpt = pw.gvecw.kpoints.Nkpt
-    Nspin = electrons.Nspin_channel
+    Nspin = electrons.Nspin_wf
     Nkspin = Nspin*Nkpt
     Nstates = electrons.Nstates
 

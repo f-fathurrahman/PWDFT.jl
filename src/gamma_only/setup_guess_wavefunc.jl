@@ -7,7 +7,7 @@ function setup_guess_wavefunc!(
     @assert length(psis) <= 2
 
     Npoints = prod(Ham.pw.Ns)
-    Nspin = Ham.electrons.Nspin_channel
+    Nspin = Ham.electrons.Nspin_wf
     Rhoe = zeros(Float64,Npoints,Nspin)
     
     if startingrhoe == :gaussian

@@ -1,7 +1,7 @@
 function op_V_loc( Ham::HamiltonianGamma, psis::BlochWavefuncGamma )
     
     Nstates = size(psis.data[1],2) # Nstates should be similar for all Bloch states
-    Nspin = Ham.electrons.Nspin_channel
+    Nspin = Ham.electrons.Nspin_wf
     out = zeros_BlochWavefuncGamma(Ham)
     
     for ispin = 1:Nspin
@@ -26,7 +26,7 @@ end
 function op_V_Ps_loc( Ham::Hamiltonian, psis::BlochWavefuncGamma )
 
     Nstates = size(psis.data[1],2) # Nstates should be similar for all Bloch states
-    Nspin = Ham.electrons.Nspin_channel
+    Nspin = Ham.electrons.Nspin_wf
     out = zeros_BlochWavefuncGamma(Ham)
     
     for ispin = 1:Nspin

@@ -11,7 +11,7 @@ function calc_energies_grad!(
 
     Ham.energies = calc_energies( Ham, psis )
 
-    Nspin = Ham.electrons.Nspin_channel
+    Nspin = Ham.electrons.Nspin_wf
     for ispin in 1:Nspin
         Ham.ispin = ispin
         calc_grad!( Ham, psis.data[ispin], g.data[ispin], Hsub[ispin] )

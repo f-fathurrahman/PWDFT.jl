@@ -9,7 +9,7 @@ function KS_solve_Emin_PCG_dot!(
     # Only Polak-Ribiere form is implemented
 
     Npoints = prod(Ham.pw.Ns)
-    Nspin = Ham.electrons.Nspin_channel
+    Nspin = Ham.electrons.Nspin_wf
     Nstates = Ham.electrons.Nstates
 
     Rhoe = zeros(Float64,Npoints,Nspin)

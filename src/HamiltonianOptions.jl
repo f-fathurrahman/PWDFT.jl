@@ -1,8 +1,8 @@
 # Originally the fields are keyword arguments to `Hamiltonian`
 mutable struct HamiltonianOptions
     dual::Float64
-    Nspin_channel::Int64 # for wavefunction
-    Nspin_comp::Int64 # for density, potentials
+    Nspin_wf::Int64 # for wavefunction
+    Nspin_dens::Int64 # for density, potentials
     meshk::Vector{Int64}
     shiftk::Vector{Int64}
     time_reversal::Bool
@@ -25,8 +25,8 @@ end
 
 function HamiltonianOptions()
     dual = 4.0
-    Nspin_channel = 1
-    Nspin_comp = 1
+    Nspin_wf = 1
+    Nspin_dens = 1
     meshk = [1,1,1]
     shiftk = [0,0,0]
     time_reversal = true
@@ -46,7 +46,7 @@ function HamiltonianOptions()
     lspinorb = false
     noncollinear = false
     return HamiltonianOptions(
-        dual, Nspin_channel, Nspin_comp, meshk, shiftk, time_reversal, Ns,
+        dual, Nspin_wf, Nspin_dens, meshk, shiftk, time_reversal, Ns,
         kpoints, kpts_str, xcfunc, use_xc_internal,
         extra_states, Nstates, use_symmetry, use_smearing, smearing_kT,
         starting_magn, angle1, angle2,

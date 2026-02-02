@@ -4,7 +4,7 @@ function calc_rhoe!(
 
     pw = Ham.pw
     Focc = Ham.electrons.Focc
-    Nspin = Ham.electrons.Nspin_channel
+    Nspin = Ham.electrons.Nspin_wf
     Nelectrons_true = Ham.electrons.Nelectrons
 
     CellVolume  = pw.CellVolume
@@ -63,7 +63,7 @@ end
 # TODO: Remove type annotation
 function calc_rhoe( Ham::HamiltonianGamma, psis::BlochWavefuncGamma; renormalize=false )
     Npoints = prod(Ham.pw.Ns)
-    Nspin = Ham.electrons.Nspin_channel
+    Nspin = Ham.electrons.Nspin_wf
     Rhoe = zeros(Float64, Npoints, Nspin)
     calc_rhoe!( Ham, psis, Rhoe, renormalize=renormalize )
     return Rhoe

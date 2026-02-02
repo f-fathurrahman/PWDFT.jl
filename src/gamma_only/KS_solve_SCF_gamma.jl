@@ -25,7 +25,7 @@ function KS_solve_SCF!(
 )
 
     Npoints = prod(Ham.pw.Ns)
-    Nspin = Ham.electrons.Nspin_channel
+    Nspin = Ham.electrons.Nspin_wf
     Nkpt = 1
     Nkspin = Nspin*Nkpt
     Nstates = Ham.electrons.Nstates

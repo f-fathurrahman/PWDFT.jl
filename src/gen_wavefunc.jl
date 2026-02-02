@@ -7,7 +7,7 @@ function zeros_BlochWavefunc( Ham::Hamiltonian )
 end
 
 function zeros_BlochWavefunc( pw::PWGrid, electrons::Electrons )
-    Nspin = electrons.Nspin_channel
+    Nspin = electrons.Nspin_wf
     Nstates = electrons.Nstates
     Npol = 1
     if electrons.noncollinear
@@ -43,7 +43,7 @@ function rand_BlochWavefunc( Ham::Hamiltonian )
     if !Ham.need_overlap
         return rand_BlochWavefunc(
             Ham.pw, Ham.electrons.Nstates,
-            Ham.electrons.Nspin_channel,
+            Ham.electrons.Nspin_wf,
             Npol = Npol
         )
     end
@@ -51,7 +51,7 @@ function rand_BlochWavefunc( Ham::Hamiltonian )
     # Overlap is needed
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     Ngw = Ham.pw.gvecw.Ngw
-    Nspin = Ham.electrons.Nspin_channel
+    Nspin = Ham.electrons.Nspin_wf
     Nstates = Ham.electrons.Nstates
     Nkspin = Nspin*Nkpt
     psiks = BlochWavefunc(undef,Nkspin)
@@ -66,7 +66,7 @@ function rand_BlochWavefunc( Ham::Hamiltonian )
 end
 
 function rand_BlochWavefunc( pw::PWGrid, electrons::Electrons )
-    Nspin = electrons.Nspin_channel
+    Nspin = electrons.Nspin_wf
     Nstates = electrons.Nstates
     Npol = 1
     if Ham.electron.noncollinear
@@ -100,7 +100,7 @@ function rand_wfc( Ham::Hamiltonian )
     idx_gw2g = Ham.pw.gvecw.idx_gw2g
     G = Ham.pw.gvec.G
     k = Ham.pw.gvecw.kpoints.k
-    Nspin = Ham.electrons.Nspin_channel
+    Nspin = Ham.electrons.Nspin_wf
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     Ngw = Ham.pw.gvecw.Ngw
     Npol = 1

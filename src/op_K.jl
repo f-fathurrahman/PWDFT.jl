@@ -1,6 +1,6 @@
 function op_K( Ham::Hamiltonian, psiks::BlochWavefunc )
     #    
-    Nspin = Ham.electrons.Nspin_channel
+    Nspin = Ham.electrons.Nspin_wf
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     out = zeros_BlochWavefunc(Ham)
     #
@@ -16,7 +16,7 @@ end
 # In-place, accumulated version
 function op_K!( Ham::Hamiltonian, psiks::BlochWavefunc, Hpsiks::BlochWavefunc )
     #
-    Nspin = Ham.electrons.Nspin_channel
+    Nspin = Ham.electrons.Nspin_wf
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     #
     for ispin in 1:Nspin, ik in 1:Nkpt

@@ -53,7 +53,7 @@ end
 # Probably by setting psiks as optional argument
 function update_from_rhoe!(Ham, psiks, Rhoe, RhoeG)
 
-    Nspin = Ham.electrons.Nspin_comp
+    Nspin = Ham.electrons.Nspin_dens
     Npoints = size(Rhoe, 1)
 
     # Save old potential
@@ -139,7 +139,7 @@ end
 # FIXME: allow psiks to be nothing (?)
 function _add_V_xc!(Ham, psiks, Rhoe)
 
-    Nspin = Ham.electrons.Nspin_comp
+    Nspin = Ham.electrons.Nspin_dens
 
     Npoints = size(Rhoe, 1)
     epsxc = zeros(Float64, Npoints)

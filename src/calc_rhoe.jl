@@ -1,6 +1,6 @@
 function calc_rhoe( Ham::Hamiltonian, psiks::BlochWavefunc )
     Npoints = prod(Ham.pw.Ns)
-    Nspin = Ham.electrons.Nspin_channel
+    Nspin = Ham.electrons.Nspin_wf
     Rhoe = zeros(Float64, Npoints, Nspin)
     calc_rhoe!(Ham, psiks, Rhoe)
     return Rhoe
@@ -19,7 +19,7 @@ function calc_rhoe!(
 
     pw = Ham.pw
     Focc = Ham.electrons.Focc
-    Nspin = Ham.electrons.Nspin_comp
+    Nspin = Ham.electrons.Nspin_dens
     @assert Nspin in [1,2]
 
     CellVolume  = pw.CellVolume
@@ -142,7 +142,7 @@ function calc_rhoe_noncollinear!(
 )
     pw = Ham.pw
     Focc = Ham.electrons.Focc
-    Nspin_dens = Ham.electrons.Nspin_comp
+    Nspin_dens = Ham.electrons.Nspin_dens
     Npol = 2
     domag = Ham.electrons.domag
 
@@ -265,7 +265,7 @@ function _add_usdens!( Ham, becsum, Rhoe )
     G = Ham.pw.gvec.G
     G2 = Ham.pw.gvec.G2
     Ng = Ham.pw.gvec.Ng
-    Nspin = Ham.electrons.Nspin_channel
+    Nspin = Ham.electrons.Nspin_wf
     lmaxkb = Ham.pspotNL.lmaxkb
     idx_g2r = Ham.pw.gvec.idx_g2r
     nh = Ham.pspotNL.nh
@@ -370,7 +370,7 @@ function _add_becsum!( ik, ispin, Ham, psiks, becsum )
     Nspecies = Ham.atoms.Nspecies
     atm2species = Ham.atoms.atm2species
 
-    Nspin = Ham.electrons.Nspin_channel
+    Nspin = Ham.electrons.Nspin_wf
     Focc = Ham.electrons.Focc
 
     nhm = Ham.pspotNL.nhm

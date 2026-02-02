@@ -3,7 +3,7 @@ function read_psiks( Ham::Hamiltonian )
     Nstates = Ham.electrons.Nstates
     Ngw = Ham.pw.gvecw.Ngw
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
-    Nspin = Ham.electrons.Nspin_channel
+    Nspin = Ham.electrons.Nspin_wf
     psiks = BlochWavefunc(undef,Nkpt)
 
     for ispin = 1:Nspin

@@ -34,7 +34,7 @@ function KS_solve_SCF_potmix!(
 )
 
     Npoints = prod(Ham.pw.Ns)
-    Nspin = Ham.electrons.Nspin_channel
+    Nspin = Ham.electrons.Nspin_wf
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     Nkspin = Nspin*Nkpt
     Nstates = Ham.electrons.Nstates
