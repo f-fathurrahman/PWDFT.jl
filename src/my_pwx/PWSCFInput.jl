@@ -452,7 +452,6 @@ function PWSCFInput( filename::String )
     # Give some default values, in case they are not given
     if ecutwfc <= 0.0
         @info "Cannot read ecutwfc, will use 40 Ry as ecutwfc"
-    else
         ecutwfc = 20.0 # or 40 Ry
     end
 
