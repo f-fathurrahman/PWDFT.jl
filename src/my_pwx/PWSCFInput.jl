@@ -449,16 +449,16 @@ function PWSCFInput( filename::String )
     println("species_masses = ", species_masses)
     println("pspfiles = ", pspfiles)
 
+    # Give some default values, in case they are not given
+    if ecutwfc <= 0.0
+        @info "Cannot read ecutwfc, will use 40 Ry as ecutwfc"
+    else
+        ecutwfc = 20.0 # or 40 Ry
+    end
+
     #
     # Some sanity checks
     #
-
-    if ecutwfc <= 0.0
-        println("-------------------------------------------------------")
-        println("Cannot read ecutwfc, please check or reformat the file")
-        println("-------------------------------------------------------")
-        error()
-    end
 
     if Nspecies <= 0.0
         println("-------------------------------------------------------")
