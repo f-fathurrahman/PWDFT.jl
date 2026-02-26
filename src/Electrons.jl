@@ -178,12 +178,13 @@ function Electrons(
         if Nstates == -1
             error("Please specify Nstates manually")
         end
+        # Nstates is assumed to be given
         Nstates_empty = Int64(Nstates - Nelectrons)
+        @assert Nstates_empty >= 0 # cannot have negative Nstates_empty
     end
 
     Focc = zeros(Float64, Nstates, Nkpt*Nspin_wf)
     ebands = zeros(Float64, Nstates, Nkpt*Nspin_wf)
-    @info "Pass here 154"
     Nstates_occ = Nstates - Nstates_empty
 
     @info "Nstates = $(Nstates)"
