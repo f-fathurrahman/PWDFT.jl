@@ -273,6 +273,18 @@ function electrons_scf_G!(
         flush(stdout)
     end
 
+    # TODO
+    # Also print the Kohn-Sham orbital energies using similar format
+    # as in pw.x
+    if print_final_ebands
+        @printf("\n")
+        @printf("----------------------------\n")
+        @printf("Final Kohn-Sham eigenvalues:\n")
+        @printf("----------------------------\n")
+        @printf("\n")
+        print_ebands(Ham.electrons, Ham.pw.gvecw.kpoints, unit="eV")
+    end
+
     println()
     println(">>>> Final result:")
     println()
@@ -302,10 +314,6 @@ function electrons_scf_G!(
         println("integ magn = ", sum(Rhoe[:,1] - Rhoe[:,2])*dVol)
     end
 
-    # TODO
-    # Also print the Kohn-Sham orbital energies using similar format
-    # as in pw.x
-
 
     if !is_converged
         @printf("WARNING: SCF is not converged after %d iterations\n", NiterMax)
@@ -315,15 +323,6 @@ function electrons_scf_G!(
     calc_energies!(Ham, psiks)
     println("\nUsing original formula for total energy")
     println(Ham.energies, use_smearing=use_smearing, is_paw=ok_paw)
-    
-    if print_final_ebands
-        @printf("\n")
-        @printf("----------------------------\n")
-        @printf("Final Kohn-Sham eigenvalues:\n")
-        @printf("----------------------------\n")
-        @printf("\n")
-        print_ebands(Ham.electrons, Ham.pw.gvecw.kpoints, unit="eV")
-    end
 
     Serialization.serialize("psiks.jldat", psiks)
     Serialization.serialize("Rhoe.jldat", Ham.rhoe)
