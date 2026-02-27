@@ -44,10 +44,11 @@ function Electrons(
     atoms::Atoms, pspots::Vector{T};
     Nspin_wf = 1,
     Nkpt = 1,
-    Nstates = -1,
-    Nstates_empty = -1,
+    Nstates = nothing,
+    Nstates_empty = nothing,
     noncollinear = false,
-    domag = false
+    domag = false,
+    use_smearing = false,
 ) where T <: AbstractPsPot
     #
     Zvals = get_Zvals(pspots)
@@ -57,14 +58,15 @@ function Electrons(
         Nstates = Nstates,
         Nstates_empty = Nstates_empty,
         noncollinear = noncollinear,
-        domag = domag
+        domag = domag,
+        use_smearing = use_smearing
     )
 end
 
 
 function calc_Nstates(
     Nelectrons;
-    Nstates_empty = -1,
+    Nstates_empty = nothing,
     use_smearing = false,
     noncollinear = false
 )
@@ -73,20 +75,25 @@ function calc_Nstates(
     else
         degspin = 2
     end
+    #
     Nstates = ceil(Int64, Nelectrons/degspin)
-    if use_smearing && Nstates_empty == -1
+    if use_smearing && isnothing(Nstates_empty)
         # metallic case: add 20% more bands, with a minimum of 4
         Nstates = maximum([
             ceil(Int64, 1.2*Nelectrons/degspin),
             Nstates + 4
         ])
-    elseif Nstates_empty > 0
-        Nstates += Nstates_empty
+    else
+        if Nstates_empty > 0
+            Nstates += Nstates_empty
+        end
     end
-    if Nstates_empty == -1
+    #
+    if isnothing(Nstates_empty)
         Nstates_empty = Nstates - ceil(Int64, Nelectrons/degspin)
         @assert Nstates_empty >= 0
     end
+    @assert !isnothing(Nstates_empty)
     return Nstates, Nstates_empty
 end
 
@@ -115,10 +122,11 @@ function Electrons(
     atoms::Atoms, zvals::Vector{Float64};
     Nspin_wf = 1,
     Nkpt = 1,
-    Nstates = -1,
-    Nstates_empty = -1,
+    Nstates = nothing,
+    Nstates_empty = nothing,
     noncollinear = false,
-    domag = false
+    domag = false,
+    use_smearing = false
 )
     if !noncollinear
         @assert Nspin_wf <= 2
@@ -141,47 +149,61 @@ function Electrons(
 
     is_odd = round(Int64,Nelectrons)%2 == 1
 
-    # If Nstates is not specified and Nstates_empty == 0, we calculate
-    # Nstates manually from Nelectrons
-    if !noncollinear
-        if Nstates == -1
-            Nstates = round(Int64, Nelectrons/2)
-            if Nstates*2 < Nelectrons
-                Nstates = Nstates + 1
-            end
-            if Nstates_empty > 0
-                Nstates = Nstates + Nstates_empty
-            else
-                Nstates_empty = 0 # Given Nstates_empty a valid value
-            end
-        else
-            # Nstates is not given its default (invalid value)
-            if Nstates_empty != -1
-                error("Please specify Nstates only or Nstates_empty only")
-            end
-            NstatesMin = round(Int64, Nelectrons/2)
-            if NstatesMin*2 < Nelectrons
-                NstatesMin += 1
-            end
-            if Nstates < NstatesMin
-                error("Given Nstates is not enough: Nstates = $(Nstates), NstatesMin = $(NstatesMin)")
-            end
-            if Nstates > NstatesMin
-                Nstates_empty = Nstates - NstatesMin
-            else
-                Nstates_empty = 0
-            end
-        end
-        # Nstates, Nstates_empty must be set up to their valid values now
-        # i.e. they should not have value of -1
+    #XXX This is quite convoluted
+
+    if isnothing(Nstates) && use_smearing
+        # automatic determination of Nstates and Nstates_empty in case of smearing
+        Nstates, Nstates_empty = calc_Nstates(
+            Nelectrons,
+            Nstates_empty = Nstates_empty,
+            use_smearing = use_smearing,
+            noncollinear = noncollinear
+        )
     else
-        if Nstates == -1
-            error("Please specify Nstates manually")
+        # XXX The original logic, Nstates and Nstates_empty are
+        if !noncollinear
+            if isnothing(Nstates)
+                Nstates = round(Int64, Nelectrons/2)
+                if Nstates*2 < Nelectrons
+                    Nstates = Nstates + 1
+                end
+                if !isnothing(Nstates_empty)
+                    Nstates = Nstates + Nstates_empty
+                else
+                    Nstates_empty = 0 # Given Nstates_empty a valid value
+                end
+            else
+                # Nstates is not given its default (invalid value)
+                if !isnothing(Nstates_empty)
+                    # In this case Nstates and Nstates_empty are both given
+                    # We only allow to specify either Nstates or Nstates_empty
+                    # We will error in this case
+                    error("Please specify Nstates only or Nstates_empty only")
+                end
+                NstatesMin = round(Int64, Nelectrons/2)
+                if NstatesMin*2 < Nelectrons
+                    NstatesMin += 1
+                end
+                if Nstates < NstatesMin
+                    error("Given Nstates is not enough: Nstates = $(Nstates), NstatesMin = $(NstatesMin)")
+                end
+                if Nstates > NstatesMin
+                    Nstates_empty = Nstates - NstatesMin
+                else
+                    Nstates_empty = 0
+                end
+            end
+            # Nstates, Nstates_empty must be set up to their valid values now
+        else
+            if isnothing(Nstates)
+                error("Please specify Nstates manually")
+            end
+            # Nstates is assumed to be given
+            Nstates_empty = Int64(Nstates - Nelectrons)
+            @assert Nstates_empty >= 0 # cannot have negative Nstates_empty
         end
-        # Nstates is assumed to be given
-        Nstates_empty = Int64(Nstates - Nelectrons)
-        @assert Nstates_empty >= 0 # cannot have negative Nstates_empty
     end
+
 
     Focc = zeros(Float64, Nstates, Nkpt*Nspin_wf)
     ebands = zeros(Float64, Nstates, Nkpt*Nspin_wf)
@@ -228,7 +250,6 @@ function Electrons(
 
     _check_Focc(Focc, Nkpt, Nelectrons)
 
-    use_smearing = false
     kT = 0.0
     E_fermi = 0.0
     return Electrons(

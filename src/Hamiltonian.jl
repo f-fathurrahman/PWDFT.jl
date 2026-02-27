@@ -178,7 +178,8 @@ function Hamiltonian(
             Nkpt = kpoints.Nkpt,
             Nstates_empty = options.extra_states,
             noncollinear = options.noncollinear,
-            domag = domag
+            domag = domag,
+            use_smearing = options.use_smearing
         )
     # no extra_states is given but Nstates is given
     elseif !isnothing(options.Nstates)
@@ -187,7 +188,8 @@ function Hamiltonian(
             Nkpt = kpoints.Nkpt,
             Nstates = options.Nstates,
             noncollinear = options.noncollinear,
-            domag = domag
+            domag = domag,
+            use_smearing = options.use_smearing
         )
     #
     elseif isnothing(options.Nstates) && isnothing(options.extra_states)
@@ -197,14 +199,14 @@ function Hamiltonian(
             Nspin_wf = Nspin_wf,
             Nkpt = kpoints.Nkpt,
             noncollinear = options.noncollinear,
-            domag = domag
+            domag = domag,
+            use_smearing = options.use_smearing
         )
     else
         error("Error in initializing instance of Electrons")
     end
 
     # Set smearing
-    electrons.use_smearing = options.use_smearing
     electrons.kT = options.smearing_kT
 
 
