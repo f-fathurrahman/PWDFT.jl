@@ -736,7 +736,8 @@ function electrons_Emin_Haux!(Ham; NiterMax=100, psiks=nothing, Haux=nothing)
     println("Final Energies:")
     println(Ham.energies, use_smearing=true, is_paw=ok_paw)
 
-    #@infiltrate
+    Serialization.serialize("psiks.jldat", psiks)
+    Serialization.serialize("Haux.jldat", Haux)
 
     return
 end
