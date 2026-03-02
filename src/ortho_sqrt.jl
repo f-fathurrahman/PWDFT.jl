@@ -37,7 +37,7 @@ for ispin in 1:Nspin, ik in 1:Nkpt
 end
 ```
 """
-function ortho_sqrt( Ham::Hamiltonian, psi::Matrix{ComplexF64} )
+function ortho_sqrt( Ham::Hamiltonian, psi::AbstractMatrix{ComplexF64} )
     if Ham.need_overlap
         O = psi' * op_S(Ham, psi)
     else
@@ -55,7 +55,7 @@ end
 
 In-place version of `ortho_sqrt`.
 """
-function ortho_sqrt!( Ham::Hamiltonian, psi::Matrix{ComplexF64} )
+function ortho_sqrt!( Ham::Hamiltonian, psi::AbstractMatrix{ComplexF64} )
     if Ham.need_overlap
         O = psi' * op_S(Ham, psi)
     else
