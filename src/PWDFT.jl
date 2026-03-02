@@ -344,6 +344,9 @@ export read_psiks
 
 include("rhoe_ddot.jl")
 
+include("atomic_wfc.jl")
+export atomic_wfc!
+
 include("electrons_scf.jl")
 export electrons_scf!
 export atomic_rho_g
