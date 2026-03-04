@@ -156,20 +156,21 @@ function atomic_wfc!( ik, atoms, pspots, pw, wfcatom )
 end
 
 
-function initwfc!(Ham, psiks)
+function initwfc!(Ham, psiks; Haux=nothing)
 
     # prepare atomic_wfc
     Nstates = Ham.electrons.Nstates
     Nspin = Ham.electrons.Nspin_wf
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     Natomwfc = calc_Natomwfc(Ham.atoms, Ham.pspots)
+    Nwfc_start = max(Natomwfc, Nstates)
     
     Ngw = Ham.pw.gvecw.Ngw
     Ngwx = maximum(Ngw)
-    wfcatom = zeros(ComplexF64, Ngwx, Natomwfc)
-    Hsub = zeros(ComplexF64, Natomwfc, Natomwfc)
-    λ = zeros(Float64, Natomwfc)
-    v = zeros(ComplexF64, Natomwfc, Natomwfc)
+    wfcatom = zeros(ComplexF64, Ngwx, Nwfc_start)
+    Hsub = zeros(ComplexF64, Nwfc_start, Nwfc_start)
+    λ = zeros(Float64, Nwfc_start)
+    v = zeros(ComplexF64, Nwfc_start, Nwfc_start)
 
     #ispin = 1
     #ik = 1
@@ -188,10 +189,15 @@ function initwfc!(Ham, psiks)
         # Need to orthonormalize?
         @views ortho_sqrt!(Ham, wfcatom[1:Ngwk,:])
         #
-        Hsub[:,:] = wfcatom[1:Ngwk,:]' * op_K(Ham, wfcatom[1:Ngwk,:])
+        Hsub[:,:] = wfcatom[1:Ngwk,:]' * op_H(Ham, wfcatom[1:Ngwk,:])
         λ[:], v[:,:] = eigen(Hermitian(Hsub))
         #
-        psiks[ikspin][1:Ngwk,1:Nstates] = wfcatom[1:Ngwk,1:Nstates]*v[1:Nstates,1:Nstates]
+        if !isnothing(Haux)
+            for ist in 1:Nstates
+                Haux[ikspin][ist,ist] = λ[ist] + randn()
+            end
+        end
+        psiks[ikspin][:,:] = wfcatom[1:Ngwk,1:Nstates]*v[1:Nstates,1:Nstates]
     end
 
 

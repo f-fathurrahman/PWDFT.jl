@@ -205,12 +205,13 @@ function prepare_Ham_from_pwinput(; filename=nothing)
         _, _ = _prepare_scf!(Ham, psiks, starting_magn=starting_magn)
     end
 
-    return Ham
+    return Ham, pwinput
 end
 
 
 function my_pwx_Emin(; filename=nothing, do_export_data=false)
-    Ham, pwinput = init_Ham_from_pwinput(filename=filename)
+    #Ham, pwinput = init_Ham_from_pwinput(filename=filename);
+    Ham, pwinput = prepare_Ham_from_pwinput(filename=filename);
 
     write_xsf("ATOMS_from_pwinput.xsf", Ham.atoms)
     println(Ham)
@@ -221,19 +222,20 @@ function my_pwx_Emin(; filename=nothing, do_export_data=false)
         export_to_script(Ham.options, pwinput, filename="script_"*filename*".jl")
     end
 
-    psiks = zeros_BlochWavefunc(Ham)
-    initwfc!(Ham, psiks)
-
     # Prepare Haux
-    Nstates = Ham.electrons.Nstates
-    Nspin = Ham.electrons.Nspin_wf
-    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+    Nstates = Ham.electrons.Nstates;
+    Nspin = Ham.electrons.Nspin_wf;
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt;
     Nkspin = Nkpt*Nspin;
     Haux = Vector{Matrix{ComplexF64}}(undef, Nkspin);
     for ikspin in 1:Nkspin
         Haux[ikspin] = randn(ComplexF64, Nstates, Nstates);
         Haux[ikspin][:,:] = 0.5*( Haux[ikspin] + Haux[ikspin]' );
     end
+
+    # Prepare psiks
+    psiks = zeros_BlochWavefunc(Ham);
+    initwfc!(Ham, psiks)
 
     electrons_Emin_Haux!(Ham, psiks=psiks, Haux=Haux)
 
