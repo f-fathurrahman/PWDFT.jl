@@ -102,14 +102,14 @@ end
 
 
 # Input: psiks
-# Modifies: Ham.rhoe, potentials
-function update_from_wavefunc!(Ham, psiks)    
-    # Compute electron density from psiks
-    # Use Ham.rhoe
-    calc_rhoe!(Ham, psiks, Ham.rhoe)
+# Modifies: Ham.potentials
+function update_from_wavefunc!(Ham, psiks, Rhoe)    
+    # Compute electron density from `psiks`, result in `Rhoe`
+    calc_rhoe!(Ham, psiks, Rhoe)
+    dVol = Ham.pw.CellVolume/prod(Ham.pw.Ns)
+    println("update_from_wavefunc: sum Rhoe = ", sum(Rhoe)*dVol)
     # Update the potentials
-    update_from_rhoe!(Ham, psiks, Ham.rhoe)
-    # XXX: update_from_rhoe! will not overwrite update Ham.rhoe
+    update_from_rhoe!(Ham, psiks, Rhoe)
     return
 end
 
@@ -187,9 +187,10 @@ end
 #
 function calc_Lfunc(
     Ham::Hamiltonian,
-    psiks::BlochWavefunc
+    psiks::BlochWavefunc,
+    Rhoe
 )
-    calc_energies!(Ham, psiks)
+    calc_energies!(Ham, psiks, Rhoe)
     # get entropy
     # Ham.energies.mTS is computed in update_from_ebands!
     return sum(Ham.energies)
@@ -211,12 +212,12 @@ end
 
 
 
-function do_compute_energy(Ham, psiks)
+function do_compute_energy(Ham, psiks, Rhoe)
     # Update Hamiltonian terms
-    update_from_ebands!( Ham )
-    update_from_wavefunc!( Ham, psiks )
+    update_from_ebands!(Ham)
+    update_from_wavefunc!(Ham, psiks, Rhoe)
     # Now, we are ready to evaluate
-    E = calc_Lfunc( Ham, psiks )
+    E = calc_Lfunc(Ham, psiks, Rhoe)
     return E
 end
 
@@ -224,7 +225,7 @@ end
 
 function linmin_quad_v01!(
     α_t,
-    Ham, psiks, Haux, Hsub, g, g_Haux,
+    Ham, psiks, Rhoe, Haux, Hsub, g, g_Haux,
     Kg, Kg_Haux,
     d, d_Haux, rots_cache,
     E_old
@@ -252,7 +253,7 @@ function linmin_quad_v01!(
         # make explicit calls to update_* functions
         #
         α_prev = α_t
-        E_t = do_compute_energy(Ham, psiks) # this will update ebands, Focc, and Rhoe
+        E_t = do_compute_energy(Ham, psiks, Rhoe) # this will update ebands, Focc, and Rhoe
         #
         if !isfinite(E_t)
             α_t *= α_t_ReduceFactor
@@ -286,7 +287,7 @@ function linmin_quad_v01!(
         do_step_psiks_Haux!(α - α_prev, Ham, psiks, Haux, d, d_Haux, rots_cache)
         α_prev = α
         # calculate energy and gradients
-        E_t2 = do_compute_energy(Ham, psiks)
+        E_t2 = do_compute_energy(Ham, psiks, Rhoe)
         calc_grad_psiks!(Ham, psiks, g, Kg, Hsub)
         calc_grad_Haux!(Ham, Hsub, g_Haux, Kg_Haux)
         #
@@ -520,7 +521,6 @@ function electrons_Emin_Haux!(Ham; NiterMax=100, psiks=nothing, Haux=nothing)
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
     Nkspin = Nkpt*Nspin
     Nstates = Ham.electrons.Nstates
-    Rhoe = Ham.rhoe
     dVol = Ham.pw.CellVolume/prod(Ham.pw.Ns)
 
     # Initialize electronic variables: `psiks` and `Haux`:
@@ -528,6 +528,7 @@ function electrons_Emin_Haux!(Ham; NiterMax=100, psiks=nothing, Haux=nothing)
     if isnothing(psiks)
         psiks = rand_BlochWavefunc(Ham)
     end
+    Rhoe = calc_rhoe(Ham, psiks)
 
     Hsub = Vector{Matrix{ComplexF64}}(undef, Nkspin)
     for ikspin in 1:Nkspin
@@ -586,7 +587,7 @@ function electrons_Emin_Haux!(Ham; NiterMax=100, psiks=nothing, Haux=nothing)
     # Update Hamiltonian before evaluating free energy
     update_from_ebands!( Ham )
     #update_from_wavefunc!( Ham, psiks )
-    E1 = calc_Lfunc( Ham, psiks )
+    E1 = calc_Lfunc( Ham, psiks, Rhoe )
     println("E1 = $(E1)")
     #
     # Calculate gradients
@@ -665,7 +666,7 @@ function electrons_Emin_Haux!(Ham; NiterMax=100, psiks=nothing, Haux=nothing)
         # XXX: Probably check gd: if it is already small then no need to do line minimization?
         E_new, is_success, α = linmin_quad_v01!(
             α_t,
-            Ham, psiks, Haux, Hsub, g, g_Haux, Kg, Kg_Haux, d, d_Haux, rots_cache, E1
+            Ham, psiks, Rhoe, Haux, Hsub, g, g_Haux, Kg, Kg_Haux, d, d_Haux, rots_cache, E1
         )
         #println("Test grad psiks before rotate: $(2*dot(g, psiks))")
         #println("Test grad Haux before rotate: $(dot(Haux, g_Haux))")
@@ -686,7 +687,7 @@ function electrons_Emin_Haux!(Ham; NiterMax=100, psiks=nothing, Haux=nothing)
             do_step_psiks_Haux!(-α, Ham, psiks, Haux, d, d_Haux, rots_cache)
             # calculate energy and gradients
             update_from_ebands!( Ham )
-            update_from_wavefunc!( Ham, psiks )
+            update_from_wavefunc!( Ham, psiks, Rhoe )
             # Now, we are ready to evaluate
             E_new = Inf # calc_Lfunc( Ham, psiks )
             calc_grad_psiks!(Ham, psiks, g, Kg, Hsub)

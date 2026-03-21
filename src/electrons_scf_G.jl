@@ -43,9 +43,6 @@ function electrons_scf_G!(
         PAW_atomic_becsum!(Ham, starting_magn=starting_magn)
     end
 
-    # Set rhoe
-    Ham.rhoe[:,:] = Rhoe[:,:]
-
     # Update the potentials
     Ehartree, Exc = update_from_rhoe!( Ham, psiks, Rhoe )
 
@@ -320,7 +317,7 @@ function electrons_scf_G!(
     end
 
     # Compare the energy using the usual formula (not using double-counting)
-    calc_energies!(Ham, psiks)
+    calc_energies!(Ham, psiks, Rhoe)
     println("\nUsing original formula for total energy")
     println(Ham.energies, use_smearing=use_smearing, is_paw=ok_paw)
 

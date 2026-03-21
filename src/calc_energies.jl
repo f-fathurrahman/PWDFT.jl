@@ -237,19 +237,22 @@ end
 
 
 """
-    calc_E_local(Ham)
+    calc_E_local(Ham, psiks, Rhoe)
 
 Compute and return local energy terms (local pseudopotential, Hartree, and XC) for a given
-Hamiltonian `Ham` with electron density stored in `Ham.rhoe`.
+Hamiltonian `Ham`, wavefunction `psiks` and density `Rhoe`.
 """
-function calc_E_local( Ham::Hamiltonian, psiks::BlochWavefunc )
+function calc_E_local(
+    Ham::Hamiltonian,
+    psiks::BlochWavefunc,
+    Rhoe
+)
 
     Npoints = prod(Ham.pw.Ns)
     dVol = Ham.pw.CellVolume/Npoints
     Nspin = Ham.electrons.Nspin_dens
     potentials = Ham.potentials
 
-    Rhoe = Ham.rhoe # alias
     Rhoe_tot = zeros(Float64, Npoints)
     if Nspin in [1,2]
         # XXX: use reduce?
@@ -420,28 +423,32 @@ end
 
 
 """
-    calc_energies(Ham, psiks)
+    calc_energies(Ham, psiks, Rhoe)
 
 Compute and return total energy components of type `Energies` for a given Hamiltonian `Ham`
 and BlochWavefunc `psiks`.
 
 Each `psiks` is assumed to be already orthonormalized elsewhere.
 
-`Ham.potentials` and `Ham.rhoe` are not updated.
+`Ham.potentials` is not updated.
 
 `Ham.energies.NN` should be calculated outside this function if needed.
 """
-function calc_energies( Ham::Hamiltonian, psiks::BlochWavefunc )
-    calc_energies!(Ham, psiks) # call the in-place version
+function calc_energies( Ham::Hamiltonian, psiks::BlochWavefunc, Rhoe )
+    calc_energies!(Ham, psiks, Rhoe) # call the in-place version
     return Ham.energies
 end
 
 # This is the in-place version
-function calc_energies!( Ham::Hamiltonian, psiks::BlochWavefunc )
+function calc_energies!(
+    Ham::Hamiltonian,
+    psiks::BlochWavefunc,
+    Rhoe
+)
     
     E_kin = calc_E_kin( Ham, psiks )
 
-    E_Ps_loc, E_Hartree, E_xc = calc_E_local( Ham, psiks )
+    E_Ps_loc, E_Hartree, E_xc = calc_E_local( Ham, psiks, Rhoe )
 
     if Ham.pspotNL.NbetaNL > 0
         E_Ps_nloc = calc_E_Ps_nloc( Ham, psiks )
