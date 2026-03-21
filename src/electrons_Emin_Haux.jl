@@ -515,7 +515,9 @@ end
 
 # Like `electrons_scf` but using direct minimization algorithm for metals
 # TODO: Add original references (including JDFTx)
-function electrons_Emin_Haux!(Ham; NiterMax=100, psiks=nothing, Haux=nothing)
+function electrons_Emin_Haux!(
+    Ham; NiterMax=100, psiks=nothing, Haux=nothing, Rhoe=nothing
+)
 
     Nspin = Ham.electrons.Nspin_wf
     Nkpt = Ham.pw.gvecw.kpoints.Nkpt
@@ -528,7 +530,10 @@ function electrons_Emin_Haux!(Ham; NiterMax=100, psiks=nothing, Haux=nothing)
     if isnothing(psiks)
         psiks = rand_BlochWavefunc(Ham)
     end
-    Rhoe = calc_rhoe(Ham, psiks)
+    #
+    if isnothing(Rhoe)
+        Rhoe = calc_rhoe(Ham, psiks)
+    end
 
     Hsub = Vector{Matrix{ComplexF64}}(undef, Nkspin)
     for ikspin in 1:Nkspin

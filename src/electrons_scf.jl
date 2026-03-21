@@ -296,29 +296,6 @@ function electrons_scf!(
     return
 end
 
-# XXX This is probably not needed anymore
-# Initialize Rhoe, potentials
-function _prepare_scf!(Ham, psiks; starting_magn=nothing)
-    # Initial density
-    if eltype(Ham.pspots) == PsPot_GTH
-        Rhoe = guess_rhoe_atomic( Ham, starting_magn=starting_magn )
-    else
-        Rhoe, _ = atomic_rho_g(Ham, starting_magn=starting_magn)
-    end
-    # Also initialize becsum in case of PAW
-    if any(Ham.pspotNL.are_paw)
-        PAW_atomic_becsum!(Ham, starting_magn=starting_magn)
-    end
-
-    # Set rhoe
-    Ham.rhoe[:,:] = Rhoe[:,:]
-
-    # Update the potentials
-    Ehartree, Exc = update_from_rhoe!( Ham, psiks, Rhoe )
-
-    return Ehartree, Exc
-end
-
 
 function _calc_Eband(wk, Focc, evals)
     Nstates = size(evals, 1)

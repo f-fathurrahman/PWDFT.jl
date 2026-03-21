@@ -151,6 +151,26 @@ function my_pwx(; filename=nothing, do_export_data=false)
 
 end
 
+# XXX This is probably not needed anymore
+# Initialize Rhoe, potentials
+function _prepare_scf!(Ham, psiks, Rhoe; starting_magn=nothing)
+    # Initial density
+    if eltype(Ham.pspots) == PsPot_GTH
+        Rhoe[:,:] = guess_rhoe_atomic( Ham, starting_magn=starting_magn )
+    else
+        Rhoe[:,:], _ = atomic_rho_g(Ham, starting_magn=starting_magn)
+    end
+    # Also initialize becsum in case of PAW
+    if any(Ham.pspotNL.are_paw)
+        PAW_atomic_becsum!(Ham, starting_magn=starting_magn)
+    end
+
+    # Update the potentials
+    Ehartree, Exc = update_from_rhoe!( Ham, psiks, Rhoe )
+
+    return Ehartree, Exc
+end
+
 
 # This is a left-over from testing electrons_Emin_Haux!
 # Some care is given for GTH/HGH pseudopotentials in case of magnetic calculation.
@@ -191,27 +211,30 @@ function prepare_Ham_from_pwinput(; filename=nothing)
     is_using_gth_numeric = contains(uppercase(Ham.pspots[1].pspfile), "GTH")
     is_using_hgh_numeric = contains(uppercase(Ham.pspots[1].pspfile), "HGH")
     no_atomic_rhoe = is_using_gth_analytic || is_using_gth_numeric || is_using_hgh_numeric
+    Npoints = prod(Ham.pw.Ns)
+    Nspin_dens = Ham.electrons.Nspin_dens
+    Rhoe = zeros(Float64, Npoints, Nspin_dens)
     if Nspin == 2 && no_atomic_rhoe
-        _, _ = _prepare_scf!(Ham, psiks)
-        _, _ = update_from_rhoe!( Ham, psiks, Ham.rhoe )
-        Rhoe_tot = Ham.rhoe[:,1] + Ham.rhoe[:,2]
+        _, _ = _prepare_scf!(Ham, psiks, Rhoe)
+        _, _ = update_from_rhoe!( Ham, psiks, Rhoe )
+        Rhoe_tot = Rhoe[:,1] + Rhoe[:,2]
         magn = starting_magn .* ones(size(Rhoe_tot)) / Ham.pw.CellVolume
-        Ham.rhoe[:,1] .= 0.5*(Rhoe_tot + magn)
-        Ham.rhoe[:,2] .= 0.5*(Rhoe_tot - magn)
+        Rhoe[:,1] .= 0.5*(Rhoe_tot + magn)
+        Rhoe[:,2] .= 0.5*(Rhoe_tot - magn)
         # Update again the Hamiltonian
-        _, _ = update_from_rhoe!( Ham, psiks, Ham.rhoe )
+        _, _ = update_from_rhoe!( Ham, psiks, Rhoe )
     else
         # for everything else atomic rhoe from pspots should be available
-        _, _ = _prepare_scf!(Ham, psiks, starting_magn=starting_magn)
+        _, _ = _prepare_scf!(Ham, psiks, Rhoe, starting_magn=starting_magn)
     end
 
-    return Ham, pwinput
+    return Ham, pwinput, Rhoe
 end
 
 
 function my_pwx_Emin(; filename=nothing, do_export_data=false)
     #Ham, pwinput = init_Ham_from_pwinput(filename=filename);
-    Ham, pwinput = prepare_Ham_from_pwinput(filename=filename);
+    Ham, pwinput, Rhoe = prepare_Ham_from_pwinput(filename=filename);
 
     write_xsf("ATOMS_from_pwinput.xsf", Ham.atoms)
     println(Ham)
@@ -235,9 +258,9 @@ function my_pwx_Emin(; filename=nothing, do_export_data=false)
 
     # Prepare psiks
     psiks = zeros_BlochWavefunc(Ham);
-    initwfc!(Ham, psiks)
+    initwfc!(Ham, psiks);
 
-    electrons_Emin_Haux!(Ham, psiks=psiks, Haux=Haux)
+    electrons_Emin_Haux!(Ham, psiks=psiks, Haux=Haux, Rhoe=Rhoe)
 
     return
 

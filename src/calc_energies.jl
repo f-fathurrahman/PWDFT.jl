@@ -268,14 +268,13 @@ function calc_E_local(
     E_Ps_loc = dot( potentials.Ps_loc, Rhoe_tot ) * dVol
     
     # XC energy is handled by different function
-    E_xc = calc_E_xc(Ham, psiks)
+    E_xc = calc_E_xc(Ham, psiks, Rhoe)
 
     return E_Ps_loc, E_Hartree, E_xc
 end
 
-function calc_E_xc(Ham, psiks)
+function calc_E_xc(Ham, psiks, Rhoe)
 
-    Rhoe = Ham.rhoe # alias    
     Npoints = prod(Ham.pw.Ns)
     dVol = Ham.pw.CellVolume/Npoints
     Nspin = Ham.electrons.Nspin_dens
