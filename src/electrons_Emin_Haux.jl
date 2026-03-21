@@ -516,7 +516,8 @@ end
 # Like `electrons_scf` but using direct minimization algorithm for metals
 # TODO: Add original references (including JDFTx)
 function electrons_Emin_Haux!(
-    Ham; NiterMax=100, psiks=nothing, Haux=nothing, Rhoe=nothing
+    Ham; NiterMax=100, psiks=nothing, Haux=nothing, Rhoe=nothing,
+    etot_conv_thr=5e-7
 )
 
     Nspin = Ham.electrons.Nspin_wf
@@ -616,6 +617,8 @@ function electrons_Emin_Haux!(
     # current and previous norms of the preconditioned gradient
 
     ok_paw = any(Ham.pspotNL.are_paw) # only used for printing?
+
+    Nconverged = 0
 
     for iterCG in 1:NiterMax
 
@@ -727,11 +730,16 @@ function electrons_Emin_Haux!(
         #println("Energies:")
         #println(Ham.energies, use_smearing=true, is_paw=ok_paw)
 
-        if ΔE < 1e-8
-            println("\nConverged !!!")
+        if ΔE < etot_conv_thr
+            Nconverged = Nconverged + 1
+        else
+            Nconverged = 0
+        end
+        if Nconverged >= 2
+            @printf("Emin_Haux: Total energy is converged in %d iterations\n", iterCG)
             break
-        end 
-        
+        end
+
         # New iterations, variables are updated in linmin_quad_v01
         E1 = E_new
     end
