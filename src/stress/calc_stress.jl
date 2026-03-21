@@ -1,11 +1,11 @@
-function calc_stress!(Ham, psiks, stress)
+function calc_stress!(Ham, psiks, Rhoe, stress)
 
     fill!(stress, 0.0)
 
     s_tmp = zeros(Float64, 3, 3)
 
     stress_Ps_loc = zeros(Float64, 3, 3)
-    calc_stress_Ps_loc!( Ham.atoms, Ham.pw, Ham.pspots, Ham.rhoe, stress_Ps_loc )
+    calc_stress_Ps_loc!( Ham.atoms, Ham.pw, Ham.pspots, Rhoe, stress_Ps_loc )
     stress .+= stress_Ps_loc
     #
     s_tmp .= 2.0*stress_Ps_loc # convert to Ry
@@ -15,7 +15,7 @@ function calc_stress!(Ham, psiks, stress)
     end
 
     stress_hartree = zeros(Float64, 3, 3)
-    calc_stress_hartree!( Ham.pw, Ham.rhoe, Ham.energies.Hartree, stress_hartree )
+    calc_stress_hartree!( Ham.pw, Rhoe, Ham.energies.Hartree, stress_hartree )
     stress .+= stress_hartree
     #
     s_tmp .= 2.0*stress_hartree # convert to Ry
@@ -25,7 +25,7 @@ function calc_stress!(Ham, psiks, stress)
     end
 
     stress_xc = zeros(Float64, 3, 3)
-    calc_stress_xc!( Ham.pw, Ham.potentials, Ham.rhoe, Ham.energies.XC, stress_xc )
+    calc_stress_xc!( Ham.pw, Ham.potentials, Rhoe, Ham.energies.XC, stress_xc )
     stress .+= stress_xc
     #
     s_tmp .= 2.0*stress_xc # convert to Ry
@@ -36,7 +36,7 @@ function calc_stress!(Ham, psiks, stress)
 
     stress_nlcc = zeros(Float64, 3, 3)
     calc_stress_nlcc!( Ham.atoms, Ham.pspots, Ham.pw, Ham.xc_calc, Ham.xcfunc,
-        Ham.rhoe, Ham.rhoe_core, stress_nlcc )
+        Rhoe, Ham.rhoe_core, stress_nlcc )
     stress .+= stress_nlcc
     #
     s_tmp .= 2.0*stress_nlcc # convert to Ry

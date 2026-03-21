@@ -65,7 +65,6 @@ function electrons_scf_G!(
     evals = Ham.electrons.ebands
     domag = Ham.electrons.domag
 
-    Rhoe = Ham.rhoe
     if ok_paw
         becsum = Ham.pspotNL.paw.becsum
     end
@@ -322,7 +321,7 @@ function electrons_scf_G!(
     println(Ham.energies, use_smearing=use_smearing, is_paw=ok_paw)
 
     Serialization.serialize("psiks.jldat", psiks)
-    Serialization.serialize("Rhoe.jldat", Ham.rhoe)
+    Serialization.serialize("Rhoe.jldat", Rhoe)
 
     return
 end

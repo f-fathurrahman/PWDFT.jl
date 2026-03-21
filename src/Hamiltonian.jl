@@ -4,7 +4,6 @@ mutable struct Hamiltonian{Tpsp<:AbstractPsPot}
     pw::PWGrid
     potentials::Potentials
     energies::Energies # probably can be excluded but included for convenience
-    rhoe::Array{Float64,2} # spin dependent XXX: probably need to exclude rhoe from fields of Hamiltonian
     rhoe_core::Union{Nothing,Array{Float64,2}}
     electrons::Electrons
     atoms::Atoms
@@ -158,8 +157,6 @@ function Hamiltonian(
     #
     energies = Energies()
     #
-    rhoe = zeros( Float64, Npoints, Nspin_dens )
-    #
     # Initialize core electron density for NLCC if needed
     #
     if any(is_psp_using_nlcc)
@@ -273,7 +270,7 @@ function Hamiltonian(
     need_overlap = any(pspotNL.are_ultrasoft) || any(pspotNL.are_paw)
 
     return Hamiltonian(
-        pw, potentials, energies, rhoe, rhoe_core,
+        pw, potentials, energies, rhoe_core,
         electrons, atoms, sym_info, rhoe_symmetrizer,
         pspots, pspotNL, options.xcfunc, xc_calc, ik, ispin, need_overlap,
         options
@@ -457,8 +454,6 @@ function Hamiltonian( atoms::Atoms, ecutwfc::Float64;
     electrons = Electrons( atoms, Zatoms, Nspin=Nspin, Nkpt=kpoints.Nkpt,
                            Nstates_empty=extra_states )
 
-    rhoe = zeros(Float64,Npoints,Nspin)
-
     pspotNL = PsPotNL()
     
     ik = 1
@@ -477,7 +472,7 @@ function Hamiltonian( atoms::Atoms, ecutwfc::Float64;
         xc_calc = LibxcXCCalculator()
     end
 
-    return Hamiltonian( pw, potentials, energies, rhoe, nothing,
+    return Hamiltonian( pw, potentials, energies, nothing,
                         electrons, atoms, sym_info, rhoe_symmetrizer,
                         pspots, pspotNL, xcfunc, xc_calc, ik, ispin )
 end
@@ -489,8 +484,6 @@ end
 function update!( Ham::Hamiltonian, psiks::BlochWavefunc, Rhoe::Vector{Float64} )
 
     # assumption Nspin = 1
-    # Copy
-    Ham.rhoe[:,1] .= Rhoe[:,1]
     
     pw = Ham.pw
     xc_calc = Ham.xc_calc
@@ -536,7 +529,7 @@ end
 """
     update!(Ham, psiks, rhoe)
 
-Update Ham.rhoe and calculate Hartree and XC potentials for given `rhoe` in real space.
+Calculate Hartree and XC potentials for given `rhoe` in real space.
 """
 function update!(
     Ham::Hamiltonian,
@@ -559,8 +552,6 @@ function update!(
     V_xc = Ham.potentials.XC
     V_Ps_loc = Ham.potentials.Ps_loc
     #
-    # Copy
-    Ham.rhoe[:,:] .= Rhoe[:,:] # XXX need this? Or set this outside
     #
     Rhoe_total = Rhoe[:,1] + Rhoe[:,2] # Nspin is 2
     V_H[:] .= real( G_to_R( Ham.pw, Poisson_solve(Ham.pw, Rhoe_total) ) )
@@ -598,7 +589,6 @@ end
 # For compatibility
 function update!( Ham::Hamiltonian, rhoe::Vector{Float64} )
     # assumption Nspin = 1
-    Ham.rhoe[:,1] = rhoe
     Ham.potentials.Hartree = real( G_to_R( Ham.pw, Poisson_solve(Ham.pw, rhoe) ) )    
     if Ham.xcfunc == "PBE"
         Ham.potentials.XC[:,1] = calc_Vxc_PBE( Ham.xc_calc, Ham.pw, rhoe )
@@ -618,26 +608,23 @@ function update!( Ham::Hamiltonian, rhoe::Vector{Float64} )
     return
 end
 
-function update!(Ham::Hamiltonian, rhoe::Array{Float64,2})
-    Nspin = size(rhoe)[2]
+function update!(Ham::Hamiltonian, Rhoe::Array{Float64,2})
+    Nspin = size(Rhoe, 2)
     if Nspin == 1
-        update!(Ham, rhoe[:,1])
+        update!(Ham, Rhoe[:,1])
         return
     end
-    Ham.rhoe = rhoe[:,:]
-    Rhoe_total = Ham.rhoe[:,1] + Ham.rhoe[:,2] # Nspin is 2
+    Rhoe_total = Rhoe[:,1] + Rhoe[:,2] # Nspin is 2
     Ham.potentials.Hartree = real( G_to_R( Ham.pw, Poisson_solve(Ham.pw, Rhoe_total) ) )
     if Ham.xcfunc == "PBE"
-        Ham.potentials.XC = calc_Vxc_PBE( Ham.xc_calc, Ham.pw, rhoe )
+        Ham.potentials.XC = calc_Vxc_PBE( Ham.xc_calc, Ham.pw, Rhoe )
     else  # VWN is the default
-        Ham.potentials.XC = calc_Vxc_VWN( Ham.xc_calc, rhoe )
+        Ham.potentials.XC = calc_Vxc_VWN( Ham.xc_calc, Rhoe )
     end
     Npoints = prod(Ham.pw.Ns)
-    for ispin = 1:Nspin
-        for ip = 1:Npoints
-            Ham.potentials.Total[ip,ispin] = Ham.potentials.Ps_loc[ip] + Ham.potentials.Hartree[ip] +
-                                             Ham.potentials.XC[ip,ispin]  
-        end
+    for ispin in 1:Nspin, ip in 1:Npoints
+        Ham.potentials.Total[ip,ispin] = Ham.potentials.Ps_loc[ip] + Ham.potentials.Hartree[ip] +
+                                         Ham.potentials.XC[ip,ispin]
     end
     return
 end

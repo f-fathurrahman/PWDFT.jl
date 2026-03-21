@@ -107,9 +107,6 @@ function KS_solve_SCF!(
                 Rhoe, _ = atomic_rho_g(Ham, starting_magn=starting_magn)
             end
         end
-    elseif startingrhoe == :none
-        # Use previously calculated density stored in Ham.rhoe
-        Rhoe = copy(Ham.rhoe)
     else
         # Density will be calculated from input wave function
         calc_rhoe!( Ham, psiks, Rhoe )
@@ -299,7 +296,7 @@ function KS_solve_SCF!(
         update!(Ham, psiks, Rhoe)
 
         # Calculate energies
-        Ham.energies = calc_energies( Ham, psiks )
+        Ham.energies = calc_energies( Ham, psiks, Rhoe )
         Etot = sum(Ham.energies)
         diffE = abs( Etot - Etot_old )
 

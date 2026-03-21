@@ -99,7 +99,7 @@ function KS_solve_Emin_PCG!(
     Ham.energies.NN = calc_E_NN( Ham.atoms )
 
     # Calculate energy at this psi
-    energies = calc_energies(Ham, psiks)
+    energies = calc_energies(Ham, psiks, Rhoe)
     Ham.energies = energies
     Etot = sum(energies)
 
@@ -201,7 +201,7 @@ function KS_solve_Emin_PCG!(
 
         update!(Ham, psiks, Rhoe)
 
-        Ham.energies = calc_energies( Ham, psiks )
+        Ham.energies = calc_energies( Ham, psiks, Rhoe )
         Etot = sum(Ham.energies)
         diffE = Etot_old - Etot
 

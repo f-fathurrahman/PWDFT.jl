@@ -1,11 +1,11 @@
-function calc_forces_Ps_loc( Ham )
+function calc_forces_Ps_loc( Ham, Rhoe )
     F_Ps_loc = zeros(Float64, 3, Ham.atoms.Natoms)
-    calc_forces_Ps_loc!( Ham, F_Ps_loc )
+    calc_forces_Ps_loc!( Ham, Rhoe, F_Ps_loc )
     return F_Ps_loc
 end
 
-function calc_forces_Ps_loc!( Ham::Hamiltonian, F_Ps_loc::Array{Float64,2} )
-    calc_forces_Ps_loc!( Ham.atoms, Ham.pw, Ham.pspots, Ham.rhoe, F_Ps_loc )
+function calc_forces_Ps_loc!( Ham::Hamiltonian, Rhoe, F_Ps_loc::Array{Float64,2} )
+    calc_forces_Ps_loc!( Ham.atoms, Ham.pw, Ham.pspots, Rhoe, F_Ps_loc )
     return
 end
 

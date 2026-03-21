@@ -5,10 +5,10 @@ function calc_forces_nlcc( Ham::Hamiltonian{PsPot_UPF} )
 end
 
 # Calculates the NLCC contribution to the force
-function calc_forces_nlcc!( Ham::Hamiltonian{PsPot_UPF}, F_nlcc )
+function calc_forces_nlcc!( Ham::Hamiltonian{PsPot_UPF}, Rhoe, F_nlcc )
     calc_forces_nlcc!(
         Ham.atoms, Ham.pspots, Ham.pw,
-        Ham.xc_calc, Ham.xcfunc, Ham.rhoe, Ham.rhoe_core,
+        Ham.xc_calc, Ham.xcfunc, Rhoe, Ham.rhoe_core,
         F_nlcc
     )
     return

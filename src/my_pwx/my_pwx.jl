@@ -77,7 +77,6 @@ function my_pwx(; filename=nothing, do_export_data=false)
         betamix=0.1,
         starting_magn=Ham.options.starting_magn
     )
-    # XXX "Restarting" from previous calculation can be done by specifying Rhoe=Ham.rhoe
 
     
     #KS_solve_SCF!(Ham, psiks, use_smearing=use_smearing, kT=kT, betamix=0.1)

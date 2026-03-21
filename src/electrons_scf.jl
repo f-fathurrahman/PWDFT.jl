@@ -48,9 +48,6 @@ function electrons_scf!(
         PAW_atomic_becsum!(Ham, starting_magn=starting_magn)
     end
 
-    # Set rhoe
-    Ham.rhoe[:,:] = Rhoe[:,:]
-
     # Update the potentials
     Ehartree, Exc = update_from_rhoe!( Ham, psiks, Rhoe )
 
@@ -71,7 +68,6 @@ function electrons_scf!(
     Nelectrons = Ham.electrons.Nelectrons
     evals = Ham.electrons.ebands
 
-    Rhoe = Ham.rhoe
     if ok_paw
         becsum = Ham.pspotNL.becsum
     end
@@ -277,7 +273,7 @@ function electrons_scf!(
     end
 
     # Compare the energy using the usual formula (not using double-counting)
-    calc_energies!(Ham, psiks)
+    calc_energies!(Ham, psiks, Rhoe)
     println("\nUsing original formula for total energy")
     println(Ham.energies, use_smearing=use_smearing, is_paw=ok_paw)
     
@@ -291,7 +287,7 @@ function electrons_scf!(
     end
 
     Serialization.serialize("psiks.jldat", psiks)
-    Serialization.serialize("Rhoe.jldat", Ham.rhoe)
+    Serialization.serialize("Rhoe.jldat", Rhoe)
 
     return
 end
