@@ -156,6 +156,12 @@ function atomic_wfc!( ik, atoms, pspots, pw, wfcatom )
 end
 
 
+function initwfc(Ham)
+    psiks = zeros_BlochWavefunc(Ham)
+    initwfc!(Ham, psiks)
+    return psiks
+end
+
 function initwfc!(Ham, psiks; Haux=nothing)
 
     # prepare atomic_wfc
@@ -182,12 +188,13 @@ function initwfc!(Ham, psiks; Haux=nothing)
         Ham.ispin = ispin
         #
         Ngwk = Ngw[ik]
+        fill!(wfcatom, 0.0)
         @views atomic_wfc!(ik, Ham.atoms, Ham.pspots, Ham.pw, wfcatom[1:Ngwk,:])
 
         #@infiltrate
 
         # Need to orthonormalize?
-        @views ortho_sqrt!(Ham, wfcatom[1:Ngwk,:])
+        #@views ortho_sqrt!(Ham, wfcatom[1:Ngwk,:])
         #
         Hsub[:,:] = wfcatom[1:Ngwk,:]' * op_H(Ham, wfcatom[1:Ngwk,:])
         λ[:], v[:,:] = eigen(Hermitian(Hsub))
@@ -198,8 +205,10 @@ function initwfc!(Ham, psiks; Haux=nothing)
             end
         end
         psiks[ikspin][:,:] = wfcatom[1:Ngwk,1:Nstates]*v[1:Nstates,1:Nstates]
+        #
+        # Force orthonormalization
+        #ortho_sqrt!(Ham, psiks[ikspin][1:Ngwk,:])
     end
-
 
     return
 

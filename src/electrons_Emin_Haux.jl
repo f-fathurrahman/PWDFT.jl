@@ -578,7 +578,7 @@ function electrons_Emin_Haux!(
     end
 
     rots_cache = RotationsCache(Nkspin, Nstates);
-
+    #@infiltrate
     # psiks is already orthonormal
     # Make Haux diagonal and rotate psiks
     # Ham.electrons.ebands are updated here
@@ -594,6 +594,7 @@ function electrons_Emin_Haux!(
     #update_from_wavefunc!( Ham, psiks )
     E1 = calc_Lfunc( Ham, psiks, Rhoe )
     println("E1 = $(E1)")
+    #@infiltrate
     #
     # Calculate gradients
     calc_grad_psiks!(Ham, psiks, g, Kg, Hsub)
