@@ -104,7 +104,7 @@ function atomic_wfc!( ik, atoms, pspots, pw, wfcatom )
     Natomwfc = calc_Natomwfc(atoms, pspots)
 
     Nstates = size(wfcatom, 2)
-    fill!(wfcatom, 0.0)
+    fill!(wfcatom, 0.0 + im*0.0)
     #
     n_starting_wfc = 0
     for ia in 1:Natoms
@@ -192,22 +192,22 @@ function initwfc!(Ham, psiks; Haux=nothing)
         @views atomic_wfc!(ik, Ham.atoms, Ham.pspots, Ham.pw, wfcatom[1:Ngwk,:])
         
         #XXX No need for Hsub?
-        psiks[ikspin][:,:] = wfcatom[1:Ngwk,1:Nstates]
+        #psiks[ikspin][:,:] = wfcatom[1:Ngwk,1:Nstates]
 
         #@infiltrate
 
         # Need to orthonormalize?
-        #@views ortho_sqrt!(Ham, wfcatom[1:Ngwk,:])
+        @views ortho_sqrt!(Ham, wfcatom[1:Ngwk,:])
         #
-        #Hsub[:,:] = wfcatom[1:Ngwk,:]' * op_H(Ham, wfcatom[1:Ngwk,:])
-        #λ[:], v[:,:] = eigen(Hermitian(Hsub))
-        #
-        #if !isnothing(Haux)
-        #    for ist in 1:Nstates
-        #        Haux[ikspin][ist,ist] = λ[ist] + randn()
-        #    end
-        #end
-        #psiks[ikspin][:,:] = wfcatom[1:Ngwk,1:Nstates]*v[1:Nstates,1:Nstates]
+        Hsub[:,:] = wfcatom[1:Ngwk,:]' * op_H(Ham, wfcatom[1:Ngwk,:])
+        λ[:], v[:,:] = eigen(Hermitian(Hsub))
+        
+        if !isnothing(Haux)
+            for ist in 1:Nstates
+                Haux[ikspin][ist,ist] = λ[ist] + randn()
+            end
+        end
+        psiks[ikspin][:,:] = wfcatom[1:Ngwk,1:Nstates]*v[1:Nstates,1:Nstates]
         #
         # Force orthonormalization
         #ortho_sqrt!(Ham, psiks[ikspin][1:Ngwk,:])
