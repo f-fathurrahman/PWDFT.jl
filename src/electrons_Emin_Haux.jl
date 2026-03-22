@@ -517,7 +517,7 @@ end
 # TODO: Add original references (including JDFTx)
 function electrons_Emin_Haux!(
     Ham; NiterMax=100, psiks=nothing, Haux=nothing, Rhoe=nothing,
-    etot_conv_thr=5e-7
+    etot_conv_thr=5e-7, random_seed = nothing
 )
 
     Nspin = Ham.electrons.Nspin_wf
@@ -527,7 +527,9 @@ function electrons_Emin_Haux!(
     dVol = Ham.pw.CellVolume/prod(Ham.pw.Ns)
 
     # Initialize electronic variables: `psiks` and `Haux`:
-    Random.seed!(1234)
+    if !isnothing(random_seed)
+        Random.seed!(random_seed)
+    end
     if isnothing(psiks)
         psiks = rand_BlochWavefunc(Ham)
     end
@@ -645,7 +647,7 @@ function electrons_Emin_Haux!(
             # Update beta:
             println("gKNorm = $(gKNorm), gPrevKg = $(gPrevKg)")
             β = (gKNorm - gPrevKg)/gKNormPrev
-            println("β = ", β)              
+            println("β = ", β)
             if β < 0.0
                 println("!!!! Resetting CG because β is negative")
                 β = 0.0
