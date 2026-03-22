@@ -65,3 +65,25 @@ function ortho_sqrt!( Ham::Hamiltonian, psi::AbstractMatrix{ComplexF64} )
     psi[:,:] = psi*Udagger
     return
 end
+
+function ortho_cholesky(Ham::Hamiltonian, psi::AbstractMatrix{ComplexF64})
+    if Ham.need_overlap
+        O = X' * op_S(Ham, psi)
+    else
+        O = psi' * psi
+    end
+    F = cholesky(Hermitian(O))
+    return psi / F.U
+end
+
+
+function ortho_cholesky!(Ham::Hamiltonian, psi::AbstractMatrix{ComplexF64})
+    if Ham.need_overlap
+        O = X' * op_S(Ham, psi)
+    else
+        O = psi' * psi
+    end
+    F = cholesky(Hermitian(O))
+    psi[:,:] = psi[:,:] / F.U
+    return
+end
