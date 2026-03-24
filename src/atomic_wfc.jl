@@ -67,7 +67,7 @@ function atomic_wfc!( ik, atoms, pspots, pw, wfcatom )
         Gk[1,igk] = G[1,ig] + k[1,ik]
         Gk[2,igk] = G[2,ig] + k[2,ik]
         Gk[3,igk] = G[3,ig] + k[3,ik]
-        Gk2[igk] = Gk[1,igk]^2 +  Gk[2,igk]^2 + Gk[3,igk]^2
+        Gk2[igk] = Gk[1,igk]^2 + Gk[2,igk]^2 + Gk[3,igk]^2
     end
 
     # Ylm_real_qe accept l value starting from 0 (the actual 'physics' angular momentum number)
@@ -174,9 +174,9 @@ function initwfc!(Ham, psiks; Haux=nothing)
     Ngw = Ham.pw.gvecw.Ngw
     Ngwx = maximum(Ngw)
     wfcatom = zeros(ComplexF64, Ngwx, Nwfc_start)
-    Hsub = zeros(ComplexF64, Nwfc_start, Nwfc_start)
-    λ = zeros(Float64, Nwfc_start)
-    v = zeros(ComplexF64, Nwfc_start, Nwfc_start)
+    Hsub = zeros(ComplexF64, Nstates, Nstates)
+    λ = zeros(Float64, Nstates)
+    v = zeros(ComplexF64, Nstates, Nstates)
 
     #ispin = 1
     #ik = 1
@@ -191,15 +191,15 @@ function initwfc!(Ham, psiks; Haux=nothing)
         fill!(wfcatom, 0.0)
         @views atomic_wfc!(ik, Ham.atoms, Ham.pspots, Ham.pw, wfcatom[1:Ngwk,:])
         
-        #XXX No need for Hsub?
+        #XXX Return wfcatom as is
         #psiks[ikspin][:,:] = wfcatom[1:Ngwk,1:Nstates]
-
-        #@infiltrate
+        ## Orthonormalize?
+        #@views ortho_sqrt!(Ham, psiks[ikspin])
 
         # Need to orthonormalize?
-        @views ortho_sqrt!(Ham, wfcatom[1:Ngwk,:])
+        @views ortho_sqrt!(Ham, wfcatom[1:Ngwk,1:Nstates])
         #
-        Hsub[:,:] = wfcatom[1:Ngwk,:]' * op_H(Ham, wfcatom[1:Ngwk,:])
+        Hsub[:,:] = wfcatom[1:Ngwk,1:Nstates]' * op_H(Ham, wfcatom[1:Ngwk,1:Nstates])
         λ[:], v[:,:] = eigen(Hermitian(Hsub))
         
         if !isnothing(Haux)
@@ -208,9 +208,6 @@ function initwfc!(Ham, psiks; Haux=nothing)
             end
         end
         psiks[ikspin][:,:] = wfcatom[1:Ngwk,1:Nstates]*v[1:Nstates,1:Nstates]
-        #
-        # Force orthonormalization
-        #ortho_sqrt!(Ham, psiks[ikspin][1:Ngwk,:])
     end
 
     return
