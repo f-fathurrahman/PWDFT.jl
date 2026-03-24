@@ -349,8 +349,8 @@ function Hamiltonian(
     )
 
     Nspecies = atoms.Nspecies
-    if Nspecies != size(pspfiles)[1]
-        error( @sprintf("Length of pspfiles is not equal to %d\n", Nspecies) )
+    if Nspecies != size(pspfiles, 1)
+        error("Length of pspfiles is not equal to Nspecies=$Nspecies")
     end
 
     #

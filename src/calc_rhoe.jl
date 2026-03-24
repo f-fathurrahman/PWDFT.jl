@@ -234,7 +234,7 @@ function calc_rhoe_noncollinear!(
     #
     # This should be done for ok_paw or ok_uspp
     if ok_uspp || ok_paw
-        @error "This is not yet implemented"
+        error("This is not yet implemented")
     end
 
     #@info "calc_rhoe: integ Rhoe after adding becsum = $(sum(Rhoe)*dVol)"

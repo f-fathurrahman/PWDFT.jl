@@ -302,7 +302,7 @@ function calc_E_xc(Ham, psiks, Rhoe)
                 @views calc_epsxc_VWN!( Ham.xc_calc, Rhoe[:,1], epsxc )
             end
         else
-            @error("Wrong Nspin=$Nspin")
+            error("Wrong Nspin=$Nspin")
         end 
     elseif Ham.xcfunc == "PBE"
         # check if this is working

@@ -482,7 +482,8 @@ function _read_us_aug(
         pp_qfcoef_str = LightXML.content(pp_qfcoef[1])
         pp_qfcoef_str = replace(pp_qfcoef_str, "\n" => " ")
         spl_str = split(pp_qfcoef_str, keepempty=false)
-        for i in 1:length(qfcoef_tmp)
+        Nqfcoef_tmp = length(qfcoef_tmp)
+        for i in 1:Nqfcoef_tmp
             qfcoef_tmp[i] = parse(Float64, spl_str[i])
         end
         qfcoef = reshape(qfcoef_tmp, nqf, nqlc, Nproj, Nproj)

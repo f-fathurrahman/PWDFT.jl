@@ -164,7 +164,7 @@ function KS_solve_SCF_potmix!(
             diag_CheFSI!( Ham, psiks, cheby_degree )
 
         else
-            error( @sprintf("Unknown method for update_psi = %s\n", update_psi) )
+            error("Unknown method for update_psi = $update_psi")
         end
 
 

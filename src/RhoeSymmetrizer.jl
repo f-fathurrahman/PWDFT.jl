@@ -302,7 +302,7 @@ function symmetrize_rhoe_v2!(
     elseif Nspin_dens in [1,2]
         Nspin_lsda = Nspin_dens
     else
-        @error("Not valid number of Nspin_dens=$(Nspin_dens)")
+        error("Not valid number of Nspin_dens=$(Nspin_dens)")
     end
     #
     # scan shells of G-vectors

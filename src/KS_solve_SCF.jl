@@ -208,7 +208,7 @@ function KS_solve_SCF!(
             diag_CheFSI!( Ham, psiks, cheby_degree )
 
         else
-            error( @sprintf("Unknown method for update_psi = %s\n", update_psi) )
+            error("Unknown method for update_psi = $update_psi")
         end
 
         if E_GAP_INFO && verbose && print_e_gap
@@ -270,11 +270,11 @@ function KS_solve_SCF!(
             mix_anderson!( Rhoe, Rhoe_new, betamix, df, dv, iter, mixdim )
         
         else
-            error(@sprintf("Unknown mix_method = %s\n", mix_method))
+            error("Unknown mix_method = $mix_method")
 
         end
 
-        for i in 1:length(Rhoe)
+        for i in 1:Npoints*Nspin
             if Rhoe[i] < eps()
                 Rhoe[i] = eps()
             end

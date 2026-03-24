@@ -175,7 +175,7 @@ function _add_V_xc!(Ham, psiks, Rhoe)
                     @views calc_epsxc_Vxc_VWN!( Ham.xc_calc, Rhoe[:,1], epsxc, Vxc[:,1] )
                 end
             else
-                @error("Wrong Nspin=$Nspin")
+                error("Wrong Nspin=$Nspin")
             end 
         end
         Exc = sum(epsxc .* Rhoe)*dVol # is this working for spinpol?
@@ -204,7 +204,7 @@ function _add_V_xc!(Ham, psiks, Rhoe)
                     @views calc_epsxc_Vxc_VWN!( Ham.xc_calc, Rhoe[:,1], epsxc, Vxc[:,1] )
                 end
             else
-                @error("Wrong Nspin=$Nspin")
+                error("Wrong Nspin=$Nspin")
             end 
         elseif Ham.xcfunc == "PBE"
             # check if this is working

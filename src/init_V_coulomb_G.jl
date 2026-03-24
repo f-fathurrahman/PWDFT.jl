@@ -13,7 +13,7 @@ function init_V_coulomb_G( pw::PWGrid, strf::Array{ComplexF64,2}, Znucls::Array{
     # Check for consistency between given no. pseudopots and no. of species
     # present in atoms.
     if Nsp1 != Nsp2
-        error( @sprintf("Nsp1 /= Nsp2: %d %d\n", Nsp1, Nsp2) )
+        error("Nsp1=$Nsp1 is not equal to Nsp2=$Nsp2")
     end
     Nspecies = Nsp1
 

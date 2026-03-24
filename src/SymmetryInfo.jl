@@ -748,7 +748,7 @@ function SymmetryInfo( atoms::Atoms; magnetic_sym = false, m_loc = nothing )
             end
         end
         if !found
-            @error("idx_inv_s is not found")
+            error("idx_inv_s is not found")
         end
     end
 

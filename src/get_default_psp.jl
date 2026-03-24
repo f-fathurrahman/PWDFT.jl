@@ -8,8 +8,7 @@ function get_default_PsPot_GTH( atoms::Atoms; xcfunc="VWN" )
         DIR_PSP = joinpath(DIR_PWDFT, "pseudopotentials", "pbe_gth")
         ALL_PSP = PWDFT.ALL_PBE_PSP
     else
-        errmsg = @sprintf("xcfunc in get_default_psp is not known %s\n", xcfunc)
-        error(errmsg)
+        error("xcfunc=$xcfunc in get_default_psp is not known")
     end
     Nspecies = atoms.Nspecies
     SpeciesSymbols = atoms.SpeciesSymbols

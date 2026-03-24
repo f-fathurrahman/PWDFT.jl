@@ -455,7 +455,7 @@ function get_special_kpoints(lattice::String, atoms::Atoms)
                     "M" => [1/2, 0.0, 0.0],
                     "G1" => [0.0, 0.0, 0.0])
     else
-        error(@sprintf("Unknown lattice = %s\n", lattice))
+        error("Unknown lattice = $lattice")
     end
 end
 
