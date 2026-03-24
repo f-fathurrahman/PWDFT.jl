@@ -112,7 +112,7 @@ function rand_wfc( Ham::Hamiltonian )
         ikspin = ik + (ispin - 1)*Nkpt
         # reshape return a reference not a copy
         psi = reshape(psiks[ikspin], Ngw[ik], Npol, Nstates)
-        for ist in 1:Nstates, igk in 1:Ngw[ik]
+        for ist in 1:Nstates, ipol in 1:Npol, igk in 1:Ngw[ik]
             ig = idx_gw2g[ik][igk]
             rr = rand()
             arg = 2*pi*rand()
@@ -140,7 +140,3 @@ function rand_wfc( Ham::Hamiltonian )
     return psiks
 
 end
- 
-#function atomic_wfc(Ham::Hamiltonian)
-#    return Ham.
-#end

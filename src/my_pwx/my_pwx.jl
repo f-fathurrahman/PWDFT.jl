@@ -258,7 +258,10 @@ function my_pwx_Emin(; filename=nothing, do_export_data=false)
     # Prepare psiks
     #psiks = zeros_BlochWavefunc(Ham);
     #initwfc!(Ham, psiks); # This not yet ready
-    psiks = rand_BlochWavefunc(Ham);
+    #
+    #psiks = rand_BlochWavefunc(Ham);
+    #
+    psiks = rand_wfc(Ham);
 
     # Run initial minimization
     electrons_Emin_Haux!(Ham, psiks=psiks, Haux=Haux, Rhoe=Rhoe, NiterMax=5)
