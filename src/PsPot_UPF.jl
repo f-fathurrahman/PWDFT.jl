@@ -79,7 +79,7 @@ function PsPot_UPF( upf_file::String )
     # Read some information from header
     #
     pp_header = LightXML.get_elements_by_tagname(xroot, "PP_HEADER")
-    atsymb = LightXML.attributes_dict(pp_header[1])["element"]
+    atsymb = strip(LightXML.attributes_dict(pp_header[1])["element"])
     zval = Int64(parse(Float64, LightXML.attributes_dict(pp_header[1])["z_valence"]))
     lmax = parse(Int64, LightXML.attributes_dict(pp_header[1])["l_max"])
     Nr = parse(Int64,LightXML.attributes_dict(pp_header[1])["mesh_size"])
