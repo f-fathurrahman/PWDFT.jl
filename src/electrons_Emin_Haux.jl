@@ -106,8 +106,8 @@ end
 function update_from_wavefunc!(Ham, psiks, Rhoe)    
     # Compute electron density from `psiks`, result in `Rhoe`
     calc_rhoe!(Ham, psiks, Rhoe)
-    dVol = Ham.pw.CellVolume/prod(Ham.pw.Ns)
-    println("update_from_wavefunc: sum Rhoe = ", sum(Rhoe)*dVol)
+    #dVol = Ham.pw.CellVolume/prod(Ham.pw.Ns)
+    #println("update_from_wavefunc: sum Rhoe = ", sum(Rhoe)*dVol)
     # Update the potentials
     update_from_rhoe!(Ham, psiks, Rhoe)
     return
@@ -231,8 +231,22 @@ function linmin_quad_v01!(
     E_old
 )
 
-    gd = 2*real(dot(g,d)) + real(dot(g_Haux, d_Haux))
-    println("gd = $(gd)")
+    #if Ham.need_overlap
+    #    gd = real(dot(g_Haux, d_Haux))
+    #    Nspin = Ham.electrons.Nspin_wf
+    #    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+    #    for ispin in 1:Nspin, ik in 1:Nkpt
+    #        Ham.ispin = ispin
+    #        Ham.ik = ik
+    #        ikspin = ik + (ispin-1)*Nkpt
+    #        gd += 2*real(dot(g[ikspin], op_S(Ham, d[ikspin])))
+    #    end
+    #else
+        gd = 2*real(dot(g,d)) + real(dot(g_Haux, d_Haux))
+    #end
+
+
+    #println("gd = $(gd)")
     α_prev = 0.0
     if gd > 0
         println("ERROR: Bad step direction")
@@ -247,7 +261,7 @@ function linmin_quad_v01!(
     α_t_IncreaseFactor = 3.0
     is_success = false
     for itry in 1:NtryMax
-        println("--- Begin itry linmin trial step = $(itry) using α_t=$(α_t)")
+        #println("--- Begin itry linmin trial step = $(itry) using α_t=$(α_t)")
         #
         do_step_psiks_Haux!(α_t - α_prev, Ham, psiks, Haux, d, d_Haux, rots_cache)
         # make explicit calls to update_* functions
@@ -257,16 +271,16 @@ function linmin_quad_v01!(
         #
         if !isfinite(E_t)
             α_t *= α_t_ReduceFactor
-            println("α_t is reduced to=$(α_t)")
+            #println("α_t is reduced to=$(α_t)")
             continue # continue
         end
         # prediciton of step size
         c = ( E_t - (E_old + α_t*gd) ) / α_t^2
         α = -gd/(2*c)
         if α < 0
-            println("Wrong curvature, α is negative: E_t=$(E_t), E_old=$(E_old)")
+            #println("Wrong curvature, α is negative: E_t=$(E_t), E_old=$(E_old)")
             α_t *= α_t_IncreaseFactor
-            println("Trial step will become true step. α_t will be set to $(α_t)")
+            #println("Trial step will become true step. α_t will be set to $(α_t)")
             # calculate gradients
             calc_grad_psiks!(Ham, psiks, g, Kg, Hsub)
             calc_grad_Haux!(Ham, Hsub, g_Haux, Kg_Haux)
@@ -277,12 +291,12 @@ function linmin_quad_v01!(
         end
         break
     end
-    println("Find α = $(α)")
+    #println("Find α = $(α)")
     
     # actual step
     for itry in 1:NtryMax
         #
-        println("--- Begin itry linmin actual step = $(itry) using α=$(α)")
+        #println("--- Begin itry linmin actual step = $(itry) using α=$(α)")
         #
         do_step_psiks_Haux!(α - α_prev, Ham, psiks, Haux, d, d_Haux, rots_cache)
         α_prev = α
@@ -291,19 +305,19 @@ function linmin_quad_v01!(
         calc_grad_psiks!(Ham, psiks, g, Kg, Hsub)
         calc_grad_Haux!(Ham, Hsub, g_Haux, Kg_Haux)
         #
-        println("Actual step energy 2: E_t2 = $(E_t2)")
+        #println("Actual step energy 2: E_t2 = $(E_t2)")
         #
         if !isfinite(E_t2)
             α *= α_t_ReduceFactor
-            println("α is reduced to=$(α)")
+            #println("α is reduced to=$(α)")
         end
         # trial energy is higher, reduce α
         if E_t2 > E_old
             α *= α_t_ReduceFactor
-            println("Energy is not decreasing, try do decrease α to $(α)")
+            #println("Energy is not decreasing, try do decrease α to $(α)")
             continue # continue iteration
         else
-            println("Actual step is successful")
+            #println("Actual step is successful")
             is_success = true
             return E_t2, is_success, α
         end
@@ -596,7 +610,7 @@ function electrons_Emin_Haux!(
     update_from_ebands!( Ham )
     #update_from_wavefunc!( Ham, psiks )
     E1 = calc_Lfunc( Ham, psiks, Rhoe )
-    println("E1 = $(E1)")
+    #println("E1 = $(E1)")
     #@infiltrate
     #
     # Calculate gradients
@@ -604,10 +618,10 @@ function electrons_Emin_Haux!(
     calc_grad_Haux!(Ham, Hsub, g_Haux, Kg_Haux)
     rotate_gradients!(g, Kg, g_Haux, Kg_Haux, rots_cache)
 
-    println("Initial Focc = ")
-    display(Ham.electrons.Focc); println()
-    println("Initial ebands (w.r.t Fermi) = ")
-    display(Ham.electrons.ebands .- Ham.electrons.E_fermi); println()
+    #println("Initial Focc = ")
+    #display(Ham.electrons.Focc); println()
+    #println("Initial ebands (w.r.t Fermi) = ")
+    #display(Ham.electrons.ebands .- Ham.electrons.E_fermi); println()
 
     α_t_start = 1.0
     α_t_min = 1e-5
@@ -622,34 +636,61 @@ function electrons_Emin_Haux!(
 
     Nconverged = 0
 
+    println()
+    println("Begin electrons_Emin_Haux")
+    println("-------------------------")
+
     for iterCG in 1:NiterMax
 
-        println("\nStart iterCG = ", iterCG)
+        #println("\nStart iterCG = ", iterCG)
 
-        gKNorm = 2*real(dot(g, Kg)) + real(dot(g_Haux, Kg_Haux))
+        #if Ham.need_overlap
+        #    gKNorm = real(dot(g_Haux, Kg_Haux))
+        #    for ispin in 1:Nspin, ik in 1:Nkpt
+        #        Ham.ispin = ispin
+        #        Ham.ik = ik
+        #        ikspin = ik + (ispin-1)*Nkpt
+        #        gKNorm += 2*real(dot(g[ikspin], op_S(Ham, Kg[ikspin])))
+        #    end
+        #else
+            gKNorm = 2*real(dot(g, Kg)) + real(dot(g_Haux, Kg_Haux))
+        #end
 
         β = 0.0
         if !do_force_grad_dir
-            gPrevKg = 2*real(dot(gPrev, Kg)) + real(dot(gPrev_Haux, Kg_Haux))
-            gd = 2*real(dot(g, d)) + real(dot(g_Haux, d_Haux))
-            gg = 2*real(dot(g, g)) + real(dot(g_Haux, g_Haux))
-            dd = 2*real(dot(d, d)) + real(dot(d_Haux, d_Haux))
-            if gg*dd > 0
-                @printf("linmin: %10.3le\n", gd/sqrt(gg*dd))
-            else
-                @warn "Negative gg*dd encountered"
-            end
-            if gKNorm*gKNormPrev > 0
-                @printf("cgtest: %10.3le\n", gPrevKg/sqrt(gKNorm*gKNormPrev))
-            else
-                @warn "Negative gKNorm*gKNormPrev encountered"
-            end
+            #if Ham.need_overlap
+            #    gPrevKg = real(dot(gPrev_Haux, Kg_Haux))
+            #    for ispin in 1:Nspin, ik in 1:Nkpt
+            #        Ham.ispin = ispin
+            #        Ham.ik = ik
+            #        ikspin = ik + (ispin-1)*Nkpt
+            #        gPrevKg += 2*real(dot(gPrev[ikspin], op_S(Ham, Kg[ikspin])))
+            #    end
+            #else
+                gPrevKg = 2*real(dot(gPrev, Kg)) + real(dot(gPrev_Haux, Kg_Haux))
+            #end
+            #gd = 2*real(dot(g, d)) + real(dot(g_Haux, d_Haux))
+            #gg = 2*real(dot(g, g)) + real(dot(g_Haux, g_Haux))
+            #dd = 2*real(dot(d, d)) + real(dot(d_Haux, d_Haux))
+            #
+            #if gg*dd > 0
+            #    @printf("linmin: %10.3le\n", gd/sqrt(gg*dd))
+            #else
+            #    @warn "Negative gg*dd encountered"
+            #end
+            #
+            #if gKNorm*gKNormPrev > 0
+            #    @printf("cgtest: %10.3le\n", gPrevKg/sqrt(gKNorm*gKNormPrev))
+            #else
+            #    @warn "Negative gKNorm*gKNormPrev encountered"
+            #end
+            #
             # Update beta:
-            println("gKNorm = $(gKNorm), gPrevKg = $(gPrevKg)")
+            #println("gKNorm = $(gKNorm), gPrevKg = $(gPrevKg)")
             β = (gKNorm - gPrevKg)/gKNormPrev
-            println("β = ", β)
+            #println("β = ", β)
             if β < 0.0
-                println("!!!! Resetting CG because β is negative")
+                #println("!!!! Resetting CG because β is negative")
                 β = 0.0
             end
         end
@@ -686,14 +727,14 @@ function electrons_Emin_Haux!(
         #
         if is_success
             α_t = α
-            println("linminQuad is successful. α_t is updated to α = $α")
+            #println("linminQuad is successful. α_t is updated to α = $α")
             if α_t < α_t_min
                 # bad step size: make sure next test step size is not too bad
                 α_t = α_t_start 
-                println("Bad step size is encountered, α_t is set to α_t_start = $(α_t_start)")
+                #println("Bad step size is encountered, α_t is set to α_t_start = $(α_t_start)")
             end
         else
-            println("WARN: Line minimization is not successful")
+            #println("WARN: Line minimization is not successful")
             #
             do_step_psiks_Haux!(-α, Ham, psiks, Haux, d, d_Haux, rots_cache)
             # calculate energy and gradients
@@ -715,16 +756,16 @@ function electrons_Emin_Haux!(
             end
         end
 
-        if Nspin == 2
-            magn = sum(Rhoe[:,1] - Rhoe[:,2])*dVol
-            integRhoe = sum(Rhoe)*dVol
-            println("integRhoe = $integRhoe integ magn = $magn")
-        else
-            integRhoe = sum(Rhoe)*dVol
-            println("integRhoe = $integRhoe")
-        end
+        #if Nspin == 2
+        #    magn = sum(Rhoe[:,1] - Rhoe[:,2])*dVol
+        #    integRhoe = sum(Rhoe)*dVol
+        #    println("integRhoe = $integRhoe integ magn = $magn")
+        #else
+        #    integRhoe = sum(Rhoe)*dVol
+        #    println("integRhoe = $integRhoe")
+        #end
         ΔE = abs(E_new - E1)
-        println("\niterCG: $(iterCG) E_new = $(E_new) ΔE = $(ΔE)\n")
+        println("iterCG: $(iterCG) E_new = $(E_new) ΔE = $(ΔE)")
         #println("Focc = ")
         #display(Ham.electrons.Focc); println()
         #println("ebands (w.r.t) Fermi energy = ")
@@ -738,12 +779,22 @@ function electrons_Emin_Haux!(
             Nconverged = 0
         end
         if Nconverged >= 2
-            @printf("Emin_Haux: Total energy is converged in %d iterations\n", iterCG)
+            println("Emin_Haux: Total energy is converged in $(iterCG) iterations")
             break
         end
 
         # New iterations, variables are updated in linmin_quad_v01
         E1 = E_new
+    end
+
+    println()
+    if Nspin == 2
+        magn = sum(Rhoe[:,1] - Rhoe[:,2])*dVol
+        integRhoe = sum(Rhoe)*dVol
+        println("Final integRhoe = $integRhoe integ magn = $magn")
+    else
+        integRhoe = sum(Rhoe)*dVol
+        println("Final integRhoe = $integRhoe")
     end
 
     println("Final Focc = ")

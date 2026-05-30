@@ -244,6 +244,7 @@ function my_pwx_Emin(; filename=nothing, do_export_data=false)
         export_to_script(Ham.options, pwinput, filename="script_"*filename*".jl")
     end
 
+    
     # Prepare Haux
     Nstates = Ham.electrons.Nstates;
     Nspin = Ham.electrons.Nspin_wf;
@@ -261,7 +262,16 @@ function my_pwx_Emin(; filename=nothing, do_export_data=false)
     #
     #psiks = rand_BlochWavefunc(Ham);
     #
-    psiks = rand_wfc(Ham);
+    #psiks = rand_wfc(Ham);
+
+    psiks = rand_BlochWavefunc(Ham)
+    electrons_scf_G!(
+        Ham,
+        psiks=psiks,
+        NiterMax=5,
+        betamix=0.1,
+        starting_magn=Ham.options.starting_magn
+    )
 
     # Run initial minimization
     electrons_Emin_Haux!(Ham, psiks=psiks, Haux=Haux, Rhoe=Rhoe, NiterMax=5)
