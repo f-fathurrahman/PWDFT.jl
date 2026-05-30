@@ -20,12 +20,32 @@ mutable struct Hamiltonian{Tpsp<:AbstractPsPot}
 end
 
 
+function check_pspots_species(atoms, pspots)
+    Nspecies = atoms.Nspecies
+    @assert length(pspots) == Nspecies
+    for isp in 1:Nspecies
+        if lowercase(atoms.SpeciesSymbols[isp]) != lowercase(pspots[isp].atsymb)
+            println("\nERROR: Atomic symbols and pspot atsymb does not match.")
+            println("Please check pseudopotential list (the order is significant/important)")
+            print("For species index = $isp: ")
+            print("from atoms: $(atoms.SpeciesSymbols[isp]), ")
+            println("meanwhile from pspots: $(pspots[isp].atsymb)")
+            error("")
+        end
+    end
+    return
+end
+
+
 function Hamiltonian(
     atoms::Atoms,
     pspots::Vector{Tpsp},
     ecutwfc::Float64,
     options::HamiltonianOptions
 ) where Tpsp <: AbstractPsPot
+
+    # Check again
+    check_pspots_species(atoms, pspots)
 
     domag = get_domag(options)
 
@@ -374,6 +394,8 @@ function Hamiltonian(
     else
         error("Not supporting mixed pseudopotential types: GTH and UPF")
     end
+
+    check_pspots_species(atoms, pspots)
 
     return Hamiltonian(atoms, pspots, ecutwfc, options)
 end
