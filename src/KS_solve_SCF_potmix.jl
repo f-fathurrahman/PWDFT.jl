@@ -193,7 +193,7 @@ function KS_solve_SCF_potmix!(
         # Now Ham.potentials contains new (output) potential
         
         # Calculate energies
-        Ham.energies = calc_energies(Ham, psiks)
+        Ham.energies = calc_energies(Ham, psiks, Rhoe)
         if use_smearing
             Ham.energies.mTS = Entropy
         end
