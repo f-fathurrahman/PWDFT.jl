@@ -403,7 +403,7 @@ export get_default_PsPot_GTH
 
 
 # my_pwx: a simple clone of QuantumEspresso's pw.x
-include("my_pwx/PWSCFInput.jl")
+include("my_pwx/PWSCFInput.jl"); export PWSCFInput
 include("my_pwx/init_Ham_from_pwinput.jl")
 include("my_pwx/my_pwx.jl")
 export init_Ham_from_pwinput
