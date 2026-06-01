@@ -28,7 +28,8 @@ function print( io::IO, electrons::Electrons; header=true, all_states=false )
     @printf(io, "Nelectrons    =  %18.10f\n", Nelectrons)
     @printf(io, "Nstates       = %8d\n", Nstates)
     @printf(io, "Nstates_occ   = %8d\n", Nstates_occ)
-    @printf(io, "Nstates_empty = %8d\n\n", Nstates - Nstates_occ)
+    @printf(io, "Nstates_empty = %8d\n", Nstates - Nstates_occ)
+    @printf(io, "kT            = %10.5f\n\n", electrons.kT)
 
     if Nspin_wf == 1
         @printf(io, "Occupation numbers: (spin-paired)\n\n")
