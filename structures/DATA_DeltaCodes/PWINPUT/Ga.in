@@ -30,4 +30,5 @@ Ga   0.500000000000000   0.156420000000000   0.418800000000000
 
 # k-space resolution ~0.2/A.
 K_POINTS automatic
-7 4 7  0 0 0
+4 2 4  0 0 0
+# reduced by ffr from 7 4 7

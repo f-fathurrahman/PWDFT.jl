@@ -25,4 +25,6 @@ Li   0.777780000000000   0.777780000000000   0.777780000000000
 
 # k-space resolution ~0.2/A.
 K_POINTS automatic
-12 12 12  0 0 0
+6 6 6  0 0 0
+# kpts halved by ffr
+
