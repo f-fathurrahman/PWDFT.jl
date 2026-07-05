@@ -22,6 +22,12 @@ struct PWSCFInput
     noncolin::Bool
     angle1::Union{Vector{Float64},Nothing}
     angle2::Union{Vector{Float64},Nothing}
+    ecutfock::Float64
+    nqx1::Int64
+    nqx2::Int64
+    nqx3::Int64
+    x_gamma_extrapolation::Bool
+    exxdiv_treatment::String
 end
 
 
@@ -83,6 +89,13 @@ function PWSCFInput( filename::String )
 
     lspinorb = false
     noncolin = false
+
+    ecutfock = -1.0
+    nqx1 = 1
+    nqx2 = 1
+    nqx3 = 1
+    x_gamma_extrapolation = false
+    exxdiv_treatment = "none"
 
     IGNORED = ["", "\n", "/", "&ELECTRONS", "&CONTROL", "&SYSTEM"]
 
@@ -300,6 +313,50 @@ function PWSCFInput( filename::String )
             @info "angle2_dict = $(angle2_dict)"
             continue
         end
+
+        if occursin("ecutfock", l)
+            ll = split(l, "=", keepempty=false)
+            ecutfock = parse(Float64, ll[end])
+            println("ecutfock = ", ecutfock)
+            continue
+        end
+
+        if occursin("nqx1", l)
+            ll = split(l, "=", keepempty=false)
+            nqx1 = parse(Int64, ll[end])
+            println("nqx1 = ", nqx1)
+            continue
+        end
+
+        if occursin("nqx2", l)
+            ll = split(l, "=", keepempty=false)
+            nqx2 = parse(Int64, ll[end])
+            println("nqx2 = ", nqx2)
+            continue
+        end
+
+        if occursin("nqx3", l)
+            ll = split(l, "=", keepempty=false)
+            nqx2 = parse(Int64, ll[end])
+            println("nqx3 = ", nqx3)
+            continue
+        end
+
+        if occursin("x_gamma_extrapolation", l)
+            ll = split(l, "=", keepempty=false)
+            if lowercase(ll[end]) == ".true."
+                x_gamma_extrapolation = true
+            end
+            continue
+        end
+
+        if occursin("exxdiv_treatment", l)
+            ll = split(l, "=", keepempty=false)
+            exxdiv_treatment = replace(replace(ll[end], "'" => ""), "\"" => "")
+            println("exxdiv_treatment = ", exxdiv_treatment)
+            continue
+        end
+
 
 
         #
@@ -612,16 +669,22 @@ function PWSCFInput( filename::String )
         nbnd, nspin, occupations, smearing, degauss, input_dft,
         nr1, nr2, nr3,
         starting_magnetization,
-        lspinorb, noncolin, angle1, angle2
+        lspinorb, noncolin, angle1, angle2,
+        ecutfock,
+        nqx1, nqx2, nqx3,
+        x_gamma_extrapolation,
+        exxdiv_treatment
     )
 end
 
 # XXX Some heuristics to determine appropriate xcfunc
-function decide_xcfunc(pwinput::PWSCFInput)
+# XXX This is basically translating `input_dft` into name that is
+# XXX recognized by PWDFT.jl
+function decide_xcfunc(input_dft)
     xcfunc = "VWN" # default in PWDFT.jl
-    if uppercase(pwinput.input_dft) == "SCAN"
+    if uppercase(input_dft) == "SCAN"
         xcfunc = "SCAN"
-    elseif uppercase(pwinput.input_dft) in ["PBE", "GGA_X_PBE+GGA_C_PBE"]
+    elseif uppercase(input_dft) in ["PBE", "GGA_X_PBE+GGA_C_PBE"]
         xcfunc = "PBE"
     end
     return xcfunc

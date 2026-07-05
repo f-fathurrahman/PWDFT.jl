@@ -30,7 +30,7 @@ function init_Ham_from_pwinput(; filename::Union{Nothing,String}=nothing)
         end
     end
 
-    xcfunc = decide_xcfunc(pwinput)
+    xcfunc = decide_xcfunc(pwinput.input_dft)
     # Note that other cases will be defaulted to VWN
     # XXX probably need to process input_dft string
     println("Using xcfunc = ", xcfunc)
