@@ -2,6 +2,9 @@
 # It seems that @info and other Logging functions does not play nicely with println?
 # The output also is not written to file when using tee
 
+# XXX: Unit of energy: Ha
+# XXX: Unit of length: Bohr
+
 struct PWSCFInput
     atoms::Atoms
     ecutwfc::Float64
@@ -663,6 +666,7 @@ function PWSCFInput( filename::String )
     print(atoms)
 
     # Don't forget to convert ecutwfc and ecutrho to Ha
+    # XXX Probably let the units of energy still in Ry?
     return PWSCFInput(
         atoms, 0.5*ecutwfc, 0.5*ecutrho, pspfiles,
         (meshk1, meshk2, meshk3),
@@ -670,7 +674,7 @@ function PWSCFInput( filename::String )
         nr1, nr2, nr3,
         starting_magnetization,
         lspinorb, noncolin, angle1, angle2,
-        ecutfock,
+        0.5*ecutfock,
         nqx1, nqx2, nqx3,
         x_gamma_extrapolation,
         exxdiv_treatment
