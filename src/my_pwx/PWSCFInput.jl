@@ -337,7 +337,7 @@ function PWSCFInput( filename::String )
 
         if occursin("nqx3", l)
             ll = split(l, "=", keepempty=false)
-            nqx2 = parse(Int64, ll[end])
+            nqx3 = parse(Int64, ll[end])
             println("nqx3 = ", nqx3)
             continue
         end
