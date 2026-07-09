@@ -12,7 +12,7 @@ mutable struct Hamiltonian{Tpsp<:AbstractPsPot}
     pspots::Vector{Tpsp}
     pspotNL::Union{PsPotNL,PsPotNL_UPF} # TODO: rename or add alias: PsPotNL to PsPotNL_GTH
     xcfunc::String
-    xc_calc::Union{LibxcXCCalculator,XCCalculator}
+    xc_calc::Union{LibxcXCCalculator,XCCalculator,NoneXCCalculator}
     ik::Int64   # current kpoint index
     ispin::Int64 # current spin index
     need_overlap::Bool

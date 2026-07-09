@@ -134,6 +134,8 @@ export calc_E_NN
 include("XCCalculator.jl")
 export AbstractXCCalculator, XCCalculator, LibxcXCCalculator
 
+include("NoneXCCalculator.jl"); export NoneXCCalculator
+
 include("Libxc_old.jl")
 
 include("LDA_VWN.jl")
