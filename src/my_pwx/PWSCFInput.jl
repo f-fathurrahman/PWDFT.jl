@@ -347,7 +347,7 @@ function PWSCFInput( filename::String )
 
         if occursin("x_gamma_extrapolation", l)
             ll = split(l, "=", keepempty=false)
-            if lowercase(ll[end]) == ".true."
+            if lowercase(strip(ll[end])) == ".true."
                 x_gamma_extrapolation = true
             end
             continue
@@ -355,7 +355,7 @@ function PWSCFInput( filename::String )
 
         if occursin("exxdiv_treatment", l)
             ll = split(l, "=", keepempty=false)
-            exxdiv_treatment = replace(replace(ll[end], "'" => ""), "\"" => "")
+            exxdiv_treatment = replace(replace(strip(ll[end]), "'" => ""), "\"" => "")
             println("exxdiv_treatment = ", exxdiv_treatment)
             continue
         end
@@ -664,6 +664,8 @@ function PWSCFInput( filename::String )
 
 
     print(atoms)
+
+    println("x_gamma_extrapolation = ", x_gamma_extrapolation)
 
     # Don't forget to convert ecutwfc and ecutrho to Ha
     # XXX Probably let the units of energy still in Ry?
