@@ -420,6 +420,27 @@ function calc_E_kin_noncollinear_v2( Ham::Hamiltonian, psiks::BlochWavefunc )
 end
 
 
+function calc_E_fock(Ham, psiks)
+    Ham.ispin = 1
+    psiks_out = zeros_BlochWavefunc(Ham)
+    Nkpt = Ham.pw.gvecw.kpoints.Nkpt
+    Nstates = Ham.electrons.Nstates
+    Focc = Ham.electrons.Focc
+    wk = Ham.pw.gvecw.kpoints.wk
+    E_fock = 0.0
+    for ik in 1:Nkpt
+        Ham.ik = ik
+        psi = psiks[ik]
+        Vpsi = psiks_out[ik]
+        op_Vexx!(Ham, psi, Vpsi)
+        for ist in 1:Nstates
+            E_fock += wk[ik] * Focc[ist,ik] * dot(psi[:,ist], Vpsi[:,ist])
+        end
+    end
+    return real(E_fock)
+end
+
+
 
 """
     calc_energies(Ham, psiks, Rhoe)

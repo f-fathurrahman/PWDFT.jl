@@ -2,10 +2,27 @@
 # or Array{ComplexF64,2} (multicolumn)
 # This is handled by individual op_* functions
 function op_H( Ham::Hamiltonian, psi )
-    if Ham.pspotNL.NbetaNL > 0
-        return op_K( Ham, psi ) + op_V_loc( Ham, psi ) + op_V_Ps_nloc( Ham, psi ) + op_Vtau( Ham, psi )
+    # XXX This can be simplified, just call op_H! ?
+    if isnothing(Ham.exx)
+        if Ham.pspotNL.NbetaNL > 0
+            return op_K( Ham, psi ) + op_V_loc( Ham, psi ) + op_V_Ps_nloc( Ham, psi ) + op_Vtau( Ham, psi )
+        else
+            return op_K( Ham, psi ) + op_V_loc( Ham, psi ) + op_Vtau( Ham, psi )
+        end
     else
-        return op_K( Ham, psi ) + op_V_loc( Ham, psi ) + op_Vtau( Ham, psi )
+        if Ham.exx.is_active
+            if Ham.pspotNL.NbetaNL > 0
+                return op_K( Ham, psi ) + op_V_loc( Ham, psi ) + op_V_Ps_nloc( Ham, psi ) + op_Vtau( Ham, psi ) + op_Vexx(Ham, psi)
+            else
+                return op_K( Ham, psi ) + op_V_loc( Ham, psi ) + op_Vtau( Ham, psi ) + op_Vexx(Ham, psi)
+            end
+        else
+            if Ham.pspotNL.NbetaNL > 0
+                return op_K( Ham, psi ) + op_V_loc( Ham, psi ) + op_V_Ps_nloc( Ham, psi ) + op_Vtau( Ham, psi )
+            else
+                return op_K( Ham, psi ) + op_V_loc( Ham, psi ) + op_Vtau( Ham, psi )
+            end 
+        end
     end
 end
 
@@ -27,7 +44,8 @@ end
 
 import Base: fill!
 function fill!( psiks::BlochWavefunc, x )
-    for i in length(psiks)
+    N = length(psiks)
+    for i in 1:N
         fill!(psiks[i], x)
     end
 end
@@ -40,6 +58,7 @@ function op_H!( Ham::Hamiltonian, psi, Hpsi )
         op_V_Ps_nloc!( Ham, psi, Hpsi )
     end
     op_Vtau!(Ham, psi, Hpsi)
+    op_Vexx!(Ham, psi, Hpsi)
     return
 end
 

@@ -90,7 +90,8 @@ export PWGrid,
 #
 include("wrappers_fft.jl")
 export R_to_G, R_to_G!,
-       G_to_R, G_to_R!
+       G_to_R, G_to_R!,
+       do_fft!
 
 #
 # Pseudopotential
@@ -188,6 +189,16 @@ export RhoeSymmetrizer,
 include("calc_rhoe_core.jl")
 export calc_rhoe_core!
 
+include("exx/exx_grid_check.jl")
+include("exx/exx_qgrid_init.jl")
+include("exx/scale_sym_ops.jl")
+include("exx/rotate_grid_point.jl")
+include("exx/exx_set_symm.jl")
+include("exx/calc_exx_divergence.jl")
+include("exx/EXXVariables.jl")
+include("exx/set_exx_buffer.jl")
+export EXXVariables, set_exx_buffer!
+
 include("Hamiltonian.jl")
 export Hamiltonian, HamiltonianOptions, update!
 
@@ -210,6 +221,10 @@ include("op_H.jl")
 export op_H, op_K, op_V_loc, op_V_Ps_loc, op_V_Ps_nloc,
        op_H!, op_K!, op_V_loc!, op_V_Ps_loc!, op_V_Ps_nloc!,
        op_Vtau, op_Vtau!
+
+include("exx/g2_convolution.jl")
+include("exx/op_Vexx.jl")
+export op_Vexx!
 
 include("PAW_symmetrize.jl")
 export PAW_symmetrize!
@@ -265,7 +280,8 @@ include("calc_energies.jl")
 export calc_energies, calc_energies!,
        calc_E_kin,
        calc_E_local,
-       calc_E_Ps_nloc
+       calc_E_Ps_nloc,
+       calc_E_fock
 # calc_E_xc, calc_E_Hartree # Not needed?
 
 include("occupations.jl")

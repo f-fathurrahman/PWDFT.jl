@@ -1,3 +1,13 @@
+# Yet another way to do fft. The direction is determined by plan.
+# R to G is forward
+# G to R is backward
+# This function works without pw
+function do_fft!( plan, Ns, f::AbstractVector{ComplexF64} )
+    ff = reshape(f, Ns)
+    plan*ff # inplace
+    return
+end
+
 #
 # In-place version, input 3d data as 3d array
 #

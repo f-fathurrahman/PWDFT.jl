@@ -16,6 +16,7 @@ mutable struct Hamiltonian{Tpsp<:AbstractPsPot}
     ik::Int64   # current kpoint index
     ispin::Int64 # current spin index
     need_overlap::Bool
+    exx::Union{EXXVariables,Nothing}
     options::HamiltonianOptions # copy
 end
 
@@ -289,10 +290,13 @@ function Hamiltonian(
 
     need_overlap = any(pspotNL.are_ultrasoft) || any(pspotNL.are_paw)
 
+    exx = nothing
+
     return Hamiltonian(
         pw, potentials, energies, rhoe_core,
         electrons, atoms, sym_info, rhoe_symmetrizer,
         pspots, pspotNL, options.xcfunc, xc_calc, ik, ispin, need_overlap,
+        exx,
         options
     )
 end
