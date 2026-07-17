@@ -95,7 +95,7 @@ function calc_exx_divergence(pw,
     end
     #println("Line 97 res = ", res)
 
-    res = res*alat^2 / pi
+    res = res*alat^2 / pi / nqs
     #res = res*pi/nqs
     #println("Line 111: res (in Ry) = ", 2*res)
 
