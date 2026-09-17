@@ -58,7 +58,9 @@ function op_H!( Ham::Hamiltonian, psi, Hpsi )
         op_V_Ps_nloc!( Ham, psi, Hpsi )
     end
     op_Vtau!(Ham, psi, Hpsi)
-    op_Vexx!(Ham, psi, Hpsi)
+    if !isnothing(Ham.exx)
+        op_Vexx!(Ham, psi, Hpsi)
+    end
     return
 end
 
